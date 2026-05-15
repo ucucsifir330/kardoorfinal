@@ -5706,6 +5706,42 @@ span.ada-brand-logo,
   --catalog-content-right: clamp(20px, 3vw, 56px) !important;
 }
 
+/* Compact catalog flow: rows stack naturally and products wrap instead of using a horizontal strip. */
+.catalog-row {
+  max-width: none !important;
+  min-height: 0 !important;
+  margin-bottom: clamp(52px, 7vh, 96px) !important;
+  align-items: start !important;
+}
+
+.catalog-row:last-of-type {
+  margin-bottom: clamp(64px, 8vh, 120px) !important;
+}
+
+.catalog-card {
+  width: 100% !important;
+}
+
+.catalog-product-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: clamp(20px, 2vw, 34px) clamp(24px, 2.6vw, 42px) !important;
+  overflow: visible !important;
+  padding-bottom: 0 !important;
+  scrollbar-width: none !important;
+  scroll-snap-type: none !important;
+}
+
+.catalog-product-grid > .catalog-product {
+  flex: 0 1 clamp(220px, 16vw, 320px) !important;
+  min-width: 220px !important;
+  scroll-snap-align: none !important;
+}
+
+.catalog-product-grid::-webkit-scrollbar {
+  display: none !important;
+}
+
 /* Manifesto scroll-progress line: visible track + dark fill on the light theme. */
 .ada-manifesto-container {
   display: flex !important;
