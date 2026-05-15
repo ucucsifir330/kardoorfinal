@@ -15,6 +15,11 @@ type TeamMember = {
 
 const { locale } = useKardoorLocale();
 const lottieSrc = "https://lottie.host/81c9cad9-029d-4a23-905f-29c58b5abe47/CvLTy70sdE.lottie";
+const aboutUsImages = {
+  guven: "https://ik.imagekit.io/kardoor/aboutus/guvenkaraboga?updatedAt=1778789528553",
+  yasar: "https://ik.imagekit.io/kardoor/aboutus/yasarkaraboga?updatedAt=1778789528545",
+  bulent: "https://ik.imagekit.io/kardoor/aboutus/bulentkaraboga?updatedAt=1778789528509"
+} as const;
 
 const copy = computed(() =>
   locale.value === "tr"
@@ -33,7 +38,7 @@ const copy = computed(() =>
             id: "guven",
             name: "Güven Karaboğa",
             role: "Kurucu Ortak",
-            image: "https://freepngimg.com/save/22654-man/400x400",
+            image: aboutUsImages.guven,
             shortBio: "Üretim, tasarım ve malzeme standartlarını Kardoor'un premium ihracat vaadiyle aynı çizgide tutar.",
             bio:
               "Güven Karaboğa, Ege Kardoor'un üretim ve tasarım standartlarını belirleyen kurucu güçtür. Konut projelerinden ticari tedarike kadar malzeme disiplini ve kusursuz işçiliği markanın premium vizyonuyla birleştirir.",
@@ -44,7 +49,7 @@ const copy = computed(() =>
             id: "yasar",
             name: "Yaşar Karaboğa",
             role: "Kurucu Ortak",
-            image: "https://freepngimg.com/save/22654-man/400x400",
+            image: aboutUsImages.yasar,
             shortBio: "Finansal operasyonları, saha kararlarını ve uluslararası alıcılar için büyüme hedeflerini koordine eder.",
             bio:
               "Yaşar Karaboğa finansal operasyonları ve stratejik büyüme hedeflerini koordine eder. Saha yönetimi ve alıcı ilişkilerindeki tecrübesiyle projelerin ilk talepten teslimata kadar net ilerlemesini sağlar.",
@@ -55,7 +60,7 @@ const copy = computed(() =>
             id: "production",
             name: "Ad Soyad",
             role: "Üretim ve Büyüme",
-            image: "https://freepngimg.com/save/22654-man/400x400",
+            image: aboutUsImages.bulent,
             shortBio: "Fabrikadan çıkan her kapının malzeme, güvenlik ve paketleme standartlarını denetler.",
             bio:
               "Modern üretim teknolojilerini disiplinli işçilikle birleştirerek her Kardoor ürününün güvenle taşınmasını ve yıllarca performans göstermesini sağlayan standardı korur.",
@@ -79,7 +84,7 @@ const copy = computed(() =>
             id: "guven",
             name: "Guven Karaboga",
             role: "Founding Partner",
-            image: "https://freepngimg.com/save/22654-man/400x400",
+            image: aboutUsImages.guven,
             shortBio: "Keeps production, design and material standards aligned with Kardoor's premium export promise.",
             bio:
               "Guven Karaboga is the founding force behind Ege Kardoor's production and design standards. From residential projects to commercial supply, he combines material discipline and flawless workmanship with the brand's premium vision.",
@@ -90,7 +95,7 @@ const copy = computed(() =>
             id: "yasar",
             name: "Yasar Karaboga",
             role: "Founding Partner",
-            image: "https://freepngimg.com/save/22654-man/400x400",
+            image: aboutUsImages.yasar,
             shortBio: "Coordinates financial operations, field decisions and growth goals for international buyers.",
             bio:
               "Yasar Karaboga coordinates financial operations and strategic growth goals. With experience in field management and buyer relations, he keeps projects moving clearly from the first request through delivery.",
@@ -101,7 +106,7 @@ const copy = computed(() =>
             id: "production",
             name: "Name Surname",
             role: "Production and Growth",
-            image: "https://freepngimg.com/save/22654-man/400x400",
+            image: aboutUsImages.bulent,
             shortBio: "Oversees the material, security and packaging standards of every door leaving the factory.",
             bio:
               "By combining modern production technologies with disciplined workmanship, this role protects the standard that lets every Kardoor product travel securely and perform for years.",

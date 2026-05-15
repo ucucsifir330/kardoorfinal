@@ -716,12 +716,27 @@ onBeforeUnmount(() => {
 
 @media (max-width: 900px) {
   .references-hero {
-    min-height: 260px;
-    padding: 100px 24px 28px;
+    min-height: 245px;
+    padding: 92px 16px 26px;
   }
 
   .title-block {
-    letter-spacing: -3px;
+    display: block;
+    max-width: 100%;
+    margin-left: 0;
+    letter-spacing: 0;
+    overflow-wrap: normal;
+    white-space: normal;
+  }
+
+  .hero-letter {
+    font-size: clamp(37px, 10.5vw, 52px);
+    line-height: 0.92;
+  }
+
+  .cards-section {
+    align-items: stretch;
+    padding: 42px 0 72px;
   }
 
   .panel-inner {
@@ -746,12 +761,46 @@ onBeforeUnmount(() => {
   }
 
   .marquee-group {
-    gap: 22px;
-    padding-right: 22px;
+    gap: 14px;
+    padding-right: 14px;
   }
 
   .reference-card {
-    width: min(76vw, 280px);
+    width: min(74vw, 260px);
+    border-radius: 14px;
+    padding: 10px;
+  }
+
+  .card-image {
+    border-radius: 10px;
+  }
+
+  .card-body {
+    padding: 16px 4px 6px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  .card-location {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .references-hero {
+    min-height: 228px;
+    padding-top: 88px;
+  }
+
+  .hero-letter {
+    font-size: clamp(34px, 9.7vw, 42px);
+  }
+
+  .reference-card {
+    width: min(72vw, 240px);
   }
 }
 </style>

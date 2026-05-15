@@ -15,6 +15,14 @@ export type DoorProduct = {
   accentColor: string;
 };
 
+const seriesImages = {
+  ivoryLine: "https://ik.imagekit.io/kardoor/series/1.png?updatedAt=1778762643897",
+  graphiteOak: "https://ik.imagekit.io/kardoor/series/2.png?updatedAt=1778762645386",
+  classicSand: "https://ik.imagekit.io/kardoor/series/3.png?updatedAt=1778762644382",
+  emeraldLine: "https://ik.imagekit.io/kardoor/series/4.png?updatedAt=1778762645568",
+  monoGraphite: "https://ik.imagekit.io/kardoor/series/5.png?updatedAt=1778762645583"
+} as const;
+
 export const products: DoorProduct[] = [
   {
     slug: "k1001",
@@ -30,7 +38,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Premium residence", "Project"],
     surfaces: ["Metal", "Minimal"],
     exportTags: ["Custom size", "Project quantity", "Distributor ready"],
-    image: "/images/doors/door-midnight.svg",
+    image: seriesImages.monoGraphite,
     accentColor: "#2ce3ff"
   },
   {
@@ -47,7 +55,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Apartment", "Project"],
     surfaces: ["Metal", "Minimal"],
     exportTags: ["Custom size", "Catalog model", "Dealer supply"],
-    image: "/images/doors/door-graphite.svg",
+    image: seriesImages.graphiteOak,
     accentColor: "#2ce3ff"
   },
   {
@@ -64,7 +72,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Architectural housing", "Project"],
     surfaces: ["Glass", "Metal"],
     exportTags: ["Custom size", "Project quantity", "Dealer supply"],
-    image: "/images/doors/door-metal.svg",
+    image: seriesImages.emeraldLine,
     accentColor: "#2ce3ff"
   },
   {
@@ -81,7 +89,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Coastal market", "Exterior"],
     surfaces: ["Metal", "Minimal"],
     exportTags: ["Custom size", "Export packaging", "Project quantity"],
-    image: "/images/doors/door-graphite.svg",
+    image: seriesImages.graphiteOak,
     accentColor: "#39ddfd"
   },
   {
@@ -98,7 +106,7 @@ export const products: DoorProduct[] = [
     useCases: ["Apartment", "Residence", "Project"],
     surfaces: ["Metal", "Minimal"],
     exportTags: ["Project quantity", "Dealer supply", "Catalog model"],
-    image: "/images/doors/door-midnight.svg",
+    image: seriesImages.monoGraphite,
     accentColor: "#39ddfd"
   },
   {
@@ -115,7 +123,7 @@ export const products: DoorProduct[] = [
     useCases: ["Exterior", "Villa", "Coastal market"],
     surfaces: ["Metal", "Composite"],
     exportTags: ["Export packaging", "Custom size", "Project quantity"],
-    image: "/images/doors/door-graphite.svg",
+    image: seriesImages.graphiteOak,
     accentColor: "#39ddfd"
   },
   {
@@ -132,7 +140,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Detached house", "Residential"],
     surfaces: ["Wood", "Warm"],
     exportTags: ["Custom size", "Catalog model", "Dealer supply"],
-    image: "/images/doors/1.svg",
+    image: seriesImages.ivoryLine,
     accentColor: "#7cebff"
   },
   {
@@ -149,7 +157,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Detached house", "Premium residence"],
     surfaces: ["Wood", "Warm"],
     exportTags: ["Custom size", "Project quantity", "Dealer supply"],
-    image: "/images/doors/1.svg",
+    image: seriesImages.ivoryLine,
     accentColor: "#7cebff"
   },
   {
@@ -166,7 +174,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Detached house", "Residential"],
     surfaces: ["Wood", "Warm"],
     exportTags: ["Catalog model", "Dealer supply", "Custom size"],
-    image: "/images/doors/1.svg",
+    image: seriesImages.ivoryLine,
     accentColor: "#7cebff"
   },
   {
@@ -183,7 +191,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Prestige project", "Showroom"],
     surfaces: ["Stone", "Textured"],
     exportTags: ["Custom size", "Project quantity", "Catalog model"],
-    image: "/images/doors/door-stone.svg",
+    image: seriesImages.classicSand,
     accentColor: "#57e2ff"
   },
   {
@@ -200,7 +208,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Architectural project", "Prestige entrance"],
     surfaces: ["Stone", "Textured"],
     exportTags: ["Custom size", "Project quantity", "Dealer supply"],
-    image: "/images/doors/door-stone.svg",
+    image: seriesImages.classicSand,
     accentColor: "#57e2ff"
   },
   {
@@ -217,7 +225,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Residence", "Prestige project"],
     surfaces: ["Stone", "Textured"],
     exportTags: ["Project quantity", "Catalog model", "Dealer supply"],
-    image: "/images/doors/door-stone.svg",
+    image: seriesImages.classicSand,
     accentColor: "#57e2ff"
   },
   {
@@ -234,7 +242,7 @@ export const products: DoorProduct[] = [
     useCases: ["Exterior", "Coastal market", "Apartment"],
     surfaces: ["Composite", "Minimal"],
     exportTags: ["Export packaging", "Project quantity", "Custom size"],
-    image: "/images/doors/door-midnight.svg",
+    image: seriesImages.monoGraphite,
     accentColor: "#36deff"
   },
   {
@@ -251,7 +259,7 @@ export const products: DoorProduct[] = [
     useCases: ["Coastal market", "Villa", "Exterior"],
     surfaces: ["Composite", "Textured"],
     exportTags: ["Export packaging", "Custom size", "Dealer supply"],
-    image: "/images/doors/door-graphite.svg",
+    image: seriesImages.graphiteOak,
     accentColor: "#36deff"
   },
   {
@@ -268,7 +276,7 @@ export const products: DoorProduct[] = [
     useCases: ["Apartment", "Project", "Exterior"],
     surfaces: ["Composite", "Minimal"],
     exportTags: ["Project quantity", "Dealer supply", "Catalog model"],
-    image: "/images/doors/door-midnight.svg",
+    image: seriesImages.monoGraphite,
     accentColor: "#36deff"
   },
   {
@@ -285,7 +293,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Residence", "Premium residence"],
     surfaces: ["Metal", "Metallic"],
     exportTags: ["Catalog model", "Dealer supply", "Custom size"],
-    image: "/images/doors/door-graphite.svg",
+    image: seriesImages.graphiteOak,
     accentColor: "#30d5f4"
   },
   {
@@ -302,7 +310,7 @@ export const products: DoorProduct[] = [
     useCases: ["Villa", "Apartment", "Residence"],
     surfaces: ["Metal", "Metallic"],
     exportTags: ["Catalog model", "Project quantity", "Dealer supply"],
-    image: "/images/doors/door-metal.svg",
+    image: seriesImages.emeraldLine,
     accentColor: "#30d5f4"
   },
   {
@@ -319,7 +327,7 @@ export const products: DoorProduct[] = [
     useCases: ["Premium residence", "Residence", "Prestige project"],
     surfaces: ["Metal", "Metallic"],
     exportTags: ["Project quantity", "Custom size", "Dealer supply"],
-    image: "/images/doors/door-graphite.svg",
+    image: seriesImages.graphiteOak,
     accentColor: "#30d5f4"
   }
 ];

@@ -18,9 +18,18 @@ const { cdnAssetUrl } = useKardoorAsset();
 const frameCount = 120;
 const croppedRenderDoorRect = { x: 0, y: 0, width: 225, height: 493 };
 const fullRenderDoorRect = { x: 846, y: 316, width: 225, height: 493 };
-const assetVersion = "3";
-const withVersion = (path: string) => `${path}?v=${assetVersion}`;
-const imageKitSeriesPath = (fileName: string) => `/series/${fileName}`;
+const imageKitSeriesImages = {
+  emeraldLine: "/series/4.png?updatedAt=1778762645568",
+  monoGraphite: "/series/5.png?updatedAt=1778762645583",
+  ivoryLine: "/series/1.png?updatedAt=1778762643897",
+  graphiteOak: "/series/2.png?updatedAt=1778762645386",
+  classicSand: "/series/3.png?updatedAt=1778762644382"
+} as const;
+const imageKitHomeImages = {
+  day: "/homelight.png?updatedAt=1778756520120",
+  night: "/homenight.png?updatedAt=1778756519909"
+} as const;
+const doorRenderUpdatedAt = "1778792850469";
 
 const heroRef = ref<HTMLElement | null>(null);
 const zoomLayerRef = ref<HTMLElement | null>(null);
@@ -37,35 +46,35 @@ const showroomDoors = computed<ShowroomDoor[]>(() => [
     id: "emerald-line",
     name: "Emerald Line",
     series: locale.value === "tr" ? "Atelier Serisi" : "Atelier Series",
-    image: cdnAssetUrl(withVersion(imageKitSeriesPath("4.png")), "/images/doors/atelier-emerald.png"),
+    image: cdnAssetUrl(imageKitSeriesImages.emeraldLine, "/images/doors/atelier-emerald.png"),
     fallbackImage: "/images/doors/atelier-emerald.png"
   },
   {
     id: "mono-graphite",
     name: "Mono Graphite",
     series: locale.value === "tr" ? "Atelier Serisi" : "Atelier Series",
-    image: cdnAssetUrl(withVersion(imageKitSeriesPath("5.png")), "/images/doors/atelier-mono-graphite.png"),
+    image: cdnAssetUrl(imageKitSeriesImages.monoGraphite, "/images/doors/atelier-mono-graphite.png"),
     fallbackImage: "/images/doors/atelier-mono-graphite.png"
   },
   {
     id: "ivory-line",
     name: "Ivory Line",
     series: locale.value === "tr" ? "Atelier Serisi" : "Atelier Series",
-    image: cdnAssetUrl(withVersion(imageKitSeriesPath("1.png")), "/images/doors/atelier-ivory-line.png"),
+    image: cdnAssetUrl(imageKitSeriesImages.ivoryLine, "/images/doors/atelier-ivory-line.png"),
     fallbackImage: "/images/doors/atelier-ivory-line.png"
   },
   {
     id: "graphite-oak",
     name: "Graphite Oak",
     series: locale.value === "tr" ? "Atelier Serisi" : "Atelier Series",
-    image: cdnAssetUrl(withVersion(imageKitSeriesPath("2.png")), "/images/doors/atelier-graphite-oak.png"),
+    image: cdnAssetUrl(imageKitSeriesImages.graphiteOak, "/images/doors/atelier-graphite-oak.png"),
     fallbackImage: "/images/doors/atelier-graphite-oak.png"
   },
   {
     id: "classic-sand",
     name: "Classic Sand",
     series: locale.value === "tr" ? "Atelier Serisi" : "Atelier Series",
-    image: cdnAssetUrl(withVersion(imageKitSeriesPath("3.png")), "/images/doors/atelier-classic-sand.png"),
+    image: cdnAssetUrl(imageKitSeriesImages.classicSand, "/images/doors/atelier-classic-sand.png"),
     fallbackImage: "/images/doors/atelier-classic-sand.png"
   }
 ]);
@@ -156,7 +165,7 @@ onMounted(() => {
 
   const frameUrl = (frameNumber: number) =>
     cdnAssetUrl(
-      withVersion(`/doorrender/render${String(frameNumber).padStart(4, "0")}.png`),
+      `/doorrender/render${String(frameNumber).padStart(4, "0")}.png?updatedAt=${doorRenderUpdatedAt}`,
       `/images/doorrrender/render${String(frameNumber).padStart(4, "0")}.png`
     );
 
@@ -651,7 +660,7 @@ onBeforeUnmount(() => {
     <div ref="zoomLayerRef" class="entrance-door__zoom-layer">
       <img
         ref="imageRef"
-        :src="cdnAssetUrl(withVersion('/homelight.png'), '/images/homelight.png')"
+        :src="cdnAssetUrl(imageKitHomeImages.day, '/images/homelight.png')"
         :alt="copy.imageAlt"
         class="entrance-door__image entrance-door__image--day"
         decoding="async"
@@ -659,7 +668,7 @@ onBeforeUnmount(() => {
       >
 
       <img
-        :src="cdnAssetUrl(withVersion('/homenight.png'), '/images/homenight.png')"
+        :src="cdnAssetUrl(imageKitHomeImages.night, '/images/homenight.png')"
         alt=""
         class="entrance-door__image entrance-door__image--night"
         aria-hidden="true"

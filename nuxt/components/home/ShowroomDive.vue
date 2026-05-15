@@ -15,12 +15,13 @@ type DoorItem = {
 };
 
 const { locale } = useKardoorLocale();
-const { assetUrl } = useKardoorAsset();
+const { cdnAssetUrl } = useKardoorAsset();
 
 const doorRecords = [
   {
     id: "emerald-line",
-    image: "/images/doors/atelier-emerald.png",
+    image: "/series/4.png?updatedAt=1778762645568",
+    fallbackImage: "/images/doors/atelier-emerald.png",
     i18n: {
       tr: {
         name: "Emerald Line",
@@ -40,7 +41,8 @@ const doorRecords = [
   },
   {
     id: "mono-graphite",
-    image: "/images/doors/atelier-mono-graphite.png",
+    image: "/series/5.png?updatedAt=1778762645583",
+    fallbackImage: "/images/doors/atelier-mono-graphite.png",
     i18n: {
       tr: {
         name: "Mono Graphite",
@@ -60,7 +62,8 @@ const doorRecords = [
   },
   {
     id: "ivory-line",
-    image: "/images/doors/atelier-ivory-line.png",
+    image: "/series/1.png?updatedAt=1778762643897",
+    fallbackImage: "/images/doors/atelier-ivory-line.png",
     i18n: {
       tr: {
         name: "Ivory Line",
@@ -80,7 +83,8 @@ const doorRecords = [
   },
   {
     id: "graphite-oak",
-    image: "/images/doors/atelier-graphite-oak.png",
+    image: "/series/2.png?updatedAt=1778762645386",
+    fallbackImage: "/images/doors/atelier-graphite-oak.png",
     i18n: {
       tr: {
         name: "Graphite Oak",
@@ -100,7 +104,8 @@ const doorRecords = [
   },
   {
     id: "classic-sand",
-    image: "/images/doors/atelier-classic-sand.png",
+    image: "/series/3.png?updatedAt=1778762644382",
+    fallbackImage: "/images/doors/atelier-classic-sand.png",
     i18n: {
       tr: {
         name: "Classic Sand",
@@ -123,8 +128,8 @@ const doorRecords = [
 const doors = computed<DoorItem[]>(() =>
   doorRecords.map((door) => ({
     id: door.id,
-    image: assetUrl(door.image),
-    fallbackImage: door.image,
+    image: cdnAssetUrl(door.image, door.fallbackImage),
+    fallbackImage: door.fallbackImage,
     ...door.i18n[locale.value]
   }))
 );

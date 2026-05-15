@@ -11,6 +11,14 @@ export type DoorSeries = {
   image: string;
 };
 
+const seriesImages = {
+  ivoryLine: "https://ik.imagekit.io/kardoor/series/1.png?updatedAt=1778762643897",
+  graphiteOak: "https://ik.imagekit.io/kardoor/series/2.png?updatedAt=1778762645386",
+  classicSand: "https://ik.imagekit.io/kardoor/series/3.png?updatedAt=1778762644382",
+  emeraldLine: "https://ik.imagekit.io/kardoor/series/4.png?updatedAt=1778762645568",
+  monoGraphite: "https://ik.imagekit.io/kardoor/series/5.png?updatedAt=1778762645583"
+} as const;
+
 export const collections: DoorSeries[] = [
   {
     slug: "aluminium-frame",
@@ -24,7 +32,7 @@ export const collections: DoorSeries[] = [
     modelCodes: ["K1001", "K1002", "K1004"],
     materials: ["Frame", "Leaf", "Surface", "Handle", "Lock", "Glass"],
     accentColor: "#2ce3ff",
-    image: "/images/doors/door-midnight.svg"
+    image: seriesImages.monoGraphite
   },
   {
     slug: "aluminium-frame-leaf",
@@ -38,7 +46,7 @@ export const collections: DoorSeries[] = [
     modelCodes: ["K1051", "K1054", "K1058"],
     materials: ["Frame", "Leaf", "Surface", "Handle", "Lock", "Glass"],
     accentColor: "#39ddfd",
-    image: "/images/doors/door-graphite.svg"
+    image: seriesImages.graphiteOak
   },
   {
     slug: "thermo-wood",
@@ -52,7 +60,7 @@ export const collections: DoorSeries[] = [
     modelCodes: ["K1101", "K1104", "K1108"],
     materials: ["Frame", "Leaf", "Surface", "Handle", "Lock", "Glass"],
     accentColor: "#7cebff",
-    image: "/images/doors/1.svg"
+    image: seriesImages.ivoryLine
   },
   {
     slug: "natural-stone",
@@ -66,7 +74,7 @@ export const collections: DoorSeries[] = [
     modelCodes: ["K1201", "K1204", "K1208"],
     materials: ["Frame", "Leaf", "Surface", "Handle", "Lock", "Glass"],
     accentColor: "#57e2ff",
-    image: "/images/doors/door-stone.svg"
+    image: seriesImages.classicSand
   },
   {
     slug: "composite",
@@ -80,7 +88,7 @@ export const collections: DoorSeries[] = [
     modelCodes: ["K1401", "K1405", "K1408"],
     materials: ["Frame", "Leaf", "Surface", "Handle", "Lock", "Glass"],
     accentColor: "#36deff",
-    image: "/images/doors/door-midnight.svg"
+    image: seriesImages.monoGraphite
   },
   {
     slug: "laminox",
@@ -94,6 +102,6 @@ export const collections: DoorSeries[] = [
     modelCodes: ["L1001", "L1004", "L1010"],
     materials: ["Frame", "Leaf", "Surface", "Handle", "Lock", "Glass"],
     accentColor: "#30d5f4",
-    image: "/images/doors/door-graphite.svg"
+    image: seriesImages.graphiteOak
   }
 ];

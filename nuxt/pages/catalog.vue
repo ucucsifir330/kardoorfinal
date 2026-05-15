@@ -35,61 +35,69 @@ const visibleRows = ref<number[]>([]);
 let observer: IntersectionObserver | null = null;
 let rowRefs: HTMLElement[] = [];
 
+const seriesImages = {
+  ivoryLine: "https://ik.imagekit.io/kardoor/series/1.png?updatedAt=1778762643897",
+  graphiteOak: "https://ik.imagekit.io/kardoor/series/2.png?updatedAt=1778762645386",
+  classicSand: "https://ik.imagekit.io/kardoor/series/3.png?updatedAt=1778762644382",
+  emeraldLine: "https://ik.imagekit.io/kardoor/series/4.png?updatedAt=1778762645568",
+  monoGraphite: "https://ik.imagekit.io/kardoor/series/5.png?updatedAt=1778762645583"
+} as const;
+
 const baseVariants: ProductVariant[] = [
   {
     id: 1,
     finish: "saten paslanmaz çelik",
     code: "2701d002inx00",
-    image: "https://i.hizliresim.com/fu9gwdt.png",
+    image: seriesImages.emeraldLine,
     liked: false
   },
   {
     id: 2,
     finish: "saten siyah",
     code: "2701d002nmx00",
-    image: "https://i.hizliresim.com/tfwwalk.png",
+    image: seriesImages.monoGraphite,
     liked: false
   },
   {
     id: 3,
     finish: "PVD saten siyah",
     code: "2701d002izx00",
-    image: "https://i.hizliresim.com/5316ogq.png",
+    image: seriesImages.graphiteOak,
     liked: false
   },
   {
     id: 4,
     finish: "bronz",
     code: "2701d002brx00",
-    image: "https://i.hizliresim.com/t6y6e1d.png",
+    image: seriesImages.classicSand,
     liked: false
   },
   {
     id: 5,
     finish: "beyaz",
     code: "2701d002whx00",
-    image: "https://i.hizliresim.com/mtauo9k.png",
+    image: seriesImages.ivoryLine,
     liked: false
   },
   {
     id: 6,
     finish: "PVD saten altın",
     code: "2701d002gdx00",
-    image: "https://i.hizliresim.com/fu9gwdt.png",
+    image: seriesImages.emeraldLine,
     liked: false
   },
   {
     id: 7,
     finish: "PVD açık bronz",
     code: "2701d002lbx00",
-    image: "https://i.hizliresim.com/tfwwalk.png",
+    image: seriesImages.monoGraphite,
     liked: false
   },
   {
     id: 8,
     finish: "PVD şampanya",
     code: "2701d002chx00",
-    image: "https://i.hizliresim.com/5316ogq.png",
+    image: seriesImages.graphiteOak,
     liked: false
   }
 ];

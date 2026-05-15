@@ -227,6 +227,24 @@ onBeforeUnmount(() => {
 
 <template>
   <section ref="sectionRef" class="company-timeline" aria-labelledby="company-timeline-title">
+    <div class="company-timeline__mobile-list">
+      <article
+        v-for="(item, index) in timelineData"
+        :key="`mobile-${item.year}`"
+        class="company-timeline__mobile-card"
+      >
+        <img :src="item.image" :alt="`${item.year} ${item.subtitle}`" loading="lazy" />
+        <div class="company-timeline__mobile-copy">
+          <div class="company-timeline__subtitle">
+            <span></span>
+            <p>{{ item.year }} · {{ item.subtitle }}</p>
+          </div>
+          <h1 v-if="index === 0">{{ item.title }}</h1>
+          <h2 v-else>{{ item.title }}</h2>
+        </div>
+      </article>
+    </div>
+
     <div class="company-timeline__left">
       <div class="company-timeline__cards" aria-hidden="true">
         <div
@@ -302,6 +320,10 @@ onBeforeUnmount(() => {
   position: relative;
   display: flex;
   align-items: flex-start;
+}
+
+.company-timeline__mobile-list {
+  display: none;
 }
 
 .company-timeline__cards {
@@ -519,59 +541,63 @@ onBeforeUnmount(() => {
 
 @media (max-width: 820px) {
   .company-timeline {
-    display: grid;
+    display: block;
     min-height: auto;
-    padding: calc(var(--header) + 1rem) 1rem 3rem;
-    gap: 1rem;
-    overflow: visible;
+    padding: calc(var(--header) + 0.75rem) 1rem 2.75rem;
+    overflow: hidden;
   }
 
   .company-timeline__left,
   .company-timeline__center,
-  .company-timeline__right {
-    width: 100%;
-    min-height: auto;
-    padding: 0;
-  }
-
-  .company-timeline__cards {
-    height: auto;
-    margin-top: 0;
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .company-timeline__card {
-    min-height: 64svh;
-    position: relative;
-    inset: auto;
-    border-radius: 8px;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  .company-timeline__center,
+  .company-timeline__right,
   .company-timeline__experience {
     display: none;
   }
 
-  .company-timeline__text {
+  .company-timeline__mobile-list {
     width: 100%;
-    position: static;
     display: grid;
-    gap: 1.5rem;
+    gap: 1.15rem;
   }
 
-  .company-timeline__text-item {
-    position: static;
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
+  .company-timeline__mobile-card {
+    width: 100%;
+    display: grid;
+    gap: 0.95rem;
+  }
+
+  .company-timeline__mobile-card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    display: block;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+  }
+
+  .company-timeline__mobile-copy {
+    padding: 0 0 1.35rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .company-timeline__subtitle {
+    margin-bottom: 0.85rem;
+  }
+
+  .company-timeline__subtitle span {
+    height: 18px;
+    margin-right: 14px;
+  }
+
+  .company-timeline__subtitle p {
+    font-size: 0.94rem;
   }
 
   .company-timeline h1,
   .company-timeline h2 {
-    font-size: clamp(2rem, 10vw, 3.15rem);
+    max-width: 100%;
+    font-size: clamp(1.85rem, 8.4vw, 2.65rem);
+    line-height: 1.08;
   }
 }
 </style>
