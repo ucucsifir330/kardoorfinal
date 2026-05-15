@@ -5826,8 +5826,31 @@ span.ada-brand-logo,
     padding: 12px 18px 8px !important;
   }
 
+  .catalog-product-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    overflow: visible !important;
+    padding-bottom: 0 !important;
+  }
+
   .catalog-product-grid > .catalog-product {
-    flex: 0 0 78vw !important;
+    flex: none !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+
+  .catalog-product-image-wrap {
+    height: clamp(168px, 48vw, 230px) !important;
+    margin-bottom: 10px !important;
+    border-radius: 7px !important;
+  }
+
+  .catalog-product-image {
+    max-width: 76% !important;
+    max-height: 88% !important;
   }
 
   /* Modal: stack visual on top, content below. */
