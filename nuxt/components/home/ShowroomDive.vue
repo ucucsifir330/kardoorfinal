@@ -15,13 +15,13 @@ type DoorItem = {
 };
 
 const { locale } = useKardoorLocale();
-const { cdnAssetUrl } = useKardoorAsset();
+const imageKitBaseUrl = "https://ik.imagekit.io/kardoor";
 
 const doorRecords = [
   {
     id: "emerald-line",
-    image: "/series/4.png?updatedAt=1778762645568",
-    fallbackImage: "/images/doors/atelier-emerald.png",
+    image: `${imageKitBaseUrl}/series/4.png?updatedAt=1778762645568`,
+    fallbackImage: `${imageKitBaseUrl}/series/4.png?updatedAt=1778762645568`,
     i18n: {
       tr: {
         name: "Emerald Line",
@@ -41,8 +41,8 @@ const doorRecords = [
   },
   {
     id: "mono-graphite",
-    image: "/series/5.png?updatedAt=1778762645583",
-    fallbackImage: "/images/doors/atelier-mono-graphite.png",
+    image: `${imageKitBaseUrl}/series/5.png?updatedAt=1778762645583`,
+    fallbackImage: `${imageKitBaseUrl}/series/5.png?updatedAt=1778762645583`,
     i18n: {
       tr: {
         name: "Mono Graphite",
@@ -62,8 +62,8 @@ const doorRecords = [
   },
   {
     id: "ivory-line",
-    image: "/series/1.png?updatedAt=1778762643897",
-    fallbackImage: "/images/doors/atelier-ivory-line.png",
+    image: `${imageKitBaseUrl}/series/1.png?updatedAt=1778762643897`,
+    fallbackImage: `${imageKitBaseUrl}/series/1.png?updatedAt=1778762643897`,
     i18n: {
       tr: {
         name: "Ivory Line",
@@ -83,8 +83,8 @@ const doorRecords = [
   },
   {
     id: "graphite-oak",
-    image: "/series/2.png?updatedAt=1778762645386",
-    fallbackImage: "/images/doors/atelier-graphite-oak.png",
+    image: `${imageKitBaseUrl}/series/2.png?updatedAt=1778762645386`,
+    fallbackImage: `${imageKitBaseUrl}/series/2.png?updatedAt=1778762645386`,
     i18n: {
       tr: {
         name: "Graphite Oak",
@@ -104,8 +104,8 @@ const doorRecords = [
   },
   {
     id: "classic-sand",
-    image: "/series/3.png?updatedAt=1778762644382",
-    fallbackImage: "/images/doors/atelier-classic-sand.png",
+    image: `${imageKitBaseUrl}/series/3.png?updatedAt=1778762644382`,
+    fallbackImage: `${imageKitBaseUrl}/series/3.png?updatedAt=1778762644382`,
     i18n: {
       tr: {
         name: "Classic Sand",
@@ -128,7 +128,7 @@ const doorRecords = [
 const doors = computed<DoorItem[]>(() =>
   doorRecords.map((door) => ({
     id: door.id,
-    image: cdnAssetUrl(door.image, door.fallbackImage),
+    image: door.image,
     fallbackImage: door.fallbackImage,
     ...door.i18n[locale.value]
   }))
