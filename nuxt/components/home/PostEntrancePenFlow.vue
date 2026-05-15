@@ -733,11 +733,10 @@ interface ProductVariant {
 }
 
 const nuxtApp = useNuxtApp()
-const { cdnAssetUrl } = useKardoorAsset()
 const aboutUsImages = {
-  guvenkaraboga: "/aboutus/guvenkaraboga?updatedAt=1778789528553",
-  yasarkaraboga: "/aboutus/yasarkaraboga?updatedAt=1778789528545",
-  bulentkaraboga: "/aboutus/bulentkaraboga?updatedAt=1778789528509"
+  guvenkaraboga: "https://ik.imagekit.io/kardoor/aboutus/guvenkaraboga?updatedAt=1778789528553",
+  yasarkaraboga: "https://ik.imagekit.io/kardoor/aboutus/yasarkaraboga?updatedAt=1778789528545",
+  bulentkaraboga: "https://ik.imagekit.io/kardoor/aboutus/bulentkaraboga?updatedAt=1778789528509"
 } as const
 const seriesImages = {
   ivoryLine: "https://ik.imagekit.io/kardoor/series/1.png?updatedAt=1778762643897",
@@ -746,8 +745,7 @@ const seriesImages = {
   emeraldLine: "https://ik.imagekit.io/kardoor/series/4.png?updatedAt=1778762645568",
   monoGraphite: "https://ik.imagekit.io/kardoor/series/5.png?updatedAt=1778762645583"
 } as const
-const aboutUsImage = (fileName: keyof typeof aboutUsImages) =>
-  cdnAssetUrl(aboutUsImages[fileName], 'https://freepngimg.com/save/22654-man/400x400')
+const aboutUsImage = (fileName: keyof typeof aboutUsImages) => aboutUsImages[fileName]
 
 const products = ref([] as ProductVariant[]);
 const isCatalogScrolled = ref(false);
