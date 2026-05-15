@@ -3,6 +3,16 @@ import { getCollectionBySlug, getProductsByCollectionSlug } from "~/data/catalog
 
 const route = useRoute();
 const series = getCollectionBySlug(String(route.params.slug));
+const { assetUrl } = useKardoorAsset();
+
+const useLocalImageFallback = (event: Event) => {
+  const image = event.currentTarget as HTMLImageElement | null;
+  const fallback = image?.dataset.fallbackSrc;
+
+  if (!image || !fallback || image.src.endsWith(fallback)) return;
+
+  image.src = fallback;
+};
 
 if (!series) {
   throw createError({ statusCode: 404, statusMessage: "Door series not found" });
@@ -22,7 +32,14 @@ useSeoMeta({
 
     <div class="detail-page__grid">
       <div class="detail-page__visual">
-        <NuxtImg :src="series.image" :alt="series.title" width="520" height="820" />
+        <NuxtImg
+          :src="assetUrl(series.image)"
+          :alt="series.title"
+          :data-fallback-src="series.image"
+          width="520"
+          height="820"
+          @error="useLocalImageFallback"
+        />
       </div>
 
       <div class="detail-page__content">

@@ -8,12 +8,14 @@ type DoorItem = {
   name: string;
   series: string;
   image: string;
+  fallbackImage: string;
   material: string;
   tone: string;
   tags: string[];
 };
 
 const { locale } = useKardoorLocale();
+const { assetUrl } = useKardoorAsset();
 
 const doorRecords = [
   {
@@ -121,10 +123,20 @@ const doorRecords = [
 const doors = computed<DoorItem[]>(() =>
   doorRecords.map((door) => ({
     id: door.id,
-    image: door.image,
+    image: assetUrl(door.image),
+    fallbackImage: door.image,
     ...door.i18n[locale.value]
   }))
 );
+
+const useLocalImageFallback = (event: Event) => {
+  const image = event.currentTarget as HTMLImageElement | null;
+  const fallback = image?.dataset.fallbackSrc;
+
+  if (!image || !fallback || image.src.endsWith(fallback)) return;
+
+  image.src = fallback;
+};
 
 const copy = computed(() =>
   locale.value === "tr"
@@ -274,6 +286,7 @@ onBeforeUnmount(() => {
           class="showroom-dive__door-image"
           :src="door.image"
           :alt="door.name"
+          :data-fallback-src="door.fallbackImage"
           width="520"
           height="820"
           sizes="sm:220px md:320px lg:420px xl:520px"
@@ -282,6 +295,7 @@ onBeforeUnmount(() => {
           :loading="index === activeIndex ? 'eager' : 'lazy'"
           decoding="async"
           draggable="false"
+          @error="useLocalImageFallback"
         />
       </article>
     </div>

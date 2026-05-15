@@ -139,12 +139,6 @@ useHead({
       src: "https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs",
       type: "module"
     }
-  ],
-  link: [
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
-    }
   ]
 });
 

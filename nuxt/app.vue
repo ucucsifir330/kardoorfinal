@@ -30,7 +30,5 @@ useHead({
     <main>
       <NuxtPage />
     </main>
-
-    <SiteFooter />
   </div>
 </template>

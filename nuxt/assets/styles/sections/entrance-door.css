@@ -10,19 +10,26 @@
   --portal-blackout-outer: #000000;
   --zoom-origin-x: 50%;
   --zoom-origin-y: 52%;
+  --entrance-safe-x: clamp(34px, 5vw, 96px);
+  --entrance-copy-bottom: clamp(72px, 8.8vh, 118px);
+  --entrance-cue-bottom: clamp(58px, 7.6vh, 98px);
+  --showroom-drop: clamp(46px, 7svh, 86px);
+  --intro-opacity: 1;
+  --showroom-opacity: 0;
 
   position: relative;
-  min-height: 100svh;
+  height: 100svh;
   overflow: hidden;
   isolation: isolate;
   background: #020304;
   color: #ffffff;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .app-shell--day .entrance-door {
-  --portal-blackout-inner: rgba(248, 246, 239, 0.92);
-  --portal-blackout-mid: rgba(248, 246, 239, 0.98);
-  --portal-blackout-outer: #f8f6ef;
+  --portal-blackout-inner: rgba(234, 232, 232, 0.92);
+  --portal-blackout-mid: rgba(234, 232, 232, 0.98);
+  --portal-blackout-outer: #eae8e8;
 }
 
 .entrance-door--exited {
@@ -55,22 +62,7 @@
   transition:
     background 720ms var(--ease-soft),
     opacity 720ms var(--ease-soft);
-}
-
-.app-shell--night .entrance-door::before {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.42) 0%,
-      rgba(0, 0, 0, 0.18) 45%,
-      rgba(0, 0, 0, 0) 100%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.04) 0%,
-      transparent 40%,
-      rgba(0, 0, 0, 0.32) 100%
-    );
+  opacity: var(--intro-opacity);
 }
 
 .entrance-door::after {
@@ -86,16 +78,233 @@
       transparent,
       rgba(0, 0, 0, 0.82)
     );
+  opacity: var(--intro-opacity);
+}
+
+.entrance-door__showroom {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  opacity: var(--showroom-opacity);
+  background: #14151d;
+  pointer-events: none;
+  clip-path: inset(
+    var(--clip-top, 0px)
+    var(--clip-right, 0px)
+    var(--clip-bottom, 0px)
+    var(--clip-left, 0px)
+  );
+  filter: blur(var(--showroom-blur, 0px));
+  will-change: clip-path, opacity, filter;
+}
+
+.entrance-door__showroom::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(20, 21, 29, 0.18) 100%
+  );
+  opacity: calc(1 - var(--showroom-reveal, 0));
+  display: block;
+}
+
+.app-shell--day .entrance-door__showroom::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(234, 232, 232, 0) 55%,
+    rgba(234, 232, 232, 0.22) 100%
+  );
+  display: block;
+}
+
+.app-shell--day .entrance-door__showroom {
+  background: #eae8e8;
+}
+
+.entrance-door--showroom .entrance-door__showroom {
+  pointer-events: auto;
+}
+
+.entrance-door--showroom::before,
+.entrance-door--showroom::after,
+.entrance-door--showroom .entrance-door__zoom-layer {
+  opacity: 0;
+}
+
+.entrance-door__showroom::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  display: none;
+}
+
+.entrance-door__showroom::after {
+  display: none;
+}
+
+.app-shell--day .entrance-door__showroom::after {
+  display: none;
+}
+
+.entrance-door__showroom-track {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: max-content;
+  height: 100%;
+  transform: scale(var(--showroom-scale, 1)) translate3d(var(--track-x, 0px), 0, 0);
+  transform-origin: var(--door-center-x, 50%) var(--door-center-y, 50%);
+  will-change: transform;
+}
+
+.entrance-door__showroom-panel {
+  position: relative;
+  flex: 0 0 100vw;
+  width: 100vw;
+  height: calc(100svh - var(--showroom-drop));
+  margin-top: var(--showroom-drop);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.entrance-door__showroom-spotlight {
+  display: none;
+}
+
+.entrance-door__showroom-title {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  z-index: 2;
+  width: 100%;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.24);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(4rem, 11.8vw, 14.25rem);
+  font-weight: 950;
+  line-height: 0.82;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+
+.app-shell--day .entrance-door__showroom-title {
+  color: rgba(7, 16, 24, 0.14);
+}
+
+.entrance-door__showroom-series {
+  position: absolute;
+  left: clamp(20px, 4vw, 72px);
+  top: clamp(92px, 12svh, 132px);
+  z-index: 5;
+  margin: 0;
+  color: #25d8ff;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(0.72rem, 0.85vw, 0.92rem);
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.entrance-door__showroom-door {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: min(34vw, 430px);
+  height: min(68svh, 680px);
+  filter: none;
+}
+
+.entrance-door__showroom-image {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.entrance-door__showroom-glow {
+  display: none;
+}
+
+.entrance-door__showroom-panel--cta {
+  align-content: center;
+}
+
+.entrance-door__showroom-cta {
+  position: relative;
+  z-index: 5;
+  max-width: min(760px, calc(100vw - 40px));
+  margin: 0 0 28px;
+  color: #fffaf0;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(3rem, 7.5vw, 8.8rem);
+  font-weight: 950;
+  line-height: 0.88;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.app-shell--day .entrance-door__showroom-cta {
+  color: #071018;
+}
+
+.entrance-door__showroom-link {
+  position: relative;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 0 28px;
+  border: 1px solid rgba(212, 175, 55, 0.8);
+  border-radius: 999px;
+  color: #fffaf0;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.86rem;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-transform: uppercase;
+  backdrop-filter: blur(16px);
+  transition:
+    transform 220ms ease,
+    background 220ms ease,
+    color 220ms ease;
+}
+
+.entrance-door__showroom-link:hover {
+  color: #071018;
+  background: #d4af37;
+  transform: translateY(-2px);
 }
 
 .entrance-door__zoom-layer {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   overflow: hidden;
+  opacity: var(--intro-opacity);
   transform-origin: var(--zoom-origin-x, 50%) var(--zoom-origin-y, 52%);
   transform: scale(var(--hero-zoom-scale, 1));
   filter: brightness(var(--hero-zoom-brightness, 1));
+  transition: opacity 180ms ease;
   will-change: transform, filter;
 }
 
@@ -146,6 +355,34 @@
   will-change: left, top, width, height, opacity;
 }
 
+.entrance-door__sequence::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.38) 18%,
+      rgba(0, 0, 0, 0.18) 45%,
+      rgba(0, 0, 0, 0.06) 72%,
+      rgba(0, 0, 0, 0.12) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.16) 0%,
+      rgba(0, 0, 0, 0.08) 38%,
+      rgba(0, 0, 0, 0.22) 100%
+    );
+  transition: opacity 520ms var(--ease-soft);
+}
+
+.app-shell--night .entrance-door__sequence::after {
+  opacity: 1;
+}
+
 .entrance-door__frame {
   position: absolute;
   inset: 0;
@@ -156,18 +393,76 @@
   backface-visibility: hidden;
   transform: translateZ(0);
   transition: filter 520ms var(--ease-soft);
+  opacity: var(--frame-fade, 1);
+  z-index: 2;
+}
+
+.entrance-door__doorway {
+  position: absolute;
+  left: calc(-1 * var(--door-left, 0px));
+  top: calc(-1 * var(--door-top, 0px));
+  width: 100vw;
+  height: 100svh;
+  z-index: 1;
+  opacity: var(--doorway-opacity, 0);
+  pointer-events: none;
+  background: #eae8e8;
+  overflow: hidden;
+}
+
+.app-shell--night .entrance-door__doorway {
+  background: linear-gradient(180deg, #0a0b0c 0%, #050606 100%);
+}
+
+.entrance-door__doorway-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.entrance-door__doorway-headline {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 900;
+  font-size: clamp(150px, 18vw, 340px);
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  color: rgba(20, 20, 22, 0.12);
+  white-space: nowrap;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.app-shell--night .entrance-door__doorway-headline {
+  color: rgba(247, 247, 242, 0.14);
+}
+
+.entrance-door__doorway-door {
+  position: relative;
+  z-index: 2;
+  height: 82vh;
+  max-height: 820px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 40px 80px rgba(0, 0, 0, 0.28));
+  user-select: none;
 }
 
 .app-shell--night .entrance-door__frame {
-  filter: saturate(0.62) brightness(0.42) contrast(1.18);
+  filter: saturate(0.74) brightness(0.82) contrast(1.08);
 }
 
 .entrance-door__copy {
   position: absolute;
   z-index: 6;
-  left: clamp(24px, 4vw, 76px);
-  bottom: clamp(64px, 8.5vh, 104px);
-  width: min(1040px, calc(100vw - 152px));
+  left: var(--entrance-safe-x);
+  bottom: var(--entrance-copy-bottom);
+  width: min(1040px, calc(100vw - (var(--entrance-safe-x) * 2)));
   color: #ffffff;
   opacity: var(--entrance-copy-opacity);
   transform: translateY(var(--entrance-copy-y));
@@ -190,10 +485,10 @@
 }
 
 .entrance-door__copy h1 {
-  max-width: 940px;
+  max-width: 820px;
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(4.2rem, 7.85vw, 10rem);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(3.6rem, 6.4vw, 7.8rem);
   font-weight: 700;
   line-height: 0.81;
   letter-spacing: -0.04em;
@@ -285,8 +580,8 @@
 .entrance-door__specs {
   position: absolute;
   z-index: 6;
-  left: clamp(24px, 4vw, 76px);
-  right: clamp(24px, 4vw, 76px);
+  left: var(--entrance-safe-x);
+  right: var(--entrance-safe-x);
   bottom: clamp(18px, 2.4vh, 30px);
   display: flex;
   align-items: center;
@@ -321,8 +616,8 @@
 .entrance-door__scroll-cue {
   position: absolute;
   z-index: 6;
-  right: clamp(24px, 4vw, 76px);
-  bottom: clamp(54px, 7vh, 92px);
+  right: var(--entrance-safe-x);
+  bottom: var(--entrance-cue-bottom);
   display: grid;
   justify-items: center;
   gap: 8px;
@@ -380,6 +675,7 @@
   will-change: opacity;
 }
 
+
 @keyframes entrance-cue {
   0%,
   100% {
@@ -394,12 +690,17 @@
 }
 
 @media (max-width: 1280px) {
+  .entrance-door {
+    --entrance-safe-x: clamp(28px, 4.8vw, 62px);
+    --entrance-copy-bottom: clamp(76px, 9vh, 108px);
+  }
+
   .entrance-door__copy {
-    width: min(860px, calc(100vw - 96px));
+    width: min(760px, calc(100vw - (var(--entrance-safe-x) * 2)));
   }
 
   .entrance-door__copy h1 {
-    font-size: clamp(4rem, 8.6vw, 8.4rem);
+    font-size: clamp(3.35rem, 7.2vw, 6.8rem);
   }
 
   .entrance-door__copy-bottom {
@@ -413,6 +714,12 @@
 }
 
 @media (max-width: 820px) {
+  .entrance-door {
+    --entrance-safe-x: 18px;
+    --entrance-copy-bottom: 92px;
+    --showroom-drop: clamp(38px, 6svh, 64px);
+  }
+
   .entrance-door__image {
     object-position: center top;
   }
@@ -434,9 +741,9 @@
   }
 
   .entrance-door__copy {
-    left: 18px;
-    right: 18px;
-    bottom: 92px;
+    left: var(--entrance-safe-x);
+    right: var(--entrance-safe-x);
+    bottom: var(--entrance-copy-bottom);
     width: auto;
   }
 
@@ -446,7 +753,7 @@
 
   .entrance-door__copy h1 {
     max-width: 440px;
-    font-size: clamp(3.45rem, 16vw, 5.8rem);
+    font-size: clamp(3rem, 13.4vw, 4.9rem);
     line-height: 0.84;
   }
 
@@ -475,8 +782,8 @@
   }
 
   .entrance-door__specs {
-    left: 18px;
-    right: 18px;
+    left: var(--entrance-safe-x);
+    right: var(--entrance-safe-x);
     bottom: 18px;
     overflow: hidden;
     gap: 18px;
@@ -491,15 +798,17 @@
 @media (max-width: 520px) {
   .entrance-door {
     min-height: 100svh;
+    --entrance-safe-x: 14px;
+    --showroom-drop: 34px;
   }
 
   .entrance-door__copy {
-    bottom: max(58px, env(safe-area-inset-bottom));
+    bottom: max(58px, calc(env(safe-area-inset-bottom) + 18px));
   }
 
   .entrance-door__copy h1 {
     max-width: 330px;
-    font-size: clamp(2.8rem, 15.4vw, 4.05rem);
+    font-size: clamp(2.45rem, 13.8vw, 3.55rem);
     line-height: 0.86;
   }
 
@@ -521,8 +830,13 @@
   }
 }
 
+.app-shell--night .entrance-door::before,
+.app-shell--night .entrance-door::after {
+  opacity: 0;
+}
+
 .app-shell--day .entrance-door {
-  background: #f8f6ef;
+  background: #eae8e8;
 }
 
 .app-shell--day .entrance-door::before {

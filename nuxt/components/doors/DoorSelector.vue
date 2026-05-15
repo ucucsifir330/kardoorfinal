@@ -23,6 +23,15 @@ const isFilterOpen = ref(false);
 const stageRef = ref<HTMLElement | null>(null);
 const { locale } = useKardoorLocale();
 
+const useLocalImageFallback = (event: Event) => {
+  const image = event.currentTarget as HTMLImageElement | null;
+  const fallback = image?.dataset.fallbackSrc;
+
+  if (!image || !fallback || image.src.endsWith(fallback)) return;
+
+  image.src = fallback;
+};
+
 const copy = computed(() =>
   locale.value === "tr"
     ? {
@@ -109,7 +118,14 @@ onMounted(async () => {
 
     <div class="door-selector__media">
       <div class="door-selector__ghost door-selector__ghost--left" aria-hidden="true">
-        <NuxtImg :src="previousProduct.image" :alt="previousProduct.name" width="240" height="520" />
+        <NuxtImg
+          :src="previousProduct.image"
+          :alt="previousProduct.name"
+          :data-fallback-src="previousProduct.fallbackImage"
+          width="240"
+          height="520"
+          @error="useLocalImageFallback"
+        />
       </div>
 
       <div class="door-selector__product">
@@ -118,15 +134,24 @@ onMounted(async () => {
           :key="activeProduct.slug"
           :src="activeProduct.image"
           :alt="activeProduct.name"
+          :data-fallback-src="activeProduct.fallbackImage"
           width="460"
           height="760"
           sizes="sm:280px md:360px lg:460px"
           preload
+          @error="useLocalImageFallback"
         />
       </div>
 
       <div class="door-selector__ghost door-selector__ghost--right" aria-hidden="true">
-        <NuxtImg :src="nextProduct.image" :alt="nextProduct.name" width="240" height="520" />
+        <NuxtImg
+          :src="nextProduct.image"
+          :alt="nextProduct.name"
+          :data-fallback-src="nextProduct.fallbackImage"
+          width="240"
+          height="520"
+          @error="useLocalImageFallback"
+        />
       </div>
     </div>
 

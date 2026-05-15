@@ -2,6 +2,17 @@
 import { collections } from "~/data/collections";
 import { getProductsByCollectionSlug } from "~/data/catalog";
 
+const { assetUrl } = useKardoorAsset();
+
+const useLocalImageFallback = (event: Event) => {
+  const image = event.currentTarget as HTMLImageElement | null;
+  const fallback = image?.dataset.fallbackSrc;
+
+  if (!image || !fallback || image.src.endsWith(fallback)) return;
+
+  image.src = fallback;
+};
+
 useSeoMeta({
   title: "Door Series",
   description:
@@ -29,7 +40,14 @@ useSeoMeta({
         :style="{ '--series-accent': series.accentColor }"
       >
         <span>{{ series.number }}</span>
-        <NuxtImg :src="series.image" :alt="series.title" width="210" height="420" />
+        <NuxtImg
+          :src="assetUrl(series.image)"
+          :alt="series.title"
+          :data-fallback-src="series.image"
+          width="210"
+          height="420"
+          @error="useLocalImageFallback"
+        />
         <h2>{{ series.title }}</h2>
         <p>{{ series.description }}</p>
         <small>{{ getProductsByCollectionSlug(series.slug).length }} models</small>

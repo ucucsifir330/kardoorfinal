@@ -1,6 +1,7 @@
 import { computed, onMounted, watch } from "vue";
 
 export type ShowroomAmbienceMode = "day" | "night";
+export type ShowroomTheme = "light" | "dark";
 
 const STORAGE_KEY = "kardoor-showroom-ambience";
 
@@ -21,13 +22,27 @@ const saveStoredMode = (mode: ShowroomAmbienceMode) => {
   window.localStorage.setItem(STORAGE_KEY, mode);
 };
 
+const modeToTheme = (mode: ShowroomAmbienceMode): ShowroomTheme =>
+  mode === "night" ? "dark" : "light";
+
 const applyDomMode = (mode: ShowroomAmbienceMode) => {
   if (!import.meta.client) return;
 
   const root = document.documentElement;
+  const theme = modeToTheme(mode);
 
   root.dataset.ambience = mode;
-  root.style.colorScheme = mode === "night" ? "dark" : "light";
+  root.dataset.theme = theme;
+  root.style.colorScheme = theme;
+
+  const themeLink = document.querySelector<HTMLLinkElement>("#kardoor-theme");
+  if (themeLink) {
+    const nextHref = `/themes/${theme}.css`;
+
+    if (!themeLink.href.endsWith(nextHref)) {
+      themeLink.href = nextHref;
+    }
+  }
 };
 
 export const useShowroomAmbience = () => {
@@ -43,9 +58,14 @@ export const useShowroomAmbience = () => {
 
   const isDay = computed(() => mode.value === "day");
   const isNight = computed(() => mode.value === "night");
+  const theme = computed(() => modeToTheme(mode.value));
 
   const setMode = (nextMode: ShowroomAmbienceMode) => {
     mode.value = nextMode;
+  };
+
+  const setTheme = (nextTheme: ShowroomTheme) => {
+    mode.value = nextTheme === "dark" ? "night" : "day";
   };
 
   const toggleMode = () => {
@@ -80,8 +100,10 @@ export const useShowroomAmbience = () => {
     mode,
     isDay,
     isNight,
+    theme,
     isHydrated,
     setMode,
+    setTheme,
     toggleMode
   };
 };

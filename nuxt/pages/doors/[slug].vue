@@ -4,6 +4,16 @@ import { products } from "~/data/products";
 
 const route = useRoute();
 const product = getProductBySlug(String(route.params.slug));
+const { assetUrl } = useKardoorAsset();
+
+const useLocalImageFallback = (event: Event) => {
+  const image = event.currentTarget as HTMLImageElement | null;
+  const fallback = image?.dataset.fallbackSrc;
+
+  if (!image || !fallback || image.src.endsWith(fallback)) return;
+
+  image.src = fallback;
+};
 
 if (!product) {
   throw createError({ statusCode: 404, statusMessage: "Door model not found" });
@@ -25,7 +35,14 @@ useSeoMeta({
 
     <div class="detail-page__grid">
       <div class="detail-page__visual">
-        <NuxtImg :src="product.image" :alt="product.name" width="520" height="820" />
+        <NuxtImg
+          :src="assetUrl(product.image)"
+          :alt="product.name"
+          :data-fallback-src="product.image"
+          width="520"
+          height="820"
+          @error="useLocalImageFallback"
+        />
       </div>
 
       <div class="detail-page__content">

@@ -27,8 +27,6 @@ useSeoMeta({
 <template>
   <div class="home-page">
     <EntranceDoor />
-    <ShowroomDive />
-    <HomeTeamSection />
-    <UserReview />
+    <DeferredPostEntranceFlow />
   </div>
 </template>

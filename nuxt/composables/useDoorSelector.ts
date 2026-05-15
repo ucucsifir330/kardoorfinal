@@ -1,25 +1,43 @@
 import { computed, ref } from "vue";
 import { collections } from "~/data/collections";
+import type { DoorProduct } from "~/data/products";
 import { products } from "~/data/products";
 
-const fallbackProduct = products[0]!;
+type DoorProductAsset = DoorProduct & {
+  fallbackImage: string;
+};
 
 export function useDoorSelector() {
+  const { assetUrl } = useKardoorAsset();
   const activeIndex = ref(0);
   const selectedSeries = ref<string[]>([]);
   const selectedUseCases = ref<string[]>([]);
   const selectedSurfaces = ref<string[]>([]);
   const selectedExportTags = ref<string[]>([]);
+  const cdnProducts = computed<DoorProductAsset[]>(() =>
+    products.map((product) => ({
+      ...product,
+      image: assetUrl(product.image),
+      fallbackImage: product.image
+    }))
+  );
+  const cdnCollections = computed(() =>
+    collections.map((collection) => ({
+      ...collection,
+      image: assetUrl(collection.image)
+    }))
+  );
+  const fallbackProduct = computed(() => cdnProducts.value[0] as DoorProductAsset);
 
   const filterOptions = computed(() => ({
-    series: collections,
-    useCases: [...new Set(products.flatMap((product) => product.useCases))],
-    surfaces: [...new Set(products.flatMap((product) => product.surfaces))],
-    exportTags: [...new Set(products.flatMap((product) => product.exportTags))]
+    series: cdnCollections.value,
+    useCases: [...new Set(cdnProducts.value.flatMap((product) => product.useCases))],
+    surfaces: [...new Set(cdnProducts.value.flatMap((product) => product.surfaces))],
+    exportTags: [...new Set(cdnProducts.value.flatMap((product) => product.exportTags))]
   }));
 
   const filteredProducts = computed(() =>
-    products.filter((product) => {
+    cdnProducts.value.filter((product) => {
       const matchesSeries =
         selectedSeries.value.length === 0 || selectedSeries.value.includes(product.seriesSlug);
       const matchesUseCase =
@@ -36,14 +54,14 @@ export function useDoorSelector() {
     })
   );
 
-  const activeProduct = computed(() => filteredProducts.value[activeIndex.value] ?? fallbackProduct);
+  const activeProduct = computed(() => filteredProducts.value[activeIndex.value] ?? fallbackProduct.value);
   const previousProduct = computed(() => {
-    const list = filteredProducts.value.length ? filteredProducts.value : products;
-    return list[(activeIndex.value - 1 + list.length) % list.length] ?? fallbackProduct;
+    const list = filteredProducts.value.length ? filteredProducts.value : cdnProducts.value;
+    return list[(activeIndex.value - 1 + list.length) % list.length] ?? fallbackProduct.value;
   });
   const nextProduct = computed(() => {
-    const list = filteredProducts.value.length ? filteredProducts.value : products;
-    return list[(activeIndex.value + 1) % list.length] ?? fallbackProduct;
+    const list = filteredProducts.value.length ? filteredProducts.value : cdnProducts.value;
+    return list[(activeIndex.value + 1) % list.length] ?? fallbackProduct.value;
   });
 
   function clampActiveIndex() {
@@ -58,7 +76,7 @@ export function useDoorSelector() {
   }
 
   function selectIndex(index: number) {
-    const total = filteredProducts.value.length || products.length;
+    const total = filteredProducts.value.length || cdnProducts.value.length;
     activeIndex.value = (index + total) % total;
   }
 

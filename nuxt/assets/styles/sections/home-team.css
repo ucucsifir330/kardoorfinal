@@ -9,7 +9,7 @@
   --team-card-role: rgba(66, 67, 70, 0.42);
   --team-card-role-hover: rgba(234, 232, 232, 0.58);
   --team-card-hover-line: rgba(44, 227, 255, 0.18);
-  --team-card-overlay: linear-gradient(to top, rgba(20, 21, 29, 1) 10%, rgba(20, 21, 29, 0.72) 60%, transparent 100%);
+  --team-card-overlay: transparent;
   --team-card-overlay-text: #eae8e8;
   --team-card-shadow: none;
 
@@ -405,6 +405,7 @@
   font-size: 1rem;
   line-height: 1.5;
   text-align: center;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.42);
 }
 
 .ada-read-more {
@@ -416,6 +417,7 @@
   font-size: 1.55rem;
   cursor: pointer;
   pointer-events: auto;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.42);
 }
 
 .ada-read-more::after {
@@ -627,8 +629,8 @@
   --team-card-role: rgba(234, 232, 232, 0.5);
   --team-card-role-hover: rgba(66, 67, 70, 0.42);
   --team-card-hover-line: rgba(20, 21, 29, 0.08);
-  --team-card-overlay: linear-gradient(to top, rgba(248, 246, 239, 1) 10%, rgba(248, 246, 239, 0.72) 60%, transparent 100%);
-  --team-card-overlay-text: #14151d;
+  --team-card-overlay: transparent;
+  --team-card-overlay-text: #eae8e8;
   --team-card-shadow: none;
 }
 
@@ -788,6 +790,7 @@
     opacity: 1;
     transform: none;
     padding: 80px 20px 24px;
+    background: transparent;
   }
 
   .ada-bio {

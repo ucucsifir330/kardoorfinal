@@ -17,6 +17,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.8rem;
+  font-family: Inter, system-ui, sans-serif;
 }
 
 .brand-symbol {
