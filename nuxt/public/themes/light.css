@@ -2368,8 +2368,8 @@ body {
 
 .ada-loop-item {
   flex: 0 0 auto;
-  width: clamp(180px, 14vw, 260px);
-  height: clamp(82px, 7vw, 124px);
+  width: clamp(150px, 11.5vw, 220px);
+  height: clamp(64px, 5.8vw, 102px);
   margin: 0 clamp(32px, 4vw, 76px);
   display: inline-flex;
   align-items: center;
@@ -3052,11 +3052,11 @@ span.ada-brand-logo,
 }
 
 .ada-title-container {
-  margin-bottom: -10px !important;
+  margin-bottom: 36px !important;
 }
 
 .ada-carousel-wrapper {
-  transform: translateY(-132px) !important;
+  transform: translateY(-72px) !important;
   padding-bottom: clamp(260px, 26vh, 360px) !important;
 }
 
@@ -3123,7 +3123,7 @@ span.ada-brand-logo,
 }
 
 .ada-subtitle-container {
-  margin-top: clamp(240px, 24vh, 310px) !important;
+  margin-top: clamp(170px, 18vh, 235px) !important;
 }
 
 .top-row {
@@ -3466,11 +3466,11 @@ span.ada-brand-logo,
 
   .ada-title-container {
     margin-top: 54px !important;
-    margin-bottom: 18px !important;
+    margin-bottom: 64px !important;
   }
 
   .ada-carousel-wrapper {
-    transform: translateY(-24px) !important;
+    transform: translateY(0) !important;
     padding-bottom: 180px !important;
   }
 
