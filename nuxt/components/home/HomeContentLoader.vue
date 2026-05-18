@@ -22,7 +22,7 @@ const renderFlow = () => {
     visibilityObserver = new IntersectionObserver(
       (entries) => {
         document.body.classList.toggle(
-          "post-entrance-flow-visible",
+          "home-content-visible",
           entries.some((entry) => entry.isIntersecting)
         );
       },
@@ -81,20 +81,20 @@ onBeforeUnmount(() => {
   if (idleRenderId && win.cancelIdleCallback) win.cancelIdleCallback(idleRenderId);
   observer?.disconnect();
   visibilityObserver?.disconnect();
-  document.body.classList.remove("post-entrance-flow-visible");
+  document.body.classList.remove("home-content-visible");
 });
 </script>
 
 <template>
-  <div ref="mountRef" class="post-entrance-deferred">
+  <div ref="mountRef" class="home-content-loader">
     <ClientOnly>
-      <LazyPostEntrancePenFlow v-if="shouldRender" />
+      <LazyHomeExperience v-if="shouldRender" />
     </ClientOnly>
   </div>
 </template>
 
 <style scoped>
-.post-entrance-deferred {
+.home-content-loader {
   min-height: 1px;
 }
 </style>

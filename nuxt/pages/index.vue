@@ -27,6 +27,6 @@ useSeoMeta({
 <template>
   <div class="home-page">
     <EntranceDoor />
-    <DeferredPostEntranceFlow />
+    <HomeContentLoader />
   </div>
 </template>

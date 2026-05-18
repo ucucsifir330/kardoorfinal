@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import gsap from "gsap";
+import type { ComponentPublicInstance } from "vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
@@ -87,12 +88,20 @@ let pointerStartX = 0;
 let hasDragged = false;
 let dragOffset = 0;
 
-const setLetterRef = (element: Element | null, index: number) => {
-  if (element instanceof HTMLElement) letterRefs.value[index] = element;
+const resolveTemplateElement = (element: Element | ComponentPublicInstance | null) => {
+  if (element instanceof HTMLElement) return element;
+  if (element && "$el" in element && element.$el instanceof HTMLElement) return element.$el;
+  return null;
 };
 
-const setCardRef = (element: Element | null, index: number) => {
-  if (element instanceof HTMLElement) cardRefs.value[index] = element;
+const setLetterRef = (element: Element | ComponentPublicInstance | null, index: number) => {
+  const htmlElement = resolveTemplateElement(element);
+  if (htmlElement) letterRefs.value[index] = htmlElement;
+};
+
+const setCardRef = (element: Element | ComponentPublicInstance | null, index: number) => {
+  const htmlElement = resolveTemplateElement(element);
+  if (htmlElement) cardRefs.value[index] = htmlElement;
 };
 
 const onDragStart = (event: PointerEvent) => {

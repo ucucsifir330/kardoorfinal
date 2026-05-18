@@ -13,6 +13,10 @@ Thumbs.db
 !.env.example
 *.local
 *.log
+chrome-*.png
+nuxt/.playwright-cli/
+nuxt/output/
+nuxt/127.0.0.1/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

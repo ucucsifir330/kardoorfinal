@@ -12,14 +12,15 @@
 
 /* Page / section styles */
 @import "./sections/entrance-door.css";
-@import "./sections/showroom-dive.css";
 @import "./sections/door-selector.css";
 @import "./sections/content-pages.css";
-@import "./sections/home-team.css";
-@import "./sections/user-review.css";
+@import "./sections/home-catalog.css";
+@import "./sections/home-references.css";
+@import "./sections/home-reviews.css";
+@import "./sections/home-footer.css";
 @import "./pages/catalog.css";
 
-body.post-entrance-flow-visible .site-header {
+body.home-content-visible .site-header {
   opacity: 0;
   pointer-events: none;
 }
