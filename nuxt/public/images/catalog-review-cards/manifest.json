@@ -1,0 +1,4581 @@
+[
+  {
+    "code": "K1001",
+    "file": "K1001.png",
+    "page": 7,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      715,
+      681,
+      868,
+      726
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.9974
+  },
+  {
+    "code": "K1002",
+    "file": "K1002.png",
+    "page": 8,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      69,
+      963,
+      210,
+      1005
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.9982
+  },
+  {
+    "code": "K1003",
+    "file": "K1003.png",
+    "page": 8,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      531,
+      1161,
+      670,
+      1203
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1004",
+    "file": "K1004.png",
+    "page": 9,
+    "bbox": [
+      10,
+      104,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      69,
+      964,
+      209,
+      1005
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.9997
+  },
+  {
+    "code": "K1005",
+    "file": "K1005.png",
+    "page": 9,
+    "bbox": [
+      506,
+      104,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      531,
+      1161,
+      670,
+      1203
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1006",
+    "file": "K1006.png",
+    "page": 10,
+    "bbox": [
+      10,
+      104,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      69,
+      964,
+      208,
+      1005
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1007",
+    "file": "K1007.png",
+    "page": 10,
+    "bbox": [
+      506,
+      104,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      530,
+      1161,
+      669,
+      1203
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1008",
+    "file": "K1008.png",
+    "page": 11,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      71,
+      963,
+      210,
+      1005
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1009",
+    "file": "K1009.png",
+    "page": 11,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      530,
+      1161,
+      669,
+      1203
+    ],
+    "series": "Alüminyum Kasa",
+    "ocr_confidence": 0.9981
+  },
+  {
+    "code": "K1051",
+    "file": "K1051.png",
+    "page": 12,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      67,
+      331,
+      240,
+      381
+    ],
+    "series": "Alüminyum Kasa ve Kanat",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1052",
+    "file": "K1052.png",
+    "page": 13,
+    "bbox": [
+      10,
+      103,
+      486,
+      1312
+    ],
+    "code_bbox": [
+      73,
+      963,
+      212,
+      1005
+    ],
+    "series": "Alüminyum Kasa ve Kanat",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1053",
+    "file": "K1053.png",
+    "page": 13,
+    "bbox": [
+      506,
+      103,
+      982,
+      1312
+    ],
+    "code_bbox": [
+      529,
+      1161,
+      670,
+      1202
+    ],
+    "series": "Alüminyum Kasa ve Kanat",
+    "ocr_confidence": 0.9977
+  },
+  {
+    "code": "K1054",
+    "file": "K1054.png",
+    "page": 14,
+    "bbox": [
+      10,
+      103,
+      486,
+      1312
+    ],
+    "code_bbox": [
+      72,
+      963,
+      213,
+      1005
+    ],
+    "series": "Alüminyum Kasa ve Kanat",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1055",
+    "file": "K1055.png",
+    "page": 14,
+    "bbox": [
+      506,
+      103,
+      982,
+      1312
+    ],
+    "code_bbox": [
+      530,
+      1160,
+      670,
+      1202
+    ],
+    "series": "Alüminyum Kasa ve Kanat",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1056",
+    "file": "K1056.png",
+    "page": 15,
+    "bbox": [
+      10,
+      103,
+      486,
+      1315
+    ],
+    "code_bbox": [
+      73,
+      963,
+      211,
+      1005
+    ],
+    "series": "Alüminyum Kasa ve Kanat",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1057",
+    "file": "K1057.png",
+    "page": 15,
+    "bbox": [
+      506,
+      103,
+      982,
+      1315
+    ],
+    "code_bbox": [
+      529,
+      1160,
+      672,
+      1205
+    ],
+    "series": "Alüminyum Kasa ve Kanat",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1101",
+    "file": "K1101.png",
+    "page": 16,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      62,
+      639,
+      237,
+      691
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1102",
+    "file": "K1102.png",
+    "page": 17,
+    "bbox": [
+      10,
+      104,
+      486,
+      1314
+    ],
+    "code_bbox": [
+      72,
+      964,
+      211,
+      1005
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1103",
+    "file": "K1103.png",
+    "page": 17,
+    "bbox": [
+      506,
+      104,
+      982,
+      1314
+    ],
+    "code_bbox": [
+      530,
+      1160,
+      670,
+      1204
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1104",
+    "file": "K1104.png",
+    "page": 18,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      71,
+      963,
+      210,
+      1005
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1105",
+    "file": "K1105.png",
+    "page": 18,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      531,
+      1161,
+      670,
+      1203
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1106",
+    "file": "K1106.png",
+    "page": 19,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      71,
+      963,
+      209,
+      1005
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1107",
+    "file": "K1107.png",
+    "page": 19,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      531,
+      1161,
+      669,
+      1203
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.9989
+  },
+  {
+    "code": "K1108",
+    "file": "K1108.png",
+    "page": 20,
+    "bbox": [
+      10,
+      103,
+      486,
+      1312
+    ],
+    "code_bbox": [
+      71,
+      963,
+      210,
+      1005
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1109",
+    "file": "K1109.png",
+    "page": 20,
+    "bbox": [
+      506,
+      103,
+      982,
+      1312
+    ],
+    "code_bbox": [
+      530,
+      1160,
+      667,
+      1202
+    ],
+    "series": "Termo Wood",
+    "ocr_confidence": 0.9978
+  },
+  {
+    "code": "K1201",
+    "file": "K1201.png",
+    "page": 21,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      736,
+      365,
+      889,
+      410
+    ],
+    "series": "Doğal Taş",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1202",
+    "file": "K1202.png",
+    "page": 22,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      71,
+      963,
+      211,
+      1005
+    ],
+    "series": "Doğal Taş",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1203",
+    "file": "K1203.png",
+    "page": 22,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      530,
+      1162,
+      670,
+      1203
+    ],
+    "series": "Doğal Taş",
+    "ocr_confidence": 0.941
+  },
+  {
+    "code": "K1204",
+    "file": "K1204.png",
+    "page": 23,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      71,
+      963,
+      210,
+      1005
+    ],
+    "series": "Doğal Taş",
+    "ocr_confidence": 0.9172
+  },
+  {
+    "code": "K1205",
+    "file": "K1205.png",
+    "page": 23,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      530,
+      1161,
+      670,
+      1203
+    ],
+    "series": "Doğal Taş",
+    "ocr_confidence": 0.9967
+  },
+  {
+    "code": "K1301",
+    "file": "K1301.png",
+    "page": 24,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      59,
+      437,
+      233,
+      489
+    ],
+    "series": "Karma Cam",
+    "ocr_confidence": 0.9217
+  },
+  {
+    "code": "K1302",
+    "file": "K1302.png",
+    "page": 25,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      72,
+      963,
+      211,
+      1005
+    ],
+    "series": "Karma Cam",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1303",
+    "file": "K1303.png",
+    "page": 25,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      531,
+      1162,
+      670,
+      1203
+    ],
+    "series": "Karma Cam",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1304",
+    "file": "K1304.png",
+    "page": 26,
+    "bbox": [
+      10,
+      103,
+      486,
+      1314
+    ],
+    "code_bbox": [
+      72,
+      963,
+      210,
+      1005
+    ],
+    "series": "Karma Cam",
+    "ocr_confidence": 0.9221
+  },
+  {
+    "code": "K1305",
+    "file": "K1305.png",
+    "page": 26,
+    "bbox": [
+      506,
+      103,
+      982,
+      1314
+    ],
+    "code_bbox": [
+      530,
+      1160,
+      670,
+      1204
+    ],
+    "series": "Karma Cam",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1306",
+    "file": "K1306.png",
+    "page": 27,
+    "bbox": [
+      10,
+      92,
+      486,
+      801
+    ],
+    "code_bbox": [
+      75,
+      657,
+      180,
+      691
+    ],
+    "series": "Karma Cam",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1307",
+    "file": "K1307.png",
+    "page": 27,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      76,
+      1236,
+      178,
+      1266
+    ],
+    "series": "Karma Cam",
+    "ocr_confidence": 0.998
+  },
+  {
+    "code": "K1308",
+    "file": "K1308.png",
+    "page": 27,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      499,
+      1190,
+      634,
+      1232
+    ],
+    "series": "Karma Cam",
+    "ocr_confidence": 0.9986
+  },
+  {
+    "code": "K1351",
+    "file": "K1351.png",
+    "page": 28,
+    "bbox": [
+      10,
+      103,
+      486,
+      1314
+    ],
+    "code_bbox": [
+      71,
+      963,
+      206,
+      1005
+    ],
+    "series": "Temperli Cam",
+    "ocr_confidence": 0.9989
+  },
+  {
+    "code": "K1352",
+    "file": "K1352.png",
+    "page": 28,
+    "bbox": [
+      506,
+      103,
+      982,
+      1314
+    ],
+    "code_bbox": [
+      531,
+      1162,
+      671,
+      1204
+    ],
+    "series": "Temperli Cam",
+    "ocr_confidence": 0.998
+  },
+  {
+    "code": "K1353",
+    "file": "K1353.png",
+    "page": 29,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      71,
+      963,
+      210,
+      1005
+    ],
+    "series": "Temperli Cam",
+    "ocr_confidence": 0.9989
+  },
+  {
+    "code": "K1354",
+    "file": "K1354.png",
+    "page": 29,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      530,
+      1161,
+      670,
+      1203
+    ],
+    "series": "Temperli Cam",
+    "ocr_confidence": 0.9969
+  },
+  {
+    "code": "K1401",
+    "file": "K1401.png",
+    "page": 30,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      56,
+      507,
+      230,
+      558
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1402",
+    "file": "K1402.png",
+    "page": 31,
+    "bbox": [
+      10,
+      103,
+      486,
+      1313
+    ],
+    "code_bbox": [
+      71,
+      963,
+      211,
+      1005
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1403",
+    "file": "K1403.png",
+    "page": 31,
+    "bbox": [
+      506,
+      103,
+      982,
+      1313
+    ],
+    "code_bbox": [
+      530,
+      1161,
+      670,
+      1203
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9976
+  },
+  {
+    "code": "K1404",
+    "file": "K1404.png",
+    "page": 32,
+    "bbox": [
+      10,
+      92,
+      486,
+      801
+    ],
+    "code_bbox": [
+      108,
+      657,
+      216,
+      691
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1405",
+    "file": "K1405.png",
+    "page": 32,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      77,
+      1235,
+      185,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9971
+  },
+  {
+    "code": "K1406",
+    "file": "K1406.png",
+    "page": 32,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      524,
+      1190,
+      662,
+      1232
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9972
+  },
+  {
+    "code": "K1407",
+    "file": "K1407.png",
+    "page": 33,
+    "bbox": [
+      10,
+      97,
+      320,
+      797
+    ],
+    "code_bbox": [
+      86,
+      657,
+      195,
+      691
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1408",
+    "file": "K1408.png",
+    "page": 33,
+    "bbox": [
+      340,
+      97,
+      651,
+      797
+    ],
+    "code_bbox": [
+      373,
+      657,
+      482,
+      692
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.998
+  },
+  {
+    "code": "K1409",
+    "file": "K1409.png",
+    "page": 33,
+    "bbox": [
+      671,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      694,
+      657,
+      803,
+      692
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1410",
+    "file": "K1410.png",
+    "page": 33,
+    "bbox": [
+      10,
+      672,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      63,
+      1236,
+      170,
+      1266
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1411",
+    "file": "K1411.png",
+    "page": 33,
+    "bbox": [
+      340,
+      672,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      406,
+      1235,
+      512,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1412",
+    "file": "K1412.png",
+    "page": 33,
+    "bbox": [
+      671,
+      672,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      679,
+      1232,
+      789,
+      1270
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9998
+  },
+  {
+    "code": "K1413",
+    "file": "K1413.png",
+    "page": 34,
+    "bbox": [
+      10,
+      92,
+      486,
+      800
+    ],
+    "code_bbox": [
+      75,
+      656,
+      184,
+      690
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9374
+  },
+  {
+    "code": "K1414",
+    "file": "K1414.png",
+    "page": 34,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      81,
+      1235,
+      191,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9124
+  },
+  {
+    "code": "K1415",
+    "file": "K1415.png",
+    "page": 34,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      500,
+      1190,
+      641,
+      1232
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9951
+  },
+  {
+    "code": "K1416",
+    "file": "K1416.png",
+    "page": 35,
+    "bbox": [
+      10,
+      95,
+      320,
+      797
+    ],
+    "code_bbox": [
+      85,
+      655,
+      195,
+      692
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1417",
+    "file": "K1417.png",
+    "page": 35,
+    "bbox": [
+      340,
+      95,
+      651,
+      797
+    ],
+    "code_bbox": [
+      399,
+      657,
+      507,
+      692
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1418",
+    "file": "K1418.png",
+    "page": 35,
+    "bbox": [
+      671,
+      95,
+      982,
+      797
+    ],
+    "code_bbox": [
+      678,
+      656,
+      788,
+      690
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1419",
+    "file": "K1419.png",
+    "page": 35,
+    "bbox": [
+      10,
+      674,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      89,
+      1235,
+      197,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9982
+  },
+  {
+    "code": "K1420",
+    "file": "K1420.png",
+    "page": 35,
+    "bbox": [
+      340,
+      674,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      376,
+      1234,
+      484,
+      1267
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1421",
+    "file": "K1421.png",
+    "page": 35,
+    "bbox": [
+      671,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      694,
+      1235,
+      794,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9191
+  },
+  {
+    "code": "K1422",
+    "file": "K1422.png",
+    "page": 36,
+    "bbox": [
+      10,
+      92,
+      486,
+      802
+    ],
+    "code_bbox": [
+      100,
+      655,
+      210,
+      692
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9945
+  },
+  {
+    "code": "K1423",
+    "file": "K1423.png",
+    "page": 36,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      73,
+      1235,
+      181,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9948
+  },
+  {
+    "code": "K1424",
+    "file": "K1424.png",
+    "page": 36,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      506,
+      1190,
+      645,
+      1232
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9983
+  },
+  {
+    "code": "K1425",
+    "file": "K1425.png",
+    "page": 37,
+    "bbox": [
+      10,
+      96,
+      320,
+      797
+    ],
+    "code_bbox": [
+      72,
+      656,
+      180,
+      690
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1426",
+    "file": "K1426.png",
+    "page": 37,
+    "bbox": [
+      340,
+      96,
+      651,
+      797
+    ],
+    "code_bbox": [
+      399,
+      657,
+      508,
+      692
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9984
+  },
+  {
+    "code": "K1427",
+    "file": "K1427.png",
+    "page": 37,
+    "bbox": [
+      671,
+      96,
+      982,
+      797
+    ],
+    "code_bbox": [
+      679,
+      657,
+      786,
+      691
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.985
+  },
+  {
+    "code": "K1428",
+    "file": "K1428.png",
+    "page": 37,
+    "bbox": [
+      10,
+      675,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      87,
+      1235,
+      196,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9969
+  },
+  {
+    "code": "K1429",
+    "file": "K1429.png",
+    "page": 37,
+    "bbox": [
+      340,
+      675,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      383,
+      1235,
+      492,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9953
+  },
+  {
+    "code": "K1430",
+    "file": "K1430.png",
+    "page": 37,
+    "bbox": [
+      671,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      703,
+      1236,
+      811,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9957
+  },
+  {
+    "code": "K1431",
+    "file": "K1431.png",
+    "page": 38,
+    "bbox": [
+      10,
+      97,
+      320,
+      797
+    ],
+    "code_bbox": [
+      88,
+      657,
+      194,
+      691
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1432",
+    "file": "K1432.png",
+    "page": 38,
+    "bbox": [
+      340,
+      97,
+      651,
+      797
+    ],
+    "code_bbox": [
+      429,
+      657,
+      539,
+      692
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9952
+  },
+  {
+    "code": "K1433",
+    "file": "K1433.png",
+    "page": 38,
+    "bbox": [
+      671,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      694,
+      657,
+      805,
+      691
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1434",
+    "file": "K1434.png",
+    "page": 38,
+    "bbox": [
+      10,
+      674,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      78,
+      1235,
+      185,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9973
+  },
+  {
+    "code": "K1435",
+    "file": "K1435.png",
+    "page": 38,
+    "bbox": [
+      340,
+      674,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      383,
+      1235,
+      492,
+      1268
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1436",
+    "file": "K1436.png",
+    "page": 38,
+    "bbox": [
+      671,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      705,
+      1234,
+      814,
+      1268
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9959
+  },
+  {
+    "code": "K1437",
+    "file": "K1437.png",
+    "page": 39,
+    "bbox": [
+      10,
+      97,
+      320,
+      797
+    ],
+    "code_bbox": [
+      113,
+      657,
+      220,
+      692
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1438",
+    "file": "K1438.png",
+    "page": 39,
+    "bbox": [
+      340,
+      97,
+      651,
+      797
+    ],
+    "code_bbox": [
+      406,
+      657,
+      516,
+      691
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9971
+  },
+  {
+    "code": "K1439",
+    "file": "K1439.png",
+    "page": 39,
+    "bbox": [
+      671,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      705,
+      657,
+      815,
+      691
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9972
+  },
+  {
+    "code": "K1440",
+    "file": "K1440.png",
+    "page": 39,
+    "bbox": [
+      10,
+      674,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      117,
+      1234,
+      225,
+      1268
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1441",
+    "file": "K1441.png",
+    "page": 39,
+    "bbox": [
+      340,
+      674,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      414,
+      1235,
+      520,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9982
+  },
+  {
+    "code": "K1442",
+    "file": "K1442.png",
+    "page": 39,
+    "bbox": [
+      671,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      718,
+      1235,
+      826,
+      1269
+    ],
+    "series": "Kompozit",
+    "ocr_confidence": 0.9984
+  },
+  {
+    "code": "K1451",
+    "file": "K1451.png",
+    "page": 40,
+    "bbox": [
+      10,
+      92,
+      486,
+      800
+    ],
+    "code_bbox": [
+      100,
+      659,
+      208,
+      690
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9995
+  },
+  {
+    "code": "K1452",
+    "file": "K1452.png",
+    "page": 40,
+    "bbox": [
+      10,
+      357,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      98,
+      1236,
+      206,
+      1269
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.997
+  },
+  {
+    "code": "K1453",
+    "file": "K1453.png",
+    "page": 40,
+    "bbox": [
+      506,
+      357,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      536,
+      1217,
+      674,
+      1258
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9989
+  },
+  {
+    "code": "K1454",
+    "file": "K1454.png",
+    "page": 41,
+    "bbox": [
+      10,
+      96,
+      320,
+      795
+    ],
+    "code_bbox": [
+      95,
+      659,
+      203,
+      690
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1455",
+    "file": "K1455.png",
+    "page": 41,
+    "bbox": [
+      340,
+      96,
+      651,
+      795
+    ],
+    "code_bbox": [
+      398,
+      656,
+      506,
+      690
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1456",
+    "file": "K1456.png",
+    "page": 41,
+    "bbox": [
+      671,
+      96,
+      982,
+      795
+    ],
+    "code_bbox": [
+      700,
+      656,
+      809,
+      690
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1457",
+    "file": "K1457.png",
+    "page": 41,
+    "bbox": [
+      10,
+      676,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      94,
+      1236,
+      200,
+      1269
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9975
+  },
+  {
+    "code": "K1458",
+    "file": "K1458.png",
+    "page": 41,
+    "bbox": [
+      340,
+      676,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      398,
+      1236,
+      505,
+      1269
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1459",
+    "file": "K1459.png",
+    "page": 41,
+    "bbox": [
+      671,
+      676,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      701,
+      1236,
+      808,
+      1269
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1460",
+    "file": "K1460.png",
+    "page": 42,
+    "bbox": [
+      10,
+      92,
+      486,
+      802
+    ],
+    "code_bbox": [
+      98,
+      658,
+      207,
+      692
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1461",
+    "file": "K1461.png",
+    "page": 42,
+    "bbox": [
+      10,
+      357,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      97,
+      1234,
+      208,
+      1271
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9227
+  },
+  {
+    "code": "K1462",
+    "file": "K1462.png",
+    "page": 42,
+    "bbox": [
+      506,
+      357,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      535,
+      1217,
+      673,
+      1257
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1463",
+    "file": "K1463.png",
+    "page": 43,
+    "bbox": [
+      10,
+      98,
+      320,
+      795
+    ],
+    "code_bbox": [
+      95,
+      659,
+      203,
+      690
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1464",
+    "file": "K1464.png",
+    "page": 43,
+    "bbox": [
+      340,
+      98,
+      651,
+      795
+    ],
+    "code_bbox": [
+      399,
+      659,
+      507,
+      690
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9995
+  },
+  {
+    "code": "K1465",
+    "file": "K1465.png",
+    "page": 43,
+    "bbox": [
+      671,
+      98,
+      982,
+      795
+    ],
+    "code_bbox": [
+      701,
+      658,
+      809,
+      689
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9976
+  },
+  {
+    "code": "K1466",
+    "file": "K1466.png",
+    "page": 43,
+    "bbox": [
+      10,
+      675,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      94,
+      1236,
+      202,
+      1269
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9976
+  },
+  {
+    "code": "K1467",
+    "file": "K1467.png",
+    "page": 43,
+    "bbox": [
+      340,
+      675,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      397,
+      1236,
+      504,
+      1270
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9954
+  },
+  {
+    "code": "K1468",
+    "file": "K1468.png",
+    "page": 43,
+    "bbox": [
+      671,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      700,
+      1235,
+      808,
+      1268
+    ],
+    "series": "Komple Sac Metal",
+    "ocr_confidence": 0.9301
+  },
+  {
+    "code": "K1501",
+    "file": "K1501.png",
+    "page": 45,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      720,
+      478,
+      891,
+      529
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1502",
+    "file": "K1502.png",
+    "page": 46,
+    "bbox": [
+      10,
+      92,
+      486,
+      800
+    ],
+    "code_bbox": [
+      92,
+      656,
+      201,
+      690
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9995
+  },
+  {
+    "code": "K1503",
+    "file": "K1503.png",
+    "page": 46,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      84,
+      1234,
+      192,
+      1268
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9854
+  },
+  {
+    "code": "K1504",
+    "file": "K1504.png",
+    "page": 46,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      506,
+      1190,
+      643,
+      1232
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1505",
+    "file": "K1505.png",
+    "page": 47,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      179,
+      1190,
+      318,
+      1232
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1506",
+    "file": "K1506.png",
+    "page": 47,
+    "bbox": [
+      506,
+      92,
+      982,
+      801
+    ],
+    "code_bbox": [
+      670,
+      657,
+      778,
+      691
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1507",
+    "file": "K1507.png",
+    "page": 47,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      677,
+      1235,
+      784,
+      1269
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9974
+  },
+  {
+    "code": "K1508",
+    "file": "K1508.png",
+    "page": 48,
+    "bbox": [
+      10,
+      92,
+      486,
+      802
+    ],
+    "code_bbox": [
+      82,
+      657,
+      192,
+      692
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1509",
+    "file": "K1509.png",
+    "page": 48,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      115,
+      1234,
+      224,
+      1268
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9972
+  },
+  {
+    "code": "K1510",
+    "file": "K1510.png",
+    "page": 48,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      464,
+      1190,
+      602,
+      1232
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1511",
+    "file": "K1511.png",
+    "page": 49,
+    "bbox": [
+      10,
+      96,
+      320,
+      797
+    ],
+    "code_bbox": [
+      77,
+      657,
+      179,
+      691
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9979
+  },
+  {
+    "code": "K1512",
+    "file": "K1512.png",
+    "page": 49,
+    "bbox": [
+      340,
+      96,
+      651,
+      797
+    ],
+    "code_bbox": [
+      372,
+      656,
+      480,
+      691
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9977
+  },
+  {
+    "code": "K1513",
+    "file": "K1513.png",
+    "page": 49,
+    "bbox": [
+      671,
+      96,
+      982,
+      797
+    ],
+    "code_bbox": [
+      685,
+      657,
+      793,
+      692
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9882
+  },
+  {
+    "code": "K1514",
+    "file": "K1514.png",
+    "page": 49,
+    "bbox": [
+      10,
+      673,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      94,
+      1233,
+      205,
+      1271
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1515",
+    "file": "K1515.png",
+    "page": 49,
+    "bbox": [
+      340,
+      673,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      421,
+      1233,
+      532,
+      1270
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9953
+  },
+  {
+    "code": "K1516",
+    "file": "K1516.png",
+    "page": 49,
+    "bbox": [
+      671,
+      673,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      695,
+      1235,
+      804,
+      1269
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1517",
+    "file": "K1517.png",
+    "page": 50,
+    "bbox": [
+      10,
+      92,
+      486,
+      802
+    ],
+    "code_bbox": [
+      85,
+      657,
+      193,
+      692
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1518",
+    "file": "K1518.png",
+    "page": 50,
+    "bbox": [
+      10,
+      329,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      79,
+      1235,
+      189,
+      1269
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1519",
+    "file": "K1519.png",
+    "page": 50,
+    "bbox": [
+      506,
+      329,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      492,
+      1189,
+      630,
+      1231
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1520",
+    "file": "K1520.png",
+    "page": 51,
+    "bbox": [
+      10,
+      97,
+      320,
+      797
+    ],
+    "code_bbox": [
+      77,
+      657,
+      185,
+      692
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9969
+  },
+  {
+    "code": "K1521",
+    "file": "K1521.png",
+    "page": 51,
+    "bbox": [
+      340,
+      97,
+      651,
+      797
+    ],
+    "code_bbox": [
+      381,
+      657,
+      482,
+      692
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9976
+  },
+  {
+    "code": "K1522",
+    "file": "K1522.png",
+    "page": 51,
+    "bbox": [
+      671,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      685,
+      657,
+      792,
+      692
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.997
+  },
+  {
+    "code": "K1523",
+    "file": "K1523.png",
+    "page": 51,
+    "bbox": [
+      10,
+      674,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      73,
+      1235,
+      181,
+      1269
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.997
+  },
+  {
+    "code": "K1524",
+    "file": "K1524.png",
+    "page": 51,
+    "bbox": [
+      340,
+      674,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      381,
+      1234,
+      490,
+      1268
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9892
+  },
+  {
+    "code": "K1525",
+    "file": "K1525.png",
+    "page": 51,
+    "bbox": [
+      671,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      688,
+      1234,
+      796,
+      1268
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9922
+  },
+  {
+    "code": "K1526",
+    "file": "K1526.png",
+    "page": 52,
+    "bbox": [
+      10,
+      92,
+      486,
+      801
+    ],
+    "code_bbox": [
+      115,
+      656,
+      225,
+      691
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9986
+  },
+  {
+    "code": "K1527",
+    "file": "K1527.png",
+    "page": 52,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      102,
+      1235,
+      211,
+      1269
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.998
+  },
+  {
+    "code": "K1528",
+    "file": "K1528.png",
+    "page": 52,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      548,
+      1190,
+      688,
+      1232
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1529",
+    "file": "K1529.png",
+    "page": 53,
+    "bbox": [
+      10,
+      97,
+      320,
+      797
+    ],
+    "code_bbox": [
+      108,
+      657,
+      216,
+      692
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9962
+  },
+  {
+    "code": "K1530",
+    "file": "K1530.png",
+    "page": 53,
+    "bbox": [
+      340,
+      97,
+      651,
+      797
+    ],
+    "code_bbox": [
+      377,
+      657,
+      485,
+      691
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1531",
+    "file": "K1531.png",
+    "page": 53,
+    "bbox": [
+      671,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      685,
+      657,
+      787,
+      692
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9983
+  },
+  {
+    "code": "K1532",
+    "file": "K1532.png",
+    "page": 53,
+    "bbox": [
+      10,
+      672,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      67,
+      1232,
+      176,
+      1270
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9974
+  },
+  {
+    "code": "K1533",
+    "file": "K1533.png",
+    "page": 53,
+    "bbox": [
+      340,
+      672,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      406,
+      1235,
+      517,
+      1269
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1534",
+    "file": "K1534.png",
+    "page": 53,
+    "bbox": [
+      671,
+      672,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      725,
+      1235,
+      835,
+      1269
+    ],
+    "series": "Lüks PVC",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1601",
+    "file": "K1601.png",
+    "page": 54,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      55,
+      526,
+      229,
+      576
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1602",
+    "file": "K1602.png",
+    "page": 55,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      178,
+      1190,
+      318,
+      1232
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9966
+  },
+  {
+    "code": "K1603",
+    "file": "K1603.png",
+    "page": 55,
+    "bbox": [
+      506,
+      92,
+      982,
+      800
+    ],
+    "code_bbox": [
+      679,
+      656,
+      788,
+      690
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9995
+  },
+  {
+    "code": "K1604",
+    "file": "K1604.png",
+    "page": 55,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      680,
+      1234,
+      788,
+      1268
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.999
+  },
+  {
+    "code": "K1605",
+    "file": "K1605.png",
+    "page": 56,
+    "bbox": [
+      10,
+      95,
+      320,
+      797
+    ],
+    "code_bbox": [
+      83,
+      656,
+      191,
+      690
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1606",
+    "file": "K1606.png",
+    "page": 56,
+    "bbox": [
+      340,
+      95,
+      651,
+      797
+    ],
+    "code_bbox": [
+      389,
+      655,
+      498,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1607",
+    "file": "K1607.png",
+    "page": 56,
+    "bbox": [
+      671,
+      95,
+      982,
+      797
+    ],
+    "code_bbox": [
+      689,
+      657,
+      794,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9989
+  },
+  {
+    "code": "K1608",
+    "file": "K1608.png",
+    "page": 56,
+    "bbox": [
+      10,
+      674,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      75,
+      1236,
+      183,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9983
+  },
+  {
+    "code": "K1609",
+    "file": "K1609.png",
+    "page": 56,
+    "bbox": [
+      340,
+      674,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      382,
+      1234,
+      490,
+      1268
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9882
+  },
+  {
+    "code": "K1610",
+    "file": "K1610.png",
+    "page": 56,
+    "bbox": [
+      671,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      687,
+      1235,
+      795,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9982
+  },
+  {
+    "code": "K1611",
+    "file": "K1611.png",
+    "page": 57,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      179,
+      1190,
+      316,
+      1232
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1612",
+    "file": "K1612.png",
+    "page": 57,
+    "bbox": [
+      506,
+      92,
+      982,
+      802
+    ],
+    "code_bbox": [
+      688,
+      657,
+      796,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.998
+  },
+  {
+    "code": "K1613",
+    "file": "K1613.png",
+    "page": 57,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      681,
+      1236,
+      789,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9978
+  },
+  {
+    "code": "K1614",
+    "file": "K1614.png",
+    "page": 58,
+    "bbox": [
+      10,
+      96,
+      320,
+      798
+    ],
+    "code_bbox": [
+      76,
+      656,
+      185,
+      693
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1615",
+    "file": "K1615.png",
+    "page": 58,
+    "bbox": [
+      340,
+      96,
+      651,
+      798
+    ],
+    "code_bbox": [
+      390,
+      657,
+      499,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9986
+  },
+  {
+    "code": "K1616",
+    "file": "K1616.png",
+    "page": 58,
+    "bbox": [
+      671,
+      96,
+      982,
+      798
+    ],
+    "code_bbox": [
+      684,
+      656,
+      792,
+      693
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9498
+  },
+  {
+    "code": "K1617",
+    "file": "K1617.png",
+    "page": 58,
+    "bbox": [
+      10,
+      675,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      86,
+      1235,
+      193,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9951
+  },
+  {
+    "code": "K1618",
+    "file": "K1618.png",
+    "page": 58,
+    "bbox": [
+      340,
+      675,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      393,
+      1236,
+      501,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9981
+  },
+  {
+    "code": "K1619",
+    "file": "K1619.png",
+    "page": 58,
+    "bbox": [
+      671,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      696,
+      1236,
+      805,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1620",
+    "file": "K1620.png",
+    "page": 59,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      188,
+      1190,
+      327,
+      1232
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9598
+  },
+  {
+    "code": "K1621",
+    "file": "K1621.png",
+    "page": 59,
+    "bbox": [
+      506,
+      92,
+      982,
+      802
+    ],
+    "code_bbox": [
+      679,
+      657,
+      786,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9991
+  },
+  {
+    "code": "K1622",
+    "file": "K1622.png",
+    "page": 59,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      681,
+      1235,
+      789,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9957
+  },
+  {
+    "code": "K1623",
+    "file": "K1623.png",
+    "page": 60,
+    "bbox": [
+      10,
+      96,
+      320,
+      797
+    ],
+    "code_bbox": [
+      77,
+      657,
+      185,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9899
+  },
+  {
+    "code": "K1624",
+    "file": "K1624.png",
+    "page": 60,
+    "bbox": [
+      340,
+      96,
+      651,
+      797
+    ],
+    "code_bbox": [
+      381,
+      656,
+      489,
+      691
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9929
+  },
+  {
+    "code": "K1625",
+    "file": "K1625.png",
+    "page": 60,
+    "bbox": [
+      671,
+      96,
+      982,
+      797
+    ],
+    "code_bbox": [
+      697,
+      657,
+      805,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1626",
+    "file": "K1626.png",
+    "page": 60,
+    "bbox": [
+      10,
+      674,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      75,
+      1235,
+      183,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.998
+  },
+  {
+    "code": "K1627",
+    "file": "K1627.png",
+    "page": 60,
+    "bbox": [
+      340,
+      674,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      382,
+      1234,
+      489,
+      1268
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9865
+  },
+  {
+    "code": "K1628",
+    "file": "K1628.png",
+    "page": 60,
+    "bbox": [
+      671,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      688,
+      1234,
+      796,
+      1268
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9961
+  },
+  {
+    "code": "K1629",
+    "file": "K1629.png",
+    "page": 61,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      179,
+      1190,
+      317,
+      1232
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9258
+  },
+  {
+    "code": "K1630",
+    "file": "K1630.png",
+    "page": 61,
+    "bbox": [
+      506,
+      92,
+      982,
+      801
+    ],
+    "code_bbox": [
+      682,
+      657,
+      789,
+      691
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1631",
+    "file": "K1631.png",
+    "page": 61,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      709,
+      1235,
+      816,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1632",
+    "file": "K1632.png",
+    "page": 62,
+    "bbox": [
+      10,
+      95,
+      320,
+      797
+    ],
+    "code_bbox": [
+      85,
+      655,
+      195,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1633",
+    "file": "K1633.png",
+    "page": 62,
+    "bbox": [
+      340,
+      95,
+      651,
+      797
+    ],
+    "code_bbox": [
+      389,
+      655,
+      499,
+      692
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9934
+  },
+  {
+    "code": "K1634",
+    "file": "K1634.png",
+    "page": 62,
+    "bbox": [
+      671,
+      95,
+      982,
+      797
+    ],
+    "code_bbox": [
+      700,
+      657,
+      809,
+      691
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.997
+  },
+  {
+    "code": "K1635",
+    "file": "K1635.png",
+    "page": 62,
+    "bbox": [
+      10,
+      675,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      83,
+      1235,
+      192,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.996
+  },
+  {
+    "code": "K1636",
+    "file": "K1636.png",
+    "page": 62,
+    "bbox": [
+      340,
+      675,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      389,
+      1235,
+      497,
+      1268
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9981
+  },
+  {
+    "code": "K1637",
+    "file": "K1637.png",
+    "page": 62,
+    "bbox": [
+      671,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      697,
+      1235,
+      804,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9972
+  },
+  {
+    "code": "K1638",
+    "file": "K1638.png",
+    "page": 63,
+    "bbox": [
+      10,
+      330,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      177,
+      1190,
+      315,
+      1232
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9984
+  },
+  {
+    "code": "K1639",
+    "file": "K1639.png",
+    "page": 63,
+    "bbox": [
+      506,
+      92,
+      982,
+      801
+    ],
+    "code_bbox": [
+      681,
+      657,
+      788,
+      691
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9859
+  },
+  {
+    "code": "K1640",
+    "file": "K1640.png",
+    "page": 63,
+    "bbox": [
+      506,
+      330,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      664,
+      1235,
+      772,
+      1269
+    ],
+    "series": "Elit Laminoks",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1651",
+    "file": "K1651.png",
+    "page": 64,
+    "bbox": [
+      10,
+      92,
+      486,
+      801
+    ],
+    "code_bbox": [
+      120,
+      657,
+      225,
+      691
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1652",
+    "file": "K1652.png",
+    "page": 64,
+    "bbox": [
+      10,
+      328,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      111,
+      1235,
+      220,
+      1269
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9983
+  },
+  {
+    "code": "K1653",
+    "file": "K1653.png",
+    "page": 64,
+    "bbox": [
+      506,
+      328,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      553,
+      1188,
+      694,
+      1232
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1654",
+    "file": "K1654.png",
+    "page": 65,
+    "bbox": [
+      10,
+      97,
+      320,
+      797
+    ],
+    "code_bbox": [
+      104,
+      657,
+      213,
+      692
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9959
+  },
+  {
+    "code": "K1655",
+    "file": "K1655.png",
+    "page": 65,
+    "bbox": [
+      340,
+      97,
+      651,
+      797
+    ],
+    "code_bbox": [
+      406,
+      657,
+      515,
+      692
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9995
+  },
+  {
+    "code": "K1656",
+    "file": "K1656.png",
+    "page": 65,
+    "bbox": [
+      671,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      718,
+      657,
+      827,
+      692
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1657",
+    "file": "K1657.png",
+    "page": 65,
+    "bbox": [
+      10,
+      675,
+      320,
+      1328
+    ],
+    "code_bbox": [
+      101,
+      1235,
+      208,
+      1269
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9986
+  },
+  {
+    "code": "K1658",
+    "file": "K1658.png",
+    "page": 65,
+    "bbox": [
+      340,
+      675,
+      651,
+      1328
+    ],
+    "code_bbox": [
+      411,
+      1235,
+      521,
+      1269
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1659",
+    "file": "K1659.png",
+    "page": 65,
+    "bbox": [
+      671,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      725,
+      1235,
+      834,
+      1269
+    ],
+    "series": "Rustik Laminoks",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1701",
+    "file": "K1701.png",
+    "page": 66,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      67,
+      495,
+      240,
+      547
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.998
+  },
+  {
+    "code": "K1702",
+    "file": "K1702.png",
+    "page": 67,
+    "bbox": [
+      10,
+      97,
+      486,
+      797
+    ],
+    "code_bbox": [
+      174,
+      657,
+      283,
+      692
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1703",
+    "file": "K1703.png",
+    "page": 67,
+    "bbox": [
+      506,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      681,
+      657,
+      789,
+      691
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1704",
+    "file": "K1704.png",
+    "page": 67,
+    "bbox": [
+      10,
+      675,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      174,
+      1235,
+      282,
+      1269
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9958
+  },
+  {
+    "code": "K1705",
+    "file": "K1705.png",
+    "page": 67,
+    "bbox": [
+      506,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      679,
+      1235,
+      788,
+      1269
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9982
+  },
+  {
+    "code": "K1706",
+    "file": "K1706.png",
+    "page": 68,
+    "bbox": [
+      10,
+      95,
+      486,
+      797
+    ],
+    "code_bbox": [
+      132,
+      655,
+      241,
+      692
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1707",
+    "file": "K1707.png",
+    "page": 68,
+    "bbox": [
+      506,
+      95,
+      982,
+      797
+    ],
+    "code_bbox": [
+      676,
+      657,
+      783,
+      691
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9986
+  },
+  {
+    "code": "K1708",
+    "file": "K1708.png",
+    "page": 68,
+    "bbox": [
+      10,
+      674,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      132,
+      1234,
+      240,
+      1268
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9428
+  },
+  {
+    "code": "K1709",
+    "file": "K1709.png",
+    "page": 68,
+    "bbox": [
+      506,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      675,
+      1235,
+      784,
+      1269
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9967
+  },
+  {
+    "code": "K1710",
+    "file": "K1710.png",
+    "page": 69,
+    "bbox": [
+      10,
+      97,
+      486,
+      797
+    ],
+    "code_bbox": [
+      178,
+      657,
+      288,
+      692
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9996
+  },
+  {
+    "code": "K1711",
+    "file": "K1711.png",
+    "page": 69,
+    "bbox": [
+      506,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      661,
+      657,
+      769,
+      692
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1712",
+    "file": "K1712.png",
+    "page": 69,
+    "bbox": [
+      10,
+      674,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      147,
+      1234,
+      258,
+      1271
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9971
+  },
+  {
+    "code": "K1713",
+    "file": "K1713.png",
+    "page": 69,
+    "bbox": [
+      506,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      677,
+      1235,
+      786,
+      1269
+    ],
+    "series": "Projeye Özel",
+    "ocr_confidence": 0.9967
+  },
+  {
+    "code": "K1751",
+    "file": "K1751.png",
+    "page": 70,
+    "bbox": [
+      506,
+      92,
+      982,
+      806
+    ],
+    "code_bbox": [
+      626,
+      661,
+      722,
+      696
+    ],
+    "series": "Pivot",
+    "ocr_confidence": 0.9931
+  },
+  {
+    "code": "K1752",
+    "file": "K1752.png",
+    "page": 70,
+    "bbox": [
+      506,
+      373,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      677,
+      1233,
+      780,
+      1266
+    ],
+    "series": "Pivot",
+    "ocr_confidence": 0.9983
+  },
+  {
+    "code": "K1753",
+    "file": "K1753.png",
+    "page": 71,
+    "bbox": [
+      506,
+      92,
+      982,
+      806
+    ],
+    "code_bbox": [
+      681,
+      661,
+      785,
+      696
+    ],
+    "series": "Pivot",
+    "ocr_confidence": 0.9976
+  },
+  {
+    "code": "K1754",
+    "file": "K1754.png",
+    "page": 71,
+    "bbox": [
+      506,
+      373,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      673,
+      1233,
+      776,
+      1267
+    ],
+    "series": "Pivot",
+    "ocr_confidence": 0.9985
+  },
+  {
+    "code": "K1801",
+    "file": "K1801.png",
+    "page": 72,
+    "bbox": [
+      10,
+      92,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      321,
+      1163,
+      478,
+      1212
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1802",
+    "file": "K1802.png",
+    "page": 73,
+    "bbox": [
+      10,
+      97,
+      486,
+      797
+    ],
+    "code_bbox": [
+      197,
+      657,
+      305,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9984
+  },
+  {
+    "code": "K1803",
+    "file": "K1803.png",
+    "page": 73,
+    "bbox": [
+      506,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      629,
+      657,
+      738,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9984
+  },
+  {
+    "code": "K1804",
+    "file": "K1804.png",
+    "page": 73,
+    "bbox": [
+      10,
+      675,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      166,
+      1235,
+      276,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1805",
+    "file": "K1805.png",
+    "page": 73,
+    "bbox": [
+      506,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      592,
+      1235,
+      700,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9912
+  },
+  {
+    "code": "K1806",
+    "file": "K1806.png",
+    "page": 74,
+    "bbox": [
+      10,
+      95,
+      486,
+      797
+    ],
+    "code_bbox": [
+      132,
+      655,
+      241,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1807",
+    "file": "K1807.png",
+    "page": 74,
+    "bbox": [
+      506,
+      95,
+      982,
+      797
+    ],
+    "code_bbox": [
+      626,
+      657,
+      733,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9767
+  },
+  {
+    "code": "K1808",
+    "file": "K1808.png",
+    "page": 74,
+    "bbox": [
+      10,
+      675,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      167,
+      1235,
+      277,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1809",
+    "file": "K1809.png",
+    "page": 74,
+    "bbox": [
+      506,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      638,
+      1235,
+      748,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9983
+  },
+  {
+    "code": "K1810",
+    "file": "K1810.png",
+    "page": 75,
+    "bbox": [
+      10,
+      97,
+      486,
+      797
+    ],
+    "code_bbox": [
+      180,
+      657,
+      288,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9989
+  },
+  {
+    "code": "K1811",
+    "file": "K1811.png",
+    "page": 75,
+    "bbox": [
+      506,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      637,
+      657,
+      740,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9971
+  },
+  {
+    "code": "K1812",
+    "file": "K1812.png",
+    "page": 75,
+    "bbox": [
+      10,
+      675,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      158,
+      1235,
+      269,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9993
+  },
+  {
+    "code": "K1813",
+    "file": "K1813.png",
+    "page": 75,
+    "bbox": [
+      506,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      636,
+      1235,
+      745,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1814",
+    "file": "K1814.png",
+    "page": 76,
+    "bbox": [
+      10,
+      97,
+      486,
+      797
+    ],
+    "code_bbox": [
+      175,
+      657,
+      284,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9995
+  },
+  {
+    "code": "K1815",
+    "file": "K1815.png",
+    "page": 76,
+    "bbox": [
+      506,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      640,
+      657,
+      749,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1816",
+    "file": "K1816.png",
+    "page": 76,
+    "bbox": [
+      10,
+      675,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      129,
+      1236,
+      240,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1817",
+    "file": "K1817.png",
+    "page": 76,
+    "bbox": [
+      506,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      582,
+      1235,
+      690,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9988
+  },
+  {
+    "code": "K1818",
+    "file": "K1818.png",
+    "page": 77,
+    "bbox": [
+      10,
+      97,
+      486,
+      797
+    ],
+    "code_bbox": [
+      153,
+      657,
+      263,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9994
+  },
+  {
+    "code": "K1819",
+    "file": "K1819.png",
+    "page": 77,
+    "bbox": [
+      506,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      665,
+      657,
+      775,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1820",
+    "file": "K1820.png",
+    "page": 77,
+    "bbox": [
+      10,
+      675,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      153,
+      1235,
+      261,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1821",
+    "file": "K1821.png",
+    "page": 77,
+    "bbox": [
+      506,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      629,
+      1235,
+      735,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9982
+  },
+  {
+    "code": "K1822",
+    "file": "K1822.png",
+    "page": 78,
+    "bbox": [
+      10,
+      97,
+      486,
+      797
+    ],
+    "code_bbox": [
+      158,
+      657,
+      266,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9914
+  },
+  {
+    "code": "K1823",
+    "file": "K1823.png",
+    "page": 78,
+    "bbox": [
+      506,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      650,
+      657,
+      757,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1824",
+    "file": "K1824.png",
+    "page": 78,
+    "bbox": [
+      10,
+      675,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      157,
+      1235,
+      267,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1825",
+    "file": "K1825.png",
+    "page": 78,
+    "bbox": [
+      506,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      619,
+      1235,
+      727,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9969
+  },
+  {
+    "code": "K1826",
+    "file": "K1826.png",
+    "page": 79,
+    "bbox": [
+      10,
+      97,
+      486,
+      797
+    ],
+    "code_bbox": [
+      187,
+      657,
+      295,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9968
+  },
+  {
+    "code": "K1827",
+    "file": "K1827.png",
+    "page": 79,
+    "bbox": [
+      506,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      639,
+      657,
+      745,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9977
+  },
+  {
+    "code": "K1828",
+    "file": "K1828.png",
+    "page": 79,
+    "bbox": [
+      10,
+      674,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      153,
+      1235,
+      262,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9963
+  },
+  {
+    "code": "K1829",
+    "file": "K1829.png",
+    "page": 79,
+    "bbox": [
+      506,
+      674,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      637,
+      1234,
+      747,
+      1268
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9963
+  },
+  {
+    "code": "K1830",
+    "file": "K1830.png",
+    "page": 80,
+    "bbox": [
+      10,
+      96,
+      320,
+      798
+    ],
+    "code_bbox": [
+      101,
+      656,
+      211,
+      693
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9982
+  },
+  {
+    "code": "K1831",
+    "file": "K1831.png",
+    "page": 80,
+    "bbox": [
+      340,
+      96,
+      651,
+      798
+    ],
+    "code_bbox": [
+      396,
+      658,
+      499,
+      692
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9989
+  },
+  {
+    "code": "K1832",
+    "file": "K1832.png",
+    "page": 80,
+    "bbox": [
+      671,
+      96,
+      982,
+      798
+    ],
+    "code_bbox": [
+      708,
+      657,
+      816,
+      691
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9838
+  },
+  {
+    "code": "K1833",
+    "file": "K1833.png",
+    "page": 80,
+    "bbox": [
+      10,
+      638,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      159,
+      1198,
+      269,
+      1232
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9995
+  },
+  {
+    "code": "K1834",
+    "file": "K1834.png",
+    "page": 80,
+    "bbox": [
+      506,
+      638,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      654,
+      1236,
+      763,
+      1269
+    ],
+    "series": "Villa ve Bina Giriş",
+    "ocr_confidence": 0.9992
+  },
+  {
+    "code": "K1901",
+    "file": "K1901.png",
+    "page": 81,
+    "bbox": [
+      10,
+      97,
+      320,
+      797
+    ],
+    "code_bbox": [
+      124,
+      657,
+      226,
+      692
+    ],
+    "series": "Acil Çıkış",
+    "ocr_confidence": 0.9987
+  },
+  {
+    "code": "K1902",
+    "file": "K1902.png",
+    "page": 81,
+    "bbox": [
+      340,
+      97,
+      651,
+      797
+    ],
+    "code_bbox": [
+      414,
+      657,
+      523,
+      692
+    ],
+    "series": "Acil Çıkış",
+    "ocr_confidence": 0.9974
+  },
+  {
+    "code": "K1903",
+    "file": "K1903.png",
+    "page": 81,
+    "bbox": [
+      671,
+      97,
+      982,
+      797
+    ],
+    "code_bbox": [
+      724,
+      657,
+      833,
+      692
+    ],
+    "series": "Acil Çıkış",
+    "ocr_confidence": 0.9984
+  },
+  {
+    "code": "K1904",
+    "file": "K1904.png",
+    "page": 81,
+    "bbox": [
+      10,
+      675,
+      486,
+      1328
+    ],
+    "code_bbox": [
+      125,
+      1235,
+      233,
+      1269
+    ],
+    "series": "Acil Çıkış",
+    "ocr_confidence": 0.996
+  },
+  {
+    "code": "K1905",
+    "file": "K1905.png",
+    "page": 81,
+    "bbox": [
+      506,
+      675,
+      982,
+      1328
+    ],
+    "code_bbox": [
+      597,
+      1235,
+      706,
+      1269
+    ],
+    "series": "Acil Çıkış",
+    "ocr_confidence": 0.9973
+  }
+]

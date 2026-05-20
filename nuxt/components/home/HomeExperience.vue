@@ -17,7 +17,11 @@
     :show-next-product="showNextProduct"
     :toggle-like="toggleLike"
   />
-  <HomeReferences />
+  <section class="ada-team-section">
+    <HomeManifesto />
+    <HomeTeamCards />
+  </section>
+  <!-- HomeReferences is temporarily disabled while the team/reference split is cleaned up. -->
   <HomeReviews
     :dynamic-gap="dynamicGap"
     :title-width="titleWidth"
@@ -85,6 +89,8 @@ const activeProductIndex = ref<number | null>(null);
 let catalogScrollTarget = 0;
 let catalogScrollTween: gsap.core.Tween | null = null;
 let catalogRowsFrame = 0;
+let manifestoGsapContext: ReturnType<typeof gsap.context> | null = null;
+let manifestoCleanupTasks: Array<() => void> = [];
 
 const isMobileCatalogViewport = () =>
   typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches;
@@ -561,6 +567,269 @@ const initCatalogObserver = () => {
   requestCatalogRowCheck();
 };
 
+const addManifestoCleanup = (task: () => void) => {
+  manifestoCleanupTasks.push(task);
+};
+
+const splitTextToRevealChars = (element: HTMLElement) => {
+  const text = element.textContent?.trim().replace(/\s+/g, ' ') || '';
+
+  if (!text || element.dataset.revealReady === 'true') return;
+
+  element.innerHTML = '';
+  element.dataset.revealReady = 'true';
+
+  text.split(' ').forEach((word, index, words) => {
+    const wordSpan = document.createElement('span');
+    wordSpan.className = 'reveal-word';
+
+    if (word.includes('Ege') || word.includes('Kardoor')) {
+      wordSpan.classList.add('brand-gradient-word');
+    }
+
+    Array.from(word).forEach((char) => {
+      const charSpan = document.createElement('span');
+      charSpan.className = 'reveal-char';
+      charSpan.textContent = char;
+      wordSpan.appendChild(charSpan);
+    });
+
+    element.appendChild(wordSpan);
+
+    if (index < words.length - 1) {
+      element.appendChild(document.createTextNode(' '));
+    }
+  });
+};
+
+const splitTitleToFloatingChars = (element: HTMLElement) => {
+  const text = (element.textContent || 'Yönetim Kadrosu').trim().replace(/\s+/g, ' ');
+
+  if (!text || element.dataset.floatReady === 'true') return;
+
+  element.innerHTML = '';
+  element.dataset.floatReady = 'true';
+
+  text.split(' ').forEach((word, wordIndex, words) => {
+    const wordSpan = document.createElement('span');
+    wordSpan.className = 'ada-title-float-word';
+
+    Array.from(word).forEach((char, charIndex) => {
+      const charSpan = document.createElement('span');
+      charSpan.className = 'ada-title-float-char';
+
+      if (wordIndex === 0 && charIndex === 0) {
+        charSpan.classList.add('ada-first-letter');
+      }
+
+      charSpan.textContent = char;
+      wordSpan.appendChild(charSpan);
+    });
+
+    element.appendChild(wordSpan);
+
+    if (wordIndex < words.length - 1) {
+      element.appendChild(document.createTextNode(' '));
+    }
+  });
+};
+
+const initManifestoAnimations = () => {
+  if (manifestoGsapContext) {
+    manifestoGsapContext.revert();
+    manifestoGsapContext = null;
+  }
+
+  manifestoCleanupTasks.forEach((task) => task());
+  manifestoCleanupTasks = [];
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  manifestoGsapContext = gsap.context(() => {
+    const scrollLineFill = document.querySelector<HTMLElement>('.ada-scroll-line-fill');
+    const manifestoContainer = document.querySelector<HTMLElement>('.ada-manifesto-container');
+    const catalogSection = document.querySelector<HTMLElement>('.catalog-section');
+    const revealElement = document.querySelector<HTMLElement>('#manifesto-text');
+    const titleElement = document.querySelector<HTMLElement>('.ada-giant-title');
+    const titleContainer = document.querySelector<HTMLElement>('.ada-title-container');
+    const loopTrack = document.querySelector<HTMLElement>('.ada-loop-track');
+    const loopContainer = document.querySelector<HTMLElement>('.ada-subtitle-container');
+    const loopTrackReverse = document.querySelector<HTMLElement>('.ada-loop-track-reverse');
+    const loopContainerReverse = document.querySelector<HTMLElement>('.ada-subtitle-container-reverse');
+
+    if (catalogSection && manifestoContainer) {
+      gsap.to(catalogSection, {
+        '--catalog-line-progress': 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: catalogSection,
+          start: 'bottom bottom',
+          endTrigger: manifestoContainer,
+          end: 'center 52%',
+          scrub: 2,
+          invalidateOnRefresh: true
+        }
+      });
+    }
+
+    if (scrollLineFill && manifestoContainer) {
+      gsap.set(scrollLineFill, { scaleY: 0 });
+      gsap.to(scrollLineFill, {
+        scaleY: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: catalogSection || manifestoContainer,
+          start: catalogSection ? 'bottom bottom' : 'top 72%',
+          endTrigger: manifestoContainer,
+          end: 'bottom 42%',
+          scrub: 2,
+          invalidateOnRefresh: true
+        }
+      });
+    }
+
+    if (revealElement) {
+      splitTextToRevealChars(revealElement);
+      gsap.to(revealElement.querySelectorAll('.reveal-char'), {
+        opacity: 1,
+        stagger: 0.02,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: revealElement,
+          start: 'top 85%',
+          end: 'bottom 50%',
+          scrub: 2
+        }
+      });
+    }
+
+    if (titleContainer) {
+      titleContainer.style.setProperty('overflow', 'visible', 'important');
+    }
+
+    if (titleElement) {
+      titleElement.style.setProperty('overflow', 'visible', 'important');
+      splitTitleToFloatingChars(titleElement);
+
+      gsap.fromTo(
+        titleElement.querySelectorAll('.ada-title-float-char'),
+        {
+          yPercent: 115,
+          rotateX: -72,
+          opacity: 0,
+          scale: 0.96,
+          filter: 'blur(10px)'
+        },
+        {
+          yPercent: 0,
+          rotateX: 0,
+          opacity: 1,
+          scale: 1,
+          filter: 'blur(0px)',
+          duration: 1.28,
+          ease: 'expo.out',
+          stagger: { amount: 0.44, from: 'center', ease: 'power2.out' },
+          scrollTrigger: {
+            trigger: titleElement,
+            start: 'top 88%',
+            end: 'bottom 56%',
+            toggleActions: 'play none none reverse'
+          }
+        }
+      );
+    }
+
+    if (loopTrack && loopContainer) {
+      const tickerTween = gsap.to(loopTrack, {
+        xPercent: -50,
+        duration: 160,
+        ease: 'none',
+        repeat: -1
+      });
+
+      gsap.fromTo(
+        loopContainer,
+        { opacity: 0, y: 70 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.35,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: loopContainer,
+            start: 'top 88%',
+            end: 'bottom 20%',
+            toggleActions: 'play none none reverse'
+          }
+        }
+      );
+
+      const pauseTicker = () => gsap.to(tickerTween, { timeScale: 0, duration: 1.2, ease: 'power2.out' });
+      const playTicker = () => gsap.to(tickerTween, { timeScale: 1, duration: 1.2, ease: 'power2.inOut' });
+
+      loopContainer.addEventListener('mouseenter', pauseTicker);
+      loopContainer.addEventListener('mouseleave', playTicker);
+      addManifestoCleanup(() => loopContainer.removeEventListener('mouseenter', pauseTicker));
+      addManifestoCleanup(() => loopContainer.removeEventListener('mouseleave', playTicker));
+    }
+
+    if (loopTrackReverse && loopContainerReverse) {
+      const tickerTweenReverse = gsap.fromTo(
+        loopTrackReverse,
+        { xPercent: -50 },
+        {
+          xPercent: 0,
+          duration: 160,
+          ease: 'none',
+          repeat: -1
+        }
+      );
+
+      gsap.fromTo(
+        loopContainerReverse,
+        { opacity: 0, y: 70 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.35,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: loopContainerReverse,
+            start: 'top 88%',
+            end: 'bottom 20%',
+            toggleActions: 'play none none reverse'
+          }
+        }
+      );
+
+      const pauseTickerReverse = () => gsap.to(tickerTweenReverse, { timeScale: 0, duration: 1.2, ease: 'power2.out' });
+      const playTickerReverse = () => gsap.to(tickerTweenReverse, { timeScale: 1, duration: 1.2, ease: 'power2.inOut' });
+
+      loopContainerReverse.addEventListener('mouseenter', pauseTickerReverse);
+      loopContainerReverse.addEventListener('mouseleave', playTickerReverse);
+      addManifestoCleanup(() => loopContainerReverse.removeEventListener('mouseenter', pauseTickerReverse));
+      addManifestoCleanup(() => loopContainerReverse.removeEventListener('mouseleave', playTickerReverse));
+    }
+
+    if (window.matchMedia('(min-width: 1025px)').matches) {
+      gsap.from('.ada-card', {
+        y: 44,
+        opacity: 0,
+        stagger: 0.14,
+        duration: 1.15,
+        ease: 'power4.out',
+        scrollTrigger: {
+          trigger: '.ada-founders-grid',
+          start: 'top 88%',
+          once: true
+        }
+      });
+    }
+  });
+
+  requestAnimationFrame(() => ScrollTrigger.refresh());
+};
+
 const initFooterAnimation = () => {
   const footer = footerDome.value as HTMLElement | null;
   const wrapper = footerWrapper.value as HTMLElement | null;
@@ -669,6 +938,7 @@ onMounted(() => {
     }
 
     initFooterAnimation();
+    initManifestoAnimations();
   });
 
   window.addEventListener('resize', updateTitleWidth);
@@ -709,6 +979,14 @@ onBeforeUnmount(() => {
   if (catalogObserver) {
     catalogObserver.disconnect();
   }
+
+  if (manifestoGsapContext) {
+    manifestoGsapContext.revert();
+    manifestoGsapContext = null;
+  }
+
+  manifestoCleanupTasks.forEach((task) => task());
+  manifestoCleanupTasks = [];
 
   window.removeEventListener('resize', updateTitleWidth);
   window.removeEventListener('mousemove', onDrag as EventListener);
