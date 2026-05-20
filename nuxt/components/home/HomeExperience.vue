@@ -38,10 +38,6 @@
     :tilt-card="tiltCard"
     :reset-tilt="resetTilt"
   />
-  <HomeFooter
-    :set-footer-wrapper-ref="setFooterWrapperRef"
-    :set-footer-dome-ref="setFooterDomeRef"
-  />
 </template><script setup lang="ts">
 // @ts-nocheck
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
@@ -301,9 +297,6 @@ const baseTitleWidth = ref(0);
 const inner1 = ref<HTMLElement | null>(null);
 const inner2 = ref<HTMLElement | null>(null);
 
-const footerWrapper = ref<HTMLElement | null>(null);
-const footerDome = ref<HTMLElement | null>(null);
-
 const setMainRef = (el: Element | ComponentPublicInstance | null) => {
   mainRef.value = el as HTMLElement | null;
 };
@@ -322,14 +315,6 @@ const setInner1Ref = (el: Element | ComponentPublicInstance | null) => {
 
 const setInner2Ref = (el: Element | ComponentPublicInstance | null) => {
   inner2.value = el as HTMLElement | null;
-};
-
-const setFooterWrapperRef = (el: Element | ComponentPublicInstance | null) => {
-  footerWrapper.value = el as HTMLElement | null;
-};
-
-const setFooterDomeRef = (el: Element | ComponentPublicInstance | null) => {
-  footerDome.value = el as HTMLElement | null;
 };
 
 const googleReviews = ref([
@@ -399,7 +384,6 @@ const track2State: TrackState = {
 let activeTrack: number | null = null;
 let animationFrameId = 0;
 let titleInterval: ReturnType<typeof setInterval> | null = null;
-let footerTrigger: any = null;
 let catalogObserver: IntersectionObserver | null = null;
 
 const updateTitleWidth = () => {
@@ -830,81 +814,6 @@ const initManifestoAnimations = () => {
   requestAnimationFrame(() => ScrollTrigger.refresh());
 };
 
-const initFooterAnimation = () => {
-  const footer = footerDome.value as HTMLElement | null;
-  const wrapper = footerWrapper.value as HTMLElement | null;
-
-  if (!footer || !wrapper) return;
-
-  if (footerTrigger) {
-    footerTrigger.kill();
-  }
-
-  const isMobileFooter = () => window.matchMedia('(max-width: 760px)').matches;
-  const getFooterMotion = () => {
-    if (isMobileFooter()) {
-      return { y: 0, radius: 220, divisor: 1.18 };
-    }
-
-    return { y: 24, radius: 520, divisor: 1.35 };
-  };
-
-  const initialMotion = getFooterMotion();
-
-  gsap.set(footer, {
-    y: initialMotion.y,
-    '--dome-radius': `${initialMotion.radius}px`,
-    borderTopLeftRadius: `50% ${initialMotion.radius}px`,
-    borderTopRightRadius: `50% ${initialMotion.radius}px`,
-    force3D: true
-  });
-
-  let ticking = false;
-
-  const updateFooterShape = () => {
-    ticking = false;
-
-    const rect = wrapper.getBoundingClientRect();
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-    const motion = getFooterMotion();
-    const rawProgress = (viewportHeight - rect.top) / (viewportHeight * motion.divisor);
-    const progress = Math.min(1, Math.max(0, rawProgress));
-    const easedProgress = gsap.parseEase('sine.inOut')(progress);
-    const y = Math.max(0, motion.y * (1 - easedProgress));
-    const radius = Math.max(0, motion.radius * (1 - easedProgress));
-    const radiusValue = `50% ${radius}px`;
-
-    gsap.to(footer, {
-      y,
-      '--dome-radius': `${radius}px`,
-      borderTopLeftRadius: radiusValue,
-      borderTopRightRadius: radiusValue,
-      duration: 0.9,
-      ease: 'power2.out',
-      overwrite: true,
-      force3D: true
-    });
-  };
-
-  const requestFooterUpdate = () => {
-    if (ticking) return;
-
-    ticking = true;
-    requestAnimationFrame(updateFooterShape);
-  };
-
-  updateFooterShape();
-  window.addEventListener('scroll', requestFooterUpdate, { passive: true });
-  window.addEventListener('resize', requestFooterUpdate);
-
-  footerTrigger = {
-    kill: () => {
-      window.removeEventListener('scroll', requestFooterUpdate);
-      window.removeEventListener('resize', requestFooterUpdate);
-    }
-  };
-};
-
 onMounted(() => {
   products.value = mockData;
   visibleRows.value = [1];
@@ -937,7 +846,6 @@ onMounted(() => {
       });
     }
 
-    initFooterAnimation();
     initManifestoAnimations();
   });
 
@@ -970,10 +878,6 @@ onBeforeUnmount(() => {
   if (catalogRowsFrame) {
     cancelAnimationFrame(catalogRowsFrame);
     catalogRowsFrame = 0;
-  }
-
-  if (footerTrigger) {
-    footerTrigger.kill();
   }
 
   if (catalogObserver) {

@@ -1,6 +1,6 @@
 <template>
-  <div class="footer-wrapper" :ref="setFooterWrapperRef">
-    <footer class="footer-dome" :ref="setFooterDomeRef">
+  <div class="footer-wrapper" ref="footerWrapper">
+    <footer class="footer-dome" ref="footerDome">
       <div class="footer-brand">
         <img src="https://i.hizliresim.com/q70qm97.png" alt="ADA Logo" class="footer-logo">
       </div>
@@ -174,10 +174,92 @@
     </footer>
   </div>
 </template>
+
 <script setup lang="ts">
 // @ts-nocheck
-defineProps<{
-  setFooterWrapperRef: (el: any) => void;
-  setFooterDomeRef: (el: any) => void;
-}>();
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { gsap } from 'gsap'
+
+const footerWrapper = ref<HTMLElement | null>(null)
+const footerDome = ref<HTMLElement | null>(null)
+
+let cleanupFooter: (() => void) | null = null
+
+const initFooterAnimation = () => {
+  const footer = footerDome.value
+  const wrapper = footerWrapper.value
+
+  if (!footer || !wrapper) return
+
+  const isMobileFooter = () => window.matchMedia('(max-width: 760px)').matches
+  const getFooterMotion = () => {
+    if (isMobileFooter()) {
+      return { y: 0, radius: 220, divisor: 1.18 }
+    }
+
+    return { y: 24, radius: 520, divisor: 1.35 }
+  }
+
+  const initialMotion = getFooterMotion()
+
+  gsap.set(footer, {
+    y: initialMotion.y,
+    '--dome-radius': `${initialMotion.radius}px`,
+    borderTopLeftRadius: `50% ${initialMotion.radius}px`,
+    borderTopRightRadius: `50% ${initialMotion.radius}px`,
+    force3D: true
+  })
+
+  let ticking = false
+
+  const updateFooterShape = () => {
+    ticking = false
+
+    const rect = wrapper.getBoundingClientRect()
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+    const motion = getFooterMotion()
+    const rawProgress = (viewportHeight - rect.top) / (viewportHeight * motion.divisor)
+    const progress = Math.min(1, Math.max(0, rawProgress))
+    const easedProgress = gsap.parseEase('sine.inOut')(progress)
+    const y = Math.max(0, motion.y * (1 - easedProgress))
+    const radius = Math.max(0, motion.radius * (1 - easedProgress))
+    const radiusValue = `50% ${radius}px`
+
+    gsap.to(footer, {
+      y,
+      '--dome-radius': `${radius}px`,
+      borderTopLeftRadius: radiusValue,
+      borderTopRightRadius: radiusValue,
+      duration: 0.9,
+      ease: 'power2.out',
+      overwrite: true,
+      force3D: true
+    })
+  }
+
+  const requestFooterUpdate = () => {
+    if (ticking) return
+
+    ticking = true
+    requestAnimationFrame(updateFooterShape)
+  }
+
+  updateFooterShape()
+  window.addEventListener('scroll', requestFooterUpdate, { passive: true })
+  window.addEventListener('resize', requestFooterUpdate)
+
+  cleanupFooter = () => {
+    window.removeEventListener('scroll', requestFooterUpdate)
+    window.removeEventListener('resize', requestFooterUpdate)
+  }
+}
+
+onMounted(() => {
+  initFooterAnimation()
+})
+
+onBeforeUnmount(() => {
+  cleanupFooter?.()
+  cleanupFooter = null
+})
 </script>

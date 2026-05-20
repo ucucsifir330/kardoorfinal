@@ -13,5 +13,8 @@
     "preview": "npm --prefix nuxt run preview",
     "typecheck": "npm --prefix nuxt run typecheck",
     "check": "npm --prefix nuxt run typecheck"
+  },
+  "dependencies": {
+    "nuxt": "^4.4.6"
   }
 }

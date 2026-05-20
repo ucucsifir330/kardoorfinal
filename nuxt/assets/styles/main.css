@@ -8,7 +8,6 @@
 /* Shared components */
 @import "./components/buttons.css";
 @import "./components/site-header.css";
-@import "./components/footer.css";
 
 /* Page / section styles */
 @import "./sections/entrance-door.css";
@@ -20,6 +19,8 @@
 @import "./sections/home-reviews.css";
 @import "./sections/home-footer.css";
 @import "./pages/catalog.css";
+@import "./pages/company.css";
+@import "./pages/references.css";
 
 body.home-content-visible .site-header {
   opacity: 0;
