@@ -68,12 +68,15 @@ interface ProductVariant {
   liked: boolean;
 }
 
-const seriesImages = {
-  ivoryLine: "https://ik.imagekit.io/kardoor/series/1.png?updatedAt=1778762643897",
-  graphiteOak: "https://ik.imagekit.io/kardoor/series/2.png?updatedAt=1778762645386",
-  classicSand: "https://ik.imagekit.io/kardoor/series/3.png?updatedAt=1778762644382",
-  emeraldLine: "https://ik.imagekit.io/kardoor/series/4.png?updatedAt=1778762645568",
-  monoGraphite: "https://ik.imagekit.io/kardoor/series/5.png?updatedAt=1778762645583"
+const catalogDoorImages = {
+  classicSand: '/images/doors/atelier-classic-sand.png',
+  emeraldLine: '/images/doors/atelier-emerald.png',
+  monoGraphite: '/images/doors/atelier-mono-graphite.png',
+  ivoryLine: '/images/doors/atelier-ivory-line.png',
+  graphiteOak: '/images/doors/atelier-graphite-oak.png',
+  stone: '/images/doors/door-stone.svg',
+  graphite: '/images/doors/door-graphite.svg',
+  metal: '/images/doors/door-metal.svg'
 } as const
 const products = ref([] as ProductVariant[]);
 const isCatalogScrolled = ref(false);
@@ -98,14 +101,14 @@ const setRowRef = (el: Element | ComponentPublicInstance | null) => {
 };
 
 const mockData: ProductVariant[] = [
-  { id: 1, finish: 'saten paslanmaz çelik', code: '2701d002inx00', image: seriesImages.emeraldLine, liked: false },
-  { id: 2, finish: 'saten siyah', code: '2701d002nmx00', image: seriesImages.monoGraphite, liked: false },
-  { id: 3, finish: 'PVD saten siyah', code: '2701d002izx00', image: seriesImages.graphiteOak, liked: false },
-  { id: 4, finish: 'bronz', code: '2701d002brx00', image: seriesImages.classicSand, liked: false },
-  { id: 5, finish: 'beyaz', code: '2701d002whx00', image: seriesImages.ivoryLine, liked: false },
-  { id: 6, finish: 'PVD saten altın', code: '2701d002gdx00', image: seriesImages.emeraldLine, liked: false },
-  { id: 7, finish: 'PVD açık bronz', code: '2701d002lbx00', image: seriesImages.monoGraphite, liked: false },
-  { id: 8, finish: 'PVD şampanya', code: '2701d002chx00', image: seriesImages.graphiteOak, liked: false }
+  { id: 1, finish: 'saten paslanmaz çelik', code: '2701d002inx00', image: catalogDoorImages.classicSand, liked: false },
+  { id: 2, finish: 'saten siyah', code: '2701d002nmx00', image: catalogDoorImages.emeraldLine, liked: false },
+  { id: 3, finish: 'PVD saten siyah', code: '2701d002izx00', image: catalogDoorImages.monoGraphite, liked: false },
+  { id: 4, finish: 'bronz', code: '2701d002brx00', image: catalogDoorImages.ivoryLine, liked: false },
+  { id: 5, finish: 'beyaz', code: '2701d002whx00', image: catalogDoorImages.graphiteOak, liked: false },
+  { id: 6, finish: 'PVD saten altın', code: '2701d002gdx00', image: catalogDoorImages.classicSand, liked: false },
+  { id: 7, finish: 'PVD açık bronz', code: '2701d002lbx00', image: catalogDoorImages.emeraldLine, liked: false },
+  { id: 8, finish: 'PVD şampanya', code: '2701d002chx00', image: catalogDoorImages.monoGraphite, liked: false }
 ];
 
 products.value = mockData;
@@ -647,9 +650,8 @@ const initManifestoAnimations = () => {
         ease: 'none',
         scrollTrigger: {
           trigger: catalogSection,
-          start: 'bottom bottom',
-          endTrigger: manifestoContainer,
-          end: 'center 52%',
+          start: 'top 72%',
+          end: 'bottom 58%',
           scrub: 2,
           invalidateOnRefresh: true
         }

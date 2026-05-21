@@ -10,26 +10,26 @@
         </div>
 
         <div
-          v-for="n in 7"
-          :key="n"
+          v-for="block in catalogBlocks"
+          :key="block.index"
           :ref="setRowRef"
-          :data-row-index="n"
+          :data-row-index="block.index"
           class="catalog-row"
         >
           <div class="catalog-row-info">
             <transition @before-enter="catalogBeforeEnter" @enter="catalogEnter" :css="false">
-              <div v-if="visibleRows.includes(n)" data-index="0">
-                <h2 class="catalog-product-family">ONE</h2>
-                <p class="catalog-designer">by Güven Karaboğa</p>
+              <div v-if="visibleRows.includes(block.index)" data-index="0">
+                <h2 class="catalog-product-family">{{ block.number }}</h2>
+                <p class="catalog-designer">{{ block.shortName }}</p>
 
                 <div class="catalog-tags">
                   <div class="catalog-tag">
-                    <span>kapı donanımı</span>
+                    <span>{{ block.category }}</span>
                     <div class="catalog-tag-line"></div>
                   </div>
 
                   <div class="catalog-tag">
-                    <span>rozetli kapı kolları</span>
+                    <span>{{ block.summary }}</span>
                     <div class="catalog-tag-line"></div>
                   </div>
                 </div>
@@ -40,10 +40,10 @@
           <div class="catalog-card">
             <div class="catalog-card-header">
               <h3 class="catalog-card-title">
-                PBL15/50 <span>Seri 0{{ n }}</span>
+                {{ block.cardTitle }} <span>{{ block.seriesLabel }}</span>
               </h3>
 
-              <span class="catalog-card-subtitle">masif çift yaylı rozetli kapı kolu</span>
+              <span class="catalog-card-subtitle">{{ block.description }}</span>
             </div>
 
             <transition-group
@@ -55,8 +55,8 @@
               @enter="catalogEnter"
             >
               <article
-                v-for="(item, index) in (visibleRows.includes(n) ? products : [])"
-                :key="'row-' + n + '-item-' + item.id"
+                v-for="(item, index) in (visibleRows.includes(block.index) ? products : [])"
+                :key="'row-' + block.index + '-item-' + item.id"
                 :data-index="index + 1"
                 class="catalog-product"
                 @click="openProductModal(index)"
@@ -70,16 +70,16 @@
 
                   <div
                     class="catalog-like-wrap"
-                    :class="{ 'is-menu-open': activeWishlistKey === `${n}-${item.id}` }"
+                    :class="{ 'is-menu-open': activeWishlistKey === `${block.index}-${item.id}` }"
                   >
                     <button
                       type="button"
                       class="catalog-like"
                       :class="{ 'is-liked': item.liked }"
                       :aria-label="item.liked ? 'Favorilerden çıkar' : 'Favorilere ekle'"
-                      @click.stop.prevent="handleWishlistClick(index, `${n}-${item.id}`)"
-                      @keydown.enter.stop.prevent="handleWishlistClick(index, `${n}-${item.id}`)"
-                      @keydown.space.stop.prevent="handleWishlistClick(index, `${n}-${item.id}`)"
+                      @click.stop.prevent="handleWishlistClick(index, `${block.index}-${item.id}`)"
+                      @keydown.enter.stop.prevent="handleWishlistClick(index, `${block.index}-${item.id}`)"
+                      @keydown.space.stop.prevent="handleWishlistClick(index, `${block.index}-${item.id}`)"
                     >
                       <svg class="catalog-heart" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -88,7 +88,7 @@
 
                     <div
                       class="catalog-wishlist-panel"
-                      :class="{ 'is-click-open': activeWishlistKey === `${n}-${item.id}` }"
+                      :class="{ 'is-click-open': activeWishlistKey === `${block.index}-${item.id}` }"
                       role="menu"
                       @mousedown.stop
                       @click.stop
@@ -224,4 +224,77 @@ defineProps<{
   showNextProduct: () => void;
   toggleLike: (index: number | null) => void;
 }>();
+
+const catalogBlocks = [
+  {
+    index: 1,
+    number: '01',
+    seriesLabel: 'Seri 01',
+    shortName: 'Alüminyum',
+    category: 'Dış İklim',
+    summary: 'Kasa / Kanat',
+    cardTitle: 'Alüminyum Sistemler',
+    description: 'dış iklim uyumlu kapı sistemleri'
+  },
+  {
+    index: 2,
+    number: '02',
+    seriesLabel: 'Seri 02',
+    shortName: 'Doğal',
+    category: 'Dış İklim',
+    summary: 'Wood / Taş',
+    cardTitle: 'Doğal Yüzeyler',
+    description: 'wood ve taş dokulu kapı yüzeyleri'
+  },
+  {
+    index: 3,
+    number: '03',
+    seriesLabel: 'Seri 03',
+    shortName: 'Cam',
+    category: 'Dış İklim',
+    summary: 'Karma / Temperli',
+    cardTitle: 'Camlı Modeller',
+    description: 'cam detaylı dış kapı çözümleri'
+  },
+  {
+    index: 4,
+    number: '04',
+    seriesLabel: 'Seri 04',
+    shortName: 'Metal',
+    category: 'Dış İklim',
+    summary: 'Kompozit / Sac',
+    cardTitle: 'Metal & Kompozit',
+    description: 'dayanıklı metal ve kompozit modeller'
+  },
+  {
+    index: 5,
+    number: '05',
+    seriesLabel: 'Seri 05',
+    shortName: 'Laminoks',
+    category: 'Exclusive',
+    summary: 'PVC / Elit / Rustik',
+    cardTitle: 'PVC & Laminoks',
+    description: 'exclusive kaplama seçenekleri'
+  },
+  {
+    index: 6,
+    number: '06',
+    seriesLabel: 'Seri 06',
+    shortName: 'Mimari',
+    category: 'Exclusive',
+    summary: 'Özel / Pivot',
+    cardTitle: 'Mimari Özel',
+    description: 'projeye özel ve pivot çözümler'
+  },
+  {
+    index: 7,
+    number: '07',
+    seriesLabel: 'Seri 07',
+    shortName: 'Teknik',
+    category: 'Çözümler',
+    summary: 'Giriş / Acil / Şaft',
+    cardTitle: 'Giriş & Teknik',
+    description: 'giriş, acil çıkış ve şaft sistemleri'
+  }
+];
 </script>

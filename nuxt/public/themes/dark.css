@@ -1411,3 +1411,101 @@ body,
 .catalog-card-subtitle {
   color: rgba(234, 232, 232, 0.55) !important;
 }
+
+/* Mineral Executive dark palette pass. */
+:root {
+  --bg-color: #0D1012;
+  --text-primary: #F4F1EA;
+  --text-secondary: rgba(244, 241, 234, 0.68);
+  --entrance-handoff-bg: #14151D;
+  --catalog-stage-bg: #0D1012;
+  --catalog-stage-surface-bg: #171B1F;
+  --catalog-stage-main-bg: #171B1F;
+  --catalog-stage-sticky-bg: #171B1F;
+  --catalog-stage-line-track: rgba(244, 241, 234, 0.14);
+  --catalog-stage-line-fill: #B88A44;
+  --catalog-product-scrollbar-track: rgba(244, 241, 234, 0.08);
+  --catalog-product-scrollbar-thumb: rgba(184, 138, 68, 0.44);
+  --catalog-product-scrollbar-thumb-hover: rgba(184, 138, 68, 0.72);
+}
+
+html,
+body,
+#app,
+.app-shell,
+.app-shell--night {
+  background-color: #0D1012 !important;
+  color: #F4F1EA !important;
+}
+
+.catalog-section {
+  background: var(--entrance-handoff-bg) !important;
+}
+
+.catalog-shell,
+.catalog-main,
+.catalog-sticky-title,
+.testimonial-wrapper,
+.footer-wrapper {
+  background: #171B1F !important;
+}
+
+.catalog-sidebar {
+  background: linear-gradient(90deg, #121619 0%, #171B1F 100%) !important;
+  border-right-color: rgba(244, 241, 234, 0.1) !important;
+}
+
+.catalog-search-wrapper,
+.catalog-filter-item,
+.catalog-card,
+.catalog-product-image-wrap,
+.review-card {
+  background: rgba(244, 241, 234, 0.055) !important;
+  border-color: rgba(244, 241, 234, 0.1) !important;
+}
+
+.catalog-title,
+.catalog-product-family,
+.catalog-card-title,
+.rotating-title,
+.quote,
+.name {
+  color: #F4F1EA !important;
+}
+
+.catalog-designer,
+.catalog-card-subtitle,
+.catalog-finish,
+.catalog-code {
+  color: rgba(244, 241, 234, 0.64) !important;
+}
+
+.catalog-section::before {
+  background: linear-gradient(
+    to bottom,
+    #171B1F 0%,
+    #171B1F 138px,
+    rgba(184, 138, 68, 0.22) 220px,
+    rgba(244, 241, 234, 0.18) 100%
+  ) !important;
+}
+
+.catalog-section::after {
+  background: linear-gradient(
+    to bottom,
+    #171B1F 0%,
+    #171B1F 132px,
+    rgba(184, 138, 68, 0.5) 220px,
+    #B88A44 320px,
+    #B88A44 100%
+  ) !important;
+  filter: none !important;
+}
+
+.gradient-mask {
+  background: linear-gradient(
+    to right,
+    #171B1F 60%,
+    rgba(23, 27, 31, 0) 100%
+  ) !important;
+}

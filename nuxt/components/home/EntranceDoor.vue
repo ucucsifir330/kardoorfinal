@@ -692,4 +692,6 @@ onBeforeUnmount(() => {
 
     <div ref="blackoutRef" class="entrance-door__blackout" aria-hidden="true" />
   </section>
+
+  <div class="entrance-door-handoff" aria-hidden="true" />
 </template>

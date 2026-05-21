@@ -26,6 +26,10 @@
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+.home-page {
+  background: var(--entrance-handoff-bg, #eae8e8);
+}
+
 .app-shell--day .entrance-door {
   --portal-blackout-inner: rgba(234, 232, 232, 0.92);
   --portal-blackout-mid: rgba(234, 232, 232, 0.98);
@@ -837,6 +841,16 @@
 
 .app-shell--day .entrance-door {
   background: #eae8e8;
+}
+
+.entrance-door-handoff {
+  height: clamp(120px, 16svh, 210px);
+  margin-top: -1px;
+  background: var(--entrance-handoff-bg, #eae8e8);
+}
+
+.app-shell--night .entrance-door-handoff {
+  background: var(--entrance-handoff-bg, #14151d);
 }
 
 .app-shell--day .entrance-door::before {
