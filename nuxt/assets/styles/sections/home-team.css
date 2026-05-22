@@ -1,5 +1,5 @@
 .ada-team-section {
-  --team-section-bg: #14151d;
+  --team-section-bg: var(--catalog-stage-surface-bg, #14151d);
   --team-section-text: #eae8e8;
   --team-card-bg: #f8f8f6;
   --team-card-hover-bg: var(--team-section-bg);
@@ -831,7 +831,7 @@ span.ada-brand-logo {
 }
 
 .app-shell--day .ada-team-section {
-  --team-section-bg: var(--bg-color, #eae8e8);
+  --team-section-bg: var(--catalog-stage-surface-bg, #eae8e8);
   --team-section-text: #14151d;
   --team-card-bg: #14151d;
   --team-card-hover-bg: var(--team-section-bg);
@@ -867,7 +867,7 @@ span.ada-brand-logo {
 
 .app-shell--day .ada-manifesto-spacer,
 .app-shell--day .ada-manifesto-container {
-  background: var(--bg-color, #eae8e8);
+  background: var(--team-section-bg, var(--catalog-stage-surface-bg, #eae8e8));
 }
 
 .app-shell--day .ada-brand-logo {

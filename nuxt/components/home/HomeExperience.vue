@@ -44,6 +44,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { products as doorProducts } from '~/data/products'
 
 interface Review {
   id: number;
@@ -61,23 +62,14 @@ interface TrackState {
 }
 
 interface ProductVariant {
-  id: number;
+  id: string;
   finish: string;
   code: string;
+  seriesTitle: string;
   image: string;
   liked: boolean;
 }
 
-const catalogDoorImages = {
-  classicSand: '/images/doors/atelier-classic-sand.png',
-  emeraldLine: '/images/doors/atelier-emerald.png',
-  monoGraphite: '/images/doors/atelier-mono-graphite.png',
-  ivoryLine: '/images/doors/atelier-ivory-line.png',
-  graphiteOak: '/images/doors/atelier-graphite-oak.png',
-  stone: '/images/doors/door-stone.svg',
-  graphite: '/images/doors/door-graphite.svg',
-  metal: '/images/doors/door-metal.svg'
-} as const
 const products = ref([] as ProductVariant[]);
 const isCatalogScrolled = ref(false);
 const mainRef = ref<HTMLElement | null>(null);
@@ -100,18 +92,17 @@ const setRowRef = (el: Element | ComponentPublicInstance | null) => {
   }
 };
 
-const mockData: ProductVariant[] = [
-  { id: 1, finish: 'saten paslanmaz çelik', code: '2701d002inx00', image: catalogDoorImages.classicSand, liked: false },
-  { id: 2, finish: 'saten siyah', code: '2701d002nmx00', image: catalogDoorImages.emeraldLine, liked: false },
-  { id: 3, finish: 'PVD saten siyah', code: '2701d002izx00', image: catalogDoorImages.monoGraphite, liked: false },
-  { id: 4, finish: 'bronz', code: '2701d002brx00', image: catalogDoorImages.ivoryLine, liked: false },
-  { id: 5, finish: 'beyaz', code: '2701d002whx00', image: catalogDoorImages.graphiteOak, liked: false },
-  { id: 6, finish: 'PVD saten altın', code: '2701d002gdx00', image: catalogDoorImages.classicSand, liked: false },
-  { id: 7, finish: 'PVD açık bronz', code: '2701d002lbx00', image: catalogDoorImages.emeraldLine, liked: false },
-  { id: 8, finish: 'PVD şampanya', code: '2701d002chx00', image: catalogDoorImages.monoGraphite, liked: false }
-];
+const catalogProducts: ProductVariant[] = doorProducts.map((product) => ({
+  ...product,
+  id: product.slug,
+  finish: product.name,
+  code: product.code,
+  seriesTitle: product.seriesTitle,
+  image: product.image,
+  liked: false
+}));
 
-products.value = mockData;
+products.value = catalogProducts;
 visibleRows.value = [1];
 
 const catalogBeforeEnter = (el: HTMLElement) => {
@@ -817,7 +808,7 @@ const initManifestoAnimations = () => {
 };
 
 onMounted(() => {
-  products.value = mockData;
+  products.value = catalogProducts.map((product) => ({ ...product }));
   visibleRows.value = [1];
 
   nextTick(() => {
@@ -903,4 +894,3 @@ onBeforeUnmount(() => {
   document.body.style.overflow = '';
 });
 </script>
-
