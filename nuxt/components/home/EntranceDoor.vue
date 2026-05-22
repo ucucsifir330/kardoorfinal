@@ -13,10 +13,11 @@ type ShowroomDoor = {
 };
 
 const { locale } = useKardoorLocale();
+const nuxtApp = useNuxtApp();
 
 const frameCount = 120;
-const croppedRenderDoorRect = { x: 0, y: 0, width: 225, height: 493 };
-const fullRenderDoorRect = { x: 846, y: 316, width: 225, height: 493 };
+const croppedRenderDoorRect = { x: 0, y: 0, width: 524, height: 585 };
+const fullRenderDoorRect = { x: 1028, y: 415, width: 524, height: 585 };
 const imageKitBaseUrl = "https://ik.imagekit.io/kardoor";
 const imageKitSeriesImages = {
   emeraldLine: `${imageKitBaseUrl}/series/4.png?updatedAt=1778762645568`,
@@ -26,17 +27,15 @@ const imageKitSeriesImages = {
   classicSand: `${imageKitBaseUrl}/series/3.png?updatedAt=1778762644382`
 } as const;
 const imageKitHomeImages = {
-  day: `${imageKitBaseUrl}/homelight.png?updatedAt=1778756520120`,
-  night: `${imageKitBaseUrl}/homenight.png?updatedAt=1778756519909`
+  day: `${imageKitBaseUrl}/EvLight.png`,
+  night: `${imageKitBaseUrl}/EvDark.png`
 } as const;
-const doorRenderUpdatedAt = "1778792850469";
 
 const heroRef = ref<HTMLElement | null>(null);
 const zoomLayerRef = ref<HTMLElement | null>(null);
 const imageRef = ref<HTMLImageElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
-const blackoutRef = ref<HTMLElement | null>(null);
 const showroomTrackRef = ref<HTMLElement | null>(null);
 
 let cleanup: (() => void) | undefined;
@@ -118,10 +117,9 @@ onMounted(() => {
   const image = imageRef.value;
   const stage = stageRef.value;
   const canvas = canvasRef.value;
-  const blackout = blackoutRef.value;
   const showroomTrack = showroomTrackRef.value;
 
-  if (!hero || !zoomLayer || !image || !stage || !canvas || !blackout || !showroomTrack) return;
+  if (!hero || !zoomLayer || !image || !stage || !canvas || !showroomTrack) return;
 
   gsap.registerPlugin(ScrollTrigger);
 
@@ -132,12 +130,16 @@ onMounted(() => {
   const loadedFrames = new Map<number, HTMLImageElement>();
   const pendingFrames = new Map<number, Promise<HTMLImageElement>>();
   const playhead = { progress: 0 };
-  const doorRect = { x: 729, y: 270, width: 195, height: 426 };
+  const doorRect = { x: 658, y: 228, width: 374, height: 418 };
 
-  const introPortion = 0.42;
-  const sequenceProgressEnd = 0.5;
+  const portalDuration = 0.4;
+  const introPortion = portalDuration;
+  const sequenceProgressEnd = 0.92;
   const zoomProgressStart = 0.0;
-  const blackoutProgressStart = 1.0;
+  const portalStartMaster = 0.035;
+  const portalEndMaster = introPortion;
+  const horizontalStart = introPortion + 0.04;
+  const horizontalDuration = 0.34;
 
   let currentFrameIndex = -1;
   let targetFrameIndex = 0;
@@ -145,12 +147,10 @@ onMounted(() => {
   let trigger: ReturnType<typeof ScrollTrigger.create> | null = null;
   let preloadTimer: number | null = null;
   let fallbackScanTimer: number | null = null;
+  let recoveryTimer: number | null = null;
   let isDoorOpen = false;
   let isShowroomReady = false;
-  let scrollDirection = 1;
-  let doorScreenRect = { left: 0, top: 0, width: 0, height: 0 };
-  let heroBounds = { width: 0, height: 0 };
-  let zoomOriginPx = { x: 0, y: 0 };
+  let pageShowCleanup: (() => void) | null = null;
 
   const setDoorOpen = (nextState: boolean) => {
     if (isDoorOpen === nextState) return;
@@ -164,7 +164,7 @@ onMounted(() => {
   };
 
   const frameUrl = (frameNumber: number) =>
-    `${imageKitBaseUrl}/doorrender/render${String(frameNumber).padStart(4, "0")}.png?updatedAt=${doorRenderUpdatedAt}`;
+    `${imageKitBaseUrl}/newdoorrender/${String(frameNumber).padStart(4, "0")}.png`;
 
   const loadFrame = (frameNumber: number) => {
     const loaded = loadedFrames.get(frameNumber);
@@ -268,8 +268,8 @@ onMounted(() => {
   };
 
   const drawFrame = (source: HTMLImageElement) => {
-    const displayWidth = Math.max(1, Math.round(stage.getBoundingClientRect().width));
-    const displayHeight = Math.max(1, Math.round(stage.getBoundingClientRect().height));
+    const displayWidth = Math.max(1, Math.round(stage.clientWidth));
+    const displayHeight = Math.max(1, Math.round(stage.clientHeight));
     const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
     const canvasWidth = Math.max(1, Math.round(displayWidth * pixelRatio));
     const canvasHeight = Math.max(1, Math.round(displayHeight * pixelRatio));
@@ -282,16 +282,23 @@ onMounted(() => {
 
     const renderDoorRect = getRenderDoorRect(source);
 
+    const sourceAspect = renderDoorRect.width / renderDoorRect.height;
+    const displayAspect = displayWidth / displayHeight;
+    const drawWidth = displayAspect > sourceAspect ? displayHeight * sourceAspect : displayWidth;
+    const drawHeight = displayAspect > sourceAspect ? displayHeight : displayWidth / sourceAspect;
+    const drawX = (displayWidth - drawWidth) / 2;
+    const drawY = (displayHeight - drawHeight) / 2;
+
     context.drawImage(
       source,
       renderDoorRect.x,
       renderDoorRect.y,
       renderDoorRect.width,
       renderDoorRect.height,
-      0,
-      0,
-      displayWidth,
-      displayHeight
+      drawX,
+      drawY,
+      drawWidth,
+      drawHeight
     );
   };
 
@@ -315,7 +322,6 @@ onMounted(() => {
     const stageHeight = doorRect.height * scale;
     const zoomOriginXPx = offsetX + (doorRect.x + doorRect.width * 0.5) * scale;
     const zoomOriginYPx = offsetY + (doorRect.y + doorRect.height * 0.5) * scale;
-    zoomOriginPx = { x: zoomOriginXPx, y: zoomOriginYPx };
     const zoomOriginX = `${zoomOriginXPx}px`;
     const zoomOriginY = `${zoomOriginYPx}px`;
     const doorCenterX = zoomOriginX;
@@ -323,25 +329,26 @@ onMounted(() => {
 
     const doorLeftPx = offsetX + doorRect.x * scale;
     const doorTopPx = offsetY + doorRect.y * scale;
-
-    doorScreenRect = { left: doorLeftPx, top: doorTopPx, width: stageWidth, height: stageHeight };
-    heroBounds = { width: bounds.width, height: bounds.height };
+    const portalOpenLeftPx = doorLeftPx + stageWidth * 0.34;
+    const portalOpenTopPx = doorTopPx + stageHeight * 0.13;
+    const portalOpenWidthPx = stageWidth * 0.04;
+    const portalOpenHeightPx = stageHeight * 0.76;
 
     stage.style.setProperty("--door-left", `${doorLeftPx}px`);
     stage.style.setProperty("--door-top", `${doorTopPx}px`);
     stage.style.setProperty("--door-width", `${stageWidth}px`);
     stage.style.setProperty("--door-height", `${stageHeight}px`);
-    const baseShowroomScale = Math.max(
-      0.18,
-      Math.min(0.32, stageWidth / 540)
-    );
-    hero.style.setProperty("--showroom-base-scale", `${baseShowroomScale}`);
     zoomLayer.style.setProperty("--zoom-origin-x", zoomOriginX);
     zoomLayer.style.setProperty("--zoom-origin-y", zoomOriginY);
     hero.style.setProperty("--zoom-origin-x", zoomOriginX);
     hero.style.setProperty("--zoom-origin-y", zoomOriginY);
     hero.style.setProperty("--door-center-x", doorCenterX);
     hero.style.setProperty("--door-center-y", doorCenterY);
+    hero.style.setProperty("--portal-open-left", `${portalOpenLeftPx}px`);
+    hero.style.setProperty("--portal-open-top", `${portalOpenTopPx}px`);
+    hero.style.setProperty("--portal-open-width", `${portalOpenWidthPx}px`);
+    hero.style.setProperty("--portal-open-height", `${portalOpenHeightPx}px`);
+    hero.style.setProperty("--portal-stage-width", `${stageWidth}px`);
 
     const currentFrame = loadedFrames.get(frames[currentFrameIndex] ?? 1);
     if (currentFrame) drawFrame(currentFrame);
@@ -352,9 +359,13 @@ onMounted(() => {
   const updateZoom = (progress: number) => {
     const clamped = Math.min(1, Math.max(0, progress));
     const eased = clamped * clamped;
+    const zoomScale = `${1 + eased * 1.1}`;
+    const zoomBrightness = `${1 - eased * 0.12}`;
 
-    zoomLayer.style.setProperty("--hero-zoom-scale", `${1 + eased * 1.1}`);
-    zoomLayer.style.setProperty("--hero-zoom-brightness", `${1 - eased * 0.35}`);
+    hero.style.setProperty("--hero-zoom-scale", zoomScale);
+    hero.style.setProperty("--hero-zoom-brightness", zoomBrightness);
+    zoomLayer.style.setProperty("--hero-zoom-scale", zoomScale);
+    zoomLayer.style.setProperty("--hero-zoom-brightness", zoomBrightness);
     stage.style.opacity = `${1 - Math.max(0, clamped - 0.92) / 0.08}`;
   };
 
@@ -386,101 +397,93 @@ onMounted(() => {
       });
     }
 
-    const zoomProgress = Math.max(
-      0,
-      (progress - zoomProgressStart) / (blackoutProgressStart - zoomProgressStart)
-    );
-    const blackoutProgress = easeInOut(
-      Math.min(1, Math.max(0, (progress - blackoutProgressStart) / (1 - blackoutProgressStart)))
-    );
-
+    const zoomProgress = Math.max(0, progress - zoomProgressStart);
     updateZoom(zoomProgress);
     updateContentState(progress);
-    hero.style.setProperty("--portal-blackout-opacity", `${blackoutProgress}`);
     hero.style.setProperty("--doorway-opacity", "1");
     hero.style.setProperty("--frame-fade", "1");
     setDoorOpen(progress >= sequenceProgressEnd);
   };
 
+  const updatePortalClip = (portalProgress: number) => {
+    const bounds = hero.getBoundingClientRect();
+    const openLeft = Number.parseFloat(hero.style.getPropertyValue("--portal-open-left")) || bounds.width * 0.5;
+    const openTop = Number.parseFloat(hero.style.getPropertyValue("--portal-open-top")) || bounds.height * 0.28;
+    const openWidth = Number.parseFloat(hero.style.getPropertyValue("--portal-open-width")) || bounds.width * 0.02;
+    const openHeight = Number.parseFloat(hero.style.getPropertyValue("--portal-open-height")) || bounds.height * 0.42;
+    const stageWidth = Number.parseFloat(hero.style.getPropertyValue("--portal-stage-width")) || bounds.width * 0.2;
+    const slitProgress = easeInOut(Math.min(1, Math.max(0, portalProgress / 0.58)));
+    const expandProgress = easeInOut(Math.min(1, Math.max(0, (portalProgress - 0.42) / 0.58)));
+    const slitWidth = openWidth + stageWidth * 0.34 * slitProgress;
+    const slitLeft = openLeft;
+    const slitTop = openTop;
+    const slitRight = bounds.width - slitLeft - slitWidth;
+    const slitBottom = bounds.height - slitTop - openHeight;
+
+    hero.style.setProperty("--portal-clip-top", `${slitTop * (1 - expandProgress)}px`);
+    hero.style.setProperty("--portal-clip-right", `${slitRight * (1 - expandProgress)}px`);
+    hero.style.setProperty("--portal-clip-bottom", `${slitBottom * (1 - expandProgress)}px`);
+    hero.style.setProperty("--portal-clip-left", `${slitLeft * (1 - expandProgress)}px`);
+  };
+
   const updateMasterProgress = (masterProgress: number) => {
     const progress = Math.min(1, Math.max(0, masterProgress));
+    hero.classList.toggle("entrance-door--restored", progress <= 0.002);
 
     // PHASE 1: frame animation only (master 0 → sequenceEndMaster)
-    // PHASE 2: showroom appears inside door rect, small (sequenceEndMaster → peekEndMaster)
+    // PHASE 2: showroom is revealed through the door opening (sequenceEndMaster → peekEndMaster)
     // PHASE 3: expand to full screen + zoom (peekEndMaster → introPortion)
-    const sequenceEndMaster = introPortion * sequenceProgressEnd;
-    const peekDuration = 0.04;
-    const peekEndMaster = sequenceEndMaster + peekDuration;
-    const expandEndMaster = introPortion;
-    const horizontalStart = expandEndMaster + 0.04;
-
     const entranceProgress = Math.min(1, progress / introPortion);
     const showroomProgress = Math.min(
       1,
-      Math.max(0, (progress - horizontalStart) / (1 - horizontalStart))
+      Math.max(0, (progress - horizontalStart) / horizontalDuration)
     );
 
-    // Peek: showroom fades in inside door rect (no clip expansion)
-    const peekProgress = easeInOut(
-      Math.min(1, Math.max(0, (progress - sequenceEndMaster) / peekDuration))
+    // Peek: showroom stays behind the door; the portal clip controls what becomes visible.
+    const portalProgress = easeInOut(
+      Math.min(1, Math.max(0, (progress - portalStartMaster) / (portalEndMaster - portalStartMaster)))
     );
-    // Expand: clip grows to full screen + hero zoom intensifies
-    const expandProgress = easeInOut(
-      Math.min(1, Math.max(0, (progress - peekEndMaster) / (expandEndMaster - peekEndMaster)))
-    );
-
     // Hero zoom — subtle during frame anim, intensifies during expand
-    const frameZoomEased = entranceProgress < sequenceProgressEnd
-      ? Math.pow(entranceProgress / sequenceProgressEnd, 2) * 0.15
-      : 0.15 + expandProgress * 0.95;
+    const portalZoomProgress = easeInOut(
+      Math.min(1, Math.max(0, (portalProgress - 0.06) / 0.86))
+    );
+    const frameZoomEased = portalZoomProgress * 30;
+    const portalSceneOpacity = easeInOut(Math.min(1, Math.max(0, (portalProgress - 0.04) / 0.78)));
+    const showroomHandoffOpacity = easeInOut(Math.min(1, Math.max(0, (portalProgress - 0.96) / 0.04)));
+    const overlayFade = 1 - easeInOut(Math.min(1, Math.max(0, (portalProgress - 0.08) / 0.34)));
+    const frameFade = 1 - easeInOut(Math.min(1, Math.max(0, (portalProgress - 0.46) / 0.34)));
+    const showroomBackdropProgress = easeInOut(
+      Math.min(1, Math.max(0, (portalProgress - 0.58) / 0.32))
+    );
 
     const distance = Math.max(0, showroomTrack.scrollWidth - window.innerWidth);
 
-    // Base scale: showroom fits inside zoomed door rect during peek
-    const zoomScaleNow = 1 + frameZoomEased;
-    const zoomedDoorW = doorScreenRect.width * zoomScaleNow;
-    const zoomedDoorH = doorScreenRect.height * zoomScaleNow;
-    const baseScale = Math.max(0.18, Math.min(0.55, zoomedDoorW / 540));
-    const showroomScale = baseScale + expandProgress * (1 - baseScale);
-
-    // Clip-path: door rect during peek, expand to full screen during expand phase
-    const t = expandProgress;
-    const scaleMax = Math.max(
-      heroBounds.width / Math.max(1, zoomedDoorW),
-      heroBounds.height / Math.max(1, zoomedDoorH)
-    );
-    const rectScale = 1 + t * (scaleMax - 1);
-    const visibleW = zoomedDoorW * rectScale;
-    const visibleH = zoomedDoorH * rectScale;
-    const screenCx = heroBounds.width / 2;
-    const screenCy = heroBounds.height / 2;
-    const cx = zoomOriginPx.x + (screenCx - zoomOriginPx.x) * t;
-    const cy = zoomOriginPx.y + (screenCy - zoomOriginPx.y) * t;
-    const clipLeft = Math.max(0, cx - visibleW / 2);
-    const clipTop = Math.max(0, cy - visibleH / 2);
-    const clipRight = Math.max(0, heroBounds.width - (cx + visibleW / 2));
-    const clipBottom = Math.max(0, heroBounds.height - (cy + visibleH / 2));
-
-    hero.style.setProperty("--clip-top", `${clipTop}px`);
-    hero.style.setProperty("--clip-right", `${clipRight}px`);
-    hero.style.setProperty("--clip-bottom", `${clipBottom}px`);
-    hero.style.setProperty("--clip-left", `${clipLeft}px`);
-
     updateEntranceProgress(entranceProgress);
+    updatePortalClip(portalProgress);
 
     // Override updateZoom's hero-zoom-scale with our phased value
-    zoomLayer.style.setProperty("--hero-zoom-scale", `${1 + frameZoomEased}`);
-    zoomLayer.style.setProperty("--hero-zoom-brightness", `${1 - expandProgress * 0.3}`);
+    const portalZoomScale = `${1 + frameZoomEased}`;
+    const portalZoomBrightness = `${1 - portalProgress * 0.18}`;
+
+    hero.style.setProperty("--hero-zoom-scale", portalZoomScale);
+    hero.style.setProperty("--hero-zoom-brightness", portalZoomBrightness);
+    zoomLayer.style.setProperty("--hero-zoom-scale", portalZoomScale);
+    zoomLayer.style.setProperty("--hero-zoom-brightness", portalZoomBrightness);
 
     showroomTrack.style.setProperty("--track-x", `${-distance * showroomProgress}px`);
-    hero.style.setProperty("--showroom-opacity", `${peekProgress}`);
-    hero.style.setProperty("--showroom-reveal", `${expandProgress}`);
-    hero.style.setProperty("--showroom-scale", `${showroomScale}`);
+    hero.style.setProperty("--portal-scene-opacity", `${portalSceneOpacity}`);
+    hero.style.setProperty("--portal-scene-scale", `${0.86 + portalSceneOpacity * 0.14}`);
+    hero.style.setProperty("--showroom-opacity", `${showroomHandoffOpacity}`);
+    hero.style.setProperty("--showroom-content-opacity", "1");
+    hero.style.setProperty("--showroom-backdrop-opacity", `${showroomBackdropProgress}`);
+    hero.style.setProperty("--showroom-reveal", `${portalProgress}`);
+    hero.style.setProperty("--showroom-scale", "1");
     hero.style.setProperty("--showroom-blur", "0px");
-    const introFade = expandProgress < 0.85 ? 1 : 1 - (expandProgress - 0.85) / 0.15;
+    hero.style.setProperty("--entrance-overlay-opacity", `${overlayFade}`);
+    hero.style.setProperty("--frame-fade", `${frameFade}`);
+    const introFade = portalProgress < 0.4 ? 1 : 1 - Math.min(1, (portalProgress - 0.4) / 0.14);
     hero.style.setProperty("--intro-opacity", `${introFade}`);
-    hero.style.setProperty("--portal-blackout-opacity", "0");
-    hero.classList.toggle("entrance-door--showroom", expandProgress >= 0.99);
+    hero.classList.toggle("entrance-door--showroom", portalProgress >= 0.995);
   };
 
   const scrubToMasterProgress = (progress: number) => {
@@ -506,26 +509,20 @@ onMounted(() => {
     currentFrameIndex = -1;
     showroomTrack.style.setProperty("--track-x", "0px");
     hero.classList.remove("entrance-door--showroom");
+    hero.classList.add("entrance-door--restored");
+    hero.style.setProperty("--portal-scene-opacity", "0");
+    hero.style.setProperty("--portal-scene-scale", "0.86");
     hero.style.setProperty("--showroom-opacity", "0");
+    hero.style.setProperty("--showroom-content-opacity", "1");
+    hero.style.setProperty("--showroom-backdrop-opacity", "0");
     hero.style.setProperty("--intro-opacity", "1");
+    hero.style.setProperty("--entrance-overlay-opacity", "1");
     updateZoom(0);
     updateContentState(0);
-    hero.style.setProperty("--portal-blackout-opacity", "0");
     hero.style.setProperty("--showroom-reveal", "0");
     hero.style.setProperty("--showroom-scale", "1");
     hero.style.setProperty("--showroom-blur", "0px");
-    if (heroBounds.width && doorScreenRect.width) {
-      hero.style.setProperty("--clip-top", `${doorScreenRect.top}px`);
-      hero.style.setProperty("--clip-left", `${doorScreenRect.left}px`);
-      hero.style.setProperty(
-        "--clip-right",
-        `${heroBounds.width - doorScreenRect.left - doorScreenRect.width}px`
-      );
-      hero.style.setProperty(
-        "--clip-bottom",
-        `${heroBounds.height - doorScreenRect.top - doorScreenRect.height}px`
-      );
-    }
+    updatePortalClip(0);
     hero.style.setProperty("--doorway-opacity", "0");
     hero.style.setProperty("--frame-fade", "1");
     stage.style.opacity = "1";
@@ -536,6 +533,40 @@ onMounted(() => {
       currentFrameIndex = 0;
       drawFrame(loadedFrame);
     });
+  };
+
+  const recoverEntranceVisuals = () => {
+    if (recoveryTimer) window.clearTimeout(recoveryTimer);
+
+    recoveryTimer = window.setTimeout(() => {
+      recoveryTimer = null;
+      resetPortalVisuals();
+      updateStagePosition();
+
+      hero.classList.add("entrance-door--recovering", "entrance-door--restored");
+      void hero.offsetHeight;
+
+      requestAnimationFrame(() => {
+        updateStagePosition();
+        resetPortalVisuals();
+        trigger?.scroll(0);
+        ScrollTrigger.update();
+
+        requestAnimationFrame(() => {
+          hero.classList.remove("entrance-door--recovering");
+        });
+      });
+    }, 180);
+  };
+
+  const resetEntranceScroll = () => {
+    window.history.scrollRestoration = "manual";
+    nuxtApp.$lenis?.scrollTo?.(0, { immediate: true, force: true });
+    window.scrollTo(0, 0);
+    trigger?.scroll(0);
+    trigger?.refresh();
+    ScrollTrigger.refresh();
+    ScrollTrigger.update();
   };
 
   const createEntranceTrigger = () => {
@@ -555,15 +586,18 @@ onMounted(() => {
         updateMasterProgress(playhead.progress);
       },
       onUpdate: (self) => {
-        scrollDirection = self.direction;
         playheadTween?.kill();
         playheadTween = null;
         playhead.progress = self.progress;
         updateMasterProgress(playhead.progress);
+
+        if (self.direction < 0 && self.progress <= 0.025) {
+          recoverEntranceVisuals();
+        }
       },
       onLeaveBack: () => {
-        scrollDirection = -1;
         resetPortalVisuals();
+        recoverEntranceVisuals();
       }
     });
   };
@@ -588,18 +622,33 @@ onMounted(() => {
   else image.addEventListener("load", updateStagePosition, { once: true });
 
   resetPortalVisuals();
+  resetEntranceScroll();
   warmFrameCache();
   preloadFirstShowroomDoor();
   createEntranceTrigger();
+  resetEntranceScroll();
   requestAnimationFrame(restoreBrokenFallbackImages);
   fallbackScanTimer = window.setTimeout(restoreBrokenFallbackImages, 1400);
   window.addEventListener("resize", onResize);
+  const onPageShow = () => {
+    resetPortalVisuals();
+    resetEntranceScroll();
+    requestAnimationFrame(() => {
+      updateStagePosition();
+      resetPortalVisuals();
+      ScrollTrigger.refresh();
+    });
+  };
+  window.addEventListener("pageshow", onPageShow);
+  pageShowCleanup = () => window.removeEventListener("pageshow", onPageShow);
 
   cleanup = () => {
     playheadTween?.kill();
     trigger?.kill(true);
     if (preloadTimer) window.clearTimeout(preloadTimer);
     if (fallbackScanTimer) window.clearTimeout(fallbackScanTimer);
+    if (recoveryTimer) window.clearTimeout(recoveryTimer);
+    pageShowCleanup?.();
     setDoorOpen(false);
     window.removeEventListener("resize", onResize);
   };
@@ -612,6 +661,52 @@ onBeforeUnmount(() => {
 
 <template>
   <section ref="heroRef" class="entrance-door" :aria-label="copy.sectionLabel">
+    <div ref="zoomLayerRef" class="entrance-door__zoom-layer">
+      <img
+        ref="imageRef"
+        :src="imageKitHomeImages.day"
+        :alt="copy.imageAlt"
+        class="entrance-door__image entrance-door__image--day"
+        decoding="async"
+        loading="eager"
+      >
+
+      <img
+        :src="imageKitHomeImages.night"
+        alt=""
+        class="entrance-door__image entrance-door__image--night"
+        aria-hidden="true"
+        decoding="async"
+        loading="eager"
+      >
+    </div>
+
+    <div class="entrance-door__portal-scene" aria-hidden="true">
+      <article class="entrance-door__showroom-panel">
+        <h2 class="entrance-door__showroom-title">
+          {{ firstShowroomDoor.name }}
+        </h2>
+        <p class="entrance-door__showroom-series">
+          {{ firstShowroomDoor.series }}
+        </p>
+        <div class="entrance-door__showroom-door">
+          <img
+            class="entrance-door__showroom-image"
+            :src="firstShowroomDoor.image"
+            :alt="firstShowroomDoor.name"
+            :data-fallback-src="firstShowroomDoor.fallbackImage"
+            width="520"
+            height="820"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            draggable="false"
+            @error="useLocalImageFallback"
+          />
+        </div>
+      </article>
+    </div>
+
     <div class="entrance-door__showroom" aria-live="polite">
       <div ref="showroomTrackRef" class="entrance-door__showroom-track">
         <article
@@ -654,26 +749,8 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div ref="zoomLayerRef" class="entrance-door__zoom-layer">
-      <img
-        ref="imageRef"
-        :src="imageKitHomeImages.day"
-        :alt="copy.imageAlt"
-        class="entrance-door__image entrance-door__image--day"
-        decoding="async"
-        loading="eager"
-      >
-
-      <img
-        :src="imageKitHomeImages.night"
-        alt=""
-        class="entrance-door__image entrance-door__image--night"
-        aria-hidden="true"
-        decoding="async"
-        loading="eager"
-      >
-
-      <div ref="stageRef" class="entrance-door__sequence" aria-hidden="true">
+    <div class="entrance-door__door-layer" aria-hidden="true">
+      <div ref="stageRef" class="entrance-door__sequence">
         <canvas ref="canvasRef" class="entrance-door__frame" />
       </div>
     </div>
@@ -689,9 +766,5 @@ onBeforeUnmount(() => {
       <span>{{ copy.scroll }}</span>
       <i />
     </div>
-
-    <div ref="blackoutRef" class="entrance-door__blackout" aria-hidden="true" />
   </section>
-
-  <div class="entrance-door-handoff" aria-hidden="true" />
 </template>

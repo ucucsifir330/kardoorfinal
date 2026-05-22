@@ -4,10 +4,6 @@
   --entrance-cue-opacity: 1;
   --hero-zoom-scale: 1;
   --hero-zoom-brightness: 1;
-  --portal-blackout-opacity: 0;
-  --portal-blackout-inner: rgba(0, 0, 0, 0.92);
-  --portal-blackout-mid: rgba(0, 0, 0, 0.98);
-  --portal-blackout-outer: #000000;
   --zoom-origin-x: 50%;
   --zoom-origin-y: 52%;
   --entrance-safe-x: clamp(34px, 5vw, 96px);
@@ -16,24 +12,27 @@
   --showroom-drop: clamp(46px, 7svh, 86px);
   --intro-opacity: 1;
   --showroom-opacity: 0;
+  --showroom-scale: 1;
+  --showroom-content-opacity: 1;
+  --showroom-backdrop-opacity: 0;
+  --showroom-blur: 0px;
+  --portal-scene-opacity: 0;
+  --portal-scene-scale: 0.86;
+  --entrance-overlay-opacity: 1;
+  --portal-clip-top: 50%;
+  --portal-clip-right: 50%;
+  --portal-clip-bottom: 50%;
+  --portal-clip-left: 50%;
 
   position: relative;
-  height: 100svh;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100svh !important;
   overflow: hidden;
   isolation: isolate;
   background: #020304;
   color: #ffffff;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-.home-page {
-  background: var(--entrance-handoff-bg, #eae8e8);
-}
-
-.app-shell--day .entrance-door {
-  --portal-blackout-inner: rgba(234, 232, 232, 0.92);
-  --portal-blackout-mid: rgba(234, 232, 232, 0.98);
-  --portal-blackout-outer: #eae8e8;
 }
 
 .entrance-door--exited {
@@ -51,83 +50,65 @@
   background:
     linear-gradient(
       90deg,
-      rgba(0, 0, 0, 0.84) 0%,
-      rgba(0, 0, 0, 0.62) 23%,
-      rgba(0, 0, 0, 0.18) 51%,
-      rgba(0, 0, 0, 0.06) 72%,
-      rgba(0, 0, 0, 0.2) 100%
+      rgba(0, 0, 0, 0.42) 0%,
+      rgba(0, 0, 0, 0.24) 23%,
+      rgba(0, 0, 0, 0.06) 51%,
+      rgba(0, 0, 0, 0.015) 72%,
+      rgba(0, 0, 0, 0.04) 100%
     ),
     linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.1) 0%,
-      rgba(0, 0, 0, 0.02) 36%,
-      rgba(0, 0, 0, 0.82) 100%
+      rgba(0, 0, 0, 0.02) 0%,
+      transparent 36%,
+      rgba(0, 0, 0, 0.34) 100%
     );
-  transition:
-    background 720ms var(--ease-soft),
-    opacity 720ms var(--ease-soft);
-  opacity: var(--intro-opacity);
+  transition: background 720ms var(--ease-soft);
+  opacity: calc(var(--intro-opacity) * var(--entrance-overlay-opacity));
 }
 
-.entrance-door::after {
-  content: "";
+.entrance-door__portal-scene {
   position: absolute;
-  inset: auto 0 0;
-  z-index: 4;
-  height: 34vh;
+  inset: 0;
+  z-index: 2;
+  width: 100vw !important;
+  height: 100svh !important;
+  overflow: hidden;
+  opacity: var(--portal-scene-opacity);
   pointer-events: none;
-  background:
-    linear-gradient(
-      180deg,
-      transparent,
-      rgba(0, 0, 0, 0.82)
-    );
-  opacity: var(--intro-opacity);
+  transform: scale(var(--portal-scene-scale));
+  transform-origin: var(--door-center-x, 50%) var(--door-center-y, 52%);
+  will-change: opacity, transform;
 }
 
 .entrance-door__showroom {
   position: absolute;
   inset: 0;
-  z-index: 5;
+  width: 100vw !important;
+  height: 100svh !important;
+  z-index: 3;
   overflow: hidden;
   opacity: var(--showroom-opacity);
-  background: #14151d;
+  background: transparent;
   pointer-events: none;
-  clip-path: inset(
-    var(--clip-top, 0px)
-    var(--clip-right, 0px)
-    var(--clip-bottom, 0px)
-    var(--clip-left, 0px)
-  );
   filter: blur(var(--showroom-blur, 0px));
-  will-change: clip-path, opacity, filter;
+  will-change: opacity, filter;
+}
+
+.app-shell--day .entrance-door__showroom {
+  background: transparent;
 }
 
 .entrance-door__showroom::before {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: 1;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 55%,
-    rgba(20, 21, 29, 0.18) 100%
-  );
-  opacity: calc(1 - var(--showroom-reveal, 0));
-  display: block;
+  background: #020304;
+  opacity: var(--showroom-backdrop-opacity);
 }
 
 .app-shell--day .entrance-door__showroom::before {
-  background: radial-gradient(
-    ellipse at center,
-    rgba(234, 232, 232, 0) 55%,
-    rgba(234, 232, 232, 0.22) 100%
-  );
-  display: block;
-}
-
-.app-shell--day .entrance-door__showroom {
   background: #eae8e8;
 }
 
@@ -135,27 +116,8 @@
   pointer-events: auto;
 }
 
-.entrance-door--showroom::before,
-.entrance-door--showroom::after,
-.entrance-door--showroom .entrance-door__zoom-layer {
+.entrance-door--showroom::before {
   opacity: 0;
-}
-
-.entrance-door__showroom::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  display: none;
-}
-
-.entrance-door__showroom::after {
-  display: none;
-}
-
-.app-shell--day .entrance-door__showroom::after {
-  display: none;
 }
 
 .entrance-door__showroom-track {
@@ -164,17 +126,17 @@
   display: flex;
   width: max-content;
   height: 100%;
-  transform: scale(var(--showroom-scale, 1)) translate3d(var(--track-x, 0px), 0, 0);
-  transform-origin: var(--door-center-x, 50%) var(--door-center-y, 50%);
-  will-change: transform;
+  opacity: var(--showroom-content-opacity);
+  transform: translate3d(var(--track-x, 0px), 0, 0);
+  will-change: opacity, transform;
 }
 
 .entrance-door__showroom-panel {
   position: relative;
   flex: 0 0 100vw;
   width: 100vw;
-  height: calc(100svh - var(--showroom-drop));
-  margin-top: var(--showroom-drop);
+  height: 100svh;
+  margin-top: 0;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -302,13 +264,14 @@
 .entrance-door__zoom-layer {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  width: 100vw !important;
+  height: 100svh !important;
+  z-index: 1;
   overflow: hidden;
   opacity: var(--intro-opacity);
   transform-origin: var(--zoom-origin-x, 50%) var(--zoom-origin-y, 52%);
   transform: scale(var(--hero-zoom-scale, 1));
   filter: brightness(var(--hero-zoom-brightness, 1));
-  transition: opacity 180ms ease;
   will-change: transform, filter;
 }
 
@@ -316,12 +279,11 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  width: 100%;
-  height: 100%;
+  width: 100vw !important;
+  height: 100svh !important;
   object-fit: cover;
   object-position: center top;
   transition:
-    opacity 780ms var(--ease-soft),
     filter 780ms var(--ease-soft),
     transform 780ms var(--ease-soft);
 }
@@ -344,9 +306,21 @@
   opacity: 1;
 }
 
+.entrance-door__door-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: var(--intro-opacity);
+  transform-origin: var(--zoom-origin-x, 50%) var(--zoom-origin-y, 52%);
+  transform: scale(var(--hero-zoom-scale, 1));
+  filter: brightness(var(--hero-zoom-brightness, 1));
+  will-change: transform, filter, opacity;
+}
+
 .entrance-door__sequence {
   position: absolute;
-  z-index: 2;
+  z-index: 1;
   left: var(--door-left, 44%);
   top: var(--door-top, 25%);
   width: var(--door-width, 12%);
@@ -458,7 +432,7 @@
 }
 
 .app-shell--night .entrance-door__frame {
-  filter: saturate(0.74) brightness(0.82) contrast(1.08);
+  filter: saturate(0.9) brightness(0.98) contrast(1.02);
 }
 
 .entrance-door__copy {
@@ -663,23 +637,6 @@
   font: inherit;
 }
 
-.entrance-door__blackout {
-  position: absolute;
-  inset: 0;
-  z-index: 9;
-  pointer-events: none;
-  opacity: var(--portal-blackout-opacity, 0);
-  background:
-    radial-gradient(
-      circle at var(--zoom-origin-x, 50%) var(--zoom-origin-y, 52%),
-      var(--portal-blackout-inner) 0%,
-      var(--portal-blackout-mid) 38%,
-      var(--portal-blackout-outer) 74%
-    );
-  will-change: opacity;
-}
-
-
 @keyframes entrance-cue {
   0%,
   100% {
@@ -834,23 +791,12 @@
   }
 }
 
-.app-shell--night .entrance-door::before,
-.app-shell--night .entrance-door::after {
+.app-shell--night .entrance-door::before {
   opacity: 0;
 }
 
 .app-shell--day .entrance-door {
   background: #eae8e8;
-}
-
-.entrance-door-handoff {
-  height: clamp(120px, 16svh, 210px);
-  margin-top: -1px;
-  background: var(--entrance-handoff-bg, #eae8e8);
-}
-
-.app-shell--night .entrance-door-handoff {
-  background: var(--entrance-handoff-bg, #14151d);
 }
 
 .app-shell--day .entrance-door::before {
@@ -868,15 +814,6 @@
       rgba(0, 0, 0, 0.02) 0%,
       transparent 42%,
       rgba(0, 0, 0, 0.38) 100%
-    );
-}
-
-.app-shell--day .entrance-door::after {
-  background:
-    linear-gradient(
-      180deg,
-      transparent,
-      rgba(0, 0, 0, 0.42)
     );
 }
 
