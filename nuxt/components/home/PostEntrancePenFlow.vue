@@ -204,7 +204,17 @@
   
 
 <section class="ada-team-section">
-    <div class="ada-manifesto-spacer"></div>
+  <div class="ada-manifesto-spacer">
+    <a href="/catalog" class="ada-manifesto-cta ada-spacer-cta" aria-label="Katalog sayfasına git">
+      <span class="ada-manifesto-cta-text" data-text="Kataloğu İncele">Kataloğu İncele</span>
+      <span class="ada-manifesto-cta-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </a>
+  </div>
   
     <div class="ada-manifesto-container">
       <div class="ada-scroll-line-wrapper">
@@ -1452,17 +1462,37 @@ onBeforeUnmount(() => {
           }
         })
 
-        const chars = revealElement.querySelectorAll('.reveal-char')
+        const chars = Array.from(revealElement.querySelectorAll<HTMLElement>('.reveal-char'))
 
-        gsap.to(chars, {
-          opacity: 1,
-          stagger: 0.02,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '#manifesto-text',
-            start: 'top 85%',
-            end: 'bottom 50%',
-            scrub: 2
+        const updateManifestoReveal = (progress: number) => {
+          const staggerWindow = 0.55
+          const activeWindow = 1 - staggerWindow
+          const maxIndex = Math.max(chars.length - 1, 1)
+
+          chars.forEach((char, index) => {
+            const start = (index / maxIndex) * staggerWindow
+            const localProgress = Math.min(Math.max((progress - start) / activeWindow, 0), 1)
+            const easedProgress = 1 - Math.pow(1 - localProgress, 2)
+
+            char.style.opacity = String(0.12 + easedProgress * 0.88)
+            char.style.filter = 'none'
+            char.style.transform = 'none'
+          })
+        }
+
+        updateManifestoReveal(0)
+
+        ScrollTrigger.create({
+          trigger: '#manifesto-text',
+          start: 'top 88%',
+          end: 'bottom 48%',
+          scrub: 1.6,
+          invalidateOnRefresh: true,
+          onUpdate: (self: { progress: number }) => {
+            updateManifestoReveal(self.progress)
+          },
+          onRefresh: (self: { progress: number }) => {
+            updateManifestoReveal(self.progress)
           }
         })
       }

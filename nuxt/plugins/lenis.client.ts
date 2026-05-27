@@ -7,9 +7,9 @@ export default defineNuxtPlugin(() => {
 
   const lenis = new Lenis({
     smoothWheel: true,
-    wheelMultiplier: 0.82,
-    touchMultiplier: 1.05,
-    lerp: 0.085
+    wheelMultiplier: 0.58,
+    touchMultiplier: 0.9,
+    lerp: 0.055
   });
 
   lenis.on("scroll", () => {

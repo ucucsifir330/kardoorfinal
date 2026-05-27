@@ -1,6 +1,28 @@
 .ada-team-section {
   --team-section-bg: var(--catalog-stage-surface-bg, #14151d);
   --team-section-text: #eae8e8;
+  --cta-stage-width: min(100vw, 1920px);
+  --cta-stage-left: calc((100vw - var(--cta-stage-width)) / 2);
+  --cta-line-stroke: 2.4px;
+  --cta-line-x: calc(var(--cta-stage-left) + clamp(18px, 2.1875vw, 42px));
+  --cta-top-line-y: calc(-1 * var(--cta-line-stroke));
+  --cta-title-y: clamp(-48px, 2.5vw, 48px);
+  --cta-k-stem-bottom-y: calc(var(--cta-title-y) + clamp(86px, 5.7292vw, 110px));
+  --cta-k-optical-lift: clamp(13px, 0.8854vw, 17px);
+  --cta-k-side-bearing-overlap: clamp(7px, 0.5208vw, 10px);
+  --optical-nudge-x: 7px;
+  --optical-nudge-y: -2px;
+  --cta-description-y: clamp(250px, 26vw, 500px);
+  --cta-button-y: clamp(462px, 43.75vw, 840px);
+  --cta-bottom-line-y: clamp(548px, 48.4375vw, 930px);
+  --cta-elbow-radius: clamp(28px, 1.6667vw, 32px);
+  --cta-heading-left: calc(var(--cta-stage-left) + clamp(142px, 10.625vw, 204px));
+  --cta-button-anchor-x: calc(var(--cta-stage-left) + 50vw);
+  --cta-button-center-y: calc(var(--cta-button-y) + clamp(27px, 1.71875vw, 33px));
+  --cta-top-line-width: clamp(142px, 8.5938vw, 165px);
+  --cta-top-line-height: clamp(172px, 19.1146vw, 367px);
+  --cta-bottom-line-width: clamp(188px, 42.1875vw, 810px);
+  --cta-bottom-line-height: clamp(84px, 6.3542vw, 122px);
   --team-card-bg: #f8f8f6;
   --team-card-hover-bg: var(--team-section-bg);
   --team-card-line: rgba(248, 248, 246, 0.12);
@@ -17,44 +39,64 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   background: var(--team-section-bg);
   color: var(--team-section-text);
 }
 
+.ada-manifesto-line-stage {
+  position: relative;
+}
+
 .ada-manifesto-spacer {
   width: 100%;
-  height: 45vh;
+  min-height: clamp(560px, 56.25vw, 1080px);
+  position: relative;
+  display: block;
+  padding: 0;
+}
+
+.ada-structural-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ada-structural-line-path {
+  fill: none;
+  stroke: #000;
+  stroke-width: var(--cta-line-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+  will-change: stroke-dashoffset;
 }
 
 .ada-manifesto-container {
   width: 100%;
-  max-width: 1831.59px;
+  max-width: var(--cta-stage-width);
+  height: 100vh;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: clamp(20px, 3vw, 50px);
   margin: 0 auto;
-  padding: 0 42px;
+  padding: 0 clamp(18px, 2.1875vw, 42px);
 }
 
 .ada-scroll-line-wrapper {
   position: relative;
   flex: 0 0 auto;
-  width: 2px;
-  height: clamp(660px, 70vh, 860px);
-  overflow: hidden;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.ada-scroll-line-fill {
-  width: 100%;
+  width: var(--cta-line-stroke);
   height: 100%;
-  transform: scaleY(0);
-  transform-origin: top;
-  background: #eae8e8;
+  overflow: visible;
+  pointer-events: none;
 }
 
 .ada-manifesto-text {
@@ -75,6 +117,7 @@
   max-width: 1400px;
   flex-direction: column;
   align-items: flex-start;
+  transform: translateY(clamp(-240px, -12.5vw, -160px));
 }
 
 .ada-manifesto-cta {
@@ -85,7 +128,7 @@
   justify-content: center;
   gap: clamp(14px, 1.35vw, 22px);
   height: clamp(48px, 3.8vw, 62px);
-  margin-top: clamp(98px, 7.8vw, 138px);
+  margin-top: clamp(64px, 5.2vw, 94px);
   overflow: hidden;
   border-radius: 999px;
   padding: 0 clamp(18px, 1.45vw, 26px) 0 clamp(22px, 1.8vw, 34px);
@@ -111,9 +154,10 @@
   position: relative;
   display: inline-block;
   overflow: hidden;
-  padding-bottom: 3px;
+  min-height: 1.34em;
+  padding: 0 0.08em;
   color: transparent;
-  line-height: 1.15;
+  line-height: 1.34;
   perspective: 700px;
 }
 
@@ -189,6 +233,151 @@
   color: #eae8e8;
   transition: opacity 80ms linear;
   will-change: opacity;
+}
+
+.ada-spacer-copy {
+  position: absolute;
+  left: var(--cta-stage-left);
+  top: 0;
+  z-index: 2;
+  width: var(--cta-stage-width);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #000;
+}
+
+.ada-spacer-copy h2 {
+  position: absolute;
+  left: 50%;
+  top: var(--cta-title-y);
+  width: min(1513px, calc(var(--cta-stage-width) - 120px));
+  margin: 0;
+  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
+  font-size: clamp(56px, 6.6667vw, 128px);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: 0;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.ada-spacer-copy h2::first-line {
+  letter-spacing: -0.06em;
+}
+
+.ada-heading-k {
+  position: relative;
+  display: inline-block;
+}
+
+.ada-heading-reveal-char {
+  display: inline-block;
+  will-change: opacity, transform;
+}
+
+.ada-spacer-copy p {
+  position: absolute;
+  left: 50%;
+  top: var(--cta-description-y);
+  width: min(1665px, calc(var(--cta-stage-width) - 120px));
+  margin: 0;
+  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
+  font-size: clamp(20px, 1.6667vw, 32px);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -0.06em;
+  transform: translateX(-50%);
+}
+
+.ada-spacer-manifesto-copy {
+  opacity: 0;
+  filter: blur(18px);
+  will-change: opacity, filter, transform;
+}
+
+.manifesto-highlight {
+  --wipe: 0;
+  --wipe-clip: 100%;
+  --highlight-color: #1b39bf;
+  --highlight-text-color: #eae8e8;
+  --highlight-rest-color: #14151d;
+
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+  isolation: isolate;
+  padding: 0 0.24em 0.07em;
+  color: var(--highlight-rest-color);
+  line-height: 1.03;
+  white-space: nowrap;
+}
+
+.manifesto-highlight::before {
+  content: "";
+  position: absolute;
+  inset: -0.025em -0.02em -0.105em;
+  z-index: -1;
+  border-radius: 0.3em;
+  background: var(--highlight-color);
+  transform: scaleX(var(--wipe));
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.manifesto-highlight::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0 0.24em 0.07em;
+  z-index: 1;
+  overflow: hidden;
+  color: var(--highlight-text-color);
+  clip-path: inset(0 var(--wipe-clip) 0 0);
+  pointer-events: none;
+  white-space: nowrap;
+  will-change: clip-path;
+}
+
+.ada-spacer-cta-group {
+  --ada-spacer-cta-width: clamp(326px, 16.98vw, 326px);
+
+  position: absolute;
+  left: 50%;
+  top: var(--cta-button-y);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 1.15vw, 22px);
+  transform: translateX(-50%);
+}
+
+.ada-spacer-cta {
+  width: var(--ada-spacer-cta-width);
+  min-width: var(--ada-spacer-cta-width);
+  height: clamp(54px, 3.4375vw, 66px);
+  min-height: 54px;
+  margin-top: 0;
+  border-radius: 48px;
+  background: #14151d;
+  color: #eae8e8;
+  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
+  font-size: clamp(15px, 0.9375vw, 18px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  transform: none;
+}
+
+.ada-spacer-cta--icon-left {
+  padding: 0 clamp(22px, 1.8vw, 34px) 0 clamp(18px, 1.45vw, 26px);
+}
+
+.ada-spacer-cta:hover {
+  background: #eae8e8;
+  color: #14151d;
 }
 
 .reveal-word.brand-gradient-word .reveal-char {
@@ -416,6 +605,229 @@ span.ada-brand-logo {
   margin: 0 auto;
   padding-bottom: 220px;
   transform: translateY(-34px);
+}
+
+.ada-promo-wrapper {
+  max-width: 1760px;
+  padding: 0 clamp(24px, 3vw, 56px) 210px;
+}
+
+.ada-promo-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+  align-items: stretch;
+  width: 100%;
+  min-height: clamp(520px, 44vw, 760px);
+  overflow: hidden;
+  border: 1px solid rgba(234, 232, 232, 0.14);
+  border-radius: 30px;
+  padding: 0;
+  background: #11131b;
+  color: #eae8e8;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.18);
+}
+
+.ada-promo-media {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+  background: #14151d;
+}
+
+.ada-promo-poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  transition: transform 900ms cubic-bezier(0.165, 0.84, 0.44, 1), filter 900ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-promo-sheen {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(17, 19, 27, 0.1) 0%, rgba(17, 19, 27, 0) 46%, rgba(17, 19, 27, 0.84) 100%),
+    radial-gradient(circle at 22% 22%, rgba(44, 227, 255, 0.14), transparent 34%);
+  pointer-events: none;
+}
+
+.ada-promo-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(42px, 5vw, 92px);
+}
+
+.ada-promo-kicker,
+.ada-video-modal-kicker {
+  color: rgba(234, 232, 232, 0.58);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ada-promo-title {
+  display: block;
+  max-width: 760px;
+  margin-top: 22px;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(56px, 6.8vw, 132px);
+  font-weight: 400;
+  line-height: 0.9;
+}
+
+.ada-promo-text {
+  display: block;
+  max-width: 560px;
+  margin-top: 30px;
+  color: rgba(234, 232, 232, 0.72);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1rem, 1.15vw, 1.25rem);
+  line-height: 1.55;
+}
+
+.ada-promo-action {
+  position: absolute;
+  right: clamp(34px, 4vw, 74px);
+  bottom: clamp(34px, 4vw, 74px);
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  color: #eae8e8;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.ada-promo-play {
+  display: grid;
+  width: clamp(64px, 5vw, 92px);
+  height: clamp(64px, 5vw, 92px);
+  place-items: center;
+  border: 1px solid rgba(234, 232, 232, 0.22);
+  border-radius: 50%;
+  background: rgba(234, 232, 232, 0.1);
+  backdrop-filter: blur(14px);
+  transition: transform 700ms cubic-bezier(0.165, 0.84, 0.44, 1), background 700ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-promo-play svg {
+  width: 34%;
+  height: 34%;
+  transform: translateX(7%);
+}
+
+.ada-promo-card:hover .ada-promo-poster {
+  transform: scale(1.08);
+  filter: saturate(1.12) contrast(1.05);
+}
+
+.ada-promo-card:hover .ada-promo-play {
+  transform: scale(1.08);
+  background: rgba(234, 232, 232, 0.18);
+}
+
+.ada-video-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 320ms ease, visibility 320ms ease;
+}
+
+.ada-video-modal.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.ada-video-modal-overlay {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.86);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+.ada-video-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(1480px, calc(100vw - 48px));
+  max-height: calc(100svh - 48px);
+  overflow: hidden;
+  border: 1px solid rgba(234, 232, 232, 0.16);
+  border-radius: 28px;
+  background: #11131b;
+  color: #eae8e8;
+  box-shadow: 0 44px 120px rgba(0, 0, 0, 0.42);
+}
+
+.ada-video-modal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(22px, 2.2vw, 34px) clamp(22px, 2.6vw, 44px);
+}
+
+.ada-video-modal-top h3 {
+  margin: 6px 0 0;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(2.5rem, 4vw, 5.4rem);
+  font-weight: 400;
+  line-height: 0.95;
+}
+
+.ada-video-close {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(234, 232, 232, 0.18);
+  border-radius: 50%;
+  background: rgba(234, 232, 232, 0.08);
+  color: #eae8e8;
+  cursor: pointer;
+}
+
+.ada-video-close svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ada-video-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #050505;
+}
+
+.ada-video-player {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #050505;
+}
+
+.ada-video-preview {
+  object-fit: cover;
 }
 
 .ada-founders-grid {
@@ -847,11 +1259,7 @@ span.ada-brand-logo {
 }
 
 .app-shell--day .ada-scroll-line-wrapper {
-  background: rgba(20, 21, 29, 0.14);
-}
-
-.app-shell--day .ada-scroll-line-fill {
-  background: #14151d;
+  background: transparent;
 }
 
 .app-shell--day .ada-manifesto-text,
@@ -925,8 +1333,50 @@ span.ada-brand-logo {
 }
 
 @media (max-width: 820px) {
+  .ada-team-section {
+    --cta-line-x: calc(var(--cta-stage-left) + 18px);
+    --cta-title-y: 76px;
+    --cta-description-y: 254px;
+    --cta-button-y: 428px;
+    --cta-bottom-line-y: 498px;
+    --cta-elbow-radius: 34px;
+    --cta-top-line-width: 142px;
+    --cta-top-line-height: 172px;
+    --cta-bottom-line-width: calc(50vw - 92px);
+    --cta-bottom-line-height: 84px;
+  }
+
   .ada-manifesto-spacer {
-    height: 0;
+    min-height: 560px;
+  }
+
+  .ada-spacer-copy h2 {
+    font-size: clamp(3.1rem, 15vw, 5.8rem);
+    line-height: 0.96;
+    width: calc(100% - 36px);
+    max-width: calc(100% - 36px);
+    white-space: normal;
+  }
+
+  .ada-spacer-copy p {
+    font-size: clamp(1.05rem, 5vw, 1.45rem);
+    line-height: 1.24;
+    width: calc(100% - 36px);
+    max-width: calc(100% - 36px);
+  }
+
+  .ada-spacer-cta-group {
+    width: calc(100% - 36px);
+    max-width: 540px;
+    gap: 10px;
+  }
+
+  .ada-spacer-cta {
+    width: min(250px, calc(50vw - 24px));
+    min-width: 0;
+    height: 54px;
+    padding: 0 16px;
+    font-size: clamp(0.78rem, 3.5vw, 0.9rem);
   }
 
   .ada-manifesto-container {
@@ -948,9 +1398,13 @@ span.ada-brand-logo {
     overflow-wrap: anywhere;
   }
 
+  .ada-manifesto-content {
+    transform: translateY(-72px);
+  }
+
   .ada-manifesto-cta {
     height: 48px;
-    margin-top: 66px;
+    margin-top: 44px;
     padding: 0 18px 0 24px;
   }
 
@@ -1000,6 +1454,59 @@ span.ada-brand-logo {
     scrollbar-width: none;
     margin-left: calc(50% - 50vw);
     padding-bottom: 110px;
+  }
+
+  .ada-promo-wrapper {
+    width: 100%;
+    max-width: none;
+    overflow: visible;
+    margin-left: 0;
+    padding: 0 18px 110px;
+    transform: none;
+  }
+
+  .ada-promo-card {
+    grid-template-columns: 1fr;
+    min-height: 620px;
+    border-radius: 24px;
+  }
+
+  .ada-promo-media {
+    min-height: 300px;
+  }
+
+  .ada-promo-sheen {
+    background:
+      linear-gradient(180deg, rgba(17, 19, 27, 0) 0%, rgba(17, 19, 27, 0.88) 100%),
+      radial-gradient(circle at 28% 20%, rgba(44, 227, 255, 0.16), transparent 42%);
+  }
+
+  .ada-promo-copy {
+    padding: 30px 24px 126px;
+  }
+
+  .ada-promo-title {
+    font-size: clamp(3rem, 15vw, 5.4rem);
+  }
+
+  .ada-promo-action {
+    right: 24px;
+    bottom: 24px;
+  }
+
+  .ada-video-modal-panel {
+    width: calc(100vw - 24px);
+    max-height: calc(100svh - 24px);
+    border-radius: 22px;
+  }
+
+  .ada-video-modal-top {
+    padding: 20px;
+  }
+
+  .ada-video-close {
+    width: 42px;
+    height: 42px;
   }
 
   .ada-carousel-wrapper::-webkit-scrollbar {

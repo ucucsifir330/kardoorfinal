@@ -492,8 +492,8 @@ onMounted(async () => {
   entranceTrigger = ScrollTrigger.create({
     trigger: hero,
     start: "top top",
-    end: () => `+=${Math.max(window.innerHeight * 9, window.innerWidth * 5.5)}`,
-    scrub: 0.6,
+    end: () => `+=${Math.max(window.innerHeight * 11.5, window.innerWidth * 7)}`,
+    scrub: 1.55,
     pin: true,
     pinSpacing: true,
     anticipatePin: 1,

@@ -18,8 +18,11 @@
     :toggle-like="toggleLike"
   />
   <section class="ada-team-section">
-    <HomeManifesto />
-    <HomeTeamCards />
+    <HomeManifesto>
+      <template #after-manifesto>
+        <HomeTeamCards />
+      </template>
+    </HomeManifesto>
   </section>
   <!-- HomeReferences is temporarily disabled while the team/reference split is cleaned up. -->
   <HomeReviews
@@ -82,6 +85,10 @@ let catalogScrollTween: gsap.core.Tween | null = null;
 let catalogRowsFrame = 0;
 let manifestoGsapContext: ReturnType<typeof gsap.context> | null = null;
 let manifestoCleanupTasks: Array<() => void> = [];
+
+const premiumEase = 'power3.out';
+const silkEase = 'sine.inOut';
+const smoothScrollScrub = 3.2;
 
 const isMobileCatalogViewport = () =>
   typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches;
@@ -168,7 +175,7 @@ const handleCatalogWheel = (event: WheelEvent) => {
 
   const maxScrollTop = target.scrollHeight - target.clientHeight;
   const deltaMultiplier = event.deltaMode === 1 ? 18 : event.deltaMode === 2 ? target.clientHeight : 1;
-  const deltaY = event.deltaY * deltaMultiplier;
+  const deltaY = event.deltaY * deltaMultiplier * 0.68;
   const currentScrollTop = target.scrollTop;
   const boundaryThreshold = 42;
 
@@ -188,7 +195,7 @@ const handleCatalogWheel = (event: WheelEvent) => {
     window.scrollBy({
       top: deltaY,
       left: 0,
-      behavior: 'auto'
+      behavior: 'smooth'
     });
     requestCatalogRowCheck();
     return;
@@ -202,16 +209,22 @@ const handleCatalogWheel = (event: WheelEvent) => {
   catalogScrollTween?.kill();
 
   if (clampedScrollTop !== currentScrollTop) {
-    target.scrollTop = clampedScrollTop;
     catalogScrollTarget = clampedScrollTop;
-    requestCatalogRowCheck();
+    catalogScrollTween = gsap.to(target, {
+      scrollTop: clampedScrollTop,
+      duration: 0.72,
+      ease: premiumEase,
+      overwrite: true,
+      onUpdate: requestCatalogRowCheck,
+      onComplete: requestCatalogRowCheck
+    });
   }
 
   if (leftoverDelta !== 0) {
     window.scrollBy({
       top: leftoverDelta,
       left: 0,
-      behavior: 'auto'
+      behavior: 'smooth'
     });
   }
 };
@@ -634,6 +647,84 @@ const initManifestoAnimations = () => {
     const loopContainer = document.querySelector<HTMLElement>('.ada-subtitle-container');
     const loopTrackReverse = document.querySelector<HTMLElement>('.ada-loop-track-reverse');
     const loopContainerReverse = document.querySelector<HTMLElement>('.ada-subtitle-container-reverse');
+    const structuralPaths = Array.from(document.querySelectorAll<SVGPathElement>('.ada-structural-line-path'));
+    const spacerLineHost = document.querySelector<HTMLElement>('.ada-manifesto-line-stage');
+
+    const getStructuralPathLength = (path: SVGPathElement) => {
+      const length = path.getTotalLength();
+      path.style.strokeDasharray = `${length}`;
+      return length;
+    };
+
+    if (spacerLineHost && structuralPaths.length) {
+      let structuralFrame = 0;
+      let structuralLengths = structuralPaths.map(getStructuralPathLength);
+      let headingLineConnected = false;
+
+      const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
+      const getDocumentTop = (element: HTMLElement) => window.scrollY + element.getBoundingClientRect().top;
+
+      const updateStructuralLines = () => {
+        structuralFrame = 0;
+
+        const viewportHeight = window.innerHeight || 1;
+        const stageTop = getDocumentTop(spacerLineHost);
+        const stageBottom = stageTop + spacerLineHost.getBoundingClientRect().height;
+        const catalogTop = catalogSection ? getDocumentTop(catalogSection) : stageTop;
+        const ranges = [
+          {
+            start: catalogTop - viewportHeight * 0.92,
+            end: stageTop - viewportHeight * 0.02
+          },
+          {
+            start: stageTop - viewportHeight * 0.56,
+            end: stageBottom - viewportHeight * 0.22
+          }
+        ];
+
+        structuralPaths.forEach((path, index) => {
+          const range = ranges[index] || ranges[0];
+          const length = structuralLengths[index] || getStructuralPathLength(path);
+          const rawProgress = clampProgress((window.scrollY - range.start) / Math.max(range.end - range.start, 1));
+          const progress = gsap.parseEase(silkEase)(rawProgress);
+
+          path.style.strokeDasharray = `${length}`;
+          path.style.strokeDashoffset = `${length * (1 - progress)}`;
+
+          if (index === 0) {
+            if (rawProgress >= 0.965 && !headingLineConnected) {
+              headingLineConnected = true;
+              window.dispatchEvent(new CustomEvent('kardoor:heading-line-connected'));
+            } else if (rawProgress < 0.82 && headingLineConnected) {
+              headingLineConnected = false;
+              window.dispatchEvent(new CustomEvent('kardoor:heading-line-reset'));
+            }
+          }
+        });
+      };
+
+      const requestStructuralUpdate = () => {
+        if (structuralFrame) return;
+        structuralFrame = window.requestAnimationFrame(updateStructuralLines);
+      };
+
+      const refreshStructuralLines = () => {
+        structuralLengths = structuralPaths.map(getStructuralPathLength);
+        requestStructuralUpdate();
+        ScrollTrigger.refresh();
+      };
+
+      updateStructuralLines();
+      window.addEventListener('scroll', requestStructuralUpdate, { passive: true });
+      window.addEventListener('resize', refreshStructuralLines, { passive: true });
+      window.addEventListener('kardoor:structural-lines-updated', refreshStructuralLines);
+      addManifestoCleanup(() => {
+        if (structuralFrame) window.cancelAnimationFrame(structuralFrame);
+        window.removeEventListener('scroll', requestStructuralUpdate);
+        window.removeEventListener('resize', refreshStructuralLines);
+        window.removeEventListener('kardoor:structural-lines-updated', refreshStructuralLines);
+      });
+    }
 
     if (catalogSection && manifestoContainer) {
       gsap.to(catalogSection, {
@@ -641,9 +732,9 @@ const initManifestoAnimations = () => {
         ease: 'none',
         scrollTrigger: {
           trigger: catalogSection,
-          start: 'top 72%',
-          end: 'bottom 58%',
-          scrub: 2,
+          start: 'top 86%',
+          end: 'bottom 38%',
+          scrub: smoothScrollScrub,
           invalidateOnRefresh: true
         }
       });
@@ -656,10 +747,10 @@ const initManifestoAnimations = () => {
         ease: 'none',
         scrollTrigger: {
           trigger: catalogSection || manifestoContainer,
-          start: catalogSection ? 'bottom bottom' : 'top 72%',
+          start: catalogSection ? 'bottom 94%' : 'top 82%',
           endTrigger: manifestoContainer,
-          end: 'bottom 42%',
-          scrub: 2,
+          end: 'bottom 24%',
+          scrub: smoothScrollScrub,
           invalidateOnRefresh: true
         }
       });
@@ -667,16 +758,54 @@ const initManifestoAnimations = () => {
 
     if (revealElement) {
       splitTextToRevealChars(revealElement);
-      gsap.to(revealElement.querySelectorAll('.reveal-char'), {
-        opacity: 1,
-        stagger: 0.02,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: revealElement,
-          start: 'top 85%',
-          end: 'bottom 50%',
-          scrub: 2
-        }
+      const chars = Array.from(revealElement.querySelectorAll<HTMLElement>('.reveal-char'));
+      let revealFrame = 0;
+
+      const updateManifestoReveal = (progress: number) => {
+        const staggerWindow = 0.68;
+        const activeWindow = 1 - staggerWindow;
+        const maxIndex = Math.max(chars.length - 1, 1);
+
+        chars.forEach((char, index) => {
+          const start = (index / maxIndex) * staggerWindow;
+          const localProgress = Math.min(Math.max((progress - start) / activeWindow, 0), 1);
+          const easedProgress = gsap.parseEase(silkEase)(localProgress);
+
+          char.style.opacity = String(0.12 + easedProgress * 0.88);
+          char.style.filter = 'none';
+          char.style.transform = 'none';
+        });
+      };
+
+      const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
+
+      const updateManifestoRevealFromScroll = () => {
+        revealFrame = 0;
+        const viewportHeight = window.innerHeight || 1;
+        const rect = revealElement.getBoundingClientRect();
+        const top = window.scrollY + rect.top;
+        const bottom = top + rect.height;
+        const start = top - viewportHeight * 0.94;
+        const end = bottom - viewportHeight * 0.18;
+        const progress = gsap.parseEase(silkEase)(
+          clampProgress((window.scrollY - start) / Math.max(end - start, 1))
+        );
+
+        updateManifestoReveal(progress);
+      };
+
+      const requestManifestoRevealUpdate = () => {
+        if (revealFrame) return;
+        revealFrame = window.requestAnimationFrame(updateManifestoRevealFromScroll);
+      };
+
+      updateManifestoRevealFromScroll();
+      window.addEventListener('scroll', requestManifestoRevealUpdate, { passive: true });
+      window.addEventListener('resize', requestManifestoRevealUpdate, { passive: true });
+      addManifestoCleanup(() => {
+        if (revealFrame) window.cancelAnimationFrame(revealFrame);
+        window.removeEventListener('scroll', requestManifestoRevealUpdate);
+        window.removeEventListener('resize', requestManifestoRevealUpdate);
       });
     }
 
@@ -703,14 +832,14 @@ const initManifestoAnimations = () => {
           opacity: 1,
           scale: 1,
           filter: 'blur(0px)',
-          duration: 1.28,
-          ease: 'expo.out',
-          stagger: { amount: 0.44, from: 'center', ease: 'power2.out' },
+          duration: 1.75,
+          ease: 'power4.out',
+          stagger: { amount: 0.72, from: 'center', ease: silkEase },
           scrollTrigger: {
             trigger: titleElement,
-            start: 'top 88%',
-            end: 'bottom 56%',
-            toggleActions: 'play none none reverse'
+            start: 'top 92%',
+            end: 'bottom 34%',
+            scrub: 1.4
           }
         }
       );
@@ -730,19 +859,19 @@ const initManifestoAnimations = () => {
         {
           opacity: 1,
           y: 0,
-          duration: 1.35,
-          ease: 'power3.out',
+          duration: 1.75,
+          ease: premiumEase,
           scrollTrigger: {
             trigger: loopContainer,
-            start: 'top 88%',
-            end: 'bottom 20%',
-            toggleActions: 'play none none reverse'
+            start: 'top 92%',
+            end: 'bottom 34%',
+            scrub: 1.35
           }
         }
       );
 
-      const pauseTicker = () => gsap.to(tickerTween, { timeScale: 0, duration: 1.2, ease: 'power2.out' });
-      const playTicker = () => gsap.to(tickerTween, { timeScale: 1, duration: 1.2, ease: 'power2.inOut' });
+      const pauseTicker = () => gsap.to(tickerTween, { timeScale: 0, duration: 1.6, ease: premiumEase });
+      const playTicker = () => gsap.to(tickerTween, { timeScale: 1, duration: 1.8, ease: silkEase });
 
       loopContainer.addEventListener('mouseenter', pauseTicker);
       loopContainer.addEventListener('mouseleave', playTicker);
@@ -768,19 +897,19 @@ const initManifestoAnimations = () => {
         {
           opacity: 1,
           y: 0,
-          duration: 1.35,
-          ease: 'power3.out',
+          duration: 1.75,
+          ease: premiumEase,
           scrollTrigger: {
             trigger: loopContainerReverse,
-            start: 'top 88%',
-            end: 'bottom 20%',
-            toggleActions: 'play none none reverse'
+            start: 'top 92%',
+            end: 'bottom 34%',
+            scrub: 1.35
           }
         }
       );
 
-      const pauseTickerReverse = () => gsap.to(tickerTweenReverse, { timeScale: 0, duration: 1.2, ease: 'power2.out' });
-      const playTickerReverse = () => gsap.to(tickerTweenReverse, { timeScale: 1, duration: 1.2, ease: 'power2.inOut' });
+      const pauseTickerReverse = () => gsap.to(tickerTweenReverse, { timeScale: 0, duration: 1.6, ease: premiumEase });
+      const playTickerReverse = () => gsap.to(tickerTweenReverse, { timeScale: 1, duration: 1.8, ease: silkEase });
 
       loopContainerReverse.addEventListener('mouseenter', pauseTickerReverse);
       loopContainerReverse.addEventListener('mouseleave', playTickerReverse);
@@ -789,14 +918,13 @@ const initManifestoAnimations = () => {
     }
 
     if (window.matchMedia('(min-width: 1025px)').matches) {
-      gsap.from('.ada-card', {
-        y: 44,
+      gsap.from('.ada-promo-card', {
+        y: 34,
         opacity: 0,
-        stagger: 0.14,
-        duration: 1.15,
-        ease: 'power4.out',
+        duration: 1.45,
+        ease: premiumEase,
         scrollTrigger: {
-          trigger: '.ada-founders-grid',
+          trigger: '.ada-promo-card',
           start: 'top 88%',
           once: true
         }
