@@ -7,14 +7,11 @@
     "nuxt"
   ],
   "scripts": {
-    "dev": "npm --prefix nuxt run dev",
-    "build": "npm --prefix nuxt run build",
-    "generate": "npm --prefix nuxt run generate",
-    "preview": "npm --prefix nuxt run preview",
-    "typecheck": "npm --prefix nuxt run typecheck",
-    "check": "npm --prefix nuxt run typecheck"
-  },
-  "dependencies": {
-    "nuxt": "^4.4.6"
+    "dev": "npm --workspace nuxt run dev",
+    "build": "npm --workspace nuxt run build",
+    "generate": "npm --workspace nuxt run generate",
+    "preview": "npm --workspace nuxt run preview",
+    "typecheck": "npm --workspace nuxt run typecheck",
+    "check": "npm --workspace nuxt run typecheck"
   }
 }

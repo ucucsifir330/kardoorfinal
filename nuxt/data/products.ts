@@ -1,234 +1,304 @@
+export type ProductVisualRole = "product" | "product-showcase" | "showcase";
+
 export type DoorProduct = {
   slug: string;
   code: string;
-  seriesSlug: string;
-  seriesTitle: string;
   name: string;
   category: string;
-  description: string;
-  specs: string[];
-  materials: string[];
-  useCases: string[];
-  surfaces: string[];
-  exportTags: string[];
+  subClass: string;
   image: string;
-  accentColor: string;
-};
-
-const seriesImages = {
-  ivoryLine: "https://ik.imagekit.io/kardoor/series/1.png?updatedAt=1778762643897",
-  graphiteOak: "https://ik.imagekit.io/kardoor/series/2.png?updatedAt=1778762645386",
-  classicSand: "https://ik.imagekit.io/kardoor/series/3.png?updatedAt=1778762644382",
-  emeraldLine: "https://ik.imagekit.io/kardoor/series/4.png?updatedAt=1778762645568",
-  monoGraphite: "https://ik.imagekit.io/kardoor/series/5.png?updatedAt=1778762645583"
-} as const;
-
-type CatalogProductGroup = {
-  prefix: string;
+  tags: string[];
+  colors: string[];
+  visualRole: ProductVisualRole;
   seriesSlug: string;
   seriesTitle: string;
-  category: string;
   description: string;
   specs: string[];
   materials: string[];
   useCases: string[];
   surfaces: string[];
   exportTags: string[];
-  imageKeys: Array<keyof typeof seriesImages>;
   accentColor: string;
-  names: string[];
 };
 
-const catalogProductGroups: CatalogProductGroup[] = [
+type ImageDetail = {
+  colors?: string[];
+  tags?: string[];
+  visualRole?: ProductVisualRole;
+};
+
+type ProductFamily = {
+  prefix: string;
+  seriesSlug: string;
+  category: string;
+  subClass: string;
+  description: string;
+  specs: string[];
+  materials: string[];
+  useCases: string[];
+  surfaces: string[];
+  exportTags: string[];
+  baseTags: string[];
+  baseColors: string[];
+  accentColor: string;
+  names: string[];
+  images: number[];
+};
+
+const imageDetails: Record<number, ImageDetail> = {
+  1: { tags: ["çift kanat", "yan camlı", "ferforje"], colors: ["ahşap", "siyah"] },
+  2: { tags: ["camlı", "modern"], colors: ["siyah"] },
+  4: { tags: ["yan camlı"], colors: ["beyaz", "siyah"] },
+  5: { tags: ["renkli"], colors: ["yeşil"] },
+  9: { tags: ["geometrik çizgi", "minimal"], colors: ["gümüş", "turuncu"] },
+  13: { tags: ["çift kanat", "yan camlı", "üst camlı"], colors: ["gri"] },
+  17: { tags: ["yan camlı"], colors: ["ahşap", "antrasit"] },
+  19: { tags: ["renkli"], colors: ["yeşil"] },
+  26: { tags: ["çift kanat", "üst camlı", "ferforje"], colors: ["beyaz", "siyah"] },
+  29: { tags: ["yan camlı", "ferforje"], colors: ["antrasit"] },
+  31: { tags: ["çift kanat", "yan camlı", "üst camlı"], colors: ["gri"] },
+  32: { tags: ["çift kanat", "yan camlı", "ferforje"], colors: ["antrasit"] },
+  33: { tags: ["çift kanat", "yan camlı"], colors: ["ahşap", "siyah"] },
+  35: { tags: ["çift kanat", "yan camlı"], colors: ["ahşap", "antrasit"] },
+  38: { tags: ["çift kanat", "üst camlı"], colors: ["ahşap", "siyah"] },
+  46: { tags: ["çift kanat", "yan camlı"], colors: ["gri"] },
+  47: { tags: ["renkli", "yan camlı"], colors: ["mavi"] },
+  60: {
+    tags: ["özel yüzey", "reflektif", "mimari", "vitrin"],
+    colors: ["siyah", "reflektif"],
+    visualRole: "product-showcase"
+  },
+  63: { tags: ["yan camlı", "üst camlı", "ferforje"], colors: ["ahşap", "siyah"] },
+  64: { tags: ["çift kanat", "camlı"], colors: ["gri"] },
+  67: { tags: ["renkli"], colors: ["mavi"] },
+  71: { tags: ["renkli"], colors: ["kırmızı"] },
+  73: { tags: ["renkli"], colors: ["mavi"] },
+  81: { tags: ["reflektif", "vitrin görseli"], colors: ["siyah"], visualRole: "product-showcase" },
+  84: { tags: ["yan camlı", "üst camlı"], colors: ["ahşap", "siyah"] },
+  85: { tags: ["yan camlı"], colors: ["ahşap"] },
+  88: { tags: ["reflektif", "mimari"], colors: ["siyah", "taş"] },
+  89: { tags: ["vitrin görseli", "mimari"], colors: ["siyah", "taş"], visualRole: "product-showcase" },
+  102: { tags: ["yan camlı", "vitrin görseli"], colors: ["ahşap", "siyah"], visualRole: "product-showcase" },
+  108: { tags: ["çift kanat"], colors: ["antrasit"] },
+  110: { tags: ["yan camlı"], colors: ["beyaz", "siyah"] },
+  111: { tags: ["yan camlı", "ferforje"], colors: ["ahşap", "siyah"] },
+  112: { tags: ["yan camlı"], colors: ["kahverengi"] },
+  115: { tags: ["yan camlı", "ferforje"], colors: ["antrasit"] },
+  121: { tags: ["renkli"], colors: ["mavi"] },
+  122: { tags: ["reflektif", "vitrin görseli"], colors: ["siyah", "ahşap"], visualRole: "product-showcase" },
+  123: { tags: ["açık kapı", "vitrin görseli"], colors: ["ahşap", "siyah"], visualRole: "product-showcase" },
+  124: { tags: ["lifestyle", "vitrin görseli"], colors: ["siyah", "ahşap"], visualRole: "showcase" },
+  129: { tags: ["çift kanat", "ferforje"], colors: ["siyah"] },
+  133: { tags: ["çift kanat", "yan camlı"], colors: ["ahşap", "siyah"] },
+  134: { tags: ["yan camlı", "ferforje"], colors: ["antrasit"] },
+  137: { tags: ["çift kanat", "yan camlı"], colors: ["beyaz", "siyah"] },
+  139: { tags: ["renkli", "ferforje"], colors: ["kırmızı"] },
+  142: { tags: ["projeye özel", "mimari", "vitrin görseli"], colors: ["ahşap", "siyah"], visualRole: "product-showcase" },
+  145: { tags: ["teknik", "bina girişi"], colors: ["ahşap", "siyah"] },
+  150: { tags: ["çift kanat", "modern"], colors: ["beyaz"] },
+  151: { tags: ["yan camlı", "ferforje"], colors: ["antrasit"] },
+  152: { tags: ["giriş", "teknik", "çift kanat"], colors: ["siyah", "beyaz"] },
+  158: { tags: ["çift kanat", "camlı"], colors: ["siyah", "beyaz"] },
+  159: { tags: ["yan camlı", "villa"], colors: ["ahşap", "siyah"], visualRole: "product-showcase" },
+  161: { tags: ["pivot", "açık kapı", "showroom", "vitrin görseli"], colors: ["antrasit"], visualRole: "showcase" },
+  163: { tags: ["pivot", "açık kapı", "lifestyle", "vitrin görseli"], colors: ["ahşap", "siyah"], visualRole: "showcase" },
+  165: { tags: ["pivot", "açık kapı", "lifestyle", "vitrin görseli"], colors: ["ahşap"], visualRole: "showcase" },
+  166: { tags: ["yan camlı", "vitrin görseli"], colors: ["ahşap", "siyah"], visualRole: "product-showcase" },
+  167: { tags: ["açık kapı", "lifestyle", "vitrin görseli"], colors: ["siyah", "ahşap"], visualRole: "showcase" },
+  168: { tags: ["siyah cam", "vitrin görseli"], colors: ["siyah"], visualRole: "product-showcase" },
+  169: { tags: ["açık kapı", "lifestyle", "vitrin görseli"], colors: ["siyah"], visualRole: "showcase" }
+};
+
+const families: ProductFamily[] = [
   {
     prefix: "AL",
-    seriesSlug: "aluminyum",
-    seriesTitle: "Aluminyum",
-    category: "Aluminyum steel door",
-    description: "Aluminyum collection model for premium exterior door catalogs and project supply.",
-    specs: ["Aluminyum system", "Steel security core", "Exterior-ready profile"],
-    materials: ["Aluminyum surface", "Steel leaf", "Premium hardware"],
-    useCases: ["Villa", "Exterior", "Project"],
-    surfaces: ["Aluminyum", "Metal"],
-    exportTags: ["Catalog model", "Custom size", "Dealer supply"],
-    imageKeys: ["monoGraphite", "graphiteOak", "emeraldLine"],
+    seriesSlug: "aluminyum-sistemler",
+    category: "Alüminyum Sistemler",
+    subClass: "Alüminyum kasa / Alüminyum kanat / Dış iklim sistemleri",
+    description:
+      "Dış iklim uyumlu, sade ve modern alüminyum sistem kapı modeli.",
+    specs: ["Alüminyum sistem", "Dış iklim uyumu", "Minimal giriş çizgisi"],
+    materials: ["Alüminyum kasa", "Alüminyum kanat", "Metal yüzey", "Çelik gövde"],
+    useCases: ["Dış iklim", "Villa", "Apartman"],
+    surfaces: ["Alüminyum", "Metal", "Kompozit"],
+    exportTags: ["Katalog modeli", "Alüminyum seri", "Bayi tedariki"],
+    baseTags: ["tek kanat", "camsız", "minimal", "modern", "alüminyum"],
+    baseColors: ["antrasit", "gri", "siyah"],
     accentColor: "#2ce3ff",
-    names: [
-      "Avero", "Velora", "Noven", "Altra", "Liven", "Meron", "Savio", "Orlen",
-      "Vanta", "Celon", "Arven", "Nexo", "Virel", "Moren", "Avion", "Zedra",
-      "Coren", "Valen", "Serio", "Elvon", "Rovan", "Lento", "Soren", "Daxon",
-      "Olven", "Rixon", "Calen", "Asten", "Verio", "Lorix", "Naron", "Evaro",
-      "Paxon", "Taren", "Silon", "Orvia", "Relon", "Cevio", "Alven", "Monex",
-      "Vario", "Leron", "Zenvo", "Marix", "Solen", "Altivo", "Rivon", "Avel",
-      "Novaro", "Calvo", "Veron", "Orvio", "Laxen", "Mirov", "Arelon", "Senvo"
+    names: ["Avero", "Velora", "Noven", "Altra", "Liven", "Meron", "Savio", "Orlen", "Vanta", "Celon"],
+    images: [
+      3, 8, 12, 16, 24, 28, 41, 42, 49, 54, 56, 58, 62, 69, 70, 75, 76, 77,
+      82, 90, 91, 93, 100, 104, 105, 107, 109, 126, 153, 155, 156, 157
     ]
   },
   {
     prefix: "DY",
-    seriesSlug: "dogal",
-    seriesTitle: "Dogal",
-    category: "Natural-surface steel door",
-    description: "Dogal collection model with warm and mineral surface language for refined entrances.",
-    specs: ["Natural surface finish", "Steel body", "Insulated entry panel"],
-    materials: ["Wood or stone surface", "Steel carrier", "Satin hardware"],
-    useCases: ["Villa", "Residence", "Architectural project"],
-    surfaces: ["Dogal", "Textured"],
-    exportTags: ["Catalog model", "Project quantity", "Custom size"],
-    imageKeys: ["ivoryLine", "classicSand", "graphiteOak"],
-    accentColor: "#57e2ff",
-    names: [
-      "Cedra", "Ligna", "Arlo", "Venia", "Caldo", "Rovio", "Selva", "Norra",
-      "Lando", "Evora", "Tavon", "Morva", "Lunor", "Alera", "Verno", "Carvo",
-      "Dalen", "Senda", "Olira", "Viora", "Renzo", "Madra", "Lorva", "Telon",
-      "Brava", "Sovia", "Orlan", "Melio", "Tavira", "Norel", "Ravon", "Merlo",
-      "Albio", "Davor", "Lenia", "Voren", "Solva", "Carya", "Nelio", "Varlo",
-      "Auron", "Fello", "Petra", "Roca", "Travia", "Grava", "Onixa", "Marvo",
-      "Stona", "Ardes", "Obra", "Lavio", "Terron", "Volca", "Rocen", "Satra"
+    seriesSlug: "dogal-yuzeyler",
+    category: "Doğal Yüzeyler",
+    subClass: "Termo Wood / Doğal taş / Ahşap ve taş dokulu yüzeyler",
+    description:
+      "Wood ve taş dokulu kapı yüzeyleri için doğal malzeme hissi taşıyan katalog modeli.",
+    specs: ["Doğal yüzey dili", "Termo wood veya taş doku", "Çelik güvenlik yapısı"],
+    materials: ["Termo wood", "Ahşap doku", "Doğal taş efekti", "Çelik gövde"],
+    useCases: ["Villa", "Dış iklim", "Doğal yüzeyli giriş"],
+    surfaces: ["Termo Wood", "Doğal taş", "Ahşap yüzey"],
+    exportTags: ["Katalog modeli", "Doğal seri", "Proje tedariki"],
+    baseTags: ["tek kanat", "modern", "villa", "doğal yüzey"],
+    baseColors: ["ahşap", "taş", "antrasit"],
+    accentColor: "#7cebff",
+    names: ["Cedra", "Ligna", "Arlo", "Venia", "Caldo", "Rovio", "Selva", "Norra", "Lando", "Evora"],
+    images: [
+      6, 14, 20, 22, 27, 37, 40, 50, 57, 74, 78, 85, 92, 94, 101, 106, 125,
+      131, 135, 140, 159, 162, 164
     ]
   },
   {
     prefix: "CM",
-    seriesSlug: "cam",
-    seriesTitle: "Cam",
-    category: "Glass detail steel door",
-    description: "Cam collection model for luminous entrance compositions and secure steel door projects.",
-    specs: ["Glass detail option", "Steel structure", "Secure entry profile"],
-    materials: ["Glass surface", "Steel body", "Metal hardware"],
-    useCases: ["Villa", "Residence", "Showroom"],
-    surfaces: ["Cam", "Glass"],
-    exportTags: ["Catalog model", "Custom size", "Project quantity"],
-    imageKeys: ["emeraldLine", "ivoryLine", "monoGraphite"],
-    accentColor: "#7cebff",
-    names: [
-      "Clara", "Lumio", "Glora", "Avena", "Mirra", "Solia", "Elvia", "Noris",
-      "Alira", "Vionna", "Velia", "Ravena", "Oria", "Calira", "Lenora", "Azora",
-      "Celia", "Novia", "Selia", "Melora", "Arina", "Luvia", "Seria", "Luma",
-      "Vela", "Orelia", "Avira", "Ralia", "Lorena", "Soria", "Meria", "Vania",
-      "Ilora", "Solara", "Lunia", "Aural", "Verina", "Delia", "Fiora", "Noria",
-      "Elina", "Livia", "Amora", "Nella", "Sorena", "Velina", "Mirel", "Lavina",
-      "Evina", "Alora", "Mirea", "Celora", "Solina", "Arvia", "Venora", "Elora"
+    seriesSlug: "camli-modeller",
+    category: "Camlı Modeller",
+    subClass: "Karma cam / Temperli cam / Ferforje / Yan camlı",
+    description:
+      "Cam detaylı dış kapı çözümleri için yan cam, üst cam ve ferforje seçenekli model.",
+    specs: ["Camlı giriş kompozisyonu", "Temperli cam detayı", "Villa tipi görünüm"],
+    materials: ["Temperli cam", "Ferforje detay", "Metal/ahşap yüzey", "Çelik gövde"],
+    useCases: ["Dış iklim", "Villa", "Camlı giriş"],
+    surfaces: ["Karma cam", "Temperli cam", "Ferforje", "Yan cam"],
+    exportTags: ["Katalog modeli", "Camlı seri", "Proje tedariki"],
+    baseTags: ["camlı", "villa", "modern", "dış iklim"],
+    baseColors: ["antrasit", "siyah", "ahşap"],
+    accentColor: "#57e2ff",
+    names: ["Clara", "Lumio", "Glora", "Avena", "Mirra", "Solia", "Elvia", "Noris", "Alira", "Vionna"],
+    images: [
+      1, 2, 13, 15, 17, 26, 29, 31, 32, 33, 35, 38, 45, 46, 47, 48, 51, 61,
+      63, 64, 79, 84, 86, 99, 110, 111, 112, 115, 116, 127, 129, 130, 133,
+      134, 137, 143, 144, 150, 151, 158
     ]
   },
   {
     prefix: "MK",
     seriesSlug: "metal-kompozit",
-    seriesTitle: "Metal & Kompozit",
-    category: "Metal and composite steel door",
-    description: "Metal and composite collection model for durable, modern and exterior-facing entries.",
-    specs: ["Composite-ready surface", "Reinforced steel core", "Durable entry panel"],
-    materials: ["Metal finish", "Composite panel", "Steel carrier"],
-    useCases: ["Exterior", "Apartment", "Project"],
-    surfaces: ["Metal", "Kompozit"],
-    exportTags: ["Export packaging", "Catalog model", "Dealer supply"],
-    imageKeys: ["monoGraphite", "graphiteOak", "classicSand"],
+    category: "Metal & Kompozit",
+    subClass: "Kompozit / Komple sac metal / Özel metal yüzey",
+    description:
+      "Dayanıklı metal ve kompozit modeller için koyu yüzeyli, teknik ve geometrik kapı modeli.",
+    specs: ["Metal/kompozit yüzey", "Teknik panel karakteri", "Dayanıklı dış kapı yapısı"],
+    materials: ["Metal yüzey", "Kompozit panel", "Laminoks detay", "Çelik gövde"],
+    useCases: ["Dış iklim", "Proje", "Modern giriş"],
+    surfaces: ["Metal", "Kompozit", "Özel metal", "Reflektif yüzey"],
+    exportTags: ["Katalog modeli", "Kompozit seri", "Dayanıklı yüzey"],
+    baseTags: ["tek kanat", "modern", "metal", "kompozit"],
+    baseColors: ["siyah", "antrasit", "gri"],
     accentColor: "#36deff",
-    names: [
-      "Krono", "Nexa", "Modra", "Helio", "Brion", "Solix", "Travo", "Monza",
-      "Avex", "Rado", "Vexen", "Corel", "Sylon", "Maxor", "Trion", "Voxa",
-      "Faron", "Novix", "Merix", "Loxen", "Ortex", "Valto", "Zenix", "Dario",
-      "Rekta", "Polix", "Favio", "Toren", "Nexor", "Miron", "Lavia", "Gravo",
-      "Dexio", "Morix", "Ronel", "Laxor", "Vion", "Stravo", "Calix", "Feron",
-      "Zento", "Alcor", "Mavix", "Varon", "Sanor", "Bravio", "Axton", "Rexion",
-      "Ziron", "Valcor", "Armax", "Ferron", "Galvo", "Kordo", "Tario", "Niron"
-    ]
+    names: ["Krono", "Nexa", "Modra", "Helio", "Brion", "Solix", "Travo", "Monza", "Avex", "Rado"],
+    images: [7, 9, 25, 36, 59, 60, 88, 98, 119, 120, 132, 147, 148, 149]
   },
   {
     prefix: "PL",
     seriesSlug: "pvc-laminoks",
-    seriesTitle: "PVC & Laminoks",
-    category: "PVC and laminoks steel door",
-    description: "PVC and Laminoks collection model for exclusive finish programs and dealer catalogs.",
-    specs: ["Exclusive surface", "Steel door structure", "Premium finish option"],
-    materials: ["PVC or laminoks finish", "Steel body", "Inox hardware"],
-    useCases: ["Residence", "Villa", "Dealer catalog"],
-    surfaces: ["PVC", "Laminoks"],
-    exportTags: ["Catalog model", "Dealer supply", "Custom size"],
-    imageKeys: ["graphiteOak", "emeraldLine", "monoGraphite"],
+    category: "PVC & Laminoks",
+    subClass: "Exclusive / Lüks PVC / Elit Laminoks / Rustik Laminoks",
+    description:
+      "Exclusive kaplama seçenekleri, klasik panel ve rustik laminoks yüzeyleri için katalog modeli.",
+    specs: ["PVC veya laminoks yüzey", "Klasik/rustik panel dili", "Renkli panel seçeneği"],
+    materials: ["PVC yüzey", "Laminoks", "Lake panel", "Çelik gövde"],
+    useCases: ["Konut", "Bina girişi", "Klasik giriş"],
+    surfaces: ["PVC", "Laminoks", "Klasik panel", "Rustik laminoks"],
+    exportTags: ["Katalog modeli", "Exclusive kaplama", "Bayi tedariki"],
+    baseTags: ["tek kanat", "klasik", "panel", "laminoks"],
+    baseColors: ["beyaz", "gri", "ahşap"],
     accentColor: "#30d5f4",
-    names: [
-      "Noira", "Grisio", "Antra", "Silvio", "Trenza", "Lamora", "Invero", "Noxia",
-      "Argen", "Voltra", "Satrix", "Nervia", "Lineo", "Vexia", "Lorvo", "Zelta",
-      "Axira", "Monel", "Lunessa", "Velissa", "Marena", "Ovidia", "Calina", "Sorell",
-      "Vionel", "Arlina", "Novela", "Melian", "Corvia", "Elian", "Savena", "Lorina",
-      "Venita", "Arelia", "Nivora", "Ravina", "Celina", "Alessa", "Davia", "Merina",
-      "Olena", "Serova", "Valina", "Neriva", "Polina", "Savira", "Leniva", "Morina",
-      "Elviana", "Virella", "Narella", "Orlina", "Mavena", "Seleno", "Alvoria", "Verenia"
+    names: ["Noira", "Grisio", "Antra", "Silvio", "Trenza", "Lamora", "Invero", "Noxia", "Argen", "Voltra"],
+    images: [
+      4, 5, 10, 11, 18, 19, 21, 23, 30, 34, 39, 43, 44, 52, 53, 67, 68, 71,
+      72, 73, 80, 83, 87, 96, 97, 103, 108, 113, 114, 117, 118, 121, 128,
+      136, 138, 139, 141, 154
     ]
   },
   {
     prefix: "MO",
     seriesSlug: "mimari-ozel",
-    seriesTitle: "Mimari Ozel",
-    category: "Architectural custom steel door",
-    description: "Mimari Ozel collection model for tailored entrance concepts and project-led supply.",
-    specs: ["Project-ready format", "Custom door detail", "Steel security system"],
-    materials: ["Architectural surface", "Steel carrier", "Premium hardware"],
-    useCases: ["Architectural project", "Villa", "Custom entry"],
-    surfaces: ["Mimari", "Ozel"],
-    exportTags: ["Project quantity", "Custom size", "Dealer supply"],
-    imageKeys: ["ivoryLine", "monoGraphite", "emeraldLine"],
-    accentColor: "#39ddfd",
-    names: [
-      "Aureo", "Velaro", "Mareno", "Soreva", "Arlento", "Loreno", "Vareno", "Elvian",
-      "Avora", "Selaro", "Torvian", "Navora", "Mavora", "Celnor", "Ravello", "Vellon",
-      "Aleron", "Delaro", "Solvian", "Tervia", "Lioren", "Valora", "Novento", "Arvento",
-      "Merano", "Savora", "Calvero", "Lavoro", "Vionor", "Corvian", "Alvoro", "Renova",
-      "Toreno", "Miravo", "Sorello", "Verano", "Orvanto", "Laveno", "Cavoro", "Novian",
-      "Meravo", "Avenor", "Telaro", "Solvaro", "Venaro", "Loravo", "Doreva", "Elvaro",
-      "Ravino", "Moravo", "Arelto", "Vantio", "Calvora", "Senaro", "Ovello", "Varenza"
-    ]
+    category: "Mimari Özel",
+    subClass: "Projeye özel / Pivot / Showroom / Vitrin görseli",
+    description:
+      "Projeye özel ve pivot çözümler için mimari atmosfer taşıyan vitrin modeli.",
+    specs: ["Mimari giriş etkisi", "Projeye özel kurgu", "Pivot veya vitrin kullanımı"],
+    materials: ["Mimari yüzey", "Pivot sistem", "Cam/metal detay", "Çelik gövde"],
+    useCases: ["Projeye özel", "Showroom", "Mimari vitrin"],
+    surfaces: ["Mimari özel", "Pivot", "Lifestyle", "Showroom"],
+    exportTags: ["Vitrin görseli", "Mimari seri", "Proje sunumu"],
+    baseTags: ["mimari", "vitrin görseli", "showroom", "projeye özel"],
+    baseColors: ["siyah", "antrasit", "ahşap"],
+    accentColor: "#57e2ff",
+    names: ["Aureo", "Velaro", "Mareno", "Soreva", "Arlento", "Loreno", "Vareno", "Elvian"],
+    images: [81, 89, 102, 122, 123, 124, 142, 161, 163, 165, 166, 167, 168, 169]
   },
   {
     prefix: "GT",
     seriesSlug: "giris-teknik",
-    seriesTitle: "Giris & Teknik",
-    category: "Entry and technical steel door",
-    description: "Giris and technical collection model for protected entries and project-specific access.",
-    specs: ["Technical entry profile", "Steel security body", "Project hardware option"],
-    materials: ["Technical steel panel", "Secure core", "Durable hardware"],
-    useCases: ["Building entry", "Technical access", "Project"],
-    surfaces: ["Giris", "Teknik"],
-    exportTags: ["Project quantity", "Catalog model", "Export packaging"],
-    imageKeys: ["classicSand", "graphiteOak", "monoGraphite"],
+    category: "Giriş & Teknik",
+    subClass: "Teknik çözümler / Villa ve bina girişi / Acil çıkış / Şaft kapakları",
+    description:
+      "Giriş, acil çıkış ve şaft sistemleri için sade ve teknik karakterli kapı modeli.",
+    specs: ["Teknik giriş profili", "Sade kullanım dili", "Proje odaklı çelik yapı"],
+    materials: ["Teknik panel", "Çelik gövde", "Dayanıklı donanım"],
+    useCases: ["Bina girişi", "Teknik hacim", "Acil çıkış"],
+    surfaces: ["Giriş", "Teknik", "Şaft", "Servis"],
+    exportTags: ["Teknik çözüm", "Proje tedariki", "Bina girişi"],
+    baseTags: ["tek kanat", "teknik", "giriş", "bina"],
+    baseColors: ["beyaz", "gri", "antrasit"],
     accentColor: "#2ce3ff",
-    names: [
-      "Sentra", "Guardio", "Dravo", "Korven", "Vardon", "Ralix", "Kavon", "Maxen",
-      "Ronar", "Atrix", "Savon", "Kavor", "Brenton", "Galron", "Zentro", "Marcon",
-      "Orvan", "Rexa", "Valtor", "Arcon", "Daxor", "Kalven", "Tiron", "Bastio",
-      "Fortis", "Valkan", "Bravon", "Helion", "Stren", "Norax", "Karden", "Velkor",
-      "Torax", "Vexor", "Kasten", "Ralven", "Dorix", "Arvenor", "Vostro", "Rexiona",
-      "Soltan", "Kervon", "Navor", "Valtro", "Tervon", "Galven", "Morven", "Darion",
-      "Sarnox", "Revon", "Kaldan", "Zarton", "Mervon", "Arvex", "Kovian", "Sentro"
-    ]
+    names: ["Sentra", "Guardio", "Dravo", "Korven", "Vardon", "Ralix", "Kavon", "Maxen"],
+    images: [55, 65, 66, 95, 145, 146, 152, 160]
   }
 ];
 
 const slugifyProductPart = (value: string) =>
   value
-    .toLowerCase()
+    .toLocaleLowerCase("tr-TR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-export const products: DoorProduct[] = catalogProductGroups.flatMap((group) =>
-  group.names.map((name, index) => {
-    const code = `${group.prefix}-${String(index + 1).padStart(3, "0")}`;
-    const imageKey = group.imageKeys[index % group.imageKeys.length];
+const imagePath = (imageNumber: number) =>
+  `/images/katalogwebp/Image${String(imageNumber).padStart(2, "0")}.webp`;
+
+const uniqueValues = (values: string[]) => [...new Set(values)];
+
+export const products: DoorProduct[] = families.flatMap((family) =>
+  family.images.map((imageNumber, index) => {
+    const detail = imageDetails[imageNumber] ?? {};
+    const code = `${family.prefix}-${String(index + 1).padStart(3, "0")}`;
+    const name = family.names[index % family.names.length];
+    const colors = uniqueValues(detail.colors ?? family.baseColors);
+    const tags = uniqueValues([...family.baseTags, ...(detail.tags ?? []), ...colors]);
+    const visualRole = detail.visualRole ?? "product";
 
     return {
-      slug: `${group.seriesSlug}-${slugifyProductPart(code)}-${slugifyProductPart(name)}`,
+      slug: `${family.seriesSlug}-${slugifyProductPart(code)}-${slugifyProductPart(name)}`,
       code,
-      seriesSlug: group.seriesSlug,
-      seriesTitle: group.seriesTitle,
       name,
-      category: group.category,
-      description: group.description,
-      specs: [...group.specs],
-      materials: [...group.materials],
-      useCases: [...group.useCases],
-      surfaces: [...group.surfaces],
-      exportTags: [...group.exportTags],
-      image: seriesImages[imageKey],
-      accentColor: group.accentColor
+      category: family.category,
+      subClass: family.subClass,
+      image: imagePath(imageNumber),
+      tags,
+      colors,
+      visualRole,
+      seriesSlug: family.seriesSlug,
+      seriesTitle: family.category,
+      description: family.description,
+      specs: [...family.specs],
+      materials: [...family.materials],
+      useCases: [...family.useCases],
+      surfaces: [...family.surfaces],
+      exportTags: [...family.exportTags],
+      accentColor: family.accentColor
     };
   })
 );

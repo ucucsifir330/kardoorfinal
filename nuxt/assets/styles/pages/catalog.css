@@ -1,3 +1,12 @@
+@import "./catalog/subpage.css";
+@import "./catalog/aluminium.css";
+@import "./catalog/wood.css";
+@import "./catalog/glass.css";
+@import "./catalog/steel.css";
+@import "./catalog/pvc.css";
+@import "./catalog/architectural.css";
+@import "./catalog/technical.css";
+
 body:has(.catalog-page) .app-shell {
   min-height: 100dvh;
   overflow: visible;

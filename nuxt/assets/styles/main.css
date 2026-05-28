@@ -10,7 +10,6 @@
 @import "./components/site-header.css";
 
 /* Page / section styles */
-@import "./sections/entrance-door.css";
 @import "./sections/door-selector.css";
 @import "./sections/content-pages.css";
 @import "./sections/home-catalog.css";
@@ -21,8 +20,3 @@
 @import "./pages/catalog.css";
 @import "./pages/company.css";
 @import "./pages/references.css";
-
-body.home-content-visible .site-header {
-  opacity: 0;
-  pointer-events: none;
-}

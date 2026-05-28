@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const shouldRender = ref(false);
 const mountRef = ref<HTMLElement | null>(null);
 
 let observer: IntersectionObserver | null = null;
-let visibilityObserver: IntersectionObserver | null = null;
-let renderTimer: number | null = null;
 let renderFrame: number | null = null;
 
 const refreshScrollTriggers = async () => {
@@ -24,32 +22,15 @@ const renderFlow = () => {
   observer?.disconnect();
   observer = null;
 
-  nextTick(() => {
-    const section = document.querySelector(".catalog-section");
-    if (!section) return;
-
-    visibilityObserver = new IntersectionObserver(
-      (entries) => {
-        document.body.classList.toggle(
-          "home-content-visible",
-          entries.some((entry) => entry.isIntersecting)
-        );
-      },
-      { threshold: 0.08 }
-    );
-    visibilityObserver.observe(section);
-  });
-
   requestAnimationFrame(() => {
     refreshScrollTriggers();
   });
 };
 
 const scheduleRenderFlow = () => {
-  if (shouldRender.value || renderTimer || renderFrame) return;
+  if (shouldRender.value || renderFrame) return;
 
   const run = () => {
-    renderTimer = null;
     renderFrame = null;
     renderFlow();
   };
@@ -57,13 +38,7 @@ const scheduleRenderFlow = () => {
   renderFrame = window.requestAnimationFrame(run);
 };
 
-const handleDoorState = (event: Event) => {
-  const detail = (event as CustomEvent<{ isOpen?: boolean }>).detail;
-  if (detail?.isOpen) scheduleRenderFlow();
-};
-
 onMounted(() => {
-  window.addEventListener("kardoor:entrance-door-state", handleDoorState);
   scheduleRenderFlow();
 
   if (mountRef.value) {
@@ -78,12 +53,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("kardoor:entrance-door-state", handleDoorState);
-  if (renderTimer) window.clearTimeout(renderTimer);
   if (renderFrame) window.cancelAnimationFrame(renderFrame);
   observer?.disconnect();
-  visibilityObserver?.disconnect();
-  document.body.classList.remove("home-content-visible");
 });
 </script>
 

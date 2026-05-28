@@ -1,10 +1,11 @@
 <template>
-<section class="catalog-section">
+  <section class="catalog-section">
     <div class="catalog-stage-backdrop" aria-hidden="true"></div>
     <div class="catalog-shell">
       <main
         class="catalog-main"
         :ref="setMainRef"
+        @scroll.passive="handleCatalogScroll"
       >
         <div class="catalog-sticky-title" :class="{ 'is-scrolled': isCatalogScrolled }">
           <h1 class="catalog-title">Koleksiyonlar</h1>
@@ -61,7 +62,16 @@
                 {{ block.cardTitle }} <span>{{ block.seriesLabel }}</span>
               </h3>
 
-              <span class="catalog-card-subtitle">{{ block.description }}</span>
+              <div class="catalog-card-actions">
+                <span class="catalog-card-subtitle">{{ block.description }}</span>
+
+                <NuxtLink class="catalog-learn-more" to="/catalog" aria-label="Tüm modelleri gör">
+                  <span class="catalog-learn-more__circle" aria-hidden="true">
+                    <span class="catalog-learn-more__icon"></span>
+                  </span>
+                  <span class="catalog-learn-more__text">Tümü</span>
+                </NuxtLink>
+              </div>
             </div>
 
             <transition-group
@@ -218,160 +228,159 @@
       </div>
     </div>
   </div>
-
-  
-
 </template>
+
 <script setup lang="ts">
-// @ts-nocheck
-const props = defineProps<{
-  products: any[];
-  isCatalogScrolled: boolean;
-  visibleRows: number[];
-  activeWishlistKey: string | null;
-  activeProduct: any;
-  activeProductIndex: number | null;
-  setMainRef: (el: any) => void;
-  setRowRef: (el: any) => void;
-  catalogBeforeEnter: (el: HTMLElement) => void;
-  catalogEnter: (el: HTMLElement, done: () => void) => void;
-  openProductModal: (index: number) => void;
-  handleWishlistClick: (index: number, key: string) => void;
-  closeProductModal: () => void;
-  showPreviousProduct: () => void;
-  showNextProduct: () => void;
-  toggleLike: (index: number | null) => void;
-}>();
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import type { ComponentPublicInstance } from "vue";
 
-const catalogPreviewLimit = 10;
+const {
+  catalogBlocks,
+  visibleRows,
+  activeProduct,
+  activeProductIndex,
+  activeWishlistKey,
+  getCatalogPreviewProducts,
+  toggleLike,
+  handleWishlistClick,
+  openProductModal,
+  closeProductModal,
+  showPreviousProduct,
+  showNextProduct,
+  handleProductModalKeydown,
+  resetCatalogModalState
+} = useHomeCatalog();
 
-const catalogBlocks = [
-  {
-    index: 1,
-    productPrefix: 'AL',
-    number: '01',
-    seriesLabel: 'Seri 01',
-    shortName: 'Alüminyum',
-    category: {
-      short: 'Dış İklim',
-      full: 'Dış İklim Modelleri'
-    },
-    parts: [
-      { id: 'aluminium-frame', short: 'Kasa', full: 'Alüminyum Kasa Seri' },
-      { id: 'aluminium-frame-wing', short: 'Kanat', full: 'Alüminyum Kasa ve Kanat Seri' }
-    ],
-    cardTitle: 'Alüminyum Sistemler',
-    description: 'dış iklim uyumlu kapı sistemleri'
-  },
-  {
-    index: 2,
-    productPrefix: 'DY',
-    number: '02',
-    seriesLabel: 'Seri 02',
-    shortName: 'Doğal',
-    category: {
-      short: 'Dış İklim',
-      full: 'Dış İklim Modelleri'
-    },
-    parts: [
-      { id: 'termo-wood', short: 'Wood', full: 'Termo Wood Seri' },
-      { id: 'natural-stone', short: 'Taş', full: 'Doğal Taş Seri' }
-    ],
-    cardTitle: 'Doğal Yüzeyler',
-    description: 'wood ve taş dokulu kapı yüzeyleri'
-  },
-  {
-    index: 3,
-    productPrefix: 'CM',
-    number: '03',
-    seriesLabel: 'Seri 03',
-    shortName: 'Cam',
-    category: {
-      short: 'Dış İklim',
-      full: 'Dış İklim Modelleri'
-    },
-    parts: [
-      { id: 'mixed-glass', short: 'Karma', full: 'Karma Cam Seri' },
-      { id: 'tempered-glass', short: 'Temperli', full: 'Temperli Cam Seri' }
-    ],
-    cardTitle: 'Camlı Modeller',
-    description: 'cam detaylı dış kapı çözümleri'
-  },
-  {
-    index: 4,
-    productPrefix: 'MK',
-    number: '04',
-    seriesLabel: 'Seri 04',
-    shortName: 'Metal',
-    category: {
-      short: 'Dış İklim',
-      full: 'Dış İklim Modelleri'
-    },
-    parts: [
-      { id: 'composite', short: 'Kompozit', full: 'Kompozit Seri' },
-      { id: 'sheet-metal', short: 'Sac', full: 'Komple Sac Metal Seri' }
-    ],
-    cardTitle: 'Metal & Kompozit',
-    description: 'dayanıklı metal ve kompozit modeller'
-  },
-  {
-    index: 5,
-    productPrefix: 'PL',
-    number: '05',
-    seriesLabel: 'Seri 05',
-    shortName: 'Laminoks',
-    category: {
-      short: 'Exclusive',
-      full: 'Exclusive Modeller'
-    },
-    parts: [
-      { id: 'lux-pvc', short: 'PVC', full: 'Lüks PVC Seri' },
-      { id: 'elit-laminox', short: 'Elit', full: 'Elit Laminoks Seri' },
-      { id: 'rustic-laminox', short: 'Rustik', full: 'Rustik Laminoks Seri' }
-    ],
-    cardTitle: 'PVC & Laminoks',
-    description: 'exclusive kaplama seçenekleri'
-  },
-  {
-    index: 6,
-    productPrefix: 'MO',
-    number: '06',
-    seriesLabel: 'Seri 06',
-    shortName: 'Mimari',
-    category: {
-      short: 'Exclusive',
-      full: 'Exclusive Modeller'
-    },
-    parts: [
-      { id: 'project-custom', short: 'Özel', full: 'Projeye Özel Seri' },
-      { id: 'pivot', short: 'Pivot', full: 'Pivot Seri' }
-    ],
-    cardTitle: 'Mimari Özel',
-    description: 'projeye özel ve pivot çözümler'
-  },
-  {
-    index: 7,
-    productPrefix: 'GT',
-    number: '07',
-    seriesLabel: 'Seri 07',
-    shortName: 'Teknik',
-    category: {
-      short: 'Çözümler',
-      full: 'Teknik Çözümler'
-    },
-    parts: [
-      { id: 'villa-building-entry', short: 'Giriş', full: 'Villa ve Bina Giriş Seri' },
-      { id: 'emergency-exit', short: 'Acil', full: 'Acil Çıkış Seri' },
-      { id: 'shaft-cover', short: 'Şaft', full: 'Bina Şaft Kapakları Seri' }
-    ],
-    cardTitle: 'Giriş & Teknik',
-    description: 'giriş, acil çıkış ve şaft sistemleri'
+const isCatalogScrolled = ref(false);
+const mainRef = ref<HTMLElement | null>(null);
+const rowRefs = ref<HTMLElement[]>([]);
+
+let catalogRowsFrame = 0;
+let catalogObserver: IntersectionObserver | null = null;
+
+const setMainRef = (el: Element | ComponentPublicInstance | null) => {
+  mainRef.value = el as HTMLElement | null;
+};
+
+const setRowRef = (el: Element | ComponentPublicInstance | null) => {
+  if (el && !rowRefs.value.includes(el as HTMLElement)) {
+    rowRefs.value.push(el as HTMLElement);
   }
-];
+};
 
-const getCatalogPreviewProducts = (block: typeof catalogBlocks[number]) =>
-  props.products
-    .map((product, productIndex) => ({ ...product, productIndex }))
-    .filter((product) => product.code.startsWith(`${block.productPrefix}-`))
-    .slice(0, catalogPreviewLimit);
+const catalogBeforeEnter = (el: Element) => {
+  const target = el as HTMLElement;
+  target.style.opacity = "0";
+  target.style.transform = "translateX(-80px)";
+};
+
+const catalogEnter = (el: Element, done: () => void) => {
+  const target = el as HTMLElement;
+  const delay = parseInt(target.dataset.index || "0") * 120;
+
+  setTimeout(() => {
+    target.style.transition = "opacity 0.7s ease-out, transform 0.7s ease-out";
+    target.style.opacity = "1";
+    target.style.transform = "translateX(0)";
+
+    setTimeout(done, 700);
+  }, delay);
+};
+
+const revealCatalogRow = (rowIndex: number) => {
+  if (rowIndex && !visibleRows.value.includes(rowIndex)) {
+    visibleRows.value.push(rowIndex);
+  }
+};
+
+const checkCatalogRows = () => {
+  catalogRowsFrame = 0;
+  const rootEl = mainRef.value;
+
+  if (!rootEl) return;
+
+  const rootRect = rootEl.getBoundingClientRect();
+  const revealLine = rootRect.top + rootRect.height * 0.84;
+
+  rowRefs.value.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    const rowIndex = parseInt(el.getAttribute("data-row-index") || "0");
+
+    if (rect.top < revealLine && rect.bottom > rootRect.top) {
+      revealCatalogRow(rowIndex);
+    }
+  });
+};
+
+const requestCatalogRowCheck = () => {
+  if (catalogRowsFrame) return;
+  catalogRowsFrame = requestAnimationFrame(checkCatalogRows);
+};
+
+const handleCatalogScroll = (event: Event) => {
+  const target = event.target as HTMLElement;
+  isCatalogScrolled.value = target.scrollTop > 5;
+  requestCatalogRowCheck();
+};
+
+const initCatalogObserver = () => {
+  const rootEl = mainRef.value;
+
+  if (!rootEl) return;
+
+  if (catalogObserver) {
+    catalogObserver.disconnect();
+  }
+
+  catalogObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const rowIndex = parseInt(entry.target.getAttribute("data-row-index") || "0");
+
+        revealCatalogRow(rowIndex);
+        catalogObserver?.unobserve(entry.target);
+      }
+    });
+  }, {
+    root: rootEl,
+    rootMargin: "0px 0px 42% 0px",
+    threshold: 0.01
+  });
+
+  rowRefs.value.forEach((el) => {
+    catalogObserver?.observe(el);
+  });
+
+  requestCatalogRowCheck();
+};
+
+onMounted(() => {
+  nextTick(() => {
+    const catalogMainEl = mainRef.value;
+    if (catalogMainEl) {
+      catalogMainEl.scrollTop = 0;
+      isCatalogScrolled.value = false;
+    }
+
+    requestAnimationFrame(() => {
+      initCatalogObserver();
+    });
+  });
+
+  window.addEventListener("keydown", handleProductModalKeydown);
+});
+
+onBeforeUnmount(() => {
+  if (catalogRowsFrame) {
+    cancelAnimationFrame(catalogRowsFrame);
+    catalogRowsFrame = 0;
+  }
+
+  if (catalogObserver) {
+    catalogObserver.disconnect();
+  }
+
+  window.removeEventListener("keydown", handleProductModalKeydown);
+  resetCatalogModalState();
+});
 </script>

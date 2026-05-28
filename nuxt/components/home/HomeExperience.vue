@@ -1,22 +1,5 @@
 ﻿<template>
-  <HomeCatalog
-    :products="products"
-    :is-catalog-scrolled="isCatalogScrolled"
-    :visible-rows="visibleRows"
-    :active-wishlist-key="activeWishlistKey"
-    :active-product="activeProduct"
-    :active-product-index="activeProductIndex"
-    :set-main-ref="setMainRef"
-    :set-row-ref="setRowRef"
-    :catalog-before-enter="catalogBeforeEnter"
-    :catalog-enter="catalogEnter"
-    :open-product-modal="openProductModal"
-    :handle-wishlist-click="handleWishlistClick"
-    :close-product-modal="closeProductModal"
-    :show-previous-product="showPreviousProduct"
-    :show-next-product="showNextProduct"
-    :toggle-like="toggleLike"
-  />
+  <HomeCatalog />
   <section class="ada-team-section">
     <HomeManifesto>
       <template #after-manifesto>
@@ -24,7 +7,7 @@
       </template>
     </HomeManifesto>
   </section>
-  <!-- HomeReferences is temporarily disabled while the team/reference split is cleaned up. -->
+  <HomeReferences />
   <HomeReviews
     :dynamic-gap="dynamicGap"
     :title-width="titleWidth"
@@ -47,7 +30,6 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { products as doorProducts } from '~/data/products'
 
 interface Review {
   id: number;
@@ -64,230 +46,12 @@ interface TrackState {
   currentVelocity: number;
 }
 
-interface ProductVariant {
-  id: string;
-  finish: string;
-  code: string;
-  seriesTitle: string;
-  image: string;
-  liked: boolean;
-}
-
-const products = ref([] as ProductVariant[]);
-const isCatalogScrolled = ref(false);
-const mainRef = ref<HTMLElement | null>(null);
-const visibleRows = ref([] as number[]);
-const rowRefs = ref([] as HTMLElement[]);
-const activeWishlistKey = ref<string | null>(null);
-const activeProductIndex = ref<number | null>(null);
-let catalogScrollTarget = 0;
-let catalogScrollTween: gsap.core.Tween | null = null;
-let catalogRowsFrame = 0;
 let manifestoGsapContext: ReturnType<typeof gsap.context> | null = null;
 let manifestoCleanupTasks: Array<() => void> = [];
 
 const premiumEase = 'power3.out';
 const silkEase = 'sine.inOut';
 const smoothScrollScrub = 3.2;
-
-const isMobileCatalogViewport = () =>
-  typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches;
-
-const setRowRef = (el: Element | ComponentPublicInstance | null) => {
-  if (el && !rowRefs.value.includes(el)) {
-    rowRefs.value.push(el);
-  }
-};
-
-const catalogProducts: ProductVariant[] = doorProducts.map((product) => ({
-  ...product,
-  id: product.slug,
-  finish: product.name,
-  code: product.code,
-  seriesTitle: product.seriesTitle,
-  image: product.image,
-  liked: false
-}));
-
-products.value = catalogProducts;
-visibleRows.value = [1];
-
-const catalogBeforeEnter = (el: HTMLElement) => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateX(-80px)';
-};
-
-const catalogEnter = (el: HTMLElement, done: () => void) => {
-  const delay = parseInt(el.dataset.index || '0') * 120;
-
-  setTimeout(() => {
-    el.style.transition = 'opacity 0.7s ease-out, transform 0.7s ease-out';
-    el.style.opacity = '1';
-    el.style.transform = 'translateX(0)';
-
-    setTimeout(done, 700);
-  }, delay);
-};
-
-const revealCatalogRow = (rowIndex: number) => {
-  if (rowIndex && !visibleRows.value.includes(rowIndex)) {
-    visibleRows.value.push(rowIndex);
-  }
-};
-
-const checkCatalogRows = () => {
-  catalogRowsFrame = 0;
-  const rootEl = mainRef.value as HTMLElement | null;
-
-  if (!rootEl) return;
-
-  const rootRect = rootEl.getBoundingClientRect();
-  const revealLine = rootRect.top + rootRect.height * 0.84;
-
-  rowRefs.value.forEach((el: HTMLElement) => {
-    const rect = el.getBoundingClientRect();
-    const rowIndex = parseInt(el.getAttribute('data-row-index') || '0');
-
-    if (rect.top < revealLine && rect.bottom > rootRect.top) {
-      revealCatalogRow(rowIndex);
-    }
-  });
-};
-
-const requestCatalogRowCheck = () => {
-  if (catalogRowsFrame) return;
-  catalogRowsFrame = requestAnimationFrame(checkCatalogRows);
-};
-
-const handleCatalogScroll = (event: Event) => {
-  const target = event.target as HTMLElement;
-  isCatalogScrolled.value = target.scrollTop > 5;
-  catalogScrollTarget = target.scrollTop;
-  requestCatalogRowCheck();
-};
-
-const handleCatalogWheel = (event: WheelEvent) => {
-  if (isMobileCatalogViewport()) return;
-
-  const target = mainRef.value as HTMLElement | null;
-
-  if (!target) return;
-
-  const maxScrollTop = target.scrollHeight - target.clientHeight;
-  const deltaMultiplier = event.deltaMode === 1 ? 18 : event.deltaMode === 2 ? target.clientHeight : 1;
-  const deltaY = event.deltaY * deltaMultiplier * 0.68;
-  const currentScrollTop = target.scrollTop;
-  const boundaryThreshold = 42;
-
-  if (maxScrollTop <= 0 || deltaY === 0) {
-    return;
-  }
-
-  const isAtTop = currentScrollTop <= boundaryThreshold;
-  const isAtBottom = maxScrollTop - currentScrollTop <= boundaryThreshold;
-  const shouldPassToPage = (deltaY < 0 && isAtTop) || (deltaY > 0 && isAtBottom);
-
-  if (shouldPassToPage) {
-    event.preventDefault();
-    const boundaryScrollTop = deltaY < 0 ? 0 : maxScrollTop;
-    target.scrollTop = boundaryScrollTop;
-    catalogScrollTarget = boundaryScrollTop;
-    window.scrollBy({
-      top: deltaY,
-      left: 0,
-      behavior: 'smooth'
-    });
-    requestCatalogRowCheck();
-    return;
-  }
-
-  const nextScrollTop = currentScrollTop + deltaY;
-  const clampedScrollTop = Math.max(0, Math.min(maxScrollTop, nextScrollTop));
-  const leftoverDelta = nextScrollTop - clampedScrollTop;
-
-  event.preventDefault();
-  catalogScrollTween?.kill();
-
-  if (clampedScrollTop !== currentScrollTop) {
-    catalogScrollTarget = clampedScrollTop;
-    catalogScrollTween = gsap.to(target, {
-      scrollTop: clampedScrollTop,
-      duration: 0.72,
-      ease: premiumEase,
-      overwrite: true,
-      onUpdate: requestCatalogRowCheck,
-      onComplete: requestCatalogRowCheck
-    });
-  }
-
-  if (leftoverDelta !== 0) {
-    window.scrollBy({
-      top: leftoverDelta,
-      left: 0,
-      behavior: 'smooth'
-    });
-  }
-};
-
-const toggleLike = (index: number) => {
-  products.value[index].liked = !products.value[index].liked;
-};
-
-const handleWishlistClick = (index: number, key: string) => {
-  if (isMobileCatalogViewport()) {
-    toggleLike(index);
-    activeWishlistKey.value = null;
-    return;
-  }
-
-  const willOpen = activeWishlistKey.value !== key;
-  toggleLike(index);
-  activeWishlistKey.value = willOpen ? key : null;
-};
-
-const activeProduct = computed(() => {
-  if (activeProductIndex.value === null) return null;
-  return products.value[activeProductIndex.value] || null;
-});
-
-const openProductModal = (index: number) => {
-  activeProductIndex.value = index;
-  activeWishlistKey.value = null;
-
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = 'hidden';
-  }
-};
-
-const closeProductModal = () => {
-  activeProductIndex.value = null;
-
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = '';
-  }
-};
-
-const showPreviousProduct = () => {
-  if (!products.value.length || activeProductIndex.value === null) return;
-  activeProductIndex.value = (activeProductIndex.value - 1 + products.value.length) % products.value.length;
-};
-
-const showNextProduct = () => {
-  if (!products.value.length || activeProductIndex.value === null) return;
-  activeProductIndex.value = (activeProductIndex.value + 1) % products.value.length;
-};
-
-const handleProductModalKeydown = (event: KeyboardEvent) => {
-  if (activeProductIndex.value === null) return;
-
-  if (event.key === 'Escape') {
-    closeProductModal();
-  } else if (event.key === 'ArrowLeft') {
-    showPreviousProduct();
-  } else if (event.key === 'ArrowRight') {
-    showNextProduct();
-  }
-};
 
 const initialTitleWidth =
   typeof window !== 'undefined'
@@ -303,10 +67,6 @@ const baseTitleWidth = ref(0);
 
 const inner1 = ref<HTMLElement | null>(null);
 const inner2 = ref<HTMLElement | null>(null);
-
-const setMainRef = (el: Element | ComponentPublicInstance | null) => {
-  mainRef.value = el as HTMLElement | null;
-};
 
 const setHiddenSpanRef = (el: Element | ComponentPublicInstance | null) => {
   hiddenSpan.value = el as HTMLElement | null;
@@ -391,7 +151,6 @@ const track2State: TrackState = {
 let activeTrack: number | null = null;
 let animationFrameId = 0;
 let titleInterval: ReturnType<typeof setInterval> | null = null;
-let catalogObserver: IntersectionObserver | null = null;
 
 const updateTitleWidth = () => {
   const hiddenSpanEl = hiddenSpan.value as HTMLElement | null;
@@ -524,38 +283,6 @@ const resetTilt = (event: MouseEvent) => {
   card.classList.remove('tilting');
   card.style.setProperty('--rx', '0deg');
   card.style.setProperty('--ry', '0deg');
-};
-
-const initCatalogObserver = () => {
-  const rootEl = mainRef.value as HTMLElement | null;
-
-  if (!rootEl) return;
-
-  if (catalogObserver) {
-    catalogObserver.disconnect();
-  }
-
-  catalogObserver = new IntersectionObserver((entries: IntersectionObserverEntry[]) => {
-    entries.forEach((entry: IntersectionObserverEntry) => {
-      if (entry.isIntersecting) {
-        const rowIndex = parseInt(entry.target.getAttribute('data-row-index') || '0');
-
-        revealCatalogRow(rowIndex);
-
-        catalogObserver?.unobserve(entry.target);
-      }
-    });
-  }, {
-    root: rootEl,
-    rootMargin: '0px 0px 42% 0px',
-    threshold: 0.01
-  });
-
-  rowRefs.value.forEach((el: HTMLElement) => {
-    catalogObserver?.observe(el);
-  });
-
-  requestCatalogRowCheck();
 };
 
 const addManifestoCleanup = (task: () => void) => {
@@ -936,22 +663,6 @@ const initManifestoAnimations = () => {
 };
 
 onMounted(() => {
-  products.value = catalogProducts.map((product) => ({ ...product }));
-  visibleRows.value = [1];
-
-  nextTick(() => {
-    const catalogMainEl = mainRef.value as HTMLElement | null;
-    if (catalogMainEl) {
-      catalogMainEl.scrollTop = 0;
-      catalogScrollTarget = 0;
-      isCatalogScrolled.value = false;
-    }
-
-    requestAnimationFrame(() => {
-      initCatalogObserver();
-    });
-  });
-
   updateTitleWidth();
 
   nextTick(() => {
@@ -987,7 +698,6 @@ onMounted(() => {
   window.addEventListener('mouseup', endDrag);
   window.addEventListener('touchmove', onDrag as EventListener, { passive: false });
   window.addEventListener('touchend', endDrag);
-  window.addEventListener('keydown', handleProductModalKeydown);
 });
 
 onBeforeUnmount(() => {
@@ -996,14 +706,6 @@ onBeforeUnmount(() => {
   }
 
   cancelAnimationFrame(animationFrameId);
-  if (catalogRowsFrame) {
-    cancelAnimationFrame(catalogRowsFrame);
-    catalogRowsFrame = 0;
-  }
-
-  if (catalogObserver) {
-    catalogObserver.disconnect();
-  }
 
   if (manifestoGsapContext) {
     manifestoGsapContext.revert();
@@ -1018,7 +720,5 @@ onBeforeUnmount(() => {
   window.removeEventListener('mouseup', endDrag);
   window.removeEventListener('touchmove', onDrag as EventListener);
   window.removeEventListener('touchend', endDrag);
-  window.removeEventListener('keydown', handleProductModalKeydown);
-  document.body.style.overflow = '';
 });
 </script>
