@@ -3,7 +3,7 @@
 .footer-wrapper {
   width: 100%;
   height: 1620px;
-  background-color: #14151D;
+  background-color: var(--catalog-stage-surface-bg, var(--bg-color));
   position: relative;
   overflow: hidden;
 }
@@ -21,7 +21,7 @@
   padding-bottom: 40px;
   transform: translate3d(0, 360px, 0);
   will-change: transform, border-radius;
-  box-shadow: 0 -12px 42px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   backface-visibility: hidden;
   position: relative;
 }

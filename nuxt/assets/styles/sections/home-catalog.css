@@ -2665,6 +2665,24 @@
   transform: scaleX(1) !important;
 }
 
+.home-page .catalog-all-models {
+  display: inline-flex !important;
+  margin-top: 22px !important;
+  color: #18232b !important;
+  font: inherit !important;
+  font-size: 15.5px !important;
+  line-height: 1.2 !important;
+  text-decoration: none !important;
+}
+
+.home-page .catalog-all-models .catalog-tag-part {
+  --catalog-tag-line-width: 104px;
+}
+
+.home-page .catalog-all-models:hover .catalog-tag-line {
+  transform: scaleX(1) !important;
+}
+
 .home-page .catalog-product:hover .catalog-code-line {
   width: calc(100% - 0.05em) !important;
 }

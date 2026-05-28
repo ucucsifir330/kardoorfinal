@@ -13,10 +13,11 @@
 
       <span class="ada-promo-copy">
         <span class="ada-promo-kicker">Tanıtım Belgesi</span>
-        <span class="ada-promo-title">Ege Kardoor'u yakından görün.</span>
+        <span class="ada-promo-title">Üretimden projeye kısa bir bakış.</span>
         <span class="ada-promo-text">
-          Üretim gücü, malzeme kalitesi ve proje yaklaşımını tek bir akışta izleyin.
+          Ege Kardoor'un üretim dili, malzeme yaklaşımı ve proje sürecini sade bir akışta izleyin.
         </span>
+        <span class="ada-promo-meta">01:20 · Kurumsal tanıtım</span>
       </span>
 
       <span class="ada-promo-action" aria-hidden="true">
@@ -25,7 +26,7 @@
             <path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor" />
           </svg>
         </span>
-        <span class="ada-promo-action-text">Videoyu Oynat</span>
+        <span class="ada-promo-action-text">İzle</span>
       </span>
     </button>
   </div>

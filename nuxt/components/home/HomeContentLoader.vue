@@ -7,7 +7,16 @@ const mountRef = ref<HTMLElement | null>(null);
 let observer: IntersectionObserver | null = null;
 let visibilityObserver: IntersectionObserver | null = null;
 let renderTimer: number | null = null;
-let idleRenderId: number | null = null;
+let renderFrame: number | null = null;
+
+const refreshScrollTriggers = async () => {
+  try {
+    const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+    ScrollTrigger.refresh();
+  } catch {
+    // The page still works without GSAP refresh; this only keeps scroll-linked reveals in sync.
+  }
+};
 
 const renderFlow = () => {
   if (shouldRender.value) return;
@@ -30,28 +39,22 @@ const renderFlow = () => {
     );
     visibilityObserver.observe(section);
   });
+
+  requestAnimationFrame(() => {
+    refreshScrollTriggers();
+  });
 };
 
 const scheduleRenderFlow = () => {
-  if (shouldRender.value || renderTimer || idleRenderId) return;
-
-  const win = window as typeof window & {
-    requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
-    cancelIdleCallback?: (id: number) => void;
-  };
+  if (shouldRender.value || renderTimer || renderFrame) return;
 
   const run = () => {
     renderTimer = null;
-    idleRenderId = null;
+    renderFrame = null;
     renderFlow();
   };
 
-  if (win.requestIdleCallback) {
-    idleRenderId = win.requestIdleCallback(run, { timeout: 1800 });
-    return;
-  }
-
-  renderTimer = window.setTimeout(run, 900);
+  renderFrame = window.requestAnimationFrame(run);
 };
 
 const handleDoorState = (event: Event) => {
@@ -61,24 +64,23 @@ const handleDoorState = (event: Event) => {
 
 onMounted(() => {
   window.addEventListener("kardoor:entrance-door-state", handleDoorState);
+  scheduleRenderFlow();
 
   if (mountRef.value) {
     observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) renderFlow();
       },
-      { rootMargin: "900px 0px", threshold: 0.01 }
+      { rootMargin: "1600px 0px", threshold: 0.01 }
     );
     observer.observe(mountRef.value);
   }
 });
 
 onBeforeUnmount(() => {
-  const win = window as typeof window & { cancelIdleCallback?: (id: number) => void };
-
   window.removeEventListener("kardoor:entrance-door-state", handleDoorState);
   if (renderTimer) window.clearTimeout(renderTimer);
-  if (idleRenderId && win.cancelIdleCallback) win.cancelIdleCallback(idleRenderId);
+  if (renderFrame) window.cancelAnimationFrame(renderFrame);
   observer?.disconnect();
   visibilityObserver?.disconnect();
   document.body.classList.remove("home-content-visible");

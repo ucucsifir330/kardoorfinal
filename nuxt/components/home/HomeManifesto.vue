@@ -13,19 +13,8 @@
     <div ref="ctaSpacerRef" class="ada-manifesto-spacer">
     <div class="ada-spacer-copy">
       <h2 class="ada-config-heading" aria-label="Kapınızı yalnızca seçmeyin. Kurgulayın.">
-        <span class="ada-heading-k" aria-hidden="true">
-          <span class="ada-heading-reveal-char">K</span>
-        </span><span
-          v-for="(char, index) in headingFirstLineTail"
-          :key="'heading-line-a-' + index"
-          class="ada-heading-reveal-char"
-          aria-hidden="true"
-        >{{ char === " " ? "\u00A0" : char }}</span><br><span
-          v-for="(char, index) in headingSecondLine"
-          :key="'heading-line-b-' + index"
-          class="ada-heading-reveal-char"
-          aria-hidden="true"
-        >{{ char === " " ? "\u00A0" : char }}</span>
+        <span class="ada-heading-line"><span class="ada-heading-k">K</span>apınızı yalnızca seçmeyin.</span>
+        <span class="ada-heading-line">Kurgulayın.</span>
       </h2>
       <p class="ada-spacer-manifesto-copy">
         Ege Kardoor kapı konfigüratörüyle
@@ -75,9 +64,9 @@
       </a>
     </div>
   </div>
-  </div>
 
-  <slot name="after-manifesto" />
+    <slot name="after-manifesto" />
+  </div>
 
   <div class="ada-title-container">
     <h4 class="ada-giant-title">
@@ -114,6 +103,7 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const ctaLineStageRef = ref<HTMLElement | null>(null);
 const ctaSpacerRef = ref<HTMLElement | null>(null);
@@ -121,12 +111,13 @@ const manifestoContainerRef = ref<HTMLElement | null>(null);
 const ctaLineSvgRef = ref<SVGSVGElement | null>(null);
 const ctaTopLineRef = ref<SVGPathElement | null>(null);
 const ctaBottomLineRef = ref<SVGPathElement | null>(null);
-const headingFirstLineTail = Array.from("apınızı yalnızca seçmeyin.");
-const headingSecondLine = Array.from("Kurgulayın.");
-
 let ctaResizeObserver: ResizeObserver | null = null;
 let ctaMeasureFrame = 0;
 let headingRevealTimeline: gsap.core.Timeline | null = null;
+let headingRevealTrigger: ScrollTrigger | null = null;
+
+const playHeadingReveal = () => headingRevealTimeline?.play(0);
+const resetHeadingReveal = () => headingRevealTimeline?.pause(0);
 
 const getResponsiveClamp = (min: number, preferredVw: number, max: number) =>
   Math.min(Math.max(window.innerWidth * preferredVw, min), max);
@@ -150,6 +141,7 @@ const updateCtaLineGeometry = () => {
     const headingK = spacer?.querySelector<HTMLElement>(".ada-heading-k");
     const button = spacer?.querySelector<HTMLElement>(".ada-spacer-cta");
     const catalogSection = document.querySelector<HTMLElement>(".catalog-section");
+    const promoCard = lineStage.querySelector<HTMLElement>(".ada-promo-card");
 
     if (!lineStage || !spacer || !manifestoContainer || !lineSvg || !topPath || !bottomPath || !title || !headingK || !button) return;
 
@@ -166,14 +158,27 @@ const updateCtaLineGeometry = () => {
     const catalogLineStartY = catalogRect
       ? catalogRect.top - stageRect.top + getResponsiveVhClamp(248, 0.25, 310)
       : 0;
-    const topY = Math.min(catalogLineStartY, 0);
-    const kJoinX = headingKRect.left - stageRect.left + getResponsiveClamp(10, 0.007, 14);
-    const kStemBottomY = headingKRect.bottom - stageRect.top - getResponsiveClamp(16, 0.0098, 20);
+    const topY = Math.max(
+      Math.min(catalogLineStartY, -getResponsiveClamp(2, 0.002, 4)),
+      -getResponsiveVhClamp(160, 0.2, 240)
+    );
+    const kJoinX = Math.max(
+      headingKRect.left - stageRect.left + getResponsiveClamp(8, 0.006, 12),
+      lineX + radius + getResponsiveClamp(10, 0.008, 16)
+    );
+    const kStemBottomY = headingKRect.bottom - stageRect.top - getResponsiveClamp(12, 0.008, 16);
     const topElbowY = Math.max(topY + radius, kStemBottomY);
     const buttonAnchorX = buttonRect.left - stageRect.left + buttonRect.width * 0.5;
     const buttonCenterY = buttonRect.top - stageRect.top + buttonRect.height * 0.5;
     const bottomElbowX = Math.min(buttonAnchorX - radius, lineX + radius);
-    const bottomEndY = stageRect.height;
+    const promoRect = promoCard?.getBoundingClientRect();
+    const promoJoinY = promoRect
+      ? promoRect.top - stageRect.top + Math.min(promoRect.height * 0.22, getResponsiveClamp(72, 0.05, 96))
+      : stageRect.height;
+    const promoJoinX = promoRect
+      ? promoRect.left - stageRect.left
+      : lineX;
+    const bottomTurnY = Math.max(buttonCenterY + radius, promoJoinY);
 
     spacer.style.setProperty("--cta-heading-left", `${titleRect.left - spacerRect.left}px`);
     spacer.style.setProperty(
@@ -196,7 +201,9 @@ const updateCtaLineGeometry = () => {
     );
     bottomPath.setAttribute(
       "d",
-      `M ${buttonAnchorX} ${buttonCenterY} H ${bottomElbowX} Q ${lineX} ${buttonCenterY} ${lineX} ${buttonCenterY + radius} V ${bottomEndY}`
+      promoCard
+        ? `M ${buttonAnchorX} ${buttonCenterY} H ${bottomElbowX} Q ${lineX} ${buttonCenterY} ${lineX} ${buttonCenterY + radius} V ${bottomTurnY - radius} Q ${lineX} ${bottomTurnY} ${lineX + radius} ${bottomTurnY} H ${promoJoinX}`
+        : `M ${buttonAnchorX} ${buttonCenterY} H ${bottomElbowX} Q ${lineX} ${buttonCenterY} ${lineX} ${buttonCenterY + radius} V ${stageRect.height}`
     );
 
     window.dispatchEvent(new CustomEvent("kardoor:structural-lines-updated"));
@@ -206,18 +213,17 @@ const updateCtaLineGeometry = () => {
 onMounted(async () => {
   await nextTick();
   updateCtaLineGeometry();
+  gsap.registerPlugin(ScrollTrigger);
 
-  const headingChars = Array.from(ctaSpacerRef.value?.querySelectorAll<HTMLElement>(".ada-heading-reveal-char") || []);
+  const headingLines = Array.from(ctaSpacerRef.value?.querySelectorAll<HTMLElement>(".ada-heading-line") || []);
   const spacerManifestoCopy = ctaSpacerRef.value?.querySelector<HTMLElement>(".ada-spacer-manifesto-copy");
   const spacerHighlightWords = Array.from(ctaSpacerRef.value?.querySelectorAll<HTMLElement>(".manifesto-highlight") || []);
-  const playHeadingReveal = () => headingRevealTimeline?.play(0);
-  const resetHeadingReveal = () => headingRevealTimeline?.pause(0);
 
   if (spacerManifestoCopy) {
     gsap.set(spacerManifestoCopy, {
-      autoAlpha: 0,
-      filter: "blur(18px)",
-      y: 20
+      autoAlpha: 1,
+      filter: "blur(0px)",
+      y: 0
     });
   }
 
@@ -230,13 +236,13 @@ onMounted(async () => {
 
   headingRevealTimeline = gsap.timeline({ paused: true })
     .fromTo(
-      headingChars,
+      headingLines,
       { opacity: 0, y: 40 },
       {
         opacity: 1,
         y: 0,
         duration: 0.72,
-        stagger: 0.024,
+        stagger: 0.12,
         ease: "power4.out"
       }
     )
@@ -266,37 +272,53 @@ onMounted(async () => {
       "-=0.18"
     );
 
+  const spacer = ctaSpacerRef.value;
+
+  if (spacer) {
+    headingRevealTrigger = ScrollTrigger.create({
+      trigger: spacer,
+      start: "top 84%",
+      end: "bottom top",
+      invalidateOnRefresh: true,
+      onEnter: playHeadingReveal,
+      onEnterBack: playHeadingReveal,
+      onLeaveBack: resetHeadingReveal
+    });
+
+    const spacerRect = spacer.getBoundingClientRect();
+    if (spacerRect.top < window.innerHeight * 0.84 && spacerRect.bottom > 0) {
+      playHeadingReveal();
+    }
+  }
+
   window.addEventListener("kardoor:heading-line-connected", playHeadingReveal);
-  window.addEventListener("kardoor:heading-line-reset", resetHeadingReveal);
 
   if (document.fonts?.ready) {
     document.fonts.ready.then(updateCtaLineGeometry).catch(() => undefined);
   }
 
-  const spacer = ctaSpacerRef.value;
   const lineStage = ctaLineStageRef.value;
   const manifestoContainer = manifestoContainerRef.value;
   const title = spacer?.querySelector<HTMLElement>(".ada-spacer-copy h2");
   const headingK = spacer?.querySelector<HTMLElement>(".ada-heading-k");
   const button = spacer?.querySelector<HTMLElement>(".ada-spacer-cta");
   const buttonGroup = spacer?.querySelector<HTMLElement>(".ada-spacer-cta-group");
+  const promoCard = lineStage?.querySelector<HTMLElement>(".ada-promo-card");
 
   ctaResizeObserver = new ResizeObserver(updateCtaLineGeometry);
 
-  [lineStage, spacer, manifestoContainer, title, headingK, button, buttonGroup]
+  [lineStage, spacer, manifestoContainer, title, headingK, button, buttonGroup, promoCard]
     .filter(Boolean)
     .forEach((element) => ctaResizeObserver?.observe(element as HTMLElement));
 
   window.addEventListener("resize", updateCtaLineGeometry, { passive: true });
-
-  onBeforeUnmount(() => {
-    window.removeEventListener("kardoor:heading-line-connected", playHeadingReveal);
-    window.removeEventListener("kardoor:heading-line-reset", resetHeadingReveal);
-  });
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("kardoor:heading-line-connected", playHeadingReveal);
   if (ctaMeasureFrame) window.cancelAnimationFrame(ctaMeasureFrame);
+  headingRevealTrigger?.kill();
+  headingRevealTrigger = null;
   headingRevealTimeline?.kill();
   headingRevealTimeline = null;
   ctaResizeObserver?.disconnect();

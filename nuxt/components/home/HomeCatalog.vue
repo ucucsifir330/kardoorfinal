@@ -43,6 +43,14 @@
                     </template>
                   </div>
                 </div>
+
+                <a class="catalog-all-models" href="/catalog">
+                  <span class="catalog-tag-part">
+                    <span class="catalog-tag-label catalog-tag-label--short">Tümü</span>
+                    <span class="catalog-tag-label catalog-tag-label--full">Tüm Modelleri Gör</span>
+                    <span class="catalog-tag-line"></span>
+                  </span>
+                </a>
               </div>
             </transition>
           </div>
