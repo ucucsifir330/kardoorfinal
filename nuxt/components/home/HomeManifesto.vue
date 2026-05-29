@@ -17,12 +17,8 @@
         <span class="ada-heading-line">Kurgulayın.</span>
       </h2>
       <p class="ada-spacer-manifesto-copy">
-        Ege Kardoor kapı konfigüratörüyle
-        <span class="manifesto-highlight" data-text="seri, yüzey, renk, cam, kol">seri, yüzey, renk, cam, kol</span> ve
-        <span class="manifesto-highlight" data-text="detay">detay</span> seçeneklerini kendi projenize göre deneyimleyin.
-        Beğendiğiniz tasarımı bizimle paylaşın,
-        <span class="manifesto-highlight" data-text="showroom">showroom</span> veya
-        <span class="manifesto-highlight" data-text="proje ekibimiz">proje ekibimiz</span> sizin için netleştirsin.
+        Ege Kardoor kapı konfigüratörüyle seri, yüzey, renk, cam, kol ve detay seçeneklerini kendi projenize göre
+        deneyimleyin. Beğendiğiniz tasarımı bizimle paylaşın, showroom veya proje ekibimiz sizin için netleştirsin.
       </p>
       <div class="ada-spacer-cta-group" aria-label="Konfigüratör ve koleksiyon bağlantıları">
         <a href="/catalog" class="ada-manifesto-cta ada-spacer-cta" aria-label="Konfigüratörü deneyin">
@@ -104,6 +100,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
 
 const ctaLineStageRef = ref<HTMLElement | null>(null);
 const ctaSpacerRef = ref<HTMLElement | null>(null);
@@ -115,9 +112,27 @@ let ctaResizeObserver: ResizeObserver | null = null;
 let ctaMeasureFrame = 0;
 let headingRevealTimeline: gsap.core.Timeline | null = null;
 let headingRevealTrigger: ScrollTrigger | null = null;
+let manifestoSplit: SplitText | null = null;
+let shouldPlayHeadingReveal = false;
 
-const playHeadingReveal = () => headingRevealTimeline?.play(0);
-const resetHeadingReveal = () => headingRevealTimeline?.pause(0);
+const manifestoRevealTiming = {
+  headingDuration: 0.72,
+  headingStagger: 0.12,
+  lineStart: 0.86,
+  lineStagger: 0.33,
+  overlayInDuration: 0.44,
+  overlayOutDuration: 0.44
+};
+
+const playHeadingReveal = () => {
+  shouldPlayHeadingReveal = true;
+  headingRevealTimeline?.play(0);
+};
+
+const resetHeadingReveal = () => {
+  shouldPlayHeadingReveal = false;
+  headingRevealTimeline?.pause(0);
+};
 
 const getResponsiveClamp = (min: number, preferredVw: number, max: number) =>
   Math.min(Math.max(window.innerWidth * preferredVw, min), max);
@@ -213,64 +228,87 @@ const updateCtaLineGeometry = () => {
 onMounted(async () => {
   await nextTick();
   updateCtaLineGeometry();
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, SplitText);
 
   const headingLines = Array.from(ctaSpacerRef.value?.querySelectorAll<HTMLElement>(".ada-heading-line") || []);
   const spacerManifestoCopy = ctaSpacerRef.value?.querySelector<HTMLElement>(".ada-spacer-manifesto-copy");
-  const spacerHighlightWords = Array.from(ctaSpacerRef.value?.querySelectorAll<HTMLElement>(".manifesto-highlight") || []);
 
   if (spacerManifestoCopy) {
-    gsap.set(spacerManifestoCopy, {
-      autoAlpha: 1,
-      filter: "blur(0px)",
-      y: 0
-    });
-  }
+    manifestoSplit = SplitText.create(spacerManifestoCopy, {
+      type: "lines",
+      linesClass: "manifesto-reveal-line",
+      autoSplit: true,
+      onSplit(self) {
+        headingRevealTimeline?.kill();
 
-  if (spacerHighlightWords.length) {
-    gsap.set(spacerHighlightWords, {
-      "--wipe": 0,
-      "--wipe-clip": "100%"
-    });
-  }
+        self.lines.forEach((line) => {
+          const element = line as HTMLElement;
+          const content = element.innerHTML;
 
-  headingRevealTimeline = gsap.timeline({ paused: true })
-    .fromTo(
-      headingLines,
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.72,
-        stagger: 0.12,
-        ease: "power4.out"
+          element.innerHTML = "";
+
+          const wrap = document.createElement("span");
+          wrap.className = "manifesto-reveal-wrap";
+          wrap.innerHTML = content;
+
+          const overlay = document.createElement("span");
+          overlay.className = "manifesto-reveal-overlay";
+          overlay.setAttribute("aria-hidden", "true");
+
+          element.append(wrap, overlay);
+        });
+
+        const lineElements = self.lines as HTMLElement[];
+
+        headingRevealTimeline = gsap.timeline({ paused: true })
+          .fromTo(
+            headingLines,
+            { opacity: 0, y: 40 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: manifestoRevealTiming.headingDuration,
+              stagger: manifestoRevealTiming.headingStagger,
+              ease: "power4.out"
+            }
+          );
+
+        lineElements.forEach((line, index) => {
+          const wrap = line.querySelector<HTMLElement>(".manifesto-reveal-wrap");
+          const overlay = line.querySelector<HTMLElement>(".manifesto-reveal-overlay");
+          const start = manifestoRevealTiming.lineStart + index * manifestoRevealTiming.lineStagger;
+
+          if (!wrap || !overlay) return;
+
+          headingRevealTimeline
+            ?.set(line, { opacity: 1 }, start)
+            .to(
+              overlay,
+              {
+                width: "100%",
+                ease: "power1.in",
+                duration: manifestoRevealTiming.overlayInDuration
+              },
+              start
+            )
+            .set(wrap, { opacity: 1 }, start + manifestoRevealTiming.overlayInDuration)
+            .to(
+              overlay,
+              {
+                scaleX: 0,
+                ease: "power3.out",
+                duration: manifestoRevealTiming.overlayOutDuration
+              },
+              start + manifestoRevealTiming.overlayInDuration
+            );
+        });
+
+        if (shouldPlayHeadingReveal) headingRevealTimeline.play(0);
+
+        return headingRevealTimeline;
       }
-    )
-    .to(
-      spacerManifestoCopy,
-      {
-        autoAlpha: 1,
-        filter: "blur(0px)",
-        y: 0,
-        duration: 0.78,
-        ease: "power3.out"
-      },
-      "-=0.08"
-    )
-    .to(
-      spacerHighlightWords,
-      {
-        "--wipe": 1,
-        "--wipe-clip": "0%",
-        duration: 0.9,
-        ease: "power3.out",
-        stagger: {
-          each: 0.085,
-          from: "start"
-        }
-      },
-      "-=0.18"
-    );
+    });
+  }
 
   const spacer = ctaSpacerRef.value;
 
@@ -321,6 +359,8 @@ onBeforeUnmount(() => {
   headingRevealTrigger = null;
   headingRevealTimeline?.kill();
   headingRevealTimeline = null;
+  manifestoSplit?.revert();
+  manifestoSplit = null;
   ctaResizeObserver?.disconnect();
   ctaResizeObserver = null;
   window.removeEventListener("resize", updateCtaLineGeometry);

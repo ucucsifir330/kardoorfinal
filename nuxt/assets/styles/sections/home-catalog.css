@@ -2490,7 +2490,7 @@
   --catalog-stage-line-track: #000;
   --catalog-stage-line-fill: #000;
   --catalog-stage-line-filter: none;
-  --kardoor-line-left: 42px !important;
+  --kardoor-line-left: clamp(18px, 2.1875vw, 42px) !important;
   position: relative !important;
   height: auto !important;
   min-height: 0 !important;
@@ -2499,9 +2499,42 @@
   background: var(--entrance-handoff-bg, #eae8e8) !important;
 }
 
+html:has(.home-page) {
+  scrollbar-width: none;
+}
+
+html:has(.home-page)::-webkit-scrollbar,
+body:has(.home-page)::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 .home-page .catalog-section::before,
 .home-page .catalog-section::after {
-  opacity: 0 !important;
+  content: none !important;
+  display: none !important;
+}
+
+.home-page .catalog-structural-lines {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  height: calc(100% + clamp(520px, 44vh, 720px));
+  overflow: visible;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.home-page .catalog-structural-line-path {
+  fill: none;
+  stroke: #000;
+  stroke-width: 2.4px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 1;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+  will-change: stroke-dashoffset;
 }
 
 .home-page .catalog-shell {
@@ -2526,23 +2559,6 @@
   padding: calc(clamp(86px, 9.6vh, 118px) + clamp(36px, 4vh, 52px) + clamp(24px, 2.8vh, 38px)) var(--catalog-content-right) calc(clamp(96px, 12vh, 150px) + clamp(36px, 4vh, 52px)) var(--catalog-content-left) !important;
   background: var(--catalog-stage-main-bg, #f4f1ea) !important;
   scrollbar-width: none !important;
-}
-
-.home-page .catalog-section::before,
-.home-page .catalog-section::after {
-  content: "" !important;
-  display: block !important;
-  position: absolute !important;
-  left: var(--kardoor-line-left) !important;
-  top: clamp(248px, 25vh, 310px) !important;
-  bottom: 0 !important;
-  width: 2.4px !important;
-  height: auto !important;
-  pointer-events: none !important;
-  transform-origin: top !important;
-  z-index: 3 !important;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 clamp(38px, 4vh, 56px), #000 100%) !important;
-  mask-image: linear-gradient(to bottom, transparent 0, #000 clamp(38px, 4vh, 56px), #000 100%) !important;
 }
 
 .home-page .catalog-sticky-title,

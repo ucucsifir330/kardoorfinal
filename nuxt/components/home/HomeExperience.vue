@@ -401,11 +401,11 @@ const initManifestoAnimations = () => {
         const ranges = [
           {
             start: catalogTop - viewportHeight * 0.92,
-            end: stageTop - viewportHeight * 0.02
+            end: stageTop - viewportHeight * 0.36
           },
           {
-            start: stageTop - viewportHeight * 0.56,
-            end: stageBottom - viewportHeight * 0.22
+            start: stageTop - viewportHeight * 0.82,
+            end: stageBottom - viewportHeight * 0.48
           }
         ];
 
@@ -413,7 +413,7 @@ const initManifestoAnimations = () => {
           const range = ranges[index] || ranges[0];
           const length = structuralLengths[index] || getStructuralPathLength(path);
           const rawProgress = clampProgress((window.scrollY - range.start) / Math.max(range.end - range.start, 1));
-          const progress = gsap.parseEase(silkEase)(rawProgress);
+          const progress = rawProgress;
 
           path.style.strokeDasharray = `${length}`;
           path.style.strokeDashoffset = `${length * (1 - progress)}`;
@@ -461,7 +461,7 @@ const initManifestoAnimations = () => {
           trigger: catalogSection,
           start: 'top 86%',
           end: 'bottom 38%',
-          scrub: smoothScrollScrub,
+          scrub: true,
           invalidateOnRefresh: true
         }
       });

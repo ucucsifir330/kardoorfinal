@@ -1,6 +1,15 @@
 <template>
-  <section class="catalog-section">
+  <section ref="catalogSectionRef" class="catalog-section">
     <div class="catalog-stage-backdrop" aria-hidden="true"></div>
+    <svg
+      ref="catalogLineSvgRef"
+      class="catalog-structural-lines"
+      aria-hidden="true"
+      focusable="false"
+      preserveAspectRatio="none"
+    >
+      <path ref="catalogLinePathRef" class="catalog-structural-line-path" />
+    </svg>
     <div class="catalog-shell">
       <main
         class="catalog-main"
@@ -8,7 +17,7 @@
         @scroll.passive="handleCatalogScroll"
       >
         <div class="catalog-sticky-title" :class="{ 'is-scrolled': isCatalogScrolled }">
-          <h1 class="catalog-title">Koleksiyonlar</h1>
+          <h1 ref="catalogTitleRef" class="catalog-title">Koleksiyonlar</h1>
         </div>
 
         <div
@@ -252,11 +261,17 @@ const {
 } = useHomeCatalog();
 
 const isCatalogScrolled = ref(false);
+const catalogSectionRef = ref<HTMLElement | null>(null);
+const catalogTitleRef = ref<HTMLElement | null>(null);
 const mainRef = ref<HTMLElement | null>(null);
 const rowRefs = ref<HTMLElement[]>([]);
+const catalogLineSvgRef = ref<SVGSVGElement | null>(null);
+const catalogLinePathRef = ref<SVGPathElement | null>(null);
 
 let catalogRowsFrame = 0;
 let catalogObserver: IntersectionObserver | null = null;
+let catalogLineFrame = 0;
+let catalogLinePathLength = 0;
 
 const setMainRef = (el: Element | ComponentPublicInstance | null) => {
   mainRef.value = el as HTMLElement | null;
@@ -323,6 +338,72 @@ const handleCatalogScroll = (event: Event) => {
   requestCatalogRowCheck();
 };
 
+const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
+
+const getDocumentTop = (element: HTMLElement) =>
+  window.scrollY + element.getBoundingClientRect().top;
+
+const updateCatalogLineGeometry = () => {
+  const section = catalogSectionRef.value;
+  const svg = catalogLineSvgRef.value;
+  const path = catalogLinePathRef.value;
+
+  if (!section || !svg || !path) return;
+
+  const sectionRect = section.getBoundingClientRect();
+  const titleRect = catalogTitleRef.value?.getBoundingClientRect();
+  const width = sectionRect.width;
+  const height = sectionRect.height + Math.min(Math.max(window.innerHeight * 0.44, 520), 720);
+  const lineX = Math.min(Math.max(window.innerWidth * 0.021875, 18), 42);
+  const startX = titleRect
+    ? titleRect.left - sectionRect.left
+    : lineX + Math.min(Math.max(window.innerWidth * 0.22, 280), 420);
+  const startY = titleRect
+    ? titleRect.top - sectionRect.top - Math.min(Math.max(window.innerHeight * 0.018, 14), 24)
+    : Math.min(Math.max(window.innerHeight * 0.14, 120), 170);
+  const radius = Math.min(Math.max(window.innerWidth * 0.016667, 28), 32);
+  const endY = height - radius - 2;
+  const endX = lineX + Math.min(Math.max(window.innerWidth * 0.16, 240), 306);
+
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  path.setAttribute(
+    "d",
+    `M ${startX} ${startY} H ${lineX + radius} Q ${lineX} ${startY} ${lineX} ${startY + radius} V ${endY - radius} Q ${lineX} ${endY} ${lineX + radius} ${endY} H ${endX}`
+  );
+
+  catalogLinePathLength = path.getTotalLength();
+  path.style.strokeDasharray = `${catalogLinePathLength}`;
+  path.style.strokeDashoffset = `${catalogLinePathLength}`;
+};
+
+const updateCatalogLineProgress = () => {
+  catalogLineFrame = 0;
+
+  const section = catalogSectionRef.value;
+  const path = catalogLinePathRef.value;
+
+  if (!section || !path || !catalogLinePathLength) return;
+
+  const viewportHeight = window.innerHeight || 1;
+  const sectionTop = getDocumentTop(section);
+  const sectionBottom = sectionTop + section.getBoundingClientRect().height;
+  const start = sectionTop - viewportHeight * 0.2;
+  const end = sectionBottom - viewportHeight * 0.28;
+  const progress = clampProgress((window.scrollY - start) / Math.max(end - start, 1));
+
+  path.style.strokeDashoffset = `${catalogLinePathLength * (1 - progress)}`;
+};
+
+const requestCatalogLineProgress = () => {
+  if (catalogLineFrame) return;
+  catalogLineFrame = requestAnimationFrame(updateCatalogLineProgress);
+};
+
+const refreshCatalogLine = () => {
+  updateCatalogLineGeometry();
+  updateCatalogLineProgress();
+};
+
 const initCatalogObserver = () => {
   const rootEl = mainRef.value;
 
@@ -364,9 +445,16 @@ onMounted(() => {
 
     requestAnimationFrame(() => {
       initCatalogObserver();
+      refreshCatalogLine();
     });
   });
 
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(refreshCatalogLine).catch(() => undefined);
+  }
+
+  window.addEventListener("scroll", requestCatalogLineProgress, { passive: true });
+  window.addEventListener("resize", refreshCatalogLine, { passive: true });
   window.addEventListener("keydown", handleProductModalKeydown);
 });
 
@@ -380,6 +468,13 @@ onBeforeUnmount(() => {
     catalogObserver.disconnect();
   }
 
+  if (catalogLineFrame) {
+    cancelAnimationFrame(catalogLineFrame);
+    catalogLineFrame = 0;
+  }
+
+  window.removeEventListener("scroll", requestCatalogLineProgress);
+  window.removeEventListener("resize", refreshCatalogLine);
   window.removeEventListener("keydown", handleProductModalKeydown);
   resetCatalogModalState();
 });
