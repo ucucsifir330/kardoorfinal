@@ -6,6 +6,10 @@ export interface ProductVariant {
   finish: string;
   code: string;
   seriesTitle: string;
+  series?: string;
+  collection?: string;
+  category?: string;
+  system?: string;
   image: string;
   liked: boolean;
 }
@@ -161,6 +165,10 @@ const catalogProducts: ProductVariant[] = doorProducts.map((product) => ({
   finish: product.name,
   code: product.code,
   seriesTitle: product.seriesTitle,
+  series: product.seriesTitle,
+  collection: product.category,
+  category: product.subClass,
+  system: product.materials.join(" / "),
   image: product.image,
   liked: false
 }));

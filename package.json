@@ -13,5 +13,8 @@
     "preview": "npm --workspace nuxt run preview",
     "typecheck": "npm --workspace nuxt run typecheck",
     "check": "npm --workspace nuxt run typecheck"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0"
   }
 }

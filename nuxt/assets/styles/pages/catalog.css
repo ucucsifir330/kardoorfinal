@@ -407,6 +407,35 @@ body:has(.catalog-page) .kardoor-footer {
   font-size: 15.5px;
 }
 
+.catalog-card__route {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #242929;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: none;
+  transform: none;
+  transition:
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.catalog-card__route:hover,
+.catalog-card__route:focus-visible {
+  background: #111516;
+  transform: translateY(-2px);
+}
+
 .catalog-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(180px, 1fr));

@@ -2,12 +2,11 @@
   <HomeCatalog />
   <section class="ada-team-section">
     <HomeManifesto>
-      <template #after-manifesto>
-        <HomeTeamCards />
+      <template #before-references-title>
+        <HomeReferences />
       </template>
     </HomeManifesto>
   </section>
-  <HomeReferences />
   <HomeReviews
     :dynamic-gap="dynamicGap"
     :title-width="titleWidth"
@@ -374,7 +373,7 @@ const initManifestoAnimations = () => {
     const loopContainer = document.querySelector<HTMLElement>('.ada-subtitle-container');
     const loopTrackReverse = document.querySelector<HTMLElement>('.ada-loop-track-reverse');
     const loopContainerReverse = document.querySelector<HTMLElement>('.ada-subtitle-container-reverse');
-    const structuralPaths = Array.from(document.querySelectorAll<SVGPathElement>('.ada-structural-line-path'));
+    const structuralPaths = Array.from(document.querySelectorAll<SVGPathElement>('.ada-structural-line-path--bottom'));
     const spacerLineHost = document.querySelector<HTMLElement>('.ada-manifesto-line-stage');
 
     const getStructuralPathLength = (path: SVGPathElement) => {
@@ -386,7 +385,6 @@ const initManifestoAnimations = () => {
     if (spacerLineHost && structuralPaths.length) {
       let structuralFrame = 0;
       let structuralLengths = structuralPaths.map(getStructuralPathLength);
-      let headingLineConnected = false;
 
       const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
       const getDocumentTop = (element: HTMLElement) => window.scrollY + element.getBoundingClientRect().top;
@@ -397,36 +395,18 @@ const initManifestoAnimations = () => {
         const viewportHeight = window.innerHeight || 1;
         const stageTop = getDocumentTop(spacerLineHost);
         const stageBottom = stageTop + spacerLineHost.getBoundingClientRect().height;
-        const catalogTop = catalogSection ? getDocumentTop(catalogSection) : stageTop;
-        const ranges = [
-          {
-            start: catalogTop - viewportHeight * 0.92,
-            end: stageTop - viewportHeight * 0.36
-          },
-          {
-            start: stageTop - viewportHeight * 0.82,
-            end: stageBottom - viewportHeight * 0.48
-          }
-        ];
+        const range = {
+          start: stageTop - viewportHeight * 0.82,
+          end: stageBottom - viewportHeight * 0.48
+        };
 
         structuralPaths.forEach((path, index) => {
-          const range = ranges[index] || ranges[0];
           const length = structuralLengths[index] || getStructuralPathLength(path);
           const rawProgress = clampProgress((window.scrollY - range.start) / Math.max(range.end - range.start, 1));
           const progress = rawProgress;
 
           path.style.strokeDasharray = `${length}`;
           path.style.strokeDashoffset = `${length * (1 - progress)}`;
-
-          if (index === 0) {
-            if (rawProgress >= 0.965 && !headingLineConnected) {
-              headingLineConnected = true;
-              window.dispatchEvent(new CustomEvent('kardoor:heading-line-connected'));
-            } else if (rawProgress < 0.82 && headingLineConnected) {
-              headingLineConnected = false;
-              window.dispatchEvent(new CustomEvent('kardoor:heading-line-reset'));
-            }
-          }
         });
       };
 
@@ -644,19 +624,6 @@ const initManifestoAnimations = () => {
       addManifestoCleanup(() => loopContainerReverse.removeEventListener('mouseleave', playTickerReverse));
     }
 
-    if (window.matchMedia('(min-width: 1025px)').matches) {
-      gsap.from('.ada-promo-card', {
-        y: 34,
-        opacity: 0,
-        duration: 1.45,
-        ease: premiumEase,
-        scrollTrigger: {
-          trigger: '.ada-promo-card',
-          start: 'top 88%',
-          once: true
-        }
-      });
-    }
   });
 
   requestAnimationFrame(() => ScrollTrigger.refresh());

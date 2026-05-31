@@ -7,8 +7,7 @@
       focusable="false"
       preserveAspectRatio="none"
     >
-      <path ref="ctaTopLineRef" class="ada-structural-line-path" />
-      <path ref="ctaBottomLineRef" class="ada-structural-line-path" />
+      <path ref="ctaBottomLineRef" class="ada-structural-line-path ada-structural-line-path--bottom" />
     </svg>
     <div ref="ctaSpacerRef" class="ada-manifesto-spacer">
     <div class="ada-spacer-copy">
@@ -61,7 +60,7 @@
     </div>
   </div>
 
-    <slot name="after-manifesto" />
+  <slot name="before-references-title" />
   </div>
 
   <div class="ada-title-container">
@@ -99,19 +98,16 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 
 const ctaLineStageRef = ref<HTMLElement | null>(null);
 const ctaSpacerRef = ref<HTMLElement | null>(null);
 const manifestoContainerRef = ref<HTMLElement | null>(null);
 const ctaLineSvgRef = ref<SVGSVGElement | null>(null);
-const ctaTopLineRef = ref<SVGPathElement | null>(null);
 const ctaBottomLineRef = ref<SVGPathElement | null>(null);
 let ctaResizeObserver: ResizeObserver | null = null;
 let ctaMeasureFrame = 0;
 let headingRevealTimeline: gsap.core.Timeline | null = null;
-let headingRevealTrigger: ScrollTrigger | null = null;
 let manifestoSplit: SplitText | null = null;
 let shouldPlayHeadingReveal = false;
 
@@ -125,6 +121,8 @@ const manifestoRevealTiming = {
 };
 
 const playHeadingReveal = () => {
+  if (shouldPlayHeadingReveal) return;
+
   shouldPlayHeadingReveal = true;
   headingRevealTimeline?.play(0);
 };
@@ -137,9 +135,6 @@ const resetHeadingReveal = () => {
 const getResponsiveClamp = (min: number, preferredVw: number, max: number) =>
   Math.min(Math.max(window.innerWidth * preferredVw, min), max);
 
-const getResponsiveVhClamp = (min: number, preferredVh: number, max: number) =>
-  Math.min(Math.max(window.innerHeight * preferredVh, min), max);
-
 const updateCtaLineGeometry = () => {
   if (ctaMeasureFrame) window.cancelAnimationFrame(ctaMeasureFrame);
 
@@ -150,56 +145,22 @@ const updateCtaLineGeometry = () => {
     const spacer = ctaSpacerRef.value;
     const manifestoContainer = manifestoContainerRef.value;
     const lineSvg = ctaLineSvgRef.value;
-    const topPath = ctaTopLineRef.value;
     const bottomPath = ctaBottomLineRef.value;
-    const title = spacer?.querySelector<HTMLElement>(".ada-spacer-copy h2");
-    const headingK = spacer?.querySelector<HTMLElement>(".ada-heading-k");
     const button = spacer?.querySelector<HTMLElement>(".ada-spacer-cta");
-    const catalogSection = document.querySelector<HTMLElement>(".catalog-section");
-    const promoCard = lineStage.querySelector<HTMLElement>(".ada-promo-card");
 
-    if (!lineStage || !spacer || !manifestoContainer || !lineSvg || !topPath || !bottomPath || !title || !headingK || !button) return;
+    if (!lineStage || !spacer || !manifestoContainer || !lineSvg || !bottomPath || !button) return;
 
     const stageRect = lineStage.getBoundingClientRect();
-    const catalogRect = catalogSection?.getBoundingClientRect();
     const spacerRect = spacer.getBoundingClientRect();
-    const titleRect = title.getBoundingClientRect();
-    const headingKRect = headingK.getBoundingClientRect();
     const buttonRect = button.getBoundingClientRect();
     const stageWidth = Math.min(window.innerWidth, 1920);
     const stageLeft = Math.max((window.innerWidth - stageWidth) / 2, 0);
     const lineX = stageLeft + getResponsiveClamp(18, 0.021875, 42);
     const radius = getResponsiveClamp(28, 0.016667, 34);
-    const catalogLineStartY = catalogRect
-      ? catalogRect.top - stageRect.top + getResponsiveVhClamp(248, 0.25, 310)
-      : 0;
-    const topY = Math.max(
-      Math.min(catalogLineStartY, -getResponsiveClamp(2, 0.002, 4)),
-      -getResponsiveVhClamp(160, 0.2, 240)
-    );
-    const kJoinX = Math.max(
-      headingKRect.left - stageRect.left + getResponsiveClamp(8, 0.006, 12),
-      lineX + radius + getResponsiveClamp(10, 0.008, 16)
-    );
-    const kStemBottomY = headingKRect.bottom - stageRect.top - getResponsiveClamp(12, 0.008, 16);
-    const topElbowY = Math.max(topY + radius, kStemBottomY);
     const buttonAnchorX = buttonRect.left - stageRect.left + buttonRect.width * 0.5;
     const buttonCenterY = buttonRect.top - stageRect.top + buttonRect.height * 0.5;
     const bottomElbowX = Math.min(buttonAnchorX - radius, lineX + radius);
-    const promoRect = promoCard?.getBoundingClientRect();
-    const promoJoinY = promoRect
-      ? promoRect.top - stageRect.top + Math.min(promoRect.height * 0.22, getResponsiveClamp(72, 0.05, 96))
-      : stageRect.height;
-    const promoJoinX = promoRect
-      ? promoRect.left - stageRect.left
-      : lineX;
-    const bottomTurnY = Math.max(buttonCenterY + radius, promoJoinY);
 
-    spacer.style.setProperty("--cta-heading-left", `${titleRect.left - spacerRect.left}px`);
-    spacer.style.setProperty(
-      "--cta-k-stem-bottom-y",
-      `${headingKRect.bottom - spacerRect.top}px`
-    );
     spacer.style.setProperty(
       "--cta-button-anchor-x",
       `${buttonRect.left - spacerRect.left + buttonRect.width * 0.5}px`
@@ -210,15 +171,9 @@ const updateCtaLineGeometry = () => {
     );
 
     lineSvg.setAttribute("viewBox", `0 0 ${stageRect.width} ${stageRect.height}`);
-    topPath.setAttribute(
-      "d",
-      `M ${lineX} ${topY} V ${topElbowY - radius} Q ${lineX} ${topElbowY} ${lineX + radius} ${topElbowY} H ${kJoinX}`
-    );
     bottomPath.setAttribute(
       "d",
-      promoCard
-        ? `M ${buttonAnchorX} ${buttonCenterY} H ${bottomElbowX} Q ${lineX} ${buttonCenterY} ${lineX} ${buttonCenterY + radius} V ${bottomTurnY - radius} Q ${lineX} ${bottomTurnY} ${lineX + radius} ${bottomTurnY} H ${promoJoinX}`
-        : `M ${buttonAnchorX} ${buttonCenterY} H ${bottomElbowX} Q ${lineX} ${buttonCenterY} ${lineX} ${buttonCenterY + radius} V ${stageRect.height}`
+      `M ${buttonAnchorX} ${buttonCenterY} H ${bottomElbowX} Q ${lineX} ${buttonCenterY} ${lineX} ${buttonCenterY + radius} V ${stageRect.height}`
     );
 
     window.dispatchEvent(new CustomEvent("kardoor:structural-lines-updated"));
@@ -228,7 +183,7 @@ const updateCtaLineGeometry = () => {
 onMounted(async () => {
   await nextTick();
   updateCtaLineGeometry();
-  gsap.registerPlugin(ScrollTrigger, SplitText);
+  gsap.registerPlugin(SplitText);
 
   const headingLines = Array.from(ctaSpacerRef.value?.querySelectorAll<HTMLElement>(".ada-heading-line") || []);
   const spacerManifestoCopy = ctaSpacerRef.value?.querySelector<HTMLElement>(".ada-spacer-manifesto-copy");
@@ -312,24 +267,8 @@ onMounted(async () => {
 
   const spacer = ctaSpacerRef.value;
 
-  if (spacer) {
-    headingRevealTrigger = ScrollTrigger.create({
-      trigger: spacer,
-      start: "top 84%",
-      end: "bottom top",
-      invalidateOnRefresh: true,
-      onEnter: playHeadingReveal,
-      onEnterBack: playHeadingReveal,
-      onLeaveBack: resetHeadingReveal
-    });
-
-    const spacerRect = spacer.getBoundingClientRect();
-    if (spacerRect.top < window.innerHeight * 0.84 && spacerRect.bottom > 0) {
-      playHeadingReveal();
-    }
-  }
-
   window.addEventListener("kardoor:heading-line-connected", playHeadingReveal);
+  window.addEventListener("kardoor:heading-line-reset", resetHeadingReveal);
 
   if (document.fonts?.ready) {
     document.fonts.ready.then(updateCtaLineGeometry).catch(() => undefined);
@@ -337,15 +276,12 @@ onMounted(async () => {
 
   const lineStage = ctaLineStageRef.value;
   const manifestoContainer = manifestoContainerRef.value;
-  const title = spacer?.querySelector<HTMLElement>(".ada-spacer-copy h2");
-  const headingK = spacer?.querySelector<HTMLElement>(".ada-heading-k");
   const button = spacer?.querySelector<HTMLElement>(".ada-spacer-cta");
   const buttonGroup = spacer?.querySelector<HTMLElement>(".ada-spacer-cta-group");
-  const promoCard = lineStage?.querySelector<HTMLElement>(".ada-promo-card");
 
   ctaResizeObserver = new ResizeObserver(updateCtaLineGeometry);
 
-  [lineStage, spacer, manifestoContainer, title, headingK, button, buttonGroup, promoCard]
+  [lineStage, spacer, manifestoContainer, button, buttonGroup]
     .filter(Boolean)
     .forEach((element) => ctaResizeObserver?.observe(element as HTMLElement));
 
@@ -354,9 +290,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("kardoor:heading-line-connected", playHeadingReveal);
+  window.removeEventListener("kardoor:heading-line-reset", resetHeadingReveal);
   if (ctaMeasureFrame) window.cancelAnimationFrame(ctaMeasureFrame);
-  headingRevealTrigger?.kill();
-  headingRevealTrigger = null;
   headingRevealTimeline?.kill();
   headingRevealTimeline = null;
   manifestoSplit?.revert();

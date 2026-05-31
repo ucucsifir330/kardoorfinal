@@ -54,7 +54,12 @@
                   </div>
                 </div>
 
-                <a class="catalog-all-models" href="/catalog">
+                <a
+                  class="catalog-all-models catalog-magnetic-link"
+                  href="/catalog"
+                  @mousemove="handleCatalogMagnetMove"
+                  @mouseleave="handleCatalogMagnetLeave"
+                >
                   <span class="catalog-tag-part">
                     <span class="catalog-tag-label catalog-tag-label--short">Tümü</span>
                     <span class="catalog-tag-label catalog-tag-label--full">Tüm Modelleri Gör</span>
@@ -74,7 +79,13 @@
               <div class="catalog-card-actions">
                 <span class="catalog-card-subtitle">{{ block.description }}</span>
 
-                <NuxtLink class="catalog-learn-more" to="/catalog" aria-label="Tüm modelleri gör">
+                <NuxtLink
+                  class="catalog-learn-more catalog-magnetic-link"
+                  to="/catalog"
+                  aria-label="Tüm modelleri gör"
+                  @mousemove="handleCatalogMagnetMove"
+                  @mouseleave="handleCatalogMagnetLeave"
+                >
                   <span class="catalog-learn-more__circle" aria-hidden="true">
                     <span class="catalog-learn-more__icon"></span>
                   </span>
@@ -162,84 +173,177 @@
     </div>
   </section>
 
+  <!-- Product detail modal -->
   <div
     v-if="activeProduct"
     class="product-modal"
     role="dialog"
     aria-modal="true"
-    aria-label="Ürün detayı"
+    :aria-label="`${activeProduct.code} ürün detayı`"
     @click.self="closeProductModal"
   >
-    <button type="button" class="product-modal-close" aria-label="Kapat" @click="closeProductModal">×</button>
-    <button type="button" class="product-modal-nav product-modal-prev" aria-label="Önceki ürün" @click="showPreviousProduct">
-      <svg viewBox="0 0 44 16" aria-hidden="true">
-        <line x1="43" y1="8" x2="2" y2="8"></line>
-        <polyline points="9,1 2,8 9,15"></polyline>
-      </svg>
+    <button
+      type="button"
+      class="product-modal-close"
+      aria-label="Kapat"
+      @click="closeProductModal"
+    >
+      ×
     </button>
-    <button type="button" class="product-modal-nav product-modal-next" aria-label="Sonraki ürün" @click="showNextProduct">
+
+    <button
+      type="button"
+      class="product-modal-nav product-modal-prev"
+      aria-label="Önceki ürün"
+      @click="showPreviousProduct"
+    >
       <svg viewBox="0 0 44 16" aria-hidden="true">
-        <line x1="1" y1="8" x2="42" y2="8"></line>
-        <polyline points="35,1 42,8 35,15"></polyline>
+        <line x1="43" y1="8" x2="2" y2="8" />
+        <polyline points="9,1 2,8 9,15" />
       </svg>
     </button>
 
-    <div class="product-modal-panel">
+    <button
+      type="button"
+      class="product-modal-nav product-modal-next"
+      aria-label="Sonraki ürün"
+      @click="showNextProduct"
+    >
+      <svg viewBox="0 0 44 16" aria-hidden="true">
+        <line x1="1" y1="8" x2="42" y2="8" />
+        <polyline points="35,1 42,8 35,15" />
+      </svg>
+    </button>
+
+    <section class="product-modal-panel">
       <div class="product-modal-visual">
-        <img :src="activeProduct.image" :alt="activeProduct.finish" class="product-modal-image">
+        <div class="product-modal-visual-frame">
+          <img
+            :src="activeProduct.image"
+            :alt="activeProduct.finish"
+            class="product-modal-image"
+          >
+        </div>
+
+        <div class="product-modal-visual-caption">
+          <span>{{ activeProduct.code }}</span>
+          <span>{{ activeProduct.finish }}</span>
+        </div>
       </div>
 
       <div class="product-modal-content">
-        <h2>PBL15/50</h2>
-        <div class="product-modal-meta">
-          <span>ONE</span>
-          <span>Kapı donanımı</span>
-          <span>Rozetli kapı kolları</span>
-          <span>{{ activeProduct.finish }}</span>
+        <div class="product-modal-heading">
+          <p class="product-modal-kicker">
+            {{ activeProduct.series || 'Kardoor Architectural Doors' }}
+          </p>
+
+          <h2>{{ activeProduct.code }}</h2>
+
+          <div class="product-modal-meta">
+            <span>{{ activeProduct.collection || 'Premium Series' }}</span>
+            <span>{{ activeProduct.category || 'Entrance Door System' }}</span>
+            <span>{{ activeProduct.finish }}</span>
+          </div>
         </div>
+
         <p class="product-modal-description">
-          Masif çift yaylı rozetli kapı kolu, {{ activeProduct.finish }} yüzey seçeneğiyle.
+          Güçlendirilmiş gövde yapısı, rafine yüzey seçenekleri ve çağdaş cephe
+          estetiğiyle villa, rezidans ve özel mimari projeler için geliştirilen
+          premium giriş kapısı sistemi.
         </p>
 
-        <button type="button" class="product-modal-like" @click.stop="toggleLike(activeProductIndex)">
-          <span aria-hidden="true">♥</span>
-          {{ activeProduct.liked ? 'Favorilerden kaldır' : 'Favorilere ekle' }}
-        </button>
+        <div class="product-modal-actions">
+          <button
+            type="button"
+            class="product-modal-like"
+            @click.stop="toggleLike(activeProductIndex)"
+          >
+            <span aria-hidden="true">♥</span>
+            {{ activeProduct.liked ? 'Favorilerden kaldır' : 'Favorilere ekle' }}
+          </button>
+
+          <NuxtLink class="product-modal-quote" to="/request-quote">
+            Teklif al
+          </NuxtLink>
+        </div>
 
         <div class="product-modal-details">
-          <div>
+          <div class="product-modal-info-block">
             <h3>Ürün Bilgisi</h3>
+
             <dl>
-              <div><dt>Kod:</dt><dd>{{ activeProduct.code }}</dd></div>
-              <div><dt>Birim:</dt><dd>Adet</dd></div>
-              <div><dt>Koleksiyon:</dt><dd>ONE</dd></div>
-              <div><dt>Tasarımcı:</dt><dd>Güven Karaboğa</dd></div>
+              <div>
+                <dt>Kod</dt>
+                <dd>{{ activeProduct.code }}</dd>
+              </div>
+
+              <div>
+                <dt>Seri</dt>
+                <dd>{{ activeProduct.series || 'Premium' }}</dd>
+              </div>
+
+              <div>
+                <dt>Yüzey</dt>
+                <dd>{{ activeProduct.finish }}</dd>
+              </div>
+
+              <div>
+                <dt>Sistem</dt>
+                <dd>{{ activeProduct.system || 'Çelik / Alüminyum kapı sistemi' }}</dd>
+              </div>
+
+              <div>
+                <dt>Kullanım</dt>
+                <dd>Villa, rezidans, proje ve özel mimari girişler</dd>
+              </div>
             </dl>
           </div>
 
-          <div>
+          <div class="product-modal-info-block">
             <h3>Dosyalar</h3>
-            <a href="#">Teknik föy</a>
-            <a href="#">Ürün fotoğrafı</a>
-            <a href="#">Teknik çizim</a>
-            <a href="#">Montaj talimatı</a>
+
+            <div class="product-modal-files">
+              <a href="#">Teknik föy</a>
+              <a href="#">Ürün görseli</a>
+              <a href="#">Teknik çizim</a>
+              <a href="#">Montaj detayı</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-modal-specs">
+          <div>
+            <span>01</span>
+            <strong>Güçlendirilmiş gövde</strong>
+          </div>
+
+          <div>
+            <span>02</span>
+            <strong>Projeye özel ölçü</strong>
+          </div>
+
+          <div>
+            <span>03</span>
+            <strong>Mimari yüzey seçenekleri</strong>
           </div>
         </div>
 
         <div class="product-modal-finishes" aria-label="Yüzey seçenekleri">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
+          <button type="button" style="--finish: #111111" aria-label="Siyah yüzey"></button>
+          <button type="button" style="--finish: #2f3335" aria-label="Antrasit yüzey"></button>
+          <button type="button" style="--finish: #7a6f5f" aria-label="Bronz yüzey"></button>
+          <button type="button" style="--finish: #f3f0e9" aria-label="Açık yüzey"></button>
+          <button type="button" style="--finish: #c99354" aria-label="Pirinç yüzey"></button>
+          <button type="button" class="is-metal" aria-label="Metal yüzey"></button>
         </div>
       </div>
-    </div>
+    </section>
   </div>
+  <!-- End product detail modal. -->
 </template>
 
 <script setup lang="ts">
+import { gsap } from "gsap";
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { ComponentPublicInstance } from "vue";
 
@@ -272,6 +376,7 @@ let catalogRowsFrame = 0;
 let catalogObserver: IntersectionObserver | null = null;
 let catalogLineFrame = 0;
 let catalogLinePathLength = 0;
+let catalogHeadingLineConnected = false;
 
 const setMainRef = (el: Element | ComponentPublicInstance | null) => {
   mainRef.value = el as HTMLElement | null;
@@ -338,6 +443,50 @@ const handleCatalogScroll = (event: Event) => {
   requestCatalogRowCheck();
 };
 
+const handleCatalogMagnetMove = (event: MouseEvent) => {
+  const zone = event.currentTarget as HTMLElement;
+  const target = zone.querySelector<HTMLElement>(".catalog-tag-part, .catalog-learn-more__circle") || zone;
+  const rect = zone.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const dx = event.clientX - centerX;
+  const dy = event.clientY - centerY;
+  const radius = Math.min(Math.max(Math.max(rect.width, rect.height) / 2, 58), 86);
+  const distance = Math.hypot(dx, dy);
+
+  if (distance > radius) {
+    handleCatalogMagnetLeave(event);
+    return;
+  }
+
+  const pull = 1 - distance / radius;
+
+  gsap.to(target, {
+    x: dx * 0.28 * pull,
+    y: dy * 0.28 * pull,
+    rotate: dx * 0.045 * pull,
+    scale: 1 + pull * 0.045,
+    duration: 0.85,
+    ease: "power3.out",
+    overwrite: "auto"
+  });
+};
+
+const handleCatalogMagnetLeave = (event: MouseEvent) => {
+  const zone = event.currentTarget as HTMLElement;
+  const target = zone.querySelector<HTMLElement>(".catalog-tag-part, .catalog-learn-more__circle") || zone;
+
+  gsap.to(target, {
+    x: 0,
+    y: 0,
+    rotate: 0,
+    scale: 1,
+    duration: 0.36,
+    ease: "elastic.out(1, 0.45)",
+    overwrite: true
+  });
+};
+
 const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
 
 const getDocumentTop = (element: HTMLElement) =>
@@ -392,6 +541,14 @@ const updateCatalogLineProgress = () => {
   const progress = clampProgress((window.scrollY - start) / Math.max(end - start, 1));
 
   path.style.strokeDashoffset = `${catalogLinePathLength * (1 - progress)}`;
+
+  if (progress >= 0.965 && !catalogHeadingLineConnected) {
+    catalogHeadingLineConnected = true;
+    window.dispatchEvent(new CustomEvent("kardoor:heading-line-connected"));
+  } else if (progress < 0.82 && catalogHeadingLineConnected) {
+    catalogHeadingLineConnected = false;
+    window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
+  }
 };
 
 const requestCatalogLineProgress = () => {
@@ -476,6 +633,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("scroll", requestCatalogLineProgress);
   window.removeEventListener("resize", refreshCatalogLine);
   window.removeEventListener("keydown", handleProductModalKeydown);
+  window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
   resetCatalogModalState();
 });
 </script>

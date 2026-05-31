@@ -26,6 +26,7 @@ useHead({
     :data-ambience="mode"
   >
     <SiteHeader />
+    <SmoothCursor />
 
     <main>
       <NuxtPage />
