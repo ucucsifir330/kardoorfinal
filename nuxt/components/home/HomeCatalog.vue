@@ -26,6 +26,13 @@
           :ref="setRowRef"
           :data-row-index="block.index"
           class="catalog-row"
+          :class="{
+            'is-liquid-active': activeLiquidCard === `block-${block.index}`,
+            'is-liquid-expanded': liquidMenuExpanded[`block-${block.index}`],
+          }"
+          @mousemove="handleLiquidMouseMove($event, `block-${block.index}`)"
+          @mouseenter="handleLiquidEnter(`block-${block.index}`, $event)"
+          @mouseleave="handleLiquidLeave(`block-${block.index}`)"
         >
           <div class="catalog-row-info">
             <transition @before-enter="catalogBeforeEnter" @enter="catalogEnter" :css="false">
@@ -70,7 +77,9 @@
             </transition>
           </div>
 
-          <div class="catalog-card">
+          <div
+            class="catalog-card liquid-card"
+          >
             <div class="catalog-card-header">
               <h3 class="catalog-card-title">
                 {{ block.cardTitle }} <span>{{ block.seriesLabel }}</span>
@@ -79,18 +88,6 @@
               <div class="catalog-card-actions">
                 <span class="catalog-card-subtitle">{{ block.description }}</span>
 
-                <NuxtLink
-                  class="catalog-learn-more catalog-magnetic-link"
-                  to="/catalog"
-                  aria-label="Tüm modelleri gör"
-                  @mousemove="handleCatalogMagnetMove"
-                  @mouseleave="handleCatalogMagnetLeave"
-                >
-                  <span class="catalog-learn-more__circle" aria-hidden="true">
-                    <span class="catalog-learn-more__icon"></span>
-                  </span>
-                  <span class="catalog-learn-more__text">Tümü</span>
-                </NuxtLink>
               </div>
             </div>
 
@@ -109,7 +106,7 @@
                 class="catalog-product"
                 @click="openProductModal(item.productIndex)"
               >
-                <div class="catalog-product-image-wrap" @click="openProductModal(item.productIndex)">
+                <div class="catalog-product-image-wrap">
                   <img
                     :src="item.image"
                     alt="Kapı Modeli"
@@ -167,13 +164,52 @@
                 </div>
               </article>
             </transition-group>
+
+            <div
+              class="liquid-menu"
+              :class="{ 'is-expanded': liquidMenuExpanded[`block-${block.index}`] }"
+            >
+              <div
+                class="hamburger"
+                :ref="el => setHamburgerRef(el, `block-${block.index}`)"
+                @mouseenter="expandLiquidMenu(`block-${block.index}`)"
+              >
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+              </div>
+
+              <svg
+                class="liquid-blob"
+                :ref="el => setBlobContainerRef(el, `block-${block.index}`)"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  class="liquid-blob-path"
+                  :ref="el => setBlobPathRef(el, `block-${block.index}`)"
+                />
+              </svg>
+
+              <div
+                class="liquid-menu-inner"
+                @mouseenter="expandLiquidMenu(`block-${block.index}`)"
+                @mouseleave="collapseLiquidMenu(`block-${block.index}`)"
+                @click.stop
+              >
+                <ul class="liquid-actions">
+                  <li><NuxtLink to="/catalog">Tüm Seriyi İncele</NuxtLink></li>
+                  <li>Seri Kataloğunu İndir</li>
+                  <li>Koleksiyon Teklifi Al</li>
+                </ul>
+              </div>
+            </div>
+
           </div>
         </div>
       </main>
     </div>
   </section>
 
-  <!-- Product detail modal -->
   <div
     v-if="activeProduct"
     class="product-modal"
@@ -339,8 +375,7 @@
       </div>
     </section>
   </div>
-  <!-- End product detail modal. -->
-</template>
+  </template>
 
 <script setup lang="ts">
 import { gsap } from "gsap";
@@ -377,6 +412,156 @@ let catalogObserver: IntersectionObserver | null = null;
 let catalogLineFrame = 0;
 let catalogLinePathLength = 0;
 let catalogHeadingLineConnected = false;
+
+// --- LIQUID MENU STATE & LOGIC ---
+const activeLiquidCard = ref<string | null>(null);
+const liquidMenuExpanded = ref<Record<string, boolean>>({});
+const blobPaths = ref<Record<string, SVGPathElement>>({});
+const blobContainers = ref<Record<string, SVGSVGElement>>({});
+const hamburgers = ref<Record<string, HTMLElement>>({});
+
+const setBlobPathRef = (el: any, id: string) => { if (el) blobPaths.value[id] = el as SVGPathElement; };
+const setBlobContainerRef = (el: any, id: string) => { if (el) blobContainers.value[id] = el as SVGSVGElement; };
+const setHamburgerRef = (el: any, id: string) => { if (el) hamburgers.value[id] = el as HTMLElement; };
+
+let liquidRaf: number | null = null;
+let l_x = 0, l_y = 0;
+let l_curveX = 0, l_curveY = 0;
+let l_targetX = 0;
+let l_xIter = 0, l_yIter = 0;
+let l_height = 320;
+const hoverZone = 140; // Geniş karta göre tetikleme alanı artırıldı
+const expandAmount = 20;
+
+const easeOutExpo = (currentIteration: number, startValue: number, changeInValue: number, totalIterations: number) => {
+  return changeInValue * (-Math.pow(2, -10 * currentIteration / totalIterations) + 1) + startValue;
+};
+
+const updateLiquidSvg = () => {
+  if (!activeLiquidCard.value) {
+    liquidRaf = null;
+    return;
+  }
+
+  const id = activeLiquidCard.value;
+  const path = blobPaths.value[id];
+  const container = blobContainers.value[id];
+  const hamburger = hamburgers.value[id];
+
+  if (!path || !container || !hamburger) {
+    liquidRaf = requestAnimationFrame(updateLiquidSvg);
+    return;
+  }
+
+  if (Math.abs(l_curveX - l_x) < 1) {
+    l_xIter = 0;
+  } else {
+    if (liquidMenuExpanded.value[id]) {
+      l_targetX = 0;
+    } else if (l_x > hoverZone) {
+      l_targetX = 0;
+    } else {
+      l_xIter = 0;
+      l_targetX = ((60 + expandAmount) / 100) * (hoverZone - l_x);
+    }
+    l_xIter++;
+  }
+
+  // Vertical tension physics
+  if (Math.abs(l_curveY - l_y) < 1) {
+    l_yIter = 0;
+  } else {
+    l_yIter = 0;
+    l_yIter++;
+  }
+
+  l_curveX = easeOutExpo(l_xIter, l_curveX, l_targetX - l_curveX, 100);
+  l_curveY = easeOutExpo(l_yIter, l_curveY, l_y - l_curveY, 100);
+
+  const anchorDistance = 180; // Geniş karta göre esneme boyutu artırıldı
+  const curviness = anchorDistance - 40;
+  const safeCurveY = Math.min(Math.max(l_curveY, anchorDistance), l_height - anchorDistance * 2);
+
+  const newCurve = `M60,${l_height}H0V0h60v${safeCurveY - anchorDistance}c0,${curviness},${l_curveX},${curviness},${l_curveX},${anchorDistance}S60,${safeCurveY},60,${safeCurveY + anchorDistance * 2}V${l_height}z`;
+
+  path.setAttribute('d', newCurve);
+  container.style.width = `${l_curveX + 60}px`;
+  hamburger.style.transform = `translate(${-l_curveX}px, ${safeCurveY - l_height / 2}px)`;
+
+  liquidRaf = requestAnimationFrame(updateLiquidSvg);
+};
+
+const handleLiquidMouseMove = (e: MouseEvent, id: string) => {
+  const target = e.currentTarget as HTMLElement;
+  const card = target.classList.contains("catalog-card")
+    ? target
+    : target.querySelector<HTMLElement>(".catalog-card.liquid-card");
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  l_x = Math.max(0, rect.right - e.clientX);
+  l_y = Math.max(0, e.clientY - rect.top);
+  l_height = rect.height;
+
+  if (activeLiquidCard.value !== id) {
+    activeLiquidCard.value = id;
+    l_curveY = l_y;
+    l_xIter = 0;
+    l_yIter = 0;
+    l_curveX = 0;
+  }
+
+  if (!liquidRaf) {
+    liquidRaf = requestAnimationFrame(updateLiquidSvg);
+  }
+};
+
+const handleLiquidEnter = (id: string, e: MouseEvent) => {
+  activeLiquidCard.value = id;
+  liquidMenuExpanded.value[id] = false;
+  const target = e.currentTarget as HTMLElement;
+  const card = target.classList.contains("catalog-card")
+    ? target
+    : target.querySelector<HTMLElement>(".catalog-card.liquid-card");
+
+  if (card) {
+    const rect = card.getBoundingClientRect();
+    l_height = rect.height;
+    l_y = Math.max(0, e.clientY - rect.top);
+    l_curveY = l_y;
+  }
+
+  l_xIter = 0;
+  l_yIter = 0;
+  l_curveX = 0;
+
+  if (!liquidRaf) {
+    liquidRaf = requestAnimationFrame(updateLiquidSvg);
+  }
+};
+
+const handleLiquidLeave = (id: string) => {
+  if (activeLiquidCard.value === id) {
+    activeLiquidCard.value = null;
+    if (liquidRaf) {
+      cancelAnimationFrame(liquidRaf);
+      liquidRaf = null;
+    }
+
+    const path = blobPaths.value[id];
+    const container = blobContainers.value[id];
+    const hamburger = hamburgers.value[id];
+
+    if (path) path.setAttribute('d', `M60,${l_height} H0 V0 h60 V${l_height} z`);
+    if (container) container.style.width = '60px';
+    if (hamburger) hamburger.style.transform = `translate(0px, 0px)`;
+  }
+  liquidMenuExpanded.value[id] = false;
+};
+
+const expandLiquidMenu = (id: string) => { liquidMenuExpanded.value[id] = true; };
+const collapseLiquidMenu = (id: string) => { liquidMenuExpanded.value[id] = false; };
+// --- END LIQUID MENU LOGIC ---
+
 
 const setMainRef = (el: Element | ComponentPublicInstance | null) => {
   mainRef.value = el as HTMLElement | null;

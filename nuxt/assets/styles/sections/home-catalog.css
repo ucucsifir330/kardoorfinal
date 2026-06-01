@@ -2084,6 +2084,7 @@
 }
 
 .home-page .catalog-row {
+  --catalog-info-column-width: 188px;
   width: 100% !important;
   max-width: 1288px !important;
   display: grid !important;
@@ -2099,15 +2100,21 @@
 }
 
 .home-page .catalog-row-info {
+  align-self: stretch !important;
   width: 188px !important;
   min-width: 0 !important;
-  padding: 24px 20px 20px 0 !important;
-  color: var(--text-primary, #242929) !important;
+  padding: 24px 20px 20px 24px !important;
+  color: #f6f3ec !important;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0) 42%),
+    #101820 !important;
+  border-radius: 4px 0 0 clamp(28px, 2.6vw, 42px) !important;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 .home-page .catalog-product-family {
   margin: 0 0 4px !important;
-  color: #101820 !important;
+  color: #ffffff !important;
   font-size: 24px !important;
   font-weight: 500 !important;
   line-height: 1 !important;
@@ -2115,7 +2122,7 @@
 
 .home-page .catalog-designer {
   margin: 8px 0 40px !important;
-  color: #4c5962 !important;
+  color: rgba(246, 243, 236, 0.78) !important;
   font-size: 15.5px !important;
   line-height: 1.25 !important;
 }
@@ -2125,7 +2132,7 @@
   flex-direction: column !important;
   align-items: flex-start !important;
   gap: 8px !important;
-  color: #18232b !important;
+  color: rgba(246, 243, 236, 0.9) !important;
   font-size: 15.5px !important;
   line-height: 1.25 !important;
 }
@@ -2179,6 +2186,10 @@
   transition: transform 2.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
 }
 
+.home-page .catalog-row-info .catalog-tag-line {
+  background: rgba(246, 243, 236, 0.68) !important;
+}
+
 .home-page .catalog-tag-part:hover .catalog-tag-line {
   transform: scaleX(1) !important;
 }
@@ -2189,7 +2200,7 @@
   margin-left: -24px !important;
   padding: 24px !important;
   border-radius: 999px !important;
-  color: #18232b !important;
+  color: #ffffff !important;
   font: inherit !important;
   font-size: 15.5px !important;
   line-height: 1.2 !important;
@@ -2211,6 +2222,7 @@
 
 @media (min-width: 1800px) {
   .home-page .catalog-shell > .catalog-main .catalog-row {
+    --catalog-info-column-width: 284px;
     max-width: min(100%, 2080px) !important;
     grid-template-columns: 284px minmax(0, 1fr) !important;
   }
@@ -2257,6 +2269,11 @@
 
 .home-page .catalog-row {
   position: relative !important;
+}
+
+.home-page .catalog-row-info {
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 .home-page .catalog-card-header {
@@ -2586,6 +2603,7 @@
   }
 
   .home-page .catalog-row {
+    --catalog-info-column-width: 142px;
     max-width: 100% !important;
     grid-template-columns: 142px minmax(0, 1fr) !important;
     margin-left: 0 !important;
@@ -2614,11 +2632,33 @@
   .home-page .catalog-row-info {
     width: 100% !important;
     padding: 0 0 8px !important;
+    align-self: auto !important;
+    color: var(--text-primary, #242929) !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .home-page .catalog-product-family {
+    color: #101820 !important;
+  }
+
+  .home-page .catalog-designer {
+    color: #4c5962 !important;
   }
 
   .home-page .catalog-tags {
     flex-direction: row !important;
     flex-wrap: wrap !important;
+    color: #18232b !important;
+  }
+
+  .home-page .catalog-row-info .catalog-tag-line {
+    background: #68737d !important;
+  }
+
+  .home-page .catalog-all-models {
+    color: #18232b !important;
   }
 
   .home-page .catalog-product-grid {
@@ -3462,4 +3502,164 @@
   .product-modal-description {
     font-size: 16px;
   }
+}
+/* ==========================================================================
+   LIQUID HOVER MENU (Per-SERIES Card)
+   ========================================================================== */
+
+/* Bu sınıf artık ana .catalog-card üzerine biniyor */
+@media (min-width: 1024px) {
+  .catalog-card.liquid-card,
+  .home-page .catalog-card.liquid-card {
+    position: relative;
+    overflow: hidden !important;
+    z-index: 2;
+    padding-right: 60px !important;
+    margin-left: 0 !important;
+    transform: none;
+    transition:
+      width 0.82s cubic-bezier(0.19, 1, 0.22, 1),
+      margin-left 0.82s cubic-bezier(0.19, 1, 0.22, 1),
+      box-shadow 0.82s cubic-bezier(0.19, 1, 0.22, 1);
+    will-change: width, margin-left;
+  }
+
+  .home-page .catalog-row:last-of-type .catalog-card.liquid-card {
+    padding-right: 60px !important;
+    overflow: hidden !important;
+  }
+
+  .home-page .catalog-row.is-liquid-expanded .catalog-card.liquid-card {
+    width: calc(100% + var(--catalog-info-column-width)) !important;
+    margin-left: calc(-1 * var(--catalog-info-column-width)) !important;
+    transform: none;
+    box-shadow: 0 22px 70px rgba(16, 24, 32, 0.14) !important;
+  }
+
+  .liquid-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 300px;
+    background: linear-gradient(90deg, #111111 0 60px, transparent 60px 100%);
+    transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.3s ease;
+    z-index: 50;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(240px);
+  }
+
+  .liquid-card:hover .liquid-menu,
+  .catalog-row:hover .liquid-menu,
+  .catalog-row.is-liquid-active .liquid-menu {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .liquid-menu.is-expanded {
+    opacity: 1 !important;
+    pointer-events: auto;
+    transform: translateX(0) !important;
+  }
+
+  .liquid-menu-inner {
+    width: 240px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #111111;
+    pointer-events: auto;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+    z-index: 2;
+  }
+
+  .liquid-blob {
+    position: absolute;
+    top: 0;
+    left: 60px;
+    height: 100%;
+    width: 60px;
+    transform: translateX(-100%) scaleX(-1);
+    transform-origin: right top;
+    z-index: 1;
+    pointer-events: auto;
+  }
+
+  .liquid-blob-path {
+    fill: #111111;
+  }
+
+  .hamburger {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    width: 24px;
+    height: 20px;
+    margin-top: -10px;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 3;
+  }
+
+  .hamburger .line {
+    width: 100%;
+    height: 2px;
+    background-color: #fff;
+    position: absolute;
+    border-radius: 2px;
+    transition: 0.3s ease;
+  }
+
+  .hamburger .line:nth-child(2) { top: 50%; margin-top: -1px; }
+  .hamburger .line:nth-child(3) { bottom: 0; }
+
+  .is-expanded .hamburger .line:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+  .is-expanded .hamburger .line:nth-child(2) { opacity: 0; }
+  .is-expanded .hamburger .line:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+  .liquid-actions {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    position: absolute;
+    top: 50%;
+    left: 30px;
+    width: calc(100% - 60px);
+    transform: translateY(-50%);
+  }
+
+  .liquid-actions li {
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .liquid-actions li:last-child {
+    border-bottom: none;
+  }
+
+  .liquid-actions li a,
+  .liquid-actions li {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: none;
+    display: block;
+    transition: color 0.3s;
+  }
+
+  .liquid-actions li:hover,
+  .liquid-actions li a:hover {
+    color: #fff;
+  }
+}
+
+html.smooth-cursor-active .home-page .catalog-product,
+html.smooth-cursor-active .home-page .catalog-product *,
+html.smooth-cursor-active .home-page .catalog-product-image-wrap,
+html.smooth-cursor-active .home-page .catalog-product-image,
+html.smooth-cursor-active .home-page .catalog-product-info {
+  cursor: none !important;
 }
