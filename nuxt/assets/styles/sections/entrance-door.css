@@ -604,16 +604,36 @@
 
 @media (max-width: 768px) {
   .entrance-door {
-    --hero-door-center-x: 51.1181%;
-    --hero-door-top: 29.5457%;
-    --hero-door-width: 58.1250%;
+    --hero-door-center-x: 51.2%;
+    --hero-door-top: 31.4%;
+    --hero-door-width: clamp(218px, 56vw, 258px);
     --hero-artboard-aspect: 0.5625;
+    --hero-opening-center-x: var(--hero-door-center-x);
+    --hero-opening-top: calc(var(--hero-door-top) + (var(--hero-door-height) * 0.06));
+    --hero-opening-width: calc(var(--hero-door-width) * 0.64);
+    --hero-opening-height: calc(var(--hero-door-height) * 0.86);
     --hero-copy-mask-height: 38svh;
     --hero-copy-left: clamp(20px, 5vw, 40px);
     --hero-copy-top: clamp(18px, 3svh, 34px);
     --hero-copy-right: clamp(20px, 5vw, 40px);
     --hero-copy-bottom: auto;
     --hero-copy-width: auto;
+  }
+
+  .entrance-door__doorway-interior {
+    transform: translate3d(0, 0, 0) scale(1);
+    transform-origin: 50% 50%;
+  }
+
+  .entrance-door__doorway-reveal .showroom-turntable__scene {
+    top: 96%;
+  }
+
+  .entrance-door__doorway-reveal .showroom-turntable__slot {
+    width: 64%;
+    height: 94%;
+    left: -32%;
+    top: -94%;
   }
 
   .entrance-door__heading {
