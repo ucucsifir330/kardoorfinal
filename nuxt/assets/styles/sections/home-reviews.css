@@ -1,0 +1,262 @@
+/* Homepage reviews section. Extracted from public theme files because these rules are not theme-specific. */
+
+.testimonial-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background-color: var(--catalog-stage-surface-bg, var(--bg-color));
+  margin: 0;
+}
+
+.title-area {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 45%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding-left: 3vw;
+  pointer-events: none;
+}
+
+.rotating-title {
+  font-size: 6.5vw;
+  line-height: 1.05;
+  color: #424346;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-row {
+  display: inline-flex;
+  align-items: center;
+  transition: gap var(--title-pill-transition-smooth);
+  white-space: nowrap;
+}
+
+.static-text {
+  display: inline-block;
+  transition: transform var(--title-pill-transition-smooth);
+  will-change: transform;
+}
+
+.bottom-row {
+  display: block;
+  white-space: nowrap;
+}
+
+.rotating-text-wrapper {
+  height: 7.5vw;
+  background: #1B39BF;
+  background-size: 300% 300%;
+  border-radius: 42px;
+  position: relative;
+  display: block;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(3, 83, 164, 0.2);
+  animation: gradientBG 6s ease infinite;
+  transition: width var(--title-pill-transition-smooth), box-shadow var(--title-pill-transition-smooth);
+}
+
+.hidden-measure {
+  position: absolute;
+  visibility: hidden;
+  font-size: 6.5vw;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  padding: 0 2vw;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.word-slider {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.word-slide-item {
+  position: absolute;
+  color: #EAE8E8;
+  white-space: nowrap;
+  font-size: 6.5vw;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-0.03em);
+}
+
+.slide-word-enter-active,
+.slide-word-leave-active {
+  transition:
+    opacity var(--word-transition-smooth),
+    transform var(--word-transition-smooth),
+    filter var(--word-transition-smooth);
+}
+
+.slide-word-enter-from {
+  opacity: 0;
+  filter: blur(12px);
+  transform: translateY(88%);
+}
+
+.slide-word-leave-to {
+  opacity: 0;
+  filter: blur(12px);
+  transform: translateY(-158%);
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-mask {
+  position: absolute;
+  top: 0;
+  right: -40%;
+  width: 140%;
+  height: 100%;
+  background: linear-gradient(to right, var(--catalog-stage-surface-bg, var(--bg-color)) 60%, transparent 100%);
+  z-index: 1;
+}
+
+.carousel-area {
+  width: 100%;
+  padding-left: 43%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.track {
+  width: 100%;
+  overflow: visible;
+  cursor: grab;
+}
+
+.track:active {
+  cursor: grabbing;
+}
+
+.track-inner {
+  display: flex;
+  gap: 2rem;
+  width: max-content;
+  will-change: transform;
+}
+
+.review-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  width: 450px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-shrink: 0;
+  user-select: none;
+  border: 1px solid rgba(0,0,0,0.03);
+  --scale: 1;
+  transform-style: preserve-3d;
+  transform: perspective(1000px) scale(var(--scale)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+.review-card:hover {
+  --scale: 1.08;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.9),
+    0 0 32px rgba(255,255,255,0.95),
+    0 18px 38px rgba(0, 0, 0, 0.08);
+  border-color: rgba(255,255,255,0.9);
+  z-index: 10;
+}
+
+.review-card.tilting {
+  transition: transform var(--transition-tilt), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+.review-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(800px circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.22), transparent 42%);
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.review-card:hover::before {
+  opacity: 1;
+}
+
+.quote,
+.author {
+  position: relative;
+  z-index: 2;
+}
+
+.quote {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.author {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1.5rem;
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.rating {
+  color: #FFB800;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+}

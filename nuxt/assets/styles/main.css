@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* Base */
+@import "./base/tokens.css";
+@import "./base/reset.css";
+@import "./base/transitions.css";
+
+/* Shared components */
+@import "./components/buttons.css";
+@import "./components/site-header.css";
+
+/* Page / section styles */
+@import "./sections/entrance-door.css";
+@import "./sections/showroom-turntable.css";
+@import "./sections/door-selector.css";
+@import "./sections/content-pages.css";
+@import "./sections/home-catalog.css";
+@import "./sections/home-team.css";
+@import "./sections/home-references.css";
+@import "./sections/home-reviews.css";
+@import "./sections/home-footer.css";
+@import "./pages/catalog.css";
+@import "./pages/company.css";
+@import "./pages/references.css";

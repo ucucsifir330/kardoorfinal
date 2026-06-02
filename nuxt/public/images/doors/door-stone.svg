@@ -1,0 +1,55 @@
+<svg width="500" height="980" viewBox="0 0 500 980" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="stonePanel" x1="82" y1="42" x2="430" y2="952" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8D9AA3"></stop>
+      <stop offset="0.35" stop-color="#596873"></stop>
+      <stop offset="1" stop-color="#26313A"></stop>
+    </linearGradient>
+
+    <linearGradient id="stoneInset" x1="140" y1="100" x2="348" y2="890" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#64737C"></stop>
+      <stop offset="1" stop-color="#202B34"></stop>
+    </linearGradient>
+
+    <linearGradient id="stoneLight" x1="128" y1="100" x2="160" y2="890" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAFBFF" stop-opacity="0.45"></stop>
+      <stop offset="0.55" stop-color="#2CE3FF" stop-opacity="0.18"></stop>
+      <stop offset="1" stop-color="#2CE3FF" stop-opacity="0.05"></stop>
+    </linearGradient>
+
+    <linearGradient id="stoneHandle" x1="346" y1="238" x2="376" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F3F8FC"></stop>
+      <stop offset="0.5" stop-color="#B4C1CA"></stop>
+      <stop offset="1" stop-color="#E9F0F5"></stop>
+    </linearGradient>
+
+    <filter id="stoneShadow" x="26" y="10" width="448" height="970" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="30" stdDeviation="22" flood-color="#000000" flood-opacity="0.55"></feDropShadow>
+    </filter>
+  </defs>
+
+  <g filter="url(#stoneShadow)">
+    <rect x="52" y="18" width="396" height="944" rx="18" fill="#151E27"></rect>
+    <rect x="60" y="26" width="380" height="928" rx="16" fill="#AEBBC4" fill-opacity="0.26"></rect>
+    <rect x="76" y="42" width="348" height="896" rx="12" fill="url(#stonePanel)"></rect>
+
+    <rect x="94" y="64" width="312" height="852" rx="9" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2"></rect>
+
+    <rect x="122" y="104" width="34" height="792" rx="8" fill="#0A1016" fill-opacity="0.38"></rect>
+    <rect x="132" y="118" width="18" height="764" rx="9" fill="url(#stoneLight)"></rect>
+
+    <rect x="184" y="104" width="160" height="792" rx="9" fill="url(#stoneInset)" stroke="#FFFFFF" stroke-opacity="0.12"></rect>
+    <path d="M196 190L330 154" stroke="#FFFFFF" stroke-opacity="0.09" stroke-width="3"></path>
+    <path d="M194 312L340 260" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="3"></path>
+    <path d="M190 512L342 458" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="3"></path>
+    <path d="M198 710L334 654" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="3"></path>
+    <path d="M204 840L326 792" stroke="#FFFFFF" stroke-opacity="0.07" stroke-width="3"></path>
+
+    <rect x="346" y="238" width="23" height="482" rx="11.5" fill="url(#stoneHandle)"></rect>
+    <rect x="352" y="260" width="5" height="438" rx="2.5" fill="#FFFFFF" fill-opacity="0.5"></rect>
+
+    <rect x="76" y="42" width="348" height="896" rx="12" fill="#FFFFFF" opacity="0.035"></rect>
+    <path d="M94 64H406" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="2"></path>
+    <path d="M94 916H406" stroke="#000000" stroke-opacity="0.35" stroke-width="2"></path>
+  </g>
+</svg>

@@ -1,0 +1,55 @@
+<svg width="500" height="980" viewBox="0 0 500 980" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="metalPanel" x1="80" y1="34" x2="430" y2="960" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#707D88"></stop>
+      <stop offset="0.36" stop-color="#37434E"></stop>
+      <stop offset="1" stop-color="#171F28"></stop>
+    </linearGradient>
+
+    <linearGradient id="metalGlass" x1="198" y1="180" x2="308" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9CF7FF" stop-opacity="0.82"></stop>
+      <stop offset="0.45" stop-color="#2CE3FF" stop-opacity="0.36"></stop>
+      <stop offset="1" stop-color="#2CE3FF" stop-opacity="0.12"></stop>
+    </linearGradient>
+
+    <linearGradient id="metalHandle" x1="352" y1="270" x2="378" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5FAFD"></stop>
+      <stop offset="0.5" stop-color="#B1C0CA"></stop>
+      <stop offset="1" stop-color="#E8F0F5"></stop>
+    </linearGradient>
+
+    <filter id="metalShadow" x="26" y="10" width="448" height="970" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="30" stdDeviation="22" flood-color="#000000" flood-opacity="0.55"></feDropShadow>
+    </filter>
+
+    <filter id="metalGlassGlow" x="176" y="160" width="150" height="580" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="6"></feGaussianBlur>
+    </filter>
+  </defs>
+
+  <g filter="url(#metalShadow)">
+    <rect x="52" y="18" width="396" height="944" rx="18" fill="#101820"></rect>
+    <rect x="60" y="26" width="380" height="928" rx="16" fill="#E6EEF5" fill-opacity="0.22"></rect>
+    <rect x="76" y="42" width="348" height="896" rx="12" fill="url(#metalPanel)"></rect>
+
+    <rect x="94" y="64" width="312" height="852" rx="9" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2"></rect>
+
+    <rect x="112" y="100" width="42" height="808" rx="8" fill="#061018" fill-opacity="0.42"></rect>
+    <rect x="122" y="118" width="22" height="772" rx="11" fill="#2CE3FF" fill-opacity="0.18"></rect>
+
+    <rect x="178" y="96" width="152" height="808" rx="9" fill="#050B10" fill-opacity="0.38" stroke="#FFFFFF" stroke-opacity="0.12"></rect>
+    <g filter="url(#metalGlassGlow)" opacity="0.9">
+      <rect x="202" y="190" width="96" height="520" rx="8" fill="url(#metalGlass)"></rect>
+    </g>
+    <rect x="210" y="204" width="80" height="492" rx="6" fill="url(#metalGlass)"></rect>
+    <path d="M220 220L286 680" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="3"></path>
+    <path d="M244 220L290 480" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="2"></path>
+
+    <rect x="352" y="274" width="22" height="408" rx="11" fill="url(#metalHandle)"></rect>
+    <rect x="358" y="294" width="5" height="368" rx="2.5" fill="#FFFFFF" fill-opacity="0.52"></rect>
+
+    <rect x="76" y="42" width="348" height="896" rx="12" fill="#FFFFFF" opacity="0.035"></rect>
+    <path d="M94 64H406" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="2"></path>
+    <path d="M94 916H406" stroke="#000000" stroke-opacity="0.35" stroke-width="2"></path>
+  </g>
+</svg>

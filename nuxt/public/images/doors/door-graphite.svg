@@ -1,0 +1,53 @@
+<svg width="500" height="980" viewBox="0 0 500 980" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="graphitePanel" x1="86" y1="36" x2="430" y2="960" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4B5662"></stop>
+      <stop offset="0.36" stop-color="#273341"></stop>
+      <stop offset="1" stop-color="#101822"></stop>
+    </linearGradient>
+
+    <linearGradient id="graphiteInner" x1="130" y1="96" x2="350" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#202A35"></stop>
+      <stop offset="1" stop-color="#071019"></stop>
+    </linearGradient>
+
+    <linearGradient id="graphiteHandle" x1="348" y1="236" x2="380" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4F7FA"></stop>
+      <stop offset="0.5" stop-color="#ADB8C1"></stop>
+      <stop offset="1" stop-color="#E8EEF3"></stop>
+    </linearGradient>
+
+    <linearGradient id="graphiteStripe" x1="112" y1="96" x2="154" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAFBFF" stop-opacity="0.42"></stop>
+      <stop offset="0.5" stop-color="#2CE3FF" stop-opacity="0.2"></stop>
+      <stop offset="1" stop-color="#2CE3FF" stop-opacity="0.04"></stop>
+    </linearGradient>
+
+    <filter id="graphiteShadow" x="26" y="10" width="448" height="970" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="30" stdDeviation="22" flood-color="#000000" flood-opacity="0.55"></feDropShadow>
+    </filter>
+  </defs>
+
+  <g filter="url(#graphiteShadow)">
+    <rect x="52" y="18" width="396" height="944" rx="18" fill="#111923"></rect>
+    <rect x="60" y="26" width="380" height="928" rx="16" fill="#7E8A96" fill-opacity="0.28"></rect>
+    <rect x="76" y="42" width="348" height="896" rx="12" fill="url(#graphitePanel)"></rect>
+
+    <rect x="92" y="60" width="316" height="860" rx="9" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="2"></rect>
+
+    <rect x="112" y="96" width="46" height="808" rx="8" fill="#060B12" fill-opacity="0.38"></rect>
+    <rect x="120" y="108" width="24" height="784" rx="12" fill="url(#graphiteStripe)"></rect>
+
+    <rect x="188" y="96" width="142" height="808" rx="8" fill="url(#graphiteInner)" stroke="#FFFFFF" stroke-opacity="0.12"></rect>
+    <rect x="206" y="126" width="96" height="748" rx="7" fill="#000000" fill-opacity="0.24"></rect>
+    <rect x="216" y="142" width="1.5" height="716" fill="#FFFFFF" fill-opacity="0.1"></rect>
+    <rect x="286" y="142" width="1.5" height="716" fill="#FFFFFF" fill-opacity="0.07"></rect>
+
+    <rect x="348" y="238" width="24" height="482" rx="12" fill="url(#graphiteHandle)"></rect>
+    <rect x="355" y="260" width="5" height="438" rx="2.5" fill="#FFFFFF" fill-opacity="0.55"></rect>
+
+    <rect x="76" y="42" width="348" height="896" rx="12" fill="#FFFFFF" opacity="0.035"></rect>
+    <path d="M94 60H408" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="2"></path>
+    <path d="M94 920H408" stroke="#000000" stroke-opacity="0.35" stroke-width="2"></path>
+  </g>
+</svg>

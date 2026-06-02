@@ -1,0 +1,20 @@
+{
+  "name": "kardoor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "nuxt"
+  ],
+  "scripts": {
+    "dev": "npm --workspace nuxt run dev",
+    "build": "npm --workspace nuxt run build",
+    "generate": "npm --workspace nuxt run generate",
+    "preview": "npm --workspace nuxt run preview",
+    "typecheck": "npm --workspace nuxt run typecheck",
+    "check": "npm --workspace nuxt run typecheck"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0"
+  }
+}

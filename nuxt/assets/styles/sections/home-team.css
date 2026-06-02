@@ -1,0 +1,1626 @@
+.ada-team-section {
+  --team-section-bg: var(--catalog-stage-surface-bg, #14151d);
+  --team-section-text: #eae8e8;
+  --cta-stage-width: min(100vw, 1920px);
+  --cta-stage-left: calc((100vw - var(--cta-stage-width)) / 2);
+  --cta-line-stroke: 2.4px;
+  --cta-line-x: calc(var(--cta-stage-left) + clamp(18px, 2.1875vw, 42px));
+  --cta-top-line-y: calc(-1 * var(--cta-line-stroke));
+  --cta-title-y: clamp(-58px, -3vw, -34px);
+  --cta-k-stem-bottom-y: calc(var(--cta-title-y) + clamp(86px, 5.7292vw, 110px));
+  --cta-k-optical-lift: clamp(13px, 0.8854vw, 17px);
+  --cta-k-side-bearing-overlap: clamp(7px, 0.5208vw, 10px);
+  --optical-nudge-x: 7px;
+  --optical-nudge-y: -2px;
+  --cta-description-y: clamp(286px, 16.8vw, 330px);
+  --cta-button-y: clamp(544px, 29vw, 584px);
+  --cta-bottom-line-y: clamp(636px, 33vw, 666px);
+  --cta-elbow-radius: clamp(28px, 1.6667vw, 32px);
+  --cta-heading-left: calc(var(--cta-stage-left) + clamp(142px, 10.625vw, 204px));
+  --cta-button-anchor-x: calc(var(--cta-stage-left) + 50vw);
+  --cta-button-center-y: calc(var(--cta-button-y) + clamp(27px, 1.71875vw, 33px));
+  --cta-top-line-width: clamp(142px, 8.5938vw, 165px);
+  --cta-top-line-height: clamp(172px, 19.1146vw, 367px);
+  --cta-bottom-line-width: clamp(188px, 42.1875vw, 810px);
+  --cta-bottom-line-height: clamp(84px, 6.3542vw, 122px);
+  --team-card-bg: #f8f8f6;
+  --team-card-hover-bg: var(--team-section-bg);
+  --team-card-line: rgba(248, 248, 246, 0.12);
+  --team-card-name: #424346;
+  --team-card-name-hover: #eae8e8;
+  --team-card-role: rgba(66, 67, 70, 0.42);
+  --team-card-role-hover: rgba(234, 232, 232, 0.58);
+  --team-card-hover-line: rgba(44, 227, 255, 0.18);
+  --team-card-overlay: transparent;
+  --team-card-overlay-text: #eae8e8;
+  --team-card-shadow: none;
+
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  background: var(--team-section-bg);
+  color: var(--team-section-text);
+}
+
+.ada-manifesto-line-stage {
+  position: relative;
+}
+
+.ada-manifesto-spacer {
+  width: 100%;
+  min-height: clamp(1120px, 68.75vw, 1320px);
+  position: relative;
+  display: block;
+  padding: 0;
+}
+
+.ada-structural-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ada-structural-line-path {
+  fill: none;
+  stroke: #000;
+  stroke-width: var(--cta-line-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 1;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+  will-change: stroke-dashoffset;
+}
+
+.ada-manifesto-container {
+  width: 100%;
+  max-width: var(--cta-stage-width);
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: clamp(20px, 3vw, 50px);
+  margin: 0 auto;
+  padding: 0 clamp(18px, 2.1875vw, 42px);
+}
+
+.ada-scroll-line-wrapper {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--cta-line-stroke);
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ada-manifesto-text {
+  max-width: 1180px;
+  margin: 0;
+  color: #eae8e8;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(44px, 5vw, 96px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: 0;
+  text-align: left;
+}
+
+
+.ada-manifesto-content {
+  display: flex;
+  max-width: 1180px;
+  flex-direction: column;
+  align-items: flex-start;
+  transform: translateY(clamp(-96px, -6vw, -64px));
+}
+
+.ada-manifesto-cta {
+  --ada-cta-text-color: #eae8e8;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 1.35vw, 22px);
+  height: clamp(48px, 3.8vw, 62px);
+  margin-top: clamp(64px, 5.2vw, 94px);
+  overflow: hidden;
+  border-radius: 999px;
+  padding: 0 clamp(18px, 1.45vw, 26px) 0 clamp(22px, 1.8vw, 34px);
+  background: #14151d;
+  color: #eae8e8;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(0.88rem, 0.95vw, 1rem);
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 450ms cubic-bezier(0.165, 0.84, 0.44, 1), color 450ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-manifesto-cta:hover {
+  --ada-cta-text-color: #14151d;
+
+  background: #eae8e8;
+  color: #14151d;
+}
+
+.ada-manifesto-cta-text {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  min-height: 1.34em;
+  padding: 0 0.08em;
+  color: transparent;
+  line-height: 1.34;
+  perspective: 700px;
+}
+
+.ada-manifesto-cta-text::before,
+.ada-manifesto-cta-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--ada-cta-text-color);
+  transform-origin: 50% 50%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transition: transform 720ms cubic-bezier(0.77, 0, 0.175, 1), opacity 720ms cubic-bezier(0.77, 0, 0.175, 1);
+  will-change: transform, opacity;
+}
+
+.ada-manifesto-cta-text::before {
+  opacity: 1;
+  transform: translateY(0%) rotateX(0deg);
+}
+
+.ada-manifesto-cta-text::after {
+  opacity: 0;
+  transform: translateY(100%) rotateX(-90deg);
+}
+
+.ada-manifesto-cta:hover .ada-manifesto-cta-text::before {
+  opacity: 0;
+  transform: translateY(-100%) rotateX(90deg);
+}
+
+.ada-manifesto-cta:hover .ada-manifesto-cta-text::after {
+  opacity: 1;
+  transform: translateY(0%) rotateX(0deg);
+}
+
+.ada-manifesto-cta-icon {
+  display: inline-flex;
+  width: clamp(18px, 1.45vw, 22px);
+  height: clamp(18px, 1.45vw, 22px);
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  line-height: 1;
+  transition: transform 450ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-manifesto-cta-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ada-manifesto-cta:hover .ada-manifesto-cta-icon {
+  transform: rotate(90deg);
+}
+
+.reveal-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.reveal-space {
+  display: inline-block;
+  width: 0.22em;
+}
+
+.reveal-char {
+  display: inline-block;
+  opacity: 0.18;
+  color: #eae8e8;
+  transition: opacity 80ms linear;
+  will-change: opacity;
+}
+
+.ada-spacer-copy {
+  position: absolute;
+  left: var(--cta-stage-left);
+  top: 0;
+  z-index: 2;
+  width: var(--cta-stage-width);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #000;
+}
+
+.ada-spacer-copy h2 {
+  position: absolute;
+  left: 50%;
+  top: var(--cta-title-y);
+  width: min(1580px, calc(var(--cta-stage-width) - 180px));
+  margin: 0;
+  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
+  font-size: clamp(56px, 4.55vw, 88px);
+  font-weight: 400;
+  line-height: 1.03;
+  letter-spacing: 0;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.ada-spacer-copy h2::first-line {
+  letter-spacing: 0;
+}
+
+.ada-heading-line {
+  display: block;
+  white-space: nowrap;
+  will-change: opacity, transform;
+}
+
+.ada-heading-k {
+  display: inline-block;
+  position: relative;
+}
+
+.ada-spacer-copy p {
+  position: absolute;
+  left: 50%;
+  top: var(--cta-description-y);
+  width: min(1260px, calc(var(--cta-stage-width) - 300px));
+  margin: 0;
+  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
+  font-size: clamp(20px, 1.35vw, 26px);
+  font-weight: 400;
+  line-height: 1.32;
+  letter-spacing: 0;
+  transform: translateX(-50%);
+}
+
+.ada-spacer-manifesto-copy {
+  opacity: 1;
+  filter: none;
+  will-change: transform;
+}
+
+.manifesto-reveal-line {
+  position: relative;
+  display: inline-block;
+  width: fit-content;
+  overflow: visible;
+  opacity: 0;
+  vertical-align: top;
+}
+
+.manifesto-reveal-wrap {
+  display: inline;
+  opacity: 0;
+}
+
+.manifesto-reveal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  border-radius: 0.14em;
+  background: #78d8ff;
+  pointer-events: none;
+  transform: scaleX(1);
+  transform-origin: right center;
+  will-change: width, transform;
+}
+
+.ada-spacer-cta-group {
+  --ada-spacer-cta-width: clamp(326px, 17vw, 340px);
+
+  position: absolute;
+  left: 50%;
+  top: var(--cta-button-y);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 1.15vw, 22px);
+  transform: translateX(-50%);
+}
+
+.ada-spacer-cta {
+  width: var(--ada-spacer-cta-width);
+  min-width: var(--ada-spacer-cta-width);
+  height: clamp(54px, 3.4375vw, 66px);
+  min-height: 54px;
+  margin-top: 0;
+  border-radius: 48px;
+  background: #14151d;
+  color: #eae8e8;
+  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
+  font-size: clamp(15px, 0.9375vw, 18px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  transform: none;
+}
+
+.ada-spacer-cta--icon-left {
+  padding: 0 clamp(22px, 1.8vw, 34px) 0 clamp(18px, 1.45vw, 26px);
+}
+
+.ada-spacer-cta:hover {
+  background: #eae8e8;
+  color: #14151d;
+}
+
+.reveal-word.brand-gradient-word .reveal-char {
+  background: linear-gradient(115deg, #8ee7ff 0%, #4fc3f7 18%, #1e9be0 36%, #1477c9 54%, #0b4f9c 72%, #4fc3f7 88%, #8ee7ff 100%);
+  background-size: 260% 100%;
+  background-position: 0% 50%;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ada-brand-gradient 6.5s ease-in-out infinite alternate;
+}
+
+@keyframes ada-brand-gradient {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+.ada-subtitle-container,
+.ada-subtitle-container-reverse {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  max-width: none;
+  overflow: hidden;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.ada-subtitle-container {
+  margin-top: 18vh;
+  margin-bottom: clamp(48px, 4vw, 90px);
+}
+
+.ada-subtitle-container-reverse {
+  margin-bottom: 14vh;
+}
+
+.ada-loop-track,
+.ada-loop-track-reverse {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.ada-loop-track {
+  animation: ada-marquee-left 160s linear infinite;
+}
+
+.ada-loop-track-reverse {
+  transform: translateX(-50%);
+  animation: ada-marquee-right 160s linear infinite;
+}
+
+.ada-subtitle-container:hover .ada-loop-track,
+.ada-subtitle-container-reverse:hover .ada-loop-track-reverse {
+  animation-play-state: paused;
+}
+
+.ada-loop-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.ada-loop-item {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: clamp(150px, 11.5vw, 220px);
+  height: clamp(64px, 5.8vw, 102px);
+  margin: 0 clamp(32px, 4vw, 76px);
+  color: rgba(234, 232, 232, 0.96);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: inherit;
+  font-weight: 300;
+  font-kerning: none;
+  line-height: 0.88;
+  white-space: nowrap;
+}
+
+.ege-gradient {
+  display: inline-block;
+  background: linear-gradient(115deg, #aae7ff 0%, #54cfff 25%, #18a8f1 50%, #54cfff 75%, #aae7ff 100%);
+  background-size: 260% 100%;
+  background-position: 0% 50%;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.kardoor-word {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.18em;
+  white-space: nowrap;
+}
+
+.kern-after-k {
+  margin-right: 0.07em;
+}
+
+.reg-mark {
+  position: absolute;
+  top: 0.08em;
+  right: -0.02em;
+  color: rgba(234, 232, 232, 0.96);
+  font-size: 0.16em;
+  font-weight: 300;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.loop-separator {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: clamp(100px, 12vw, 220px);
+  height: clamp(100px, 12vw, 220px);
+  margin: 0 clamp(40px, 5vw, 100px);
+}
+
+.loop-separator dotlottie-player {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 1px rgba(234, 232, 232, 0.9));
+}
+
+.ada-brand-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  color: #eae8e8;
+}
+
+span.ada-brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ada-brand-logo-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: currentColor;
+}
+
+@keyframes ada-marquee-left {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes ada-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.ada-title-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: visible;
+  margin-top: clamp(52px, 7vw, 118px);
+  margin-bottom: clamp(22px, 3vw, 52px);
+  padding: 0 clamp(18px, 4vw, 76px);
+}
+
+.ada-giant-title {
+  width: 100%;
+  height: auto;
+  min-height: clamp(70px, 8vw, 158px);
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  color: #eae8e8;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(56px, 8vw, 168px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ada-first-letter {
+  display: inline-block;
+  margin-right: -0.02em;
+}
+
+.ada-title-float-word {
+  display: inline-block;
+  min-height: clamp(68px, 8.4vw, 170px);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ada-title-float-char {
+  display: inline-block;
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+  will-change: transform, opacity, clip-path;
+}
+
+.ada-carousel-wrapper {
+  width: 100%;
+  max-width: 2000px;
+  overflow: visible;
+  margin: 0 auto;
+  padding-bottom: 220px;
+  transform: translateY(-34px);
+}
+
+.ada-promo-wrapper {
+  max-width: 1480px;
+  padding: 0 clamp(24px, 3vw, 56px) 190px;
+}
+
+.ada-promo-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(360px, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(28px, 4vw, 72px);
+  align-items: center;
+  width: 100%;
+  min-height: 0;
+  overflow: visible;
+  border: 1px solid rgba(234, 232, 232, 0.12);
+  border-radius: 22px;
+  padding: clamp(18px, 1.6vw, 28px);
+  background: rgba(234, 232, 232, 0.035);
+  color: var(--team-section-text);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: none;
+  transition: border-color 420ms ease, background-color 420ms ease, transform 520ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-promo-media {
+  position: relative;
+  order: 2;
+  aspect-ratio: 16 / 10;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #14151d;
+}
+
+.ada-promo-poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.94;
+  transform: scale(1.01);
+  transition: transform 700ms cubic-bezier(0.165, 0.84, 0.44, 1), opacity 700ms ease;
+}
+
+.ada-promo-sheen {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(17, 19, 27, 0) 52%, rgba(17, 19, 27, 0.34) 100%);
+  pointer-events: none;
+}
+
+.ada-promo-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(16px, 2vw, 34px);
+}
+
+.ada-promo-kicker,
+.ada-video-modal-kicker {
+  color: color-mix(in srgb, var(--team-section-text) 58%, transparent);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ada-promo-title {
+  display: block;
+  max-width: 560px;
+  margin-top: 20px;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(44px, 4.5vw, 82px);
+  font-weight: 400;
+  line-height: 0.94;
+}
+
+.ada-promo-text {
+  display: block;
+  max-width: 520px;
+  margin-top: 24px;
+  color: color-mix(in srgb, var(--team-section-text) 64%, transparent);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(0.98rem, 1vw, 1.12rem);
+  line-height: 1.6;
+}
+
+.ada-promo-meta {
+  display: block;
+  margin-top: clamp(36px, 4.5vw, 72px);
+  color: color-mix(in srgb, var(--team-section-text) 46%, transparent);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.ada-promo-action {
+  position: absolute;
+  right: clamp(34px, 3vw, 54px);
+  bottom: clamp(34px, 3vw, 54px);
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #eae8e8;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.ada-promo-play {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1px solid rgba(234, 232, 232, 0.28);
+  border-radius: 50%;
+  background: rgba(20, 21, 29, 0.72);
+  backdrop-filter: blur(10px);
+  transition: transform 520ms cubic-bezier(0.165, 0.84, 0.44, 1), background 520ms ease;
+}
+
+.ada-promo-play svg {
+  width: 34%;
+  height: 34%;
+  transform: translateX(7%);
+}
+
+.ada-promo-card:hover .ada-promo-poster {
+  opacity: 1;
+  transform: scale(1.035);
+}
+
+.ada-promo-card:hover .ada-promo-play {
+  transform: scale(1.04);
+  background: rgba(20, 21, 29, 0.86);
+}
+
+.ada-promo-card:hover {
+  border-color: color-mix(in srgb, var(--team-section-text) 22%, transparent);
+  background: rgba(234, 232, 232, 0.055);
+  transform: translateY(-2px);
+}
+
+.ada-video-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 320ms ease, visibility 320ms ease;
+}
+
+.ada-video-modal.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.ada-video-modal-overlay {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.86);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+.ada-video-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(1480px, calc(100vw - 48px));
+  max-height: calc(100svh - 48px);
+  overflow: hidden;
+  border: 1px solid rgba(234, 232, 232, 0.16);
+  border-radius: 28px;
+  background: #11131b;
+  color: #eae8e8;
+  box-shadow: 0 44px 120px rgba(0, 0, 0, 0.42);
+}
+
+.ada-video-modal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(22px, 2.2vw, 34px) clamp(22px, 2.6vw, 44px);
+}
+
+.ada-video-modal-top h3 {
+  margin: 6px 0 0;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(2.5rem, 4vw, 5.4rem);
+  font-weight: 400;
+  line-height: 0.95;
+}
+
+.ada-video-close {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(234, 232, 232, 0.18);
+  border-radius: 50%;
+  background: rgba(234, 232, 232, 0.08);
+  color: #eae8e8;
+  cursor: pointer;
+}
+
+.ada-video-close svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ada-video-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #050505;
+}
+
+.ada-video-player {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #050505;
+}
+
+.ada-video-preview {
+  object-fit: cover;
+}
+
+.ada-founders-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 42px;
+  width: 100%;
+  padding: 0 42px;
+}
+
+.ada-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 940px;
+  overflow: hidden;
+  border: 1px solid var(--team-card-line);
+  border-radius: 30px;
+  padding-top: 32px;
+  background: var(--team-card-bg);
+  box-shadow: var(--team-card-shadow);
+  cursor: pointer;
+  transition:
+    transform 800ms cubic-bezier(0.165, 0.84, 0.44, 1),
+    background 800ms cubic-bezier(0.165, 0.84, 0.44, 1),
+    border-color 800ms cubic-bezier(0.165, 0.84, 0.44, 1),
+    box-shadow 800ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-card:hover {
+  transform: translateY(-8px);
+  background: var(--team-card-hover-bg);
+  border-color: var(--team-card-hover-line);
+}
+
+.ada-card-text {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.ada-role {
+  display: block;
+  margin-bottom: 21px;
+  color: var(--team-card-role);
+  font-size: 0.9rem;
+  font-weight: 800;
+  transition: color 800ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-name {
+  margin: 0;
+  color: var(--team-card-name);
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1;
+  transition: color 800ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-card:hover .ada-name {
+  color: var(--team-card-name-hover);
+}
+
+.ada-card:hover .ada-role {
+  color: var(--team-card-role-hover);
+}
+
+.ada-image-container {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ada-person-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom;
+  transform-origin: bottom center;
+  transition: transform 800ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-card:hover .ada-person-img {
+  transform: scale(1.06);
+}
+
+.ada-hover-overlay {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 30px 30px;
+  opacity: 0;
+  transform: translateY(20px);
+  background: var(--team-card-overlay);
+  transition: opacity 800ms cubic-bezier(0.165, 0.84, 0.44, 1), transform 800ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-card:hover .ada-hover-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ada-bio {
+  max-width: 480px;
+  margin: 0 0 20px;
+  color: var(--team-card-overlay-text);
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.42);
+}
+
+.ada-read-more {
+  position: relative;
+  border: 0;
+  padding: 0 0 6px;
+  background: transparent;
+  color: var(--team-card-overlay-text);
+  font-size: 1.55rem;
+  cursor: pointer;
+  pointer-events: auto;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.42);
+}
+
+.ada-read-more::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: center;
+  background: currentColor;
+  transition: transform 800ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ada-card:hover .ada-read-more::after {
+  transform: scaleX(1);
+}
+
+.ada-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  z-index: 100000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.ada-modal.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.ada-modal-overlay {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.ada-modal-wrapper {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 45vw) minmax(0, 55vw);
+  width: 100vw;
+  height: 100svh;
+  transform: translateY(0);
+  overflow: hidden;
+  background: linear-gradient(145deg, #13141c 0%, #202332 100%);
+  color: #eae8e8;
+}
+
+.ada-modal-left {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow: hidden;
+  background: #11131b;
+}
+
+.ada-modal-left img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.ada-modal-right {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  color: #eae8e8;
+}
+
+.ada-modal-top,
+.ada-modal-top-fixed {
+  position: relative;
+  z-index: 50;
+  flex: 0 0 auto;
+  padding: clamp(28px, 3.2vw, 58px) clamp(28px, 3.8vw, 72px) 0;
+}
+
+.ada-modal-top-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ada-modal-location,
+.ada-modal-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ada-modal-close {
+  border: 0;
+  background: transparent;
+  color: #eae8e8;
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.close-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: #eae8e8;
+}
+
+.close-icon svg {
+  stroke: #14151d;
+}
+
+.ada-modal-name {
+  margin: 0 0 10px;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 5rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.ada-modal-role {
+  margin: 0 0 50px;
+  color: #888;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.ada-modal-right-fixed-panel {
+  position: absolute;
+  right: clamp(28px, 3.8vw, 72px);
+  bottom: clamp(28px, 3.8vw, 72px);
+  z-index: 40;
+  display: grid;
+  width: min(360px, 35vw);
+  gap: 28px;
+}
+
+.ada-modal-services-wrapper,
+.ada-modal-experience {
+  min-width: 0;
+}
+
+.ada-modal-scroll-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(72px, 10vw, 170px) clamp(28px, 3.8vw, 72px) clamp(180px, 20vw, 280px);
+  scrollbar-width: none;
+}
+
+.ada-modal-scroll-area::-webkit-scrollbar {
+  display: none;
+}
+
+.ada-modal-scroll-content {
+  max-width: min(760px, 72%);
+}
+
+.ada-modal-content-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+
+.ada-modal-content {
+  display: flex;
+  gap: 50px;
+  margin-top: auto;
+}
+
+.ada-modal-bio-section,
+.ada-modal-services-section {
+  flex: 1;
+}
+
+.ada-modal-bio-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ada-modal-social {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  place-items: center;
+  border-radius: 50%;
+  background: #222;
+}
+
+.ada-modal-social svg {
+  fill: #eae8e8;
+  stroke: none;
+}
+
+.ada-modal-bio-text {
+  margin: 0;
+  color: #aaa;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.ada-modal .services-title {
+  display: block;
+  margin-bottom: 15px;
+  color: rgba(234, 232, 232, 0.52);
+  font-size: 0.75rem;
+}
+
+.ada-modal .services-list {
+  margin: 0 0 30px;
+  padding: 0;
+  list-style: none;
+}
+
+.ada-modal .services-list li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 15px 0;
+  color: rgba(234, 232, 232, 0.9) !important;
+  font-size: 0.88rem;
+}
+
+.ada-modal .services-list li::after {
+  content: "->";
+  opacity: 0.5;
+}
+
+.ada-modal-experience {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: auto;
+  line-height: 1.2;
+}
+
+.ada-modal .exp-line-1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.ada-modal .exp-line-1 strong,
+.ada-modal-experience strong {
+  color: #f1f1f1 !important;
+  font-size: 1.75rem;
+}
+
+.ada-modal .exp-line-1 span,
+.ada-modal-experience span {
+  color: #f1f1f1 !important;
+  font-size: 0.8rem;
+}
+
+.ada-modal .exp-line-2 {
+  color: rgba(234, 232, 232, 0.42) !important;
+  font-size: clamp(18px, 1.2vw, 22px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.app-shell--day .ada-team-section {
+  --team-section-bg: var(--catalog-stage-surface-bg, #eae8e8);
+  --team-section-text: #14151d;
+  --team-card-bg: #14151d;
+  --team-card-hover-bg: var(--team-section-bg);
+  --team-card-line: rgba(20, 21, 29, 0.08);
+  --team-card-name: #eae8e8;
+  --team-card-name-hover: #424346;
+  --team-card-role: rgba(234, 232, 232, 0.5);
+  --team-card-role-hover: rgba(66, 67, 70, 0.42);
+  --team-card-hover-line: rgba(20, 21, 29, 0.08);
+  --team-card-overlay: transparent;
+  --team-card-overlay-text: #eae8e8;
+  --team-card-shadow: none;
+}
+
+.app-shell--day .ada-scroll-line-wrapper {
+  background: transparent;
+}
+
+.app-shell--day .ada-manifesto-text,
+.app-shell--day .reveal-char,
+.app-shell--day .ada-giant-title {
+  color: #14151d;
+}
+
+.app-shell--day .ada-loop-item,
+.app-shell--day .reg-mark {
+  color: rgba(20, 21, 29, 0.92);
+}
+
+.app-shell--day .ada-manifesto-spacer,
+.app-shell--day .ada-manifesto-container {
+  background: var(--team-section-bg, var(--catalog-stage-surface-bg, #eae8e8));
+}
+
+.app-shell--day .ada-brand-logo {
+  filter: brightness(0) saturate(100%);
+  opacity: 0.9;
+}
+
+.app-shell--day span.ada-brand-logo,
+.app-shell--day .ada-brand-logo-microsoft,
+.app-shell--day .ada-brand-logo-svg {
+  color: #14151d;
+  filter: none;
+  opacity: 1;
+}
+
+.app-shell--day .loop-separator dotlottie-player {
+  filter: drop-shadow(0 0 1px rgba(20, 21, 29, 0.72));
+}
+
+.app-shell--day .ada-card {
+  background: var(--team-card-bg);
+  box-shadow: var(--team-card-shadow);
+}
+
+.app-shell--day .ada-card:hover {
+  background: var(--team-card-hover-bg);
+}
+
+.app-shell--day .ada-promo-card {
+  border-color: rgba(20, 21, 29, 0.1);
+  background: rgba(20, 21, 29, 0.025);
+}
+
+.app-shell--day .ada-promo-card:hover {
+  border-color: rgba(20, 21, 29, 0.18);
+  background: rgba(20, 21, 29, 0.04);
+}
+
+@media (max-width: 1180px) {
+  .ada-team-section {
+    --cta-title-y: clamp(-36px, -2vw, -18px);
+    --cta-description-y: clamp(270px, 25vw, 330px);
+    --cta-button-y: clamp(510px, 44vw, 570px);
+    --cta-bottom-line-y: clamp(598px, 51vw, 650px);
+  }
+
+  .ada-manifesto-spacer {
+    min-height: clamp(980px, 104vw, 1220px);
+  }
+
+  .ada-spacer-copy h2 {
+    width: calc(100% - 96px);
+    max-width: 980px;
+    font-size: clamp(4rem, 7.5vw, 5.5rem);
+  }
+
+  .ada-spacer-copy p {
+    width: calc(100% - 120px);
+    max-width: 860px;
+    font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+  }
+
+  .ada-spacer-cta-group {
+    width: calc(100% - 80px);
+    max-width: 720px;
+  }
+
+  .ada-founders-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ada-card {
+    height: min(840px, 88svh);
+  }
+
+  .ada-modal-wrapper {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .ada-modal-left {
+    flex: none;
+    height: 42svh;
+  }
+
+  .ada-modal-right {
+    flex: none;
+    height: auto;
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px 25px;
+  }
+}
+
+@media (max-width: 820px) {
+  .ada-team-section {
+    --cta-line-x: calc(var(--cta-stage-left) + 18px);
+    --cta-title-y: 40px;
+    --cta-description-y: 294px;
+    --cta-button-y: 554px;
+    --cta-bottom-line-y: 664px;
+    --cta-elbow-radius: 34px;
+    --cta-top-line-width: 142px;
+    --cta-top-line-height: 172px;
+    --cta-bottom-line-width: calc(50vw - 92px);
+    --cta-bottom-line-height: 84px;
+  }
+
+  .ada-structural-lines {
+    display: none;
+  }
+
+  .ada-manifesto-spacer {
+    min-height: 920px;
+  }
+
+  .ada-spacer-copy h2 {
+    font-size: clamp(3rem, 12.5vw, 5.1rem);
+    line-height: 1;
+    width: calc(100% - 36px);
+    max-width: calc(100% - 36px);
+    white-space: normal;
+  }
+
+  .ada-heading-line {
+    white-space: normal;
+  }
+
+  .ada-spacer-copy p {
+    font-size: clamp(1rem, 4.6vw, 1.22rem);
+    line-height: 1.34;
+    width: calc(100% - 36px);
+    max-width: calc(100% - 36px);
+  }
+
+  .ada-spacer-cta-group {
+    width: calc(100% - 36px);
+    max-width: 360px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ada-spacer-cta {
+    width: 100%;
+    min-width: 0;
+    height: 54px;
+    padding: 0 16px;
+    font-size: clamp(0.78rem, 3.5vw, 0.9rem);
+  }
+
+  .ada-manifesto-container {
+    min-height: auto;
+    align-items: flex-start;
+    padding: 2rem 1rem 3rem;
+    gap: 0.8rem;
+  }
+
+  .ada-scroll-line-wrapper {
+    width: 2px;
+    height: clamp(430px, 94vw, 560px);
+  }
+
+  .ada-manifesto-text {
+    max-width: calc(100vw - 3.25rem);
+    font-size: clamp(2.35rem, 10.2vw, 3.85rem);
+    line-height: 0.9;
+    overflow-wrap: anywhere;
+  }
+
+  .ada-manifesto-content {
+    transform: translateY(-72px);
+  }
+
+  .ada-manifesto-cta {
+    height: 48px;
+    margin-top: 44px;
+    padding: 0 18px 0 24px;
+  }
+
+  .ada-manifesto-cta-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .ada-subtitle-container {
+    margin-top: 70px;
+    margin-bottom: 46px;
+  }
+
+  .ada-subtitle-container-reverse {
+    margin-bottom: 68px;
+  }
+
+  .ada-loop-item {
+    width: clamp(112px, 28vw, 150px);
+    height: clamp(48px, 14vw, 70px);
+    margin: 0 clamp(20px, 6vw, 34px);
+  }
+
+  .loop-separator {
+    width: 54px;
+    height: 54px;
+    margin: 0 20px;
+  }
+
+  .ada-title-container {
+    margin-top: 46px;
+    margin-bottom: 30px;
+    padding: 0 1rem;
+  }
+
+  .ada-giant-title {
+    font-size: clamp(3rem, 12vw, 4.25rem);
+    white-space: normal;
+  }
+
+  .ada-carousel-wrapper {
+    width: 100vw;
+    max-width: none;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-left: calc(50% - 50vw);
+    padding-bottom: 110px;
+  }
+
+  .ada-promo-wrapper {
+    width: 100%;
+    max-width: none;
+    overflow: visible;
+    margin-left: 0;
+    padding: 0 18px 110px;
+    transform: none;
+  }
+
+  .ada-promo-card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    min-height: 0;
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  .ada-promo-media {
+    order: 1;
+    min-height: 0;
+    border-radius: 14px;
+  }
+
+  .ada-promo-sheen {
+    background:
+      linear-gradient(180deg, rgba(17, 19, 27, 0) 0%, rgba(17, 19, 27, 0.88) 100%),
+      radial-gradient(circle at 28% 20%, rgba(44, 227, 255, 0.16), transparent 42%);
+  }
+
+  .ada-promo-copy {
+    order: 2;
+    padding: 12px 8px 88px;
+  }
+
+  .ada-promo-title {
+    font-size: clamp(2.7rem, 12vw, 4.6rem);
+  }
+
+  .ada-promo-action {
+    right: 22px;
+    bottom: 22px;
+  }
+
+  .ada-promo-action-text {
+    display: none;
+  }
+
+  .ada-video-modal-panel {
+    width: calc(100vw - 24px);
+    max-height: calc(100svh - 24px);
+    border-radius: 22px;
+  }
+
+  .ada-video-modal-top {
+    padding: 20px;
+  }
+
+  .ada-video-close {
+    width: 42px;
+    height: 42px;
+  }
+
+  .ada-carousel-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ada-founders-grid {
+    display: flex;
+    width: max-content;
+    gap: 16px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .ada-card {
+    flex: 0 0 min(78vw, 310px);
+    width: min(78vw, 310px);
+    height: 560px;
+    min-height: 0;
+    border-radius: 24px;
+    scroll-snap-align: center;
+  }
+
+  .ada-name {
+    padding-inline: 10px;
+    font-size: clamp(2.35rem, 10vw, 3.05rem);
+    overflow-wrap: anywhere;
+  }
+
+  .ada-hover-overlay {
+    opacity: 1;
+    transform: none;
+    padding: 80px 20px 24px;
+    background: transparent;
+  }
+
+  .ada-bio {
+    font-size: 0.9rem;
+  }
+
+  .ada-modal-name {
+    font-size: 4rem;
+  }
+
+  .ada-modal-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}

@@ -1,0 +1,139 @@
+:root {
+  --bg: #050505;
+  --panel: #101114;
+  --panel-soft: rgba(18, 19, 23, 0.76);
+
+  --line: rgba(255, 255, 255, 0.14);
+  --line-strong: rgba(255, 255, 255, 0.28);
+
+  --text: #f7f7f2;
+  --muted: #b5b8bf;
+  --soft: #737780;
+
+  --accent: #2ce3ff;
+  --accent-blue: #006cff;
+  --warm: #a77a55;
+
+  --header: 82px;
+  --header-max-width: 1800px;
+  --header-offset-x: clamp(24px, 2.6vw, 50px);
+  --header-offset-y: clamp(18px, 2.2vw, 34px);
+  --header-pill-height: 72px;
+  --header-pill-radius: 999px;
+  --header-control-radius: 999px;
+  --header-blur: 24px;
+  --header-brand-text: #f7f7f2;
+  --header-brand-shadow: 0 16px 32px rgba(0, 0, 0, 0.26);
+  --header-glass: rgba(230, 232, 230, 0.62);
+  --header-glass-strong: rgba(238, 240, 239, 0.72);
+  --header-glass-sheen: rgba(255, 255, 255, 0.56);
+  --header-glass-line: rgba(255, 255, 255, 0.42);
+  --header-glass-highlight: rgba(255, 255, 255, 0.72);
+  --header-glass-shadow: rgba(0, 0, 0, 0.18);
+  --header-link: rgba(7, 16, 24, 0.72);
+  --header-link-hover: rgba(7, 16, 24, 0.96);
+  --header-link-active: #071018;
+  --header-control-hover: rgba(255, 255, 255, 0.34);
+  --header-control-active: rgba(255, 255, 255, 0.78);
+  --header-control-highlight: rgba(255, 255, 255, 0.88);
+  --header-control-shadow: rgba(0, 0, 0, 0.1);
+  --header-language-track: rgba(255, 255, 255, 0.16);
+  --header-bulb-fill: rgba(255, 255, 255, 0.16);
+  --header-bulb-glow: 0 0 0 rgba(44, 227, 255, 0);
+  --header-quote-text: #00121a;
+
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-shell {
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-shell--day {
+  --bg: #f8f6ef;
+  --panel: #ffffff;
+  --panel-soft: rgba(255, 255, 255, 0.76);
+  --line: rgba(7, 16, 24, 0.14);
+  --line-strong: rgba(7, 16, 24, 0.28);
+  --text: #071018;
+  --muted: rgba(7, 16, 24, 0.68);
+  --soft: rgba(7, 16, 24, 0.46);
+  --ambience-bg: #f8f6ef;
+  --ambience-text: #071018;
+  --ambience-muted: rgba(7, 16, 24, 0.68);
+  --ambience-soft: rgba(7, 16, 24, 0.42);
+  --ambience-line: rgba(7, 16, 24, 0.16);
+  --ambience-glass: rgba(255, 255, 255, 0.62);
+  --ambience-overlay: rgba(255, 255, 255, 0.2);
+  --ambience-shadow: rgba(0, 0, 0, 0.16);
+  --ambience-light: rgba(255, 255, 255, 0.92);
+  --ambience-glow: rgba(44, 227, 255, 0.26);
+  --ambience-hero-filter: brightness(1) saturate(0.94) contrast(1.02);
+  --ambience-copy-shadow: 0 1px 16px rgba(255, 255, 255, 0.36);
+  --header-brand-text: #071018;
+  --header-brand-shadow: 0 12px 26px rgba(255, 255, 255, 0.18);
+  --header-glass: rgba(236, 238, 236, 0.64);
+  --header-glass-strong: rgba(246, 247, 246, 0.8);
+  --header-glass-sheen: rgba(255, 255, 255, 0.62);
+  --header-glass-line: rgba(255, 255, 255, 0.58);
+  --header-glass-highlight: rgba(255, 255, 255, 0.84);
+  --header-glass-shadow: rgba(0, 0, 0, 0.14);
+  --header-link: rgba(7, 16, 24, 0.68);
+  --header-link-hover: rgba(7, 16, 24, 0.96);
+  --header-link-active: #071018;
+  --header-control-hover: rgba(255, 255, 255, 0.42);
+  --header-control-active: rgba(255, 255, 255, 0.82);
+  --header-control-highlight: rgba(255, 255, 255, 0.92);
+  --header-control-shadow: rgba(0, 0, 0, 0.08);
+  --header-language-track: rgba(255, 255, 255, 0.2);
+  --header-bulb-fill: rgba(255, 255, 255, 0.18);
+  --header-bulb-glow: 0 0 0 rgba(44, 227, 255, 0);
+}
+
+.app-shell--night {
+  --ambience-bg: #030506;
+  --ambience-text: #f4f2ef;
+  --ambience-muted: rgba(244, 242, 239, 0.68);
+  --ambience-soft: rgba(244, 242, 239, 0.42);
+  --ambience-line: rgba(244, 242, 239, 0.14);
+  --ambience-glass: rgba(8, 12, 16, 0.62);
+  --ambience-overlay: rgba(0, 0, 0, 0.62);
+  --ambience-shadow: rgba(0, 0, 0, 0.44);
+  --ambience-light: rgba(217, 250, 255, 0.96);
+  --ambience-glow: rgba(44, 227, 255, 0.52);
+  --ambience-hero-filter: brightness(0.46) saturate(0.72) contrast(1.16);
+  --ambience-copy-shadow: 0 18px 52px rgba(0, 0, 0, 0.5);
+  --header-brand-text: #f7f7f2;
+  --header-brand-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
+  --header-glass: rgba(228, 231, 229, 0.22);
+  --header-glass-strong: rgba(228, 231, 229, 0.3);
+  --header-glass-sheen: rgba(255, 255, 255, 0.22);
+  --header-glass-line: rgba(255, 255, 255, 0.22);
+  --header-glass-highlight: rgba(255, 255, 255, 0.26);
+  --header-glass-shadow: rgba(0, 0, 0, 0.34);
+  --header-link: rgba(247, 247, 242, 0.74);
+  --header-link-hover: rgba(255, 255, 255, 0.98);
+  --header-link-active: #071018;
+  --header-control-hover: rgba(255, 255, 255, 0.12);
+  --header-control-active: rgba(255, 255, 255, 0.78);
+  --header-control-highlight: rgba(255, 255, 255, 0.74);
+  --header-control-shadow: rgba(0, 0, 0, 0.18);
+  --header-language-track: rgba(0, 0, 0, 0.12);
+  --header-bulb-fill: rgba(44, 227, 255, 0.22);
+  --header-bulb-glow:
+    0 0 18px rgba(44, 227, 255, 0.52),
+    0 0 34px rgba(44, 227, 255, 0.24);
+}
+
+@media (max-width: 820px) {
+  :root {
+    --header: 70px;
+  }
+}
