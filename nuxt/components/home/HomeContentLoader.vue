@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
-const shouldRender = ref(true);
+const shouldRender = ref(false);
 const mountRef = ref<HTMLElement | null>(null);
 
 let observer: IntersectionObserver | null = null;

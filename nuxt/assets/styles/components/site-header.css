@@ -756,46 +756,38 @@
 @media (max-width: 760px) {
   .site-header {
     --header-offset-x: 16px;
-    --header-pill-height: 42px;
+    --header-pill-height: 46px;
 
-    padding: max(7px, env(safe-area-inset-top)) 12px 6px;
+    padding: max(8px, env(safe-area-inset-top)) 14px 8px;
   }
 
   .site-header__inner {
     grid-template-columns: 1fr max-content;
-    gap: 8px;
+    gap: 12px;
   }
 
   .site-header__utility {
-    min-height: 40px;
+    min-height: 44px;
     padding: 3px;
-    gap: 3px;
+    gap: 4px;
   }
 
   .site-header__icon-button,
   .site-header__utility-link,
   .site-header__theme,
   .site-header__language {
-    min-height: 34px;
+    min-height: 38px;
   }
 
   .site-header__icon-button {
-    width: 34px;
+    width: 38px;
   }
 
   .site-header__language,
   .site-header__theme,
   .site-header__theme-button,
   .site-header__language-button {
-    min-height: 34px;
-  }
-
-  .site-header__theme-button,
-  .site-header__language-button {
-    min-width: 28px;
-    min-height: 30px;
-    padding-inline: 7px;
-    font-size: 11px;
+    min-height: 38px;
   }
 
   .site-header__mobile-panel {
@@ -810,8 +802,8 @@
 @media (max-width: 520px) {
   .site-header {
     --header-offset-x: 12px;
-    --header-pill-height: 38px;
-    padding: max(6px, env(safe-area-inset-top)) 8px 5px;
+    --header-pill-height: 42px;
+    padding: max(7px, env(safe-area-inset-top)) 8px 7px;
   }
 
   .site-header__inner {
@@ -821,59 +813,59 @@
 
   .site-header__utility {
     gap: 2px;
-    min-height: 36px;
-    padding: 2px;
+    min-height: 40px;
+    padding: 3px;
   }
 
   .site-header__icon-button,
   .site-header__utility-link,
   .site-header__theme,
   .site-header__language {
-    min-height: 32px;
+    min-height: 34px;
   }
 
   .site-header__icon-button {
-    width: 32px;
+    width: 34px;
   }
 
   .site-header__brand .brand-mark {
-    gap: 0.34rem;
+    gap: 0.5rem;
     overflow: visible;
   }
 
   .site-header__brand .brand-symbol {
-    width: 22px !important;
-    height: 28px !important;
+    width: 26px !important;
+    height: 32px !important;
   }
 
   .site-header__brand .brand-symbol__left,
   .site-header__brand .brand-symbol__right {
-    width: 11px !important;
-    height: 22px !important;
+    width: 13px !important;
+    height: 26px !important;
   }
 
   .site-header__brand .brand-symbol__core {
-    left: 9px !important;
-    width: 7px !important;
-    height: 18px !important;
+    left: 11px !important;
+    width: 8px !important;
+    height: 22px !important;
   }
 
   .site-header__brand .brand-title {
-    font-size: 0.66rem;
+    font-size: 0.74rem;
   }
 
   .site-header__theme,
   .site-header__language {
-    min-height: 32px;
+    min-height: 34px;
     padding: 2px;
   }
 
   .site-header__theme-button,
   .site-header__language-button {
-    min-width: 27px;
-    min-height: 28px;
-    padding-inline: 6px;
-    font-size: 10px;
+    min-width: 30px;
+    min-height: 30px;
+    padding-inline: 7px;
+    font-size: 12px;
   }
 
   .site-header__mobile-panel {

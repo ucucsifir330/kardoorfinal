@@ -445,7 +445,6 @@ onMounted(() => {
   const DOOR_SNAP_PAD = 0.018;
   const DOOR_SNAP_COOLDOWN_MS = 560;
   const HORIZONTAL_SLIDE_COOLDOWN_MS = 700;
-  const SCROLL_RANGE_TOLERANCE_PX = 4;
 
   let trigger: ScrollTrigger | undefined;
   let isAutoSettling = false;
@@ -455,37 +454,6 @@ onMounted(() => {
   let lastTouchY = 0;
   let doorSnapCooldownUntil = 0;
   let horizontalSlideCooldownUntil = 0;
-
-  type LenisLike = {
-    scrollTo: (
-      target: number,
-      options?: {
-        immediate?: boolean;
-        force?: boolean;
-      }
-    ) => void;
-  };
-
-  const nuxtApp = useNuxtApp() as { $lenis?: LenisLike };
-
-  const isWithinHeroScrollRange = (y = window.scrollY) =>
-    Boolean(
-      trigger &&
-        y >= trigger.start - SCROLL_RANGE_TOLERANCE_PX &&
-        y <= trigger.end + SCROLL_RANGE_TOLERANCE_PX
-    );
-
-  const scrollToY = (y: number) => {
-    if (nuxtApp.$lenis) {
-      nuxtApp.$lenis.scrollTo(y, {
-        immediate: true,
-        force: true
-      });
-      return;
-    }
-
-    window.scrollTo(0, y);
-  };
 
   const consumeScrollEvent = (event: Event) => {
     event.preventDefault();
@@ -539,7 +507,7 @@ onMounted(() => {
       onComplete?: () => void;
     } = {}
   ) => {
-    if (!trigger || isAutoSettling || !isWithinHeroScrollRange()) return;
+    if (!trigger || isAutoSettling) return;
 
     const startProgress = trigger.progress;
     const startY = trigger.start + (trigger.end - trigger.start) * startProgress;
@@ -557,11 +525,11 @@ onMounted(() => {
       onUpdate: () => {
         const t = (scrollState.progress - startProgress) / (progress - startProgress || 1);
         const y = startY + (targetY - startY) * clamp01(t);
-        scrollToY(y);
+        window.scrollTo(0, y);
         updateMaster(scrollState.progress);
       },
       onComplete: () => {
-        scrollToY(targetY);
+        window.scrollTo(0, targetY);
         updateMaster(progress);
         isAutoSettling = false;
         if (options.markShowroomSettled !== false) {
@@ -622,14 +590,13 @@ onMounted(() => {
   const isDoorSnapCoolingDown = () =>
     Boolean(
       trigger &&
-        isWithinHeroScrollRange() &&
         performance.now() < doorSnapCooldownUntil &&
         trigger.progress >= TURNTABLE_START - DOOR_SNAP_PAD &&
         trigger.progress <= TURNTABLE_END + DOOR_SNAP_PAD
     );
 
   const isHorizontalSlideCoolingDown = () =>
-    Boolean(trigger && isWithinHeroScrollRange() && performance.now() < horizontalSlideCooldownUntil);
+    Boolean(trigger && performance.now() < horizontalSlideCooldownUntil);
 
   const snapDoor = (direction: number, event?: Event) => {
     if (!trigger || !shouldSnapDoor(direction)) return false;
@@ -781,8 +748,6 @@ onMounted(() => {
   };
 
   const onSettleWheel = (event: WheelEvent) => {
-    if (!isWithinHeroScrollRange()) return;
-
     if (isHorizontalSlideCoolingDown()) {
       consumeScrollEvent(event);
       return;
@@ -828,8 +793,6 @@ onMounted(() => {
     const direction = lastTouchY - y;
     lastTouchY = y;
 
-    if (!isWithinHeroScrollRange()) return;
-
     if (isHorizontalSlideCoolingDown()) {
       consumeScrollEvent(event);
       return;
@@ -873,9 +836,7 @@ onMounted(() => {
       ? 1
       : backwardKeys.includes(event.key)
         ? -1
-        : 0;
-
-    if (direction === 0 || !isWithinHeroScrollRange()) return;
+      : 0;
 
     if (isHorizontalSlideCoolingDown()) {
       consumeScrollEvent(event);
