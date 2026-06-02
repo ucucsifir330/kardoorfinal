@@ -1396,6 +1396,10 @@ span.ada-brand-logo {
     --cta-bottom-line-height: 84px;
   }
 
+  .ada-structural-lines {
+    display: none;
+  }
+
   .ada-manifesto-spacer {
     min-height: 920px;
   }

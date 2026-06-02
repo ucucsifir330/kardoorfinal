@@ -10,6 +10,8 @@
 @import "./components/site-header.css";
 
 /* Page / section styles */
+@import "./sections/entrance-door.css";
+@import "./sections/showroom-turntable.css";
 @import "./sections/door-selector.css";
 @import "./sections/content-pages.css";
 @import "./sections/home-catalog.css";

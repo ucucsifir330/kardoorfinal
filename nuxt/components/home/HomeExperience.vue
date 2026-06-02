@@ -1,4 +1,5 @@
-﻿<template>
+<template>
+  <EntranceDoor />
   <HomeCatalog />
   <section class="ada-team-section">
     <HomeManifesto>
