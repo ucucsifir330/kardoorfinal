@@ -753,6 +753,10 @@ onMounted(() => {
       return;
     }
 
+    if (event.deltaY > 0 && autoSlideHorizontal(event)) {
+      return;
+    }
+
     if (isDoorSnapCoolingDown()) {
       consumeScrollEvent(event);
       return;
@@ -768,10 +772,6 @@ onMounted(() => {
     }
 
     if (event.deltaY < 0 && reverseSettleToEntrance(event)) {
-      return;
-    }
-
-    if (event.deltaY > 0 && autoSlideHorizontal(event)) {
       return;
     }
 
@@ -798,6 +798,10 @@ onMounted(() => {
       return;
     }
 
+    if (direction > 0 && autoSlideHorizontal(event)) {
+      return;
+    }
+
     if (isDoorSnapCoolingDown()) {
       consumeScrollEvent(event);
       return;
@@ -813,10 +817,6 @@ onMounted(() => {
     }
 
     if (direction < 0 && reverseSettleToEntrance(event)) {
-      return;
-    }
-
-    if (direction > 0 && autoSlideHorizontal(event)) {
       return;
     }
 
@@ -843,6 +843,10 @@ onMounted(() => {
       return;
     }
 
+    if (direction > 0 && autoSlideHorizontal(event)) {
+      return;
+    }
+
     if (isDoorSnapCoolingDown()) {
       consumeScrollEvent(event);
       return;
@@ -858,10 +862,6 @@ onMounted(() => {
     }
 
     if (direction < 0 && reverseSettleToEntrance(event)) {
-      return;
-    }
-
-    if (direction > 0 && autoSlideHorizontal(event)) {
       return;
     }
 
