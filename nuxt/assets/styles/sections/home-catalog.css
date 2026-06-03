@@ -850,13 +850,12 @@
 }
 .catalog-main {
   width: calc(100% - clamp(380px, 21.875vw, 420px));
-  height: 100%;
+  height: auto;
   padding: 0 clamp(56px, 4.8vw, 92px) 0 clamp(42px, 2.5vw, 48px);
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: visible;
   scrollbar-width: none;
 }
 .catalog-main::-webkit-scrollbar {
@@ -1293,9 +1292,8 @@
   z-index: auto !important;
 }
 .catalog-main {
-  height: 100% !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  height: auto !important;
+  overflow: visible !important;
   scrollbar-width: none !important;
 }
 .catalog-main::-webkit-scrollbar {
@@ -1774,10 +1772,9 @@
   border-radius: 0 !important;
 }
 .catalog-shell > .catalog-main {
-  height: 100% !important;
-  min-height: 100vh !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
 }
 .catalog-card,
 .catalog-row:last-of-type .catalog-card {

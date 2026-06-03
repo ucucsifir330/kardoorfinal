@@ -7,6 +7,7 @@ export type DoorProduct = {
   category: string;
   subClass: string;
   image: string;
+  localImage: string;
   tags: string[];
   colors: string[];
   visualRole: ProductVisualRole;
@@ -266,8 +267,14 @@ const slugifyProductPart = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-const imagePath = (imageNumber: number) =>
+const CATALOG_IMAGEKIT_BASE =
+  "https://ik.imagekit.io/kardoor/yenikatalogwebp-20260528T045330Z-3-001/yenikatalogwebp";
+
+const localImagePath = (imageNumber: number) =>
   `/images/katalogwebp/Image${String(imageNumber).padStart(2, "0")}.webp`;
+
+const imagePath = (imageNumber: number) =>
+  `${CATALOG_IMAGEKIT_BASE}/Image${String(imageNumber).padStart(2, "0")}.webp`;
 
 const uniqueValues = (values: string[]) => [...new Set(values)];
 
@@ -287,6 +294,7 @@ export const products: DoorProduct[] = families.flatMap((family) =>
       category: family.category,
       subClass: family.subClass,
       image: imagePath(imageNumber),
+      localImage: localImagePath(imageNumber),
       tags,
       colors,
       visualRole,

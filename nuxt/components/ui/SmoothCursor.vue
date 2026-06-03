@@ -110,8 +110,6 @@ const scale: SpringValue = { current: 1, target: 1, velocity: 0 };
 const lastMousePos: Position = { x: 0, y: 0 };
 const velocity: Position = { x: 0, y: 0 };
 
-let accumulatedRotation = 0;
-let previousAngle = 0;
 let lastUpdateTime = Date.now();
 let lastFrameTime = 0;
 let rafId = 0;
@@ -186,15 +184,12 @@ const smoothPointerMove = (event: PointerEvent) => {
   if (speed <= 0.1) return;
 
   const currentAngle = Math.atan2(velocity.y, velocity.x) * (180 / Math.PI) + 90;
-  let angleDiff = currentAngle - previousAngle;
+  let angleDiff = currentAngle - rotation.target;
 
   if (angleDiff > 180) angleDiff -= 360;
   if (angleDiff < -180) angleDiff += 360;
 
-  accumulatedRotation += angleDiff;
-  previousAngle = currentAngle;
-
-  setSpringTarget(rotation, accumulatedRotation);
+  setSpringTarget(rotation, rotation.target + angleDiff);
   setSpringTarget(scale, 0.95);
 
   if (scaleTimeout !== null) {

@@ -11,6 +11,7 @@ export interface ProductVariant {
   category?: string;
   system?: string;
   image: string;
+  localImage: string;
   liked: boolean;
 }
 
