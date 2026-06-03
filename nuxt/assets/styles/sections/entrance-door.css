@@ -25,6 +25,7 @@
   --zoom-origin-x: 50%;
   --zoom-origin-y: 52%;
   --showroom-scale: 0.14;
+  --showroom-layer-opacity: 0;
   --showroom-align-x: 0px;
   --showroom-align-y: 0px;
   --showroom-content-opacity: 0.12;
@@ -101,9 +102,10 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  opacity: var(--showroom-layer-opacity);
   transform: translate3d(var(--showroom-page-x), 0, 0);
-  pointer-events: auto;
-  will-change: transform;
+  pointer-events: none;
+  will-change: opacity, transform;
 }
 
 .entrance-door__next-panel {
@@ -213,8 +215,23 @@
   transform-origin: var(--zoom-origin-x) var(--zoom-origin-y);
   transform: translate3d(var(--showroom-align-x), var(--showroom-align-y), 0) scale(var(--showroom-scale)) translate3d(var(--showroom-ui-x), 0, 0);
   opacity: var(--showroom-ui-opacity);
-  pointer-events: auto;
+  pointer-events: none;
   will-change: transform, opacity;
+}
+
+.entrance-door--showroom-ui-active .entrance-door__showroom .showroom-turntable__info {
+  pointer-events: auto;
+}
+
+.entrance-door__showroom .showroom-turntable__dots,
+.entrance-door__showroom .showroom-turntable__door-nav {
+  opacity: var(--showroom-ui-opacity);
+  pointer-events: none;
+}
+
+.entrance-door--showroom-ui-active .entrance-door__showroom .showroom-turntable__dots,
+.entrance-door--showroom-ui-active .entrance-door__showroom .showroom-turntable__door-nav {
+  pointer-events: auto;
 }
 
 /* Showroom active olduğunda click'leri yakala */

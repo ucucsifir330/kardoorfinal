@@ -22,6 +22,21 @@ import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import AdaCtaButton from "./AdaCtaButton.vue";
 import ShowroomTurntable from "./ShowroomTurntable.vue";
 
+type LenisScrollToOptions = {
+  duration?: number;
+  easing?: (t: number) => number;
+  force?: boolean;
+  immediate?: boolean;
+  lock?: boolean;
+  onComplete?: () => void;
+};
+
+type LenisInstance = {
+  scrollTo: (target: number | string | HTMLElement, options?: LenisScrollToOptions) => void;
+  start: () => void;
+  stop: () => void;
+};
+
 // ─────────────────────────────────────────────────────────────
 // IMAGEKIT
 // ─────────────────────────────────────────────────────────────
@@ -91,6 +106,8 @@ const ctaPathRef = ref<SVGSVGElement | null>(null);
 
 const turntableProgress = ref(0);
 const isShowroomActive = ref(false);
+const isShowroomUiActive = ref(false);
+const { $lenis } = useNuxtApp();
 
 let teardown: (() => void) | undefined;
 let requestDoorStep: ((direction: -1 | 1) => void) | undefined;
@@ -130,6 +147,7 @@ const onDoorSelect = (index: number) => {
 // MOUNTED
 // ─────────────────────────────────────────────────────────────
 onMounted(() => {
+  const lenis = $lenis as LenisInstance | undefined;
   const hero = heroRef.value;
   const heroImage = heroImageRef.value;
   const zoomLayer = zoomLayerRef.value;
@@ -400,8 +418,12 @@ onMounted(() => {
   const HORIZONTAL_SLIDE_START = 0.88;
   const HORIZONTAL_SLIDE_END = 0.94;
   const CTA_PATH_START = HORIZONTAL_SLIDE_END;
+  const DOOR_SNAP_POINTS = Array.from({ length: 5 }, (_, i) =>
+    TURNTABLE_START + (i / 4) * (TURNTABLE_END - TURNTABLE_START)
+  );
 
   const easeInOut = (t: number) => t * t * (3 - 2 * t);
+  const snapEase = (t: number) => 1 - Math.pow(1 - t, 3);
 
   const updateMaster = (raw: number) => {
     const p = clamp01(raw);
@@ -447,7 +469,9 @@ onMounted(() => {
 
     const fadeOutStart = FIRST_DOOR_SETTLE_START + (TURNTABLE_START - FIRST_DOOR_SETTLE_START) * 0.42;
     const zoomFade = 1 - easeInOut(clamp01((p - fadeOutStart) / (TURNTABLE_START - fadeOutStart)));
+    const showroomLayerOpacity = 1 - zoomFade;
     zoomLayer.style.setProperty("--zoom-fade", `${zoomFade}`);
+    hero.style.setProperty("--showroom-layer-opacity", `${showroomLayerOpacity}`);
 
     const copyFade = clamp01((p - 0.04) / 0.2);
     hero.style.setProperty("--hero-copy-opacity", `${1 - copyFade}`);
@@ -460,451 +484,199 @@ onMounted(() => {
     hero.style.setProperty("--showroom-page-x", `${horizontalSlideP * -100}%`);
     updateCtaPathMotion(ctaPathProgress);
     turntableProgress.value = ttP;
-    isShowroomActive.value = p >= HOLD_END;
+    isShowroomActive.value = showroomLayerOpacity > 0.02;
+    isShowroomUiActive.value = showroomUiReveal > 0.08;
   };
 
   // ───────────── SCROLL TRIGGER ─────────────
-  const DOOR_COUNT_TT = 5;
-  const DOOR_SNAP_POINTS = Array.from({ length: DOOR_COUNT_TT }, (_, i) =>
-    TURNTABLE_START + (i / (DOOR_COUNT_TT - 1)) * (TURNTABLE_END - TURNTABLE_START)
-  );
-  const DOOR_SNAP_PAD = 0.018;
-  const DOOR_SNAP_COOLDOWN_MS = 560;
-  const HORIZONTAL_SLIDE_COOLDOWN_MS = 700;
-
   let trigger: ScrollTrigger | undefined;
-  let isAutoSettling = false;
-  let hasAutoSettledIntoShowroom = false;
-  let settleTween: gsap.core.Tween | undefined;
-  let unlockInput: (() => void) | undefined;
-  let lastTouchY = 0;
-  let doorSnapCooldownUntil = 0;
-  let horizontalSlideCooldownUntil = 0;
-  let entranceDoorOwnsScrollInput = true;
+  let snapIdleTimer = 0;
+  let snapCooldownUntil = 0;
+  let isSnapScrolling = false;
+  let snapStartedAt = 0;
+  let snapTargetProgress: number | undefined;
+  let snapHoldTimer = 0;
+  let previousProgress = 0;
+  let lockedDoorIndex: number | undefined;
 
-  const consumeScrollEvent = (event: Event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if ("stopImmediatePropagation" in event) {
-      event.stopImmediatePropagation();
+  const getProgressY = (progress: number) => {
+    if (!trigger) return 0;
+    return trigger.start + (trigger.end - trigger.start) * clamp01(progress);
+  };
+
+  const getNearestDoorSnap = (progress: number) =>
+    DOOR_SNAP_POINTS.reduce((nearest, point) =>
+      Math.abs(point - progress) < Math.abs(nearest - progress) ? point : nearest
+    );
+
+  const getNearestDoorIndex = (progress: number) =>
+    DOOR_SNAP_POINTS.reduce((nearestIndex, point, index) =>
+      Math.abs(point - progress) < Math.abs(DOOR_SNAP_POINTS[nearestIndex]! - progress) ? index : nearestIndex
+    , 0);
+
+  const getIdleSnapTarget = (progress: number) => {
+    if (progress >= FIRST_DOOR_SETTLE_START + 0.005 && progress < TURNTABLE_START - 0.025) {
+      const midpoint = FIRST_DOOR_SETTLE_START + (TURNTABLE_START - FIRST_DOOR_SETTLE_START) * 0.5;
+      return progress >= midpoint ? TURNTABLE_START : FIRST_DOOR_SETTLE_START;
     }
+
+    if (progress >= TURNTABLE_START - 0.02 && progress <= TURNTABLE_END + 0.02) {
+      return getNearestDoorSnap(progress);
+    }
+
+    return undefined;
   };
 
-  const blockScrollInput = () => {
-    unlockInput?.();
+  const cancelActiveSnap = () => {
+    if (!lenis) return;
 
-    const stop = (event: Event) => {
-      consumeScrollEvent(event);
-    };
-    const stopKeys = (event: KeyboardEvent) => {
-      if (
-        [
-          " ",
-          "ArrowDown",
-          "ArrowUp",
-          "PageDown",
-          "PageUp",
-          "Home",
-          "End"
-        ].includes(event.key)
-      ) {
-        stop(event);
-      }
-    };
-    const options: AddEventListenerOptions = { capture: true, passive: false };
-
-    window.addEventListener("wheel", stop, options);
-    window.addEventListener("touchmove", stop, options);
-    window.addEventListener("keydown", stopKeys, { capture: true });
-
-    unlockInput = () => {
-      window.removeEventListener("wheel", stop, options);
-      window.removeEventListener("touchmove", stop, options);
-      window.removeEventListener("keydown", stopKeys, { capture: true });
-      unlockInput = undefined;
-    };
+    window.clearTimeout(snapIdleTimer);
+    window.clearTimeout(snapHoldTimer);
+    isSnapScrolling = false;
+    snapTargetProgress = undefined;
+    snapCooldownUntil = performance.now() + 320;
+    lenis.start();
+    lenis.scrollTo(window.scrollY, {
+      immediate: true,
+      force: true,
+      lock: false
+    });
   };
 
-  const autoSettleTo = (
+  const holdSnap = (holdMs: number) => {
+    if (!lenis || holdMs <= 0) return;
+
+    window.clearTimeout(snapHoldTimer);
+    lenis.stop();
+    snapHoldTimer = window.setTimeout(() => {
+      lenis.start();
+      snapCooldownUntil = performance.now() + 420;
+    }, holdMs);
+  };
+
+  const snapToProgress = (
     progress: number,
-    options: {
-      duration?: number;
-      ease?: string;
-      markShowroomSettled?: boolean;
-      onComplete?: () => void;
-    } = {}
+    duration = 1.05,
+    correctionCount = 0,
+    holdMs = 0,
+    lock = false
   ) => {
-    if (!trigger || isAutoSettling) return;
+    if (!lenis || !trigger) return;
 
-    const startProgress = trigger.progress;
-    const startY = trigger.start + (trigger.end - trigger.start) * startProgress;
-    const targetY = trigger.start + (trigger.end - trigger.start) * progress;
-    const scrollState = { progress: trigger.progress };
+    const targetProgress = clamp01(progress);
+    const targetY = getProgressY(targetProgress);
+    const doorIndex = DOOR_SNAP_POINTS.findIndex((point) => Math.abs(point - targetProgress) < 0.002);
 
-    isAutoSettling = true;
-    blockScrollInput();
-    settleTween?.kill();
-    settleTween = gsap.to(scrollState, {
-      progress,
-      duration: options.duration ?? 2.15,
-      ease: options.ease ?? "sine.inOut",
-      overwrite: true,
-      onUpdate: () => {
-        const t = (scrollState.progress - startProgress) / (progress - startProgress || 1);
-        const y = startY + (targetY - startY) * clamp01(t);
-        window.scrollTo(0, y);
-        updateMaster(scrollState.progress);
-      },
+    if (Math.abs(trigger.progress - targetProgress) < 0.004) return;
+
+    isSnapScrolling = true;
+    snapStartedAt = performance.now();
+    snapTargetProgress = targetProgress;
+    snapCooldownUntil = performance.now() + duration * 1000 + holdMs + 360;
+    window.clearTimeout(snapIdleTimer);
+    window.clearTimeout(snapHoldTimer);
+    lenis.start();
+
+    lenis.scrollTo(targetY, {
+      duration,
+      easing: snapEase,
+      force: true,
+      lock,
       onComplete: () => {
-        window.scrollTo(0, targetY);
-        updateMaster(progress);
-        isAutoSettling = false;
-        if (options.markShowroomSettled !== false) {
-          hasAutoSettledIntoShowroom = true;
+        const remaining = trigger ? Math.abs(trigger.progress - targetProgress) : 0;
+        isSnapScrolling = false;
+        snapTargetProgress = undefined;
+        if (doorIndex >= 0) {
+          lockedDoorIndex = doorIndex;
         }
-        unlockInput?.();
-        options.onComplete?.();
-      },
-      onInterrupt: () => {
-        isAutoSettling = false;
-        unlockInput?.();
+
+        if (remaining > 0.012 && correctionCount < 1) {
+          window.setTimeout(() => snapToProgress(targetProgress, 0.34, correctionCount + 1, holdMs, lock), 80);
+          return;
+        }
+
+        holdSnap(holdMs);
       }
     });
   };
 
-  const shouldTakeOverSettle = (direction: number) =>
-    Boolean(
-      trigger &&
-        direction > 0 &&
-        !hasAutoSettledIntoShowroom &&
-        trigger.progress >= FIRST_DOOR_SETTLE_START - 0.025 &&
-        trigger.progress < TURNTABLE_START
-    );
+  const scheduleIdleSnap = (self: ScrollTrigger) => {
+    if (!lenis || isSnapScrolling || performance.now() < snapCooldownUntil) return;
 
-  const shouldReverseSettle = (direction: number) =>
-    Boolean(
-      trigger &&
-        direction < 0 &&
-        hasAutoSettledIntoShowroom &&
-        trigger.progress > FIRST_DOOR_SETTLE_START + 0.018 &&
-        trigger.progress <= TURNTABLE_START + DOOR_SNAP_PAD
-    );
+    window.clearTimeout(snapIdleTimer);
+    snapIdleTimer = window.setTimeout(() => {
+      if (!trigger || isSnapScrolling || performance.now() < snapCooldownUntil) return;
 
-  const getNearestDoorIndex = (progress: number) => {
-    let nearestIndex = 0;
-    let nearestDistance = Math.abs(progress - DOOR_SNAP_POINTS[0]!);
+      const target = getIdleSnapTarget(trigger.progress);
+      if (target === undefined) return;
 
-    for (let i = 1; i < DOOR_SNAP_POINTS.length; i++) {
-      const distance = Math.abs(progress - DOOR_SNAP_POINTS[i]!);
-      if (distance < nearestDistance) {
-        nearestDistance = distance;
-        nearestIndex = i;
-      }
-    }
-
-    return nearestIndex;
+      const isDoorTarget = target >= TURNTABLE_START && target <= TURNTABLE_END;
+      snapToProgress(
+        target,
+        target === TURNTABLE_START || target === FIRST_DOOR_SETTLE_START ? 0.86 : 0.52,
+        0,
+        isDoorTarget ? 1250 : 0,
+        isDoorTarget
+      );
+    }, Math.abs(self.getVelocity()) > 40 ? 520 : 360);
   };
 
-  const shouldSnapDoor = (direction: number) =>
-    Boolean(
-      trigger &&
-        direction !== 0 &&
-        hasAutoSettledIntoShowroom &&
-        trigger.progress >= TURNTABLE_START - DOOR_SNAP_PAD &&
-        trigger.progress <= TURNTABLE_END + DOOR_SNAP_PAD
-    );
-
-  const isDoorSnapCoolingDown = () =>
-    Boolean(
-      trigger &&
-        performance.now() < doorSnapCooldownUntil &&
-        trigger.progress >= TURNTABLE_START - DOOR_SNAP_PAD &&
-        trigger.progress <= TURNTABLE_END + DOOR_SNAP_PAD
-    );
-
-  const isHorizontalSlideCoolingDown = () =>
-    Boolean(trigger && performance.now() < horizontalSlideCooldownUntil);
-
-  const snapDoor = (direction: number, event?: Event) => {
-    if (!trigger || !shouldSnapDoor(direction)) return false;
-
-    const currentIndex = getNearestDoorIndex(trigger.progress);
-    const targetIndex = currentIndex + (direction > 0 ? 1 : -1);
-
-    if (targetIndex < 0 || targetIndex >= DOOR_SNAP_POINTS.length) {
-      return false;
+  const lockTurntableDoor = (progress: number, progressDelta: number) => {
+    if (
+      !trigger ||
+      isSnapScrolling ||
+      performance.now() < snapCooldownUntil ||
+      progress < TURNTABLE_START - 0.012 ||
+      progress > TURNTABLE_END + 0.012
+    ) {
+      return;
     }
 
-    if (event) {
-      consumeScrollEvent(event);
+    if (lockedDoorIndex === undefined) {
+      lockedDoorIndex = getNearestDoorIndex(progress);
     }
 
-    doorSnapCooldownUntil = performance.now() + 920 + DOOR_SNAP_COOLDOWN_MS;
+    const direction = Math.sign(progressDelta);
+    if (direction === 0) return;
 
-    autoSettleTo(DOOR_SNAP_POINTS[targetIndex]!, {
-      duration: 0.92,
-      ease: "power3.inOut",
-      markShowroomSettled: false
-    });
+    const targetIndex = direction > 0 ? lockedDoorIndex + 1 : lockedDoorIndex - 1;
+    if (targetIndex < 0 || targetIndex >= DOOR_SNAP_POINTS.length) return;
 
-    return true;
+    const currentPoint = DOOR_SNAP_POINTS[lockedDoorIndex]!;
+    const target = DOOR_SNAP_POINTS[targetIndex]!;
+    const threshold = currentPoint + (target - currentPoint) * 0.5;
+
+    if (direction > 0 && progress < threshold) return;
+    if (direction < 0 && progress > threshold) return;
+
+    snapToProgress(target, 0.38, 0, 1250, true);
   };
 
   requestDoorStep = (direction: -1 | 1) => {
     if (!trigger) return;
 
-    const currentProgress = clamp01(trigger.progress);
-    const currentIndex = getNearestDoorIndex(currentProgress);
-    const targetIndex = currentIndex + direction;
+    const current = trigger.progress;
+    const nearestIndex = getNearestDoorIndex(current);
+    const targetIndex = nearestIndex + direction;
 
-    if (targetIndex < 0) return;
-
-    if (targetIndex >= DOOR_SNAP_POINTS.length) {
-      horizontalSlideCooldownUntil = performance.now() + 1050 + HORIZONTAL_SLIDE_COOLDOWN_MS;
-      autoSettleTo(HORIZONTAL_SLIDE_END, {
-        duration: 1.05,
-        ease: "sine.inOut",
-        markShowroomSettled: false
-      });
+    if (targetIndex < 0) {
+      snapToProgress(FIRST_DOOR_SETTLE_START, 0.72);
       return;
     }
 
-    if (!hasAutoSettledIntoShowroom && currentProgress < TURNTABLE_START) {
-      hasAutoSettledIntoShowroom = true;
+    if (targetIndex >= DOOR_SNAP_POINTS.length) {
+      snapToProgress(HORIZONTAL_SLIDE_END, 0.82);
+      return;
     }
 
-    doorSnapCooldownUntil = performance.now() + 860 + DOOR_SNAP_COOLDOWN_MS;
-    autoSettleTo(DOOR_SNAP_POINTS[targetIndex]!, {
-      duration: 0.86,
-      ease: "power3.inOut",
-      markShowroomSettled: true
-    });
+    snapToProgress(DOOR_SNAP_POINTS[targetIndex]!, 0.38, 0, 1050, true);
   };
 
   requestDoorSelect = (index: number) => {
-    if (!trigger || index < 0 || index >= DOOR_SNAP_POINTS.length) return;
+    const target = DOOR_SNAP_POINTS[index];
+    if (target === undefined) return;
 
-    if (!hasAutoSettledIntoShowroom && trigger.progress < TURNTABLE_START) {
-      hasAutoSettledIntoShowroom = true;
-    }
-
-    doorSnapCooldownUntil = performance.now() + 780 + DOOR_SNAP_COOLDOWN_MS;
-    autoSettleTo(DOOR_SNAP_POINTS[index]!, {
-      duration: 0.78,
-      ease: "power3.inOut",
-      markShowroomSettled: true
-    });
-  };
-
-  const shouldAutoSlideHorizontal = (direction: number) =>
-    Boolean(
-      trigger &&
-        direction > 0 &&
-        hasAutoSettledIntoShowroom &&
-        trigger.progress >= TURNTABLE_END - DOOR_SNAP_PAD &&
-        trigger.progress < HORIZONTAL_SLIDE_END
-    );
-
-  const autoSlideHorizontal = (event?: Event) => {
-    if (!trigger || !shouldAutoSlideHorizontal(1)) return false;
-
-    if (event) {
-      consumeScrollEvent(event);
-    }
-
-    horizontalSlideCooldownUntil = performance.now() + 1050 + HORIZONTAL_SLIDE_COOLDOWN_MS;
-    autoSettleTo(HORIZONTAL_SLIDE_END, {
-      duration: 1.05,
-      ease: "sine.inOut",
-      markShowroomSettled: false
-    });
-
-    return true;
-  };
-
-  const shouldReverseSlideHorizontal = (direction: number) =>
-    Boolean(
-      trigger &&
-        direction < 0 &&
-        hasAutoSettledIntoShowroom &&
-        trigger.progress > TURNTABLE_END + DOOR_SNAP_PAD &&
-        trigger.progress <= HORIZONTAL_SLIDE_END
-    );
-
-  const reverseSlideHorizontal = (event?: Event) => {
-    if (!entranceDoorOwnsScrollInput || !trigger || !shouldReverseSlideHorizontal(-1)) return false;
-
-    if (event) {
-      consumeScrollEvent(event);
-    }
-
-    horizontalSlideCooldownUntil = performance.now() + 2600 + HORIZONTAL_SLIDE_COOLDOWN_MS;
-    autoSettleTo(TURNTABLE_END, {
-      duration: 2.6,
-      ease: "sine.inOut"
-    });
-
-    return true;
-  };
-
-  const reverseSettleToEntrance = (event?: Event) => {
-    if (!trigger || !shouldReverseSettle(-1)) return false;
-
-    if (event) {
-      consumeScrollEvent(event);
-    }
-
-    doorSnapCooldownUntil = performance.now() + 1750;
-    autoSettleTo(FIRST_DOOR_SETTLE_START, {
-      duration: 1.55,
-      ease: "sine.inOut",
-      markShowroomSettled: false,
-      onComplete: () => {
-        hasAutoSettledIntoShowroom = false;
-      }
-    });
-
-    return true;
-  };
-
-  const takeOverSettle = (event?: Event) => {
-    if (event) {
-      consumeScrollEvent(event);
-    }
-    autoSettleTo(TURNTABLE_START);
-  };
-
-  const onSettleWheel = (event: WheelEvent) => {
-    if (!entranceDoorOwnsScrollInput) return;
-
-    if (isHorizontalSlideCoolingDown()) {
-      consumeScrollEvent(event);
-      return;
-    }
-
-    if (event.deltaY > 0 && autoSlideHorizontal(event)) {
-      return;
-    }
-
-    if (isDoorSnapCoolingDown()) {
-      consumeScrollEvent(event);
-      return;
-    }
-
-    if (isAutoSettling) {
-      takeOverSettle(event);
-      return;
-    }
-
-    if (snapDoor(event.deltaY, event)) {
-      return;
-    }
-
-    if (event.deltaY < 0 && reverseSettleToEntrance(event)) {
-      return;
-    }
-
-    if (event.deltaY < 0 && reverseSlideHorizontal(event)) {
-      return;
-    }
-
-    if (shouldTakeOverSettle(event.deltaY)) {
-      takeOverSettle(event);
-    }
-  };
-
-  const onSettleTouchStart = (event: TouchEvent) => {
-    lastTouchY = event.touches[0]?.clientY ?? 0;
-  };
-
-  const onSettleTouchMove = (event: TouchEvent) => {
-    if (!entranceDoorOwnsScrollInput) return;
-
-    const y = event.touches[0]?.clientY ?? lastTouchY;
-    const direction = lastTouchY - y;
-    lastTouchY = y;
-
-    if (isHorizontalSlideCoolingDown()) {
-      consumeScrollEvent(event);
-      return;
-    }
-
-    if (direction > 0 && autoSlideHorizontal(event)) {
-      return;
-    }
-
-    if (isDoorSnapCoolingDown()) {
-      consumeScrollEvent(event);
-      return;
-    }
-
-    if (isAutoSettling) {
-      takeOverSettle(event);
-      return;
-    }
-
-    if (snapDoor(direction, event)) {
-      return;
-    }
-
-    if (direction < 0 && reverseSettleToEntrance(event)) {
-      return;
-    }
-
-    if (direction < 0 && reverseSlideHorizontal(event)) {
-      return;
-    }
-
-    if (shouldTakeOverSettle(direction)) {
-      takeOverSettle(event);
-    }
-  };
-
-  const onSettleKeydown = (event: KeyboardEvent) => {
-    if (!entranceDoorOwnsScrollInput) return;
-
-    const forwardKeys = [" ", "ArrowDown", "PageDown", "End"];
-    const backwardKeys = ["ArrowUp", "PageUp", "Home"];
-    const direction = forwardKeys.includes(event.key)
-      ? 1
-      : backwardKeys.includes(event.key)
-        ? -1
-      : 0;
-
-    if (isHorizontalSlideCoolingDown()) {
-      consumeScrollEvent(event);
-      return;
-    }
-
-    if (direction > 0 && autoSlideHorizontal(event)) {
-      return;
-    }
-
-    if (isDoorSnapCoolingDown()) {
-      consumeScrollEvent(event);
-      return;
-    }
-
-    if (isAutoSettling) {
-      takeOverSettle(event);
-      return;
-    }
-
-    if (snapDoor(direction, event)) {
-      return;
-    }
-
-    if (direction < 0 && reverseSettleToEntrance(event)) {
-      return;
-    }
-
-    if (direction < 0 && reverseSlideHorizontal(event)) {
-      return;
-    }
-
-    if (shouldTakeOverSettle(direction)) {
-      takeOverSettle(event);
-    }
+    snapToProgress(target, 0.38, 0, 1050, true);
   };
 
   trigger = ScrollTrigger.create({
@@ -917,34 +689,32 @@ onMounted(() => {
     anticipatePin: 1,
     invalidateOnRefresh: true,
     onUpdate: (self) => {
-      if (isAutoSettling) return;
-
-      updateMaster(self.progress);
+      const progressDelta = self.progress - previousProgress;
+      previousProgress = self.progress;
 
       if (
-        self.direction > 0 &&
-        !isAutoSettling &&
-        !hasAutoSettledIntoShowroom &&
-        self.progress >= FIRST_DOOR_SETTLE_START &&
-        self.progress < TURNTABLE_START
+        isSnapScrolling &&
+        snapTargetProgress !== undefined &&
+        performance.now() - snapStartedAt > 160 &&
+        Math.sign(progressDelta) !== 0 &&
+        Math.sign(progressDelta) !== Math.sign(snapTargetProgress - self.progress)
       ) {
-        autoSettleTo(TURNTABLE_START);
+        cancelActiveSnap();
       }
 
-      if (self.direction < 0 && self.progress < FIRST_DOOR_SETTLE_START - 0.045) {
-        hasAutoSettledIntoShowroom = false;
+      if (isSnapScrolling && snapTargetProgress !== undefined && Math.abs(self.progress - snapTargetProgress) < 0.006) {
+        isSnapScrolling = false;
+        snapTargetProgress = undefined;
       }
+
+      updateMaster(self.progress);
+      lockTurntableDoor(self.progress, progressDelta);
+      scheduleIdleSnap(self);
     },
     onRefresh: (self) => {
       updateStagePosition();
       updateMaster(self.progress);
-    },
-    onLeave: () => {
-      entranceDoorOwnsScrollInput = false;
-      unlockInput?.();
-    },
-    onEnterBack: () => {
-      entranceDoorOwnsScrollInput = true;
+      previousProgress = self.progress;
     }
   });
 
@@ -968,10 +738,6 @@ onMounted(() => {
   requestAnimationFrame(runCopyReveal);
 
   window.addEventListener("resize", onResize);
-  window.addEventListener("wheel", onSettleWheel, { capture: true, passive: false });
-  window.addEventListener("touchstart", onSettleTouchStart, { capture: true, passive: true });
-  window.addEventListener("touchmove", onSettleTouchMove, { capture: true, passive: false });
-  window.addEventListener("keydown", onSettleKeydown, { capture: true });
 
   const onPageShow = () => {
     updateStagePosition();
@@ -981,14 +747,12 @@ onMounted(() => {
 
   teardown = () => {
     copyRevealTween?.kill();
-    settleTween?.kill();
-    unlockInput?.();
+    window.clearTimeout(snapIdleTimer);
+    window.clearTimeout(snapHoldTimer);
+    snapTargetProgress = undefined;
+    lenis?.start();
     trigger?.kill(true);
     window.removeEventListener("resize", onResize);
-    window.removeEventListener("wheel", onSettleWheel, { capture: true });
-    window.removeEventListener("touchstart", onSettleTouchStart, { capture: true });
-    window.removeEventListener("touchmove", onSettleTouchMove, { capture: true });
-    window.removeEventListener("keydown", onSettleKeydown, { capture: true });
     window.removeEventListener("pageshow", onPageShow);
     heroImage.removeEventListener("load", updateStagePosition);
     requestDoorStep = undefined;
@@ -1011,7 +775,10 @@ onBeforeUnmount(() => {
   <section
     ref="heroRef"
     class="entrance-door"
-    :class="{ 'entrance-door--showroom-active': isShowroomActive }"
+    :class="{
+      'entrance-door--showroom-active': isShowroomActive,
+      'entrance-door--showroom-ui-active': isShowroomUiActive
+    }"
     :aria-label="copy.sectionLabel"
   >
     <!-- SHOWROOM (her zaman arkada, opacity sabit) -->
