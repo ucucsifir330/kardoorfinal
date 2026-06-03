@@ -7,7 +7,10 @@
   --references-line: rgba(248, 243, 223, 0.28);
   --references-accent: #8fbf74;
   position: relative;
+  z-index: 3;
   background: var(--references-bg);
+  border-top-left-radius: clamp(3rem, 7vw, 7rem);
+  border-top-right-radius: clamp(3rem, 7vw, 7rem);
   color: var(--references-ink);
   overflow: clip;
 }
@@ -142,6 +145,8 @@
   object-fit: cover;
   opacity: 0;
   pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 .home-references-flip__final {

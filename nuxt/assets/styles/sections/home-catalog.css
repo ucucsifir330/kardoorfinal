@@ -1141,7 +1141,7 @@
   flex: 0 0 clamp(120px, 18vh, 220px);
 }
 .catalog-section {
-  position: relative !important;
+  position: relative;
   z-index: 2 !important;
   margin-bottom: clamp(150px, 16vh, 240px) !important;
 }
@@ -1169,7 +1169,7 @@
     0 36px 90px -56px rgba(0, 0, 0, 0.32) !important;
 }
 .catalog-section {
-  position: relative !important;
+  position: relative;
   z-index: 2 !important;
   overflow: visible !important;
   margin-bottom: clamp(190px, 19vh, 300px) !important;
@@ -1245,7 +1245,7 @@
   margin-bottom: clamp(155px, 15vh, 240px) !important;
 }
 .catalog-section {
-  position: relative !important;
+  position: relative;
   overflow: visible !important;
   z-index: 2 !important;
   margin-bottom: clamp(155px, 15vh, 240px) !important;
@@ -1277,7 +1277,7 @@
   margin: 0 0 clamp(180px, 18vh, 280px) !important;
   padding: 0 !important;
   overflow: hidden !important;
-  position: relative !important;
+  position: relative;
   z-index: auto !important;
 }
 .catalog-section::after {
@@ -1820,7 +1820,7 @@
   width: 10px !important;
 }
 .catalog-section {
-  position: relative !important;
+  position: relative;
   background: var(--bg-color) !important;
   margin-bottom: 0 !important;
 }
@@ -2004,17 +2004,22 @@
 .home-page .catalog-section {
   --catalog-content-left: clamp(34px, 3.55vw, 68px);
   --catalog-content-right: clamp(56px, 5.8vw, 112px);
-  --catalog-stage-top-radius: clamp(34px, 5.8vw, 72px);
+  --catalog-stage-overlap: clamp(3.5rem, 7vw, 7rem);
+  --catalog-stage-top-radius: clamp(3rem, 7vw, 7rem);
   --catalog-stage-line-track: #000;
   --catalog-stage-line-fill: #000;
   --catalog-stage-line-filter: none;
   --kardoor-line-left: 42px !important;
-  position: relative !important;
+  position: relative;
+  z-index: 2 !important;
   height: auto !important;
   min-height: 0 !important;
+  margin-top: calc(-1 * var(--catalog-stage-overlap)) !important;
   margin-bottom: 0 !important;
-  overflow: visible !important;
-  background: var(--entrance-handoff-bg, #eae8e8) !important;
+  overflow: hidden !important;
+  background: var(--catalog-stage-surface-bg, #f4f1ea) !important;
+  border-top-left-radius: var(--catalog-stage-top-radius) !important;
+  border-top-right-radius: var(--catalog-stage-top-radius) !important;
 }
 
 .home-page .catalog-section::before,
@@ -2030,8 +2035,8 @@
   display: block !important;
   overflow: hidden !important;
   background: var(--catalog-stage-surface-bg, #f4f1ea) !important;
-  border-top-left-radius: var(--catalog-stage-top-radius) !important;
-  border-top-right-radius: var(--catalog-stage-top-radius) !important;
+  border-top-left-radius: inherit !important;
+  border-top-right-radius: inherit !important;
 }
 
 .home-page .catalog-shell > .catalog-main {
@@ -2041,7 +2046,7 @@
   height: auto !important;
   display: block !important;
   overflow: visible !important;
-  padding: calc(clamp(86px, 9.6vh, 118px) + clamp(36px, 4vh, 52px) + clamp(24px, 2.8vh, 38px)) var(--catalog-content-right) calc(clamp(96px, 12vh, 150px) + clamp(36px, 4vh, 52px)) var(--catalog-content-left) !important;
+  padding: calc(clamp(86px, 9.6vh, 118px) + clamp(36px, 4vh, 52px) + clamp(24px, 2.8vh, 38px) + var(--catalog-stage-overlap)) var(--catalog-content-right) calc(clamp(96px, 12vh, 150px) + clamp(36px, 4vh, 52px)) var(--catalog-content-left) !important;
   background: var(--catalog-stage-main-bg, #f4f1ea) !important;
   scrollbar-width: none !important;
 }

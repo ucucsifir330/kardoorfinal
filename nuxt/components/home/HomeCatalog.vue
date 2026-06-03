@@ -19,9 +19,11 @@
           y2="80"
         >
           <stop offset="0" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
-          <stop offset="0.28" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.36" />
-          <stop offset="0.82" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
-          <stop offset="1" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
+          <stop offset="0.06" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.34" />
+          <stop offset="0.16" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
+          <stop offset="0.84" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
+          <stop offset="0.94" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.34" />
+          <stop offset="1" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
         </linearGradient>
       </defs>
       <path ref="catalogLinePathRef" class="catalog-structural-line-path" />
@@ -762,26 +764,27 @@ const updateCatalogLineGeometry = () => {
 
   const sectionRect = section.getBoundingClientRect();
   const firstRowRect = rowRefs.value[0]?.getBoundingClientRect();
+  const finalRowRect = rowRefs.value[rowRefs.value.length - 1]?.getBoundingClientRect();
   const width = sectionRect.width;
-  const height = sectionRect.height + Math.min(Math.max(window.innerHeight * 0.44, 520), 720);
+  const height = sectionRect.height;
   const lineX = Math.min(Math.max(window.innerWidth * 0.021875, 18), 42);
   const startY = firstRowRect
     ? firstRowRect.top - sectionRect.top + Math.min(Math.max(window.innerHeight * 0.012, 8), 16)
     : Math.min(Math.max(window.innerHeight * 0.14, 120), 170);
-  const radius = Math.min(Math.max(window.innerWidth * 0.016667, 28), 32);
-  const endY = height - radius - 2;
-  const endX = lineX + Math.min(Math.max(window.innerWidth * 0.16, 240), 306);
+  const endY = finalRowRect
+    ? Math.max(startY, finalRowRect.bottom - sectionRect.top)
+    : height;
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   if (gradient) {
     gradient.setAttribute("x1", `${lineX}`);
     gradient.setAttribute("x2", `${lineX}`);
     gradient.setAttribute("y1", `${startY}`);
-    gradient.setAttribute("y2", `${startY + Math.min(Math.max(window.innerHeight * 0.08, 58), 92)}`);
+    gradient.setAttribute("y2", `${endY}`);
   }
   path.setAttribute(
     "d",
-    `M ${lineX} ${startY} V ${endY - radius} Q ${lineX} ${endY} ${lineX + radius} ${endY} H ${endX}`
+    `M ${lineX} ${startY} V ${endY}`
   );
 
   catalogLinePathLength = path.getTotalLength();
