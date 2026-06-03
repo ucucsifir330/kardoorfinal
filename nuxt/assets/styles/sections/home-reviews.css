@@ -3,13 +3,13 @@
 .testimonial-wrapper {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-  height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   overflow: hidden;
   background-color: var(--catalog-stage-surface-bg, var(--bg-color));
   margin: 0;
+  padding: clamp(92px, 10vw, 148px) 0 clamp(150px, 15vw, 240px);
 }
 
 .title-area {
@@ -26,11 +26,11 @@
 }
 
 .rotating-title {
-  font-size: 6.5vw;
+  font-size: clamp(4rem, 5.45vw, 6.1rem);
   line-height: 1.05;
   color: #424346;
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
   position: relative;
   z-index: 2;
   margin: 0;
@@ -57,14 +57,14 @@
 }
 
 .rotating-text-wrapper {
-  height: 7.5vw;
-  background: #1B39BF;
+  height: clamp(4.5rem, 6.05vw, 6.75rem);
+  background: #1b39bf;
   background-size: 300% 300%;
-  border-radius: 42px;
+  border-radius: clamp(28px, 3.2vw, 44px);
   position: relative;
   display: block;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(3, 83, 164, 0.2);
+  box-shadow: 0 18px 44px rgba(27, 57, 191, 0.18);
   animation: gradientBG 6s ease infinite;
   transition: width var(--title-pill-transition-smooth), box-shadow var(--title-pill-transition-smooth);
 }
@@ -72,9 +72,9 @@
 .hidden-measure {
   position: absolute;
   visibility: hidden;
-  font-size: 6.5vw;
+  font-size: clamp(4rem, 5.45vw, 6.1rem);
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
   white-space: nowrap;
   padding: 0 2vw;
   pointer-events: none;
@@ -97,9 +97,9 @@
   position: absolute;
   color: #EAE8E8;
   white-space: nowrap;
-  font-size: 6.5vw;
+  font-size: clamp(4rem, 5.45vw, 6.1rem);
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
   line-height: 1;
   width: 100%;
   height: 100%;
@@ -149,10 +149,10 @@
 
 .carousel-area {
   width: 100%;
-  padding-left: 43%;
+  padding-left: 40%;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: clamp(1.35rem, 2vw, 2rem);
 }
 
 .track {
@@ -167,7 +167,7 @@
 
 .track-inner {
   display: flex;
-  gap: 2rem;
+  gap: clamp(1rem, 1.5vw, 1.5rem);
   width: max-content;
   will-change: transform;
 }
@@ -175,14 +175,14 @@
 .review-card {
   position: relative;
   background: #ffffff;
-  border-radius: 16px;
-  padding: 2.5rem 2rem;
-  width: 450px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  border-radius: 14px;
+  padding: clamp(1.55rem, 2vw, 2rem) clamp(1.35rem, 1.7vw, 1.75rem);
+  width: clamp(340px, 27vw, 410px);
+  box-shadow: 0 16px 44px rgba(0,0,0,0.035);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 2rem;
+  gap: clamp(1.35rem, 1.8vw, 1.75rem);
   flex-shrink: 0;
   user-select: none;
   border: 1px solid rgba(0,0,0,0.03);
@@ -193,7 +193,7 @@
 }
 
 .review-card:hover {
-  --scale: 1.08;
+  --scale: 1.045;
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.9),
     0 0 32px rgba(255,255,255,0.95),
@@ -229,8 +229,8 @@
 }
 
 .quote {
-  font-size: 1.25rem;
-  line-height: 1.6;
+  font-size: clamp(1.02rem, 1.08vw, 1.16rem);
+  line-height: 1.58;
   color: var(--text-primary);
   margin: 0;
 }
@@ -252,11 +252,133 @@
 .name {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 1.1rem;
+  font-size: clamp(0.98rem, 0.95vw, 1.05rem);
 }
 
 .rating {
   color: #FFB800;
-  font-size: 1.3rem;
-  letter-spacing: 2px;
+  font-size: clamp(1.08rem, 1.05vw, 1.22rem);
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 1024px) {
+  .testimonial-wrapper {
+    min-height: auto;
+    align-items: flex-start;
+    padding: 112px 0 180px;
+  }
+
+  .title-area {
+    position: relative;
+    width: 100%;
+    height: auto;
+    align-items: flex-start;
+    padding: 0 clamp(18px, 4vw, 40px);
+  }
+
+  .rotating-title {
+    font-size: clamp(3.25rem, 8.4vw, 5.2rem);
+  }
+
+  .hidden-measure,
+  .word-slide-item {
+    font-size: clamp(3.25rem, 8.4vw, 5.2rem);
+  }
+
+  .rotating-text-wrapper {
+    height: clamp(3.65rem, 9.1vw, 5.7rem);
+  }
+
+  .gradient-mask {
+    display: none;
+  }
+
+  .carousel-area {
+    position: relative;
+    z-index: 2;
+    margin-top: clamp(42px, 7vw, 72px);
+    padding-left: 0;
+    gap: 1rem;
+  }
+
+  .track {
+    padding-inline: clamp(18px, 4vw, 40px);
+  }
+
+  .review-card {
+    width: min(74vw, 340px);
+    padding: 1.45rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .testimonial-wrapper {
+    flex-direction: column;
+    padding: 88px 0 150px;
+  }
+
+  .title-area {
+    padding: 0 20px;
+  }
+
+  .rotating-title {
+    width: min(100%, 360px);
+    font-size: clamp(2.75rem, 10.8vw, 3.35rem);
+    line-height: 1.04;
+  }
+
+  .top-row {
+    gap: clamp(8px, 2.2vw, 12px) !important;
+  }
+
+  .hidden-measure,
+  .word-slide-item {
+    font-size: clamp(2.75rem, 10.8vw, 3.35rem);
+  }
+
+  .rotating-text-wrapper {
+    height: clamp(3rem, 12vw, 3.7rem);
+    border-radius: 18px;
+  }
+
+  .carousel-area {
+    margin-top: 34px;
+    gap: 0.85rem;
+  }
+
+  .track {
+    padding-inline: 20px;
+  }
+
+  .track-inner {
+    gap: 0.85rem;
+  }
+
+  .review-card {
+    width: min(72vw, 280px);
+    min-height: 220px;
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .review-card:hover {
+    --scale: 1;
+  }
+
+  .quote {
+    font-size: 0.96rem;
+    line-height: 1.52;
+  }
+
+  .author {
+    padding-top: 1rem;
+  }
+
+  .name {
+    font-size: 0.95rem;
+  }
+
+  .rating {
+    font-size: 1.02rem;
+  }
 }
