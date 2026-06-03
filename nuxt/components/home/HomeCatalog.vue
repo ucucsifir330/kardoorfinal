@@ -829,6 +829,26 @@ const updateCatalogLineProgress = () => {
 
 const requestCatalogLineProgress = () => {
   if (catalogLineFrame) return;
+
+  const section = catalogSectionRef.value;
+  if (section) {
+    const rect = section.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || 1;
+
+    if (rect.bottom < -240) {
+      if (catalogLinePathLength && catalogLinePathRef.value) {
+        catalogLinePathRef.value.style.strokeDashoffset = "0";
+      }
+      if (!catalogHeadingLineConnected) {
+        catalogHeadingLineConnected = true;
+        window.dispatchEvent(new CustomEvent("kardoor:heading-line-connected"));
+      }
+      return;
+    }
+
+    if (rect.top > viewportHeight + 240) return;
+  }
+
   catalogLineFrame = requestAnimationFrame(updateCatalogLineProgress);
 };
 
