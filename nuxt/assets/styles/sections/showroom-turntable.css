@@ -125,6 +125,7 @@
 
 .showroom-turntable__backdrop-text {
   --backdrop-scale: 1;
+  --backdrop-accent-bleed: 0.16em;
 
   font-family: var(--font-display);
   font-size: clamp(
@@ -134,15 +135,20 @@
   );
   font-weight: 800;
   letter-spacing: -0.05em;
-  line-height: 0.85;
+  line-height: 1.04;
   color: var(--st-backdrop-color);
   white-space: nowrap;
-  clip-path: inset(0 var(--showroom-text-clip, 0%) 0 0);
+  clip-path: inset(
+    calc(-1 * var(--backdrop-accent-bleed))
+    var(--showroom-text-clip, 0%)
+    calc(-1 * var(--backdrop-accent-bleed))
+    0
+  );
   opacity: var(--backdrop-opacity, var(--showroom-backdrop-opacity, 1));
   overflow: visible;
   transform: translate3d(
     calc(var(--showroom-text-x, 0px) + var(--backdrop-x, 0px)),
-    var(--backdrop-y, -4vh),
+    calc(var(--backdrop-y, -4vh) - var(--backdrop-accent-bleed) / 2),
     0
   );
   user-select: none;
@@ -169,6 +175,9 @@
 
 .showroom-turntable__backdrop-marquee-group span {
   display: inline-flex;
+  align-items: center;
+  line-height: 1.04;
+  padding-block: var(--backdrop-accent-bleed);
 }
 
 .showroom-turntable__backdrop-marquee-group span::after {
