@@ -1,4 +1,21 @@
 
+.home-catalog-reference-stack {
+  position: relative;
+  isolation: isolate;
+  background: var(--catalog-stage-surface-bg, var(--bg-color));
+}
+
+.home-catalog-reference-stack__catalog {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+}
+
+.home-catalog-reference-stack__references {
+  position: relative;
+  z-index: 2;
+}
+
 .home-references-flip {
   --references-bg: #101312;
   --references-ink: #f8f3df;
@@ -6,11 +23,9 @@
   --references-soft: rgba(248, 243, 223, 0.18);
   --references-line: rgba(248, 243, 223, 0.28);
   --references-accent: #8fbf74;
-  --references-overlap: clamp(72px, 8vw, 136px);
-  --references-top-radius: clamp(48px, 5vw, 96px);
+  --references-top-radius: clamp(7rem, 18vw, 18rem);
   position: relative;
   z-index: 20;
-  margin-top: calc(-1 * var(--references-overlap));
   background: var(--references-bg);
   border-top-left-radius: var(--references-top-radius);
   border-top-right-radius: var(--references-top-radius);

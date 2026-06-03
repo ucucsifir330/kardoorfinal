@@ -1,9 +1,16 @@
 <template>
   <EntranceDoor />
-  <HomeCatalog />
-  <section class="ada-team-section">
-    <HomeReferences />
-    <HomeManifesto />
+  <section class="home-catalog-reference-stack">
+    <div class="home-catalog-reference-stack__catalog">
+      <HomeCatalog />
+    </div>
+
+    <div class="home-catalog-reference-stack__references">
+      <section class="ada-team-section">
+        <HomeReferences />
+        <HomeManifesto />
+      </section>
+    </div>
   </section>
   <HomeReviews
     :dynamic-gap="dynamicGap"
