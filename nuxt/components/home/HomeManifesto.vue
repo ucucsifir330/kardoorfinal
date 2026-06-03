@@ -1,47 +1,4 @@
 <template>
-  <div ref="ctaLineStageRef" class="ada-manifesto-line-stage">
-    <svg
-      ref="ctaLineSvgRef"
-      class="ada-structural-lines"
-      aria-hidden="true"
-      focusable="false"
-      preserveAspectRatio="none"
-    >
-      <path ref="ctaBottomLineRef" class="ada-structural-line-path ada-structural-line-path--bottom" />
-    </svg>
-    <div ref="ctaSpacerRef" class="ada-manifesto-spacer">
-    <div class="ada-spacer-copy">
-      <h2 class="ada-config-heading" aria-label="Kapınızı yalnızca seçmeyin. Kurgulayın.">
-        <span class="ada-heading-line"><span class="ada-heading-k">K</span>apınızı yalnızca seçmeyin.</span>
-        <span class="ada-heading-line">Kurgulayın.</span>
-      </h2>
-      <p class="ada-spacer-manifesto-copy">
-        Ege Kardoor kapı konfigüratörüyle seri, yüzey, renk, cam, kol ve detay seçeneklerini kendi projenize göre
-        deneyimleyin. Beğendiğiniz tasarımı bizimle paylaşın, showroom veya proje ekibimiz sizin için netleştirsin.
-      </p>
-      <div class="ada-spacer-cta-group" aria-label="Konfigüratör ve koleksiyon bağlantıları">
-        <a href="/catalog" class="ada-manifesto-cta ada-spacer-cta" aria-label="Konfigüratörü deneyin">
-          <span class="ada-manifesto-cta-text" data-text="Konfigüratörü Deneyin">Konfigüratörü Deneyin</span>
-          <span class="ada-manifesto-cta-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-              <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-            </svg>
-          </span>
-        </a>
-        <a href="/catalog" class="ada-manifesto-cta ada-spacer-cta ada-spacer-cta--icon-left" aria-label="Koleksiyonu keşfet">
-          <span class="ada-manifesto-cta-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-              <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-            </svg>
-          </span>
-          <span class="ada-manifesto-cta-text" data-text="Koleksiyonu Keşfet">Koleksiyonu Keşfet</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
   <div ref="manifestoContainerRef" class="ada-manifesto-container">
     <div class="ada-scroll-line-wrapper" aria-hidden="true"></div>
     <div class="ada-manifesto-content">
@@ -61,7 +18,6 @@
   </div>
 
   <slot name="before-references-title" />
-  </div>
 
   <div class="ada-title-container">
     <h4 class="ada-giant-title">

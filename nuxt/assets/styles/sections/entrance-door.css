@@ -107,6 +107,12 @@
 }
 
 .entrance-door__next-panel {
+  --cta-stage-width: min(100vw, 1920px);
+  --cta-stage-left: calc((100vw - var(--cta-stage-width)) / 2);
+  --cta-title-y: clamp(132px, 18svh, 190px);
+  --cta-description-y: clamp(330px, 44svh, 410px);
+  --cta-button-y: clamp(540px, 66svh, 610px);
+
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -117,9 +123,15 @@
       #f4f1e9 0%,
       #ece9e1 60%
     );
-  pointer-events: none;
+  pointer-events: auto;
   overflow: hidden;
   will-change: transform;
+}
+
+.entrance-door__cta-panel {
+  position: relative;
+  width: 100vw;
+  height: 100%;
 }
 
 .entrance-door__next-panel::before,

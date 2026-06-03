@@ -8,6 +8,22 @@
       focusable="false"
       preserveAspectRatio="none"
     >
+      <defs>
+        <linearGradient
+          id="catalog-structural-line-gradient"
+          ref="catalogLineGradientRef"
+          gradientUnits="userSpaceOnUse"
+          x1="0"
+          x2="0"
+          y1="0"
+          y2="80"
+        >
+          <stop offset="0" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
+          <stop offset="0.28" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.36" />
+          <stop offset="0.82" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
+          <stop offset="1" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
+        </linearGradient>
+      </defs>
       <path ref="catalogLinePathRef" class="catalog-structural-line-path" />
     </svg>
     <div class="catalog-shell">
@@ -30,9 +46,6 @@
             'is-liquid-active': activeLiquidCard === `block-${block.index}`,
             'is-liquid-expanded': liquidMenuExpanded[`block-${block.index}`],
           }"
-          @mousemove="handleLiquidMouseMove($event, `block-${block.index}`)"
-          @mouseenter="handleLiquidEnter(`block-${block.index}`, $event)"
-          @mouseleave="handleLiquidLeave(`block-${block.index}`)"
         >
           <div class="catalog-row-info">
             <transition @before-enter="catalogBeforeEnter" @enter="catalogEnter" :css="false">
@@ -79,6 +92,7 @@
 
           <div
             class="catalog-card liquid-card"
+            @mousemove="handleLiquidCardMouseMove($event, `block-${block.index}`)"
           >
             <div class="catalog-card-header">
               <h3 class="catalog-card-title">
@@ -170,30 +184,39 @@
               :class="{ 'is-expanded': liquidMenuExpanded[`block-${block.index}`] }"
             >
               <div
-                class="hamburger"
-                :ref="el => setHamburgerRef(el, `block-${block.index}`)"
-                @mouseenter="expandLiquidMenu(`block-${block.index}`)"
+                class="liquid-edge-control"
               >
-                <div class="line"></div>
-                <div class="line"></div>
-                <div class="line"></div>
-              </div>
+                <svg
+                  class="liquid-blob"
+                  :ref="el => setBlobContainerRef(el, `block-${block.index}`)"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    class="liquid-blob-path"
+                    :ref="el => setBlobPathRef(el, `block-${block.index}`)"
+                  />
+                </svg>
 
-              <svg
-                class="liquid-blob"
-                :ref="el => setBlobContainerRef(el, `block-${block.index}`)"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  class="liquid-blob-path"
-                  :ref="el => setBlobPathRef(el, `block-${block.index}`)"
-                />
-              </svg>
+                <div
+                  class="liquid-hover-zone"
+                  @mousemove="handleLiquidMouseMove($event, `block-${block.index}`)"
+                  @mouseenter="handleLiquidEnter(`block-${block.index}`, $event)"
+                  @mouseleave="handleLiquidLeave(`block-${block.index}`)"
+                  @click.stop="handleLiquidMenuClick($event, `block-${block.index}`)"
+                >
+                  <div
+                    class="hamburger"
+                    :ref="el => setHamburgerRef(el, `block-${block.index}`)"
+                  >
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                  </div>
+                </div>
+              </div>
 
               <div
                 class="liquid-menu-inner"
-                @mouseenter="expandLiquidMenu(`block-${block.index}`)"
-                @mouseleave="collapseLiquidMenu(`block-${block.index}`)"
                 @click.stop
               >
                 <ul class="liquid-actions">
@@ -406,6 +429,7 @@ const mainRef = ref<HTMLElement | null>(null);
 const rowRefs = ref<HTMLElement[]>([]);
 const catalogLineSvgRef = ref<SVGSVGElement | null>(null);
 const catalogLinePathRef = ref<SVGPathElement | null>(null);
+const catalogLineGradientRef = ref<SVGLinearGradientElement | null>(null);
 
 let catalogRowsFrame = 0;
 let catalogObserver: IntersectionObserver | null = null;
@@ -426,12 +450,30 @@ const setHamburgerRef = (el: any, id: string) => { if (el) hamburgers.value[id] 
 
 let liquidRaf: number | null = null;
 let l_x = 0, l_y = 0;
-let l_curveX = 0, l_curveY = 0;
+let l_pull = 0;
+let l_curveX = 60, l_curveY = 0;
 let l_targetX = 0;
 let l_xIter = 0, l_yIter = 0;
-let l_height = 320;
-const hoverZone = 140; // Geniş karta göre tetikleme alanı artırıldı
-const expandAmount = 20;
+let l_height = 190;
+const blobBaseWidth = 60;
+const blobHoverWidth = 34;
+const blobRestPath = (height: number) => `M${blobBaseWidth},${height} H0 V0 h${blobBaseWidth} V${height} z`;
+const clampLiquidPull = (value: number) => Math.min(Math.max(value, 0), 1);
+
+const resetLiquidShape = (id: string) => {
+  const path = blobPaths.value[id];
+  const container = blobContainers.value[id];
+  const hamburger = hamburgers.value[id];
+  const height = container?.getBoundingClientRect().height || l_height;
+
+  l_pull = 0;
+  if (path) path.setAttribute('d', blobRestPath(height));
+  if (container) container.style.width = `${blobBaseWidth}px`;
+  if (hamburger) {
+    hamburger.style.setProperty('--hamburger-shift', '0px');
+    hamburger.style.setProperty('--hamburger-lift', '0px');
+  }
+};
 
 const easeOutExpo = (currentIteration: number, startValue: number, changeInValue: number, totalIterations: number) => {
   return changeInValue * (-Math.pow(2, -10 * currentIteration / totalIterations) + 1) + startValue;
@@ -453,61 +495,68 @@ const updateLiquidSvg = () => {
     return;
   }
 
-  if (Math.abs(l_curveX - l_x) < 1) {
-    l_xIter = 0;
-  } else {
-    if (liquidMenuExpanded.value[id]) {
-      l_targetX = 0;
-    } else if (l_x > hoverZone) {
-      l_targetX = 0;
-    } else {
-      l_xIter = 0;
-      l_targetX = ((60 + expandAmount) / 100) * (hoverZone - l_x);
-    }
-    l_xIter++;
+  if (liquidMenuExpanded.value[id]) {
+    resetLiquidShape(id);
+    liquidRaf = null;
+    return;
   }
 
+  l_targetX = blobBaseWidth + blobHoverWidth * l_pull;
+
+  if (Math.abs(l_curveX - l_targetX) < 1) l_xIter = 0;
+  else l_xIter++;
+
   // Vertical tension physics
-  if (Math.abs(l_curveY - l_y) < 1) {
-    l_yIter = 0;
-  } else {
-    l_yIter = 0;
-    l_yIter++;
-  }
+  if (Math.abs(l_curveY - l_y) < 1) l_yIter = 0;
+  else l_yIter++;
 
   l_curveX = easeOutExpo(l_xIter, l_curveX, l_targetX - l_curveX, 100);
   l_curveY = easeOutExpo(l_yIter, l_curveY, l_y - l_curveY, 100);
 
-  const anchorDistance = 180; // Geniş karta göre esneme boyutu artırıldı
-  const curviness = anchorDistance - 40;
-  const safeCurveY = Math.min(Math.max(l_curveY, anchorDistance), l_height - anchorDistance * 2);
+  const anchorDistance = Math.min(76, Math.max(62, l_height * 0.34));
+  const curviness = anchorDistance * 0.56;
+  const safeCurveY = Math.min(Math.max(l_curveY, anchorDistance), l_height - anchorDistance);
+  const shoulderTop = safeCurveY - anchorDistance;
+  const shoulderBottom = safeCurveY + anchorDistance;
 
-  const newCurve = `M60,${l_height}H0V0h60v${safeCurveY - anchorDistance}c0,${curviness},${l_curveX},${curviness},${l_curveX},${anchorDistance}S60,${safeCurveY},60,${safeCurveY + anchorDistance * 2}V${l_height}z`;
+  const newCurve = `M0,0H${blobBaseWidth}V${shoulderTop}C${blobBaseWidth},${shoulderTop + curviness} ${l_curveX},${safeCurveY - curviness} ${l_curveX},${safeCurveY}C${l_curveX},${safeCurveY + curviness} ${blobBaseWidth},${shoulderBottom - curviness} ${blobBaseWidth},${shoulderBottom}V${l_height}H0Z`;
 
   path.setAttribute('d', newCurve);
-  container.style.width = `${l_curveX + 60}px`;
-  hamburger.style.transform = `translate(${-l_curveX}px, ${safeCurveY - l_height / 2}px)`;
+  container.style.width = `${Math.max(blobBaseWidth, l_curveX)}px`;
+  const curvePull = clampLiquidPull((l_curveX - blobBaseWidth) / blobHoverWidth);
+  const hamburgerShift = curvePull * 11;
+  const hamburgerLift = curvePull * -0.8;
+  hamburger.style.setProperty('--hamburger-shift', `${hamburgerShift}px`);
+  hamburger.style.setProperty('--hamburger-lift', `${hamburgerLift}px`);
 
   liquidRaf = requestAnimationFrame(updateLiquidSvg);
 };
 
 const handleLiquidMouseMove = (e: MouseEvent, id: string) => {
+  if (liquidMenuExpanded.value[id]) {
+    resetLiquidShape(id);
+    return;
+  }
+
   const target = e.currentTarget as HTMLElement;
-  const card = target.classList.contains("catalog-card")
-    ? target
-    : target.querySelector<HTMLElement>(".catalog-card.liquid-card");
-  if (!card) return;
-  const rect = card.getBoundingClientRect();
-  l_x = Math.max(0, rect.right - e.clientX);
-  l_y = Math.max(0, e.clientY - rect.top);
-  l_height = rect.height;
+  const container = blobContainers.value[id];
+  const hamburger = hamburgers.value[id];
+  if (!container) return;
+  const blobRect = container.getBoundingClientRect();
+  const centerX = hamburger
+    ? hamburger.getBoundingClientRect().left + hamburger.getBoundingClientRect().width / 2
+    : target.getBoundingClientRect().left + target.getBoundingClientRect().width / 2;
+  l_x = e.clientX - centerX;
+  l_pull = clampLiquidPull(l_x / 72);
+  l_y = Math.max(0, Math.min(blobRect.height, e.clientY - blobRect.top));
+  l_height = blobRect.height;
 
   if (activeLiquidCard.value !== id) {
     activeLiquidCard.value = id;
     l_curveY = l_y;
     l_xIter = 0;
     l_yIter = 0;
-    l_curveX = 0;
+    l_curveX = blobBaseWidth;
   }
 
   if (!liquidRaf) {
@@ -516,27 +565,48 @@ const handleLiquidMouseMove = (e: MouseEvent, id: string) => {
 };
 
 const handleLiquidEnter = (id: string, e: MouseEvent) => {
-  activeLiquidCard.value = id;
-  liquidMenuExpanded.value[id] = false;
-  const target = e.currentTarget as HTMLElement;
-  const card = target.classList.contains("catalog-card")
-    ? target
-    : target.querySelector<HTMLElement>(".catalog-card.liquid-card");
+  if (liquidMenuExpanded.value[id]) {
+    resetLiquidShape(id);
+    return;
+  }
 
-  if (card) {
-    const rect = card.getBoundingClientRect();
+  activeLiquidCard.value = id;
+  const container = blobContainers.value[id];
+
+  if (container) {
+    const rect = container.getBoundingClientRect();
     l_height = rect.height;
-    l_y = Math.max(0, e.clientY - rect.top);
+    l_y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
     l_curveY = l_y;
   }
 
   l_xIter = 0;
   l_yIter = 0;
-  l_curveX = 0;
+  l_pull = 0;
+  l_curveX = blobBaseWidth;
 
   if (!liquidRaf) {
     liquidRaf = requestAnimationFrame(updateLiquidSvg);
   }
+};
+
+const handleLiquidCardMouseMove = (e: MouseEvent, id: string) => {
+  const target = e.target as HTMLElement;
+  if (target.closest(".liquid-menu, .hamburger")) return;
+
+  const card = e.currentTarget as HTMLElement;
+  const rect = card.getBoundingClientRect();
+  const distanceFromRight = rect.right - e.clientX;
+
+  if (distanceFromRight > 320) {
+    liquidMenuExpanded.value[id] = false;
+  }
+};
+
+const handleLiquidMenuClick = (e: MouseEvent, id: string) => {
+  const target = e.target as HTMLElement;
+  if (target.closest(".liquid-menu-inner")) return;
+  toggleLiquidMenu(id);
 };
 
 const handleLiquidLeave = (id: string) => {
@@ -547,19 +617,24 @@ const handleLiquidLeave = (id: string) => {
       liquidRaf = null;
     }
 
-    const path = blobPaths.value[id];
-    const container = blobContainers.value[id];
-    const hamburger = hamburgers.value[id];
-
-    if (path) path.setAttribute('d', `M60,${l_height} H0 V0 h60 V${l_height} z`);
-    if (container) container.style.width = '60px';
-    if (hamburger) hamburger.style.transform = `translate(0px, 0px)`;
+    resetLiquidShape(id);
   }
-  liquidMenuExpanded.value[id] = false;
 };
 
 const expandLiquidMenu = (id: string) => { liquidMenuExpanded.value[id] = true; };
 const collapseLiquidMenu = (id: string) => { liquidMenuExpanded.value[id] = false; };
+const toggleLiquidMenu = (id: string) => {
+  liquidMenuExpanded.value[id] = !liquidMenuExpanded.value[id];
+
+  if (liquidMenuExpanded.value[id]) {
+    activeLiquidCard.value = id;
+    if (liquidRaf) {
+      cancelAnimationFrame(liquidRaf);
+      liquidRaf = null;
+    }
+    resetLiquidShape(id);
+  }
+};
 // --- END LIQUID MENU LOGIC ---
 
 
@@ -681,28 +756,32 @@ const updateCatalogLineGeometry = () => {
   const section = catalogSectionRef.value;
   const svg = catalogLineSvgRef.value;
   const path = catalogLinePathRef.value;
+  const gradient = catalogLineGradientRef.value;
 
   if (!section || !svg || !path) return;
 
   const sectionRect = section.getBoundingClientRect();
-  const titleRect = catalogTitleRef.value?.getBoundingClientRect();
+  const firstRowRect = rowRefs.value[0]?.getBoundingClientRect();
   const width = sectionRect.width;
   const height = sectionRect.height + Math.min(Math.max(window.innerHeight * 0.44, 520), 720);
   const lineX = Math.min(Math.max(window.innerWidth * 0.021875, 18), 42);
-  const startX = titleRect
-    ? titleRect.left - sectionRect.left
-    : lineX + Math.min(Math.max(window.innerWidth * 0.22, 280), 420);
-  const startY = titleRect
-    ? titleRect.top - sectionRect.top - Math.min(Math.max(window.innerHeight * 0.018, 14), 24)
+  const startY = firstRowRect
+    ? firstRowRect.top - sectionRect.top + Math.min(Math.max(window.innerHeight * 0.012, 8), 16)
     : Math.min(Math.max(window.innerHeight * 0.14, 120), 170);
   const radius = Math.min(Math.max(window.innerWidth * 0.016667, 28), 32);
   const endY = height - radius - 2;
   const endX = lineX + Math.min(Math.max(window.innerWidth * 0.16, 240), 306);
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  if (gradient) {
+    gradient.setAttribute("x1", `${lineX}`);
+    gradient.setAttribute("x2", `${lineX}`);
+    gradient.setAttribute("y1", `${startY}`);
+    gradient.setAttribute("y2", `${startY + Math.min(Math.max(window.innerHeight * 0.08, 58), 92)}`);
+  }
   path.setAttribute(
     "d",
-    `M ${startX} ${startY} H ${lineX + radius} Q ${lineX} ${startY} ${lineX} ${startY + radius} V ${endY - radius} Q ${lineX} ${endY} ${lineX + radius} ${endY} H ${endX}`
+    `M ${lineX} ${startY} V ${endY - radius} Q ${lineX} ${endY} ${lineX + radius} ${endY} H ${endX}`
   );
 
   catalogLinePathLength = path.getTotalLength();
