@@ -129,7 +129,7 @@
   justify-content: center;
   gap: clamp(14px, 1.35vw, 22px);
   height: clamp(48px, 3.8vw, 62px);
-  margin-top: clamp(64px, 5.2vw, 94px);
+  margin-top: clamp(88px, 6.8vw, 124px);
   overflow: hidden;
   border-radius: 999px;
   padding: 0 clamp(18px, 1.45vw, 26px) 0 clamp(22px, 1.8vw, 34px);
@@ -1463,7 +1463,7 @@ span.ada-brand-logo {
 
   .ada-manifesto-cta {
     height: 48px;
-    margin-top: 44px;
+    margin-top: 62px;
     padding: 0 18px 0 24px;
   }
 

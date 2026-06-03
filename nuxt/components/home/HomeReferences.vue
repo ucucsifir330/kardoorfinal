@@ -1,11 +1,30 @@
 <template>
   <section ref="sectionRef" class="home-references-flip" aria-labelledby="home-references-title">
-    <img
-      ref="imageRef"
-      src="/images/homenight.jpeg"
-      alt="Kardoor dis cephe referans gorseli"
-      class="home-references-flip__image"
-    >
+    <div ref="mediaRef" class="home-references-flip__media">
+      <iframe
+        v-if="isDocumentaryStarted"
+        class="home-references-flip__video"
+        :src="documentaryYoutubeEmbedUrl"
+        title="Ege Kardoor kurumsal belgesel"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+      ></iframe>
+      <button
+        v-if="!isDocumentaryStarted"
+        type="button"
+        class="home-references-flip__play"
+        :style="{ '--references-video-poster': `url(${documentaryYoutubePosterUrl})` }"
+        aria-label="Kurumsal belgeseli oynat"
+        @click="startDocumentary"
+      >
+        <span class="home-references-flip__play-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor" />
+          </svg>
+        </span>
+        <span class="home-references-flip__play-text">Watch Intro</span>
+      </button>
+    </div>
 
     <section class="home-references-flip__intro">
       <p class="home-references-flip__eyebrow">KURUMSAL BELGESEL</p>
@@ -17,9 +36,6 @@
         Ege Kardoor’un üretim felsefesi. Ham çeliğin, yüksek mühendislik ve
         tasarım vizyonuyla premium bir mimari elemente dönüşme serüveni.
       </p>
-      <div class="home-references-flip__scroll-hint" aria-hidden="true">
-        <span></span>
-      </div>
     </section>
 
     <section ref="initialRef" class="home-references-flip__panel home-references-flip__initial">
@@ -48,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { gsap as GsapNamespace } from "gsap";
 
 const sectionRef = ref<HTMLElement | null>(null);
@@ -56,19 +72,55 @@ const initialRef = ref<HTMLElement | null>(null);
 const finalRef = ref<HTMLElement | null>(null);
 const startMarkerRef = ref<HTMLElement | null>(null);
 const finalMarkerRef = ref<HTMLElement | null>(null);
-const imageRef = ref<HTMLImageElement | null>(null);
+const mediaRef = ref<HTMLElement | null>(null);
+const isDocumentaryStarted = ref(false);
+const documentaryYoutubeId = "yiZm36w4qiQ";
+const documentaryYoutubePosterUrl = `https://i.ytimg.com/vi/${documentaryYoutubeId}/maxresdefault.jpg`;
+const documentaryYoutubeEmbedUrl = computed(() => {
+  const params = new URLSearchParams({
+    autoplay: "1",
+    controls: "0",
+    disablekb: "1",
+    fs: "0",
+    iv_load_policy: "3",
+    modestbranding: "1",
+    playsinline: "1",
+    rel: "0"
+  });
+
+  return `https://www.youtube.com/embed/${documentaryYoutubeId}?${params.toString()}`;
+});
 
 let flipContext: ReturnType<typeof GsapNamespace.context> | null = null;
 let resizeHandler: (() => void) | null = null;
+let documentaryStartScrollY = 0;
+
+const stopDocumentary = () => {
+  isDocumentaryStarted.value = false;
+  documentaryStartScrollY = 0;
+};
+
+const startDocumentary = () => {
+  documentaryStartScrollY = window.scrollY;
+  isDocumentaryStarted.value = true;
+};
+
+const handleDocumentaryScroll = () => {
+  if (!isDocumentaryStarted.value) return;
+
+  if (Math.abs(window.scrollY - documentaryStartScrollY) > 90) {
+    stopDocumentary();
+  }
+};
 
 const setupFlip = async () => {
   const section = sectionRef.value;
   const initial = initialRef.value;
   const final = finalRef.value;
   const finalMarker = finalMarkerRef.value;
-  const image = imageRef.value;
+  const media = mediaRef.value;
 
-  if (!section || !initial || !final || !finalMarker || !image) return;
+  if (!section || !initial || !final || !finalMarker || !media) return;
 
   const [{ gsap }, { ScrollTrigger }] = await Promise.all([
     import("gsap"),
@@ -93,10 +145,10 @@ const setupFlip = async () => {
     flipContext?.revert();
 
     flipContext = gsap.context(() => {
-      if (!imageRef.value || !startMarkerRef.value || !finalMarkerRef.value || !initialRef.value || !finalRef.value) return;
+      if (!mediaRef.value || !startMarkerRef.value || !finalMarkerRef.value || !initialRef.value || !finalRef.value) return;
 
       gsap.fromTo(
-        imageRef.value,
+        mediaRef.value,
         {
           autoAlpha: 1,
           height: () => getBounds(startMarkerRef.value as HTMLElement).height,
@@ -136,6 +188,8 @@ onMounted(() => {
   nextTick(() => {
     setupFlip();
   });
+
+  window.addEventListener("scroll", handleDocumentaryScroll, { passive: true });
 });
 
 onBeforeUnmount(() => {
@@ -146,5 +200,6 @@ onBeforeUnmount(() => {
 
   flipContext?.revert();
   flipContext = null;
+  window.removeEventListener("scroll", handleDocumentaryScroll);
 });
 </script>

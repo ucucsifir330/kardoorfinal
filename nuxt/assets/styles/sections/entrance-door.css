@@ -137,6 +137,7 @@
 }
 
 .entrance-door__cta-path {
+  display: none;
   position: absolute;
   left: var(--cta-stage-left);
   top: calc(var(--cta-button-y) + clamp(54px, 6svh, 82px));
