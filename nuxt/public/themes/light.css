@@ -207,14 +207,14 @@ body {
 .testimonial-wrapper {
   position: relative !important;
   width: 100% !important;
-  min-height: 100vh !important;
-  height: 100vh !important;
+  min-height: 100svh !important;
+  height: auto !important;
   display: flex !important;
   align-items: center !important;
   overflow: hidden !important;
   background: var(--bg-color) !important;
   margin-top: 0 !important;
-  padding-top: 0 !important;
+  padding: clamp(92px, 10vw, 148px) 0 clamp(150px, 15vw, 240px) !important;
   z-index: auto !important;
 }
 
@@ -356,12 +356,13 @@ body {
 /* Final 1080p rhythm pass for the team, testimonial, and footer sections. */
 
 .testimonial-wrapper {
-  min-height: 100vh !important;
-  height: 100vh !important;
+  min-height: 100svh !important;
+  height: auto !important;
+  padding: clamp(92px, 10vw, 148px) 0 clamp(150px, 15vw, 240px) !important;
 }
 
 .carousel-area {
-  padding-left: 44% !important;
+  padding-left: 40% !important;
 }
 
 .footer-wrapper {
@@ -685,8 +686,8 @@ body {
   .testimonial-wrapper {
     display: block !important;
     height: auto !important;
-    min-height: 100vh !important;
-    padding: 76px 0 112px !important;
+    min-height: auto !important;
+    padding: 88px 0 150px !important;
     overflow: hidden !important;
   }
 
