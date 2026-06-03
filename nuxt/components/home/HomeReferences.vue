@@ -8,27 +8,33 @@
     >
 
     <section class="home-references-flip__intro">
-      <p class="home-references-flip__eyebrow">Referans akisi</p>
-      <h2 id="home-references-title">Projeyi once yakindan gorun.</h2>
+      <p class="home-references-flip__eyebrow">KURUMSAL BELGESEL</p>
+      <h2 id="home-references-title">
+        Sınırların nasıl çizildiğine<br>
+        tanık olun.
+      </h2>
       <p>
-        Kardoor uygulamalarinda malzeme, olcu ve bitis hissini tek bir sahnede
-        buyuterek anlatan scroll kontrollu bir referans gecisi.
+        Ege Kardoor’un üretim felsefesi. Ham çeliğin, yüksek mühendislik ve
+        tasarım vizyonuyla premium bir mimari elemente dönüşme serüveni.
       </p>
       <div class="home-references-flip__scroll-hint" aria-hidden="true">
-        <span>Kaydir</span>
         <span></span>
       </div>
     </section>
 
     <section ref="initialRef" class="home-references-flip__panel home-references-flip__initial">
       <div class="home-references-flip__copy">
-        <p class="home-references-flip__label">Baslangic</p>
-        <h3>Detay kadrajindan proje kadrajina</h3>
+        <p class="home-references-flip__label">ÜRETİMİN RİTMİ</p>
+        <h3>
+          Mikro detaylardan,<br>
+          makro projelere.
+        </h3>
         <p>
-          Gorsel once metnin yaninda, normal akis icindeki kucuk bir isaretciye
-          oturur. Scroll ilerledikce ayni gorsel final alanina tasinir.
+          Sadece bir güvenlik önlemi değil, yapının karakterini belirleyen o
+          ilk temas noktası. Hassas kesimlerden kusursuz yüzey bitişlerine
+          kadar, fabrikamızdaki teknoloji ve zanaat entegrasyonunu keşfedin.
         </p>
-        <span>Flip.fit + ScrollTrigger scrub</span>
+        <span></span>
       </div>
 
       <div ref="startMarkerRef" class="home-references-flip__marker home-references-flip__marker--start">
