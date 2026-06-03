@@ -445,20 +445,6 @@ const initManifestoAnimations = () => {
       });
     }
 
-    if (catalogSection) {
-      ScrollTrigger.create({
-        id: 'catalog-references-natural-pin',
-        trigger: catalogSection,
-        start: 'bottom bottom',
-        end: () => `+=${Math.round(window.innerHeight * 0.9)}`,
-        pin: catalogSection,
-        pinType: 'fixed',
-        pinSpacing: false,
-        anticipatePin: 1,
-        invalidateOnRefresh: true
-      });
-    }
-
     if (scrollLineFill && manifestoContainer) {
       gsap.set(scrollLineFill, { scaleY: 0 });
       gsap.to(scrollLineFill, {
