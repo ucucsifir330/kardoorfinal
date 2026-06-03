@@ -763,8 +763,17 @@ const handleCatalogImageError = (event: Event, fallbackSrc?: string) => {
 
 const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
 
-const getDocumentTop = (element: HTMLElement) =>
-  window.scrollY + element.getBoundingClientRect().top;
+const getLayoutDocumentTop = (element: HTMLElement) => {
+  let top = 0;
+  let current: HTMLElement | null = element;
+
+  while (current) {
+    top += current.offsetTop;
+    current = current.offsetParent as HTMLElement | null;
+  }
+
+  return top;
+};
 
 const updateCatalogLineGeometry = () => {
   const section = catalogSectionRef.value;
@@ -813,8 +822,8 @@ const updateCatalogLineProgress = () => {
   if (!section || !path || !catalogLinePathLength) return;
 
   const viewportHeight = window.innerHeight || 1;
-  const sectionTop = getDocumentTop(section);
-  const sectionBottom = sectionTop + section.getBoundingClientRect().height;
+  const sectionTop = getLayoutDocumentTop(section);
+  const sectionBottom = sectionTop + section.offsetHeight;
   const start = sectionTop - viewportHeight * 0.2;
   const end = sectionBottom - viewportHeight * 0.28;
   const progress = clampProgress((window.scrollY - start) / Math.max(end - start, 1));

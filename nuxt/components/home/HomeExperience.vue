@@ -1,8 +1,12 @@
 <template>
   <EntranceDoor />
   <section class="home-catalog-reference-stack">
-    <div class="home-catalog-reference-stack__catalog">
-      <HomeCatalog />
+    <div ref="catalogHandoffRef" class="home-catalog-reference-stack__catalog">
+      <div ref="catalogHandoffPinRef" class="home-catalog-reference-stack__catalog-pin">
+        <div ref="catalogHandoffFrameRef" class="home-catalog-reference-stack__catalog-frame">
+          <HomeCatalog />
+        </div>
+      </div>
     </div>
 
     <div class="home-catalog-reference-stack__references">
@@ -74,6 +78,13 @@ const baseTitleWidth = ref(0);
 const inner1 = ref<HTMLElement | null>(null);
 const inner2 = ref<HTMLElement | null>(null);
 const reviewsStageRef = ref<HTMLElement | null>(null);
+const catalogHandoffRef = ref<HTMLElement | null>(null);
+const catalogHandoffPinRef = ref<HTMLElement | null>(null);
+const catalogHandoffFrameRef = ref<HTMLElement | null>(null);
+
+let catalogHandoffObserver: ResizeObserver | null = null;
+let catalogHandoffFrame = 0;
+let catalogHandoffPinFrame = 0;
 
 const setHiddenSpanRef = (el: Element | ComponentPublicInstance | null) => {
   hiddenSpan.value = el as HTMLElement | null;
@@ -133,6 +144,52 @@ const googleReviews = ref([
     name: 'Serkan A.'
   }
 ] as Review[]);
+
+const updateCatalogHandoffHeight = () => {
+  catalogHandoffFrame = 0;
+
+  const hold = catalogHandoffRef.value;
+  const frame = catalogHandoffFrameRef.value;
+
+  if (!hold || !frame) return;
+
+  hold.style.setProperty('--catalog-handoff-height', `${frame.scrollHeight}px`);
+  requestCatalogHandoffPin();
+};
+
+const requestCatalogHandoffHeight = () => {
+  if (catalogHandoffFrame) return;
+
+  catalogHandoffFrame = window.requestAnimationFrame(updateCatalogHandoffHeight);
+};
+
+const updateCatalogHandoffPin = () => {
+  catalogHandoffPinFrame = 0;
+
+  const hold = catalogHandoffRef.value;
+  const pin = catalogHandoffPinRef.value;
+  const frame = catalogHandoffFrameRef.value;
+
+  if (!hold || !pin || !frame) return;
+
+  const holdRect = hold.getBoundingClientRect();
+  const frameHeight = frame.scrollHeight;
+  const viewportHeight = window.innerHeight || 1;
+  const naturalTop = holdRect.top;
+  const naturalBottom = naturalTop + frameHeight;
+  const lockTop = viewportHeight - frameHeight;
+  const lockOffset = lockTop - naturalTop;
+  const containOffset = holdRect.bottom - naturalBottom;
+  const offset = Math.max(0, Math.min(lockOffset, containOffset));
+
+  pin.style.transform = offset > 0 ? `translate3d(0, ${offset}px, 0)` : '';
+};
+
+const requestCatalogHandoffPin = () => {
+  if (catalogHandoffPinFrame) return;
+
+  catalogHandoffPinFrame = window.requestAnimationFrame(updateCatalogHandoffPin);
+};
 
 const row1 = computed(() => googleReviews.value.slice(0, 4));
 const row2 = computed(() => googleReviews.value.slice(4, 8));
@@ -667,13 +724,23 @@ onMounted(() => {
 
   nextTick(() => {
     updateTitleWidth();
+    requestCatalogHandoffHeight();
     requestAnimationFrame(updateTitleWidth);
+    requestAnimationFrame(requestCatalogHandoffHeight);
+    requestAnimationFrame(requestCatalogHandoffPin);
+
+    if (catalogHandoffFrameRef.value) {
+      catalogHandoffObserver = new ResizeObserver(requestCatalogHandoffHeight);
+      catalogHandoffObserver.observe(catalogHandoffFrameRef.value);
+    }
 
     const fonts = (document as any).fonts;
 
     if (fonts?.ready) {
       fonts.ready.then(() => {
         updateTitleWidth();
+        requestCatalogHandoffHeight();
+        requestCatalogHandoffPin();
         ScrollTrigger.refresh();
       });
     }
@@ -682,6 +749,9 @@ onMounted(() => {
   });
 
   window.addEventListener('resize', updateTitleWidth);
+  window.addEventListener('resize', requestCatalogHandoffHeight);
+  window.addEventListener('resize', requestCatalogHandoffPin);
+  window.addEventListener('scroll', requestCatalogHandoffPin, { passive: true });
 
   titleInterval = setInterval(() => {
     titleIndex.value = (titleIndex.value + 1) % titleWords.value.length;
@@ -719,6 +789,22 @@ onBeforeUnmount(() => {
   stopReviewsAnimation();
   reviewsObserver?.disconnect();
   reviewsObserver = null;
+  catalogHandoffObserver?.disconnect();
+  catalogHandoffObserver = null;
+
+  if (catalogHandoffFrame) {
+    cancelAnimationFrame(catalogHandoffFrame);
+    catalogHandoffFrame = 0;
+  }
+
+  if (catalogHandoffPinFrame) {
+    cancelAnimationFrame(catalogHandoffPinFrame);
+    catalogHandoffPinFrame = 0;
+  }
+
+  if (catalogHandoffPinRef.value) {
+    catalogHandoffPinRef.value.style.transform = '';
+  }
 
   if (manifestoGsapContext) {
     manifestoGsapContext.revert();
@@ -729,6 +815,9 @@ onBeforeUnmount(() => {
   manifestoCleanupTasks = [];
 
   window.removeEventListener('resize', updateTitleWidth);
+  window.removeEventListener('resize', requestCatalogHandoffHeight);
+  window.removeEventListener('resize', requestCatalogHandoffPin);
+  window.removeEventListener('scroll', requestCatalogHandoffPin);
   window.removeEventListener('mousemove', onDrag as EventListener);
   window.removeEventListener('mouseup', endDrag);
   window.removeEventListener('touchmove', onDrag as EventListener);

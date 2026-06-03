@@ -1,14 +1,26 @@
 
 .home-catalog-reference-stack {
+  --catalog-reference-handoff: 100svh;
   position: relative;
   isolation: isolate;
   background: transparent;
 }
 
 .home-catalog-reference-stack__catalog {
-  position: sticky;
-  bottom: 0;
+  position: relative;
   z-index: 1;
+  margin-bottom: calc(-1 * var(--catalog-reference-handoff));
+  padding-bottom: var(--catalog-reference-handoff);
+}
+
+.home-catalog-reference-stack__catalog-pin {
+  position: relative;
+  z-index: 1;
+  will-change: transform;
+}
+
+.home-catalog-reference-stack__catalog-frame {
+  position: relative;
 }
 
 .home-catalog-reference-stack__references {
