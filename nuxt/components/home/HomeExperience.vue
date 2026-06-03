@@ -12,22 +12,24 @@
       </section>
     </div>
   </section>
-  <HomeReviews
-    :dynamic-gap="dynamicGap"
-    :title-width="titleWidth"
-    :title-words="titleWords"
-    :title-index="titleIndex"
-    :row1="row1"
-    :row2="row2"
-    :set-static-text-ref="setStaticTextRef"
-    :set-hidden-span-ref="setHiddenSpanRef"
-    :set-inner1-ref="setInner1Ref"
-    :set-inner2-ref="setInner2Ref"
-    :start-drag="startDrag"
-    :set-hover="setHover"
-    :tilt-card="tiltCard"
-    :reset-tilt="resetTilt"
-  />
+  <div ref="reviewsStageRef" class="home-reviews-runtime">
+    <HomeReviews
+      :dynamic-gap="dynamicGap"
+      :title-width="titleWidth"
+      :title-words="titleWords"
+      :title-index="titleIndex"
+      :row1="row1"
+      :row2="row2"
+      :set-static-text-ref="setStaticTextRef"
+      :set-hidden-span-ref="setHiddenSpanRef"
+      :set-inner1-ref="setInner1Ref"
+      :set-inner2-ref="setInner2Ref"
+      :start-drag="startDrag"
+      :set-hover="setHover"
+      :tilt-card="tiltCard"
+      :reset-tilt="resetTilt"
+    />
+  </div>
 </template><script setup lang="ts">
 // @ts-nocheck
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
@@ -71,6 +73,7 @@ const baseTitleWidth = ref(0);
 
 const inner1 = ref<HTMLElement | null>(null);
 const inner2 = ref<HTMLElement | null>(null);
+const reviewsStageRef = ref<HTMLElement | null>(null);
 
 const setHiddenSpanRef = (el: Element | ComponentPublicInstance | null) => {
   hiddenSpan.value = el as HTMLElement | null;
@@ -154,6 +157,8 @@ const track2State: TrackState = {
 
 let activeTrack: number | null = null;
 let animationFrameId = 0;
+let reviewsObserver: IntersectionObserver | null = null;
+let reviewsAnimationActive = false;
 let titleInterval: ReturnType<typeof setInterval> | null = null;
 
 const updateTitleWidth = () => {
@@ -188,7 +193,27 @@ const getX = (event: MouseEvent | TouchEvent): number => {
   return (event as MouseEvent).pageX;
 };
 
+const shouldRunReviewsAnimation = () =>
+  reviewsAnimationActive || track1State.isDragging || track2State.isDragging;
+
+const requestReviewsAnimation = () => {
+  if (!animationFrameId && shouldRunReviewsAnimation()) {
+    animationFrameId = requestAnimationFrame(animate);
+  }
+};
+
+const stopReviewsAnimation = () => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = 0;
+  }
+};
+
 const animate = () => {
+  animationFrameId = 0;
+
+  if (!shouldRunReviewsAnimation()) return;
+
   const tracks: Array<{ state: TrackState; inner: HTMLElement | null }> = [
     {
       state: track1State,
@@ -205,7 +230,7 @@ const animate = () => {
 
     const halfWidth = inner.scrollWidth / 2;
 
-    if (!state.isDragging) {
+    if (!state.isDragging && reviewsAnimationActive) {
       const targetVelocity = state.isHovered ? 0 : state.baseSpeed;
       state.currentVelocity += (targetVelocity - state.currentVelocity) * 0.04;
       state.x -= state.currentVelocity;
@@ -217,7 +242,7 @@ const animate = () => {
       state.x -= halfWidth;
     }
 
-    inner.style.transform = `translateX(${state.x}px)`;
+    inner.style.transform = `translate3d(${state.x}px, 0, 0)`;
   });
 
   animationFrameId = requestAnimationFrame(animate);
@@ -232,6 +257,7 @@ const startDrag = (event: MouseEvent | TouchEvent, trackNum: number) => {
   state.startX = getX(event);
 
   document.body.style.cursor = 'grabbing';
+  requestReviewsAnimation();
 };
 
 const onDrag = (event: MouseEvent | TouchEvent) => {
@@ -253,11 +279,13 @@ const endDrag = () => {
   activeTrack = null;
 
   document.body.style.cursor = 'default';
+  if (!reviewsAnimationActive) stopReviewsAnimation();
 };
 
 const setHover = (value: boolean, trackNum: number) => {
   const state = trackNum === 1 ? track1State : track2State;
   state.isHovered = value;
+  requestReviewsAnimation();
 };
 
 const tiltCard = (event: MouseEvent) => {
@@ -664,7 +692,18 @@ onMounted(() => {
   }, 7000);
 
   track2State.x = -400;
-  animate();
+
+  if (reviewsStageRef.value) {
+    reviewsObserver = new IntersectionObserver(
+      (entries) => {
+        reviewsAnimationActive = entries.some((entry) => entry.isIntersecting);
+        if (reviewsAnimationActive) requestReviewsAnimation();
+        else if (!track1State.isDragging && !track2State.isDragging) stopReviewsAnimation();
+      },
+      { rootMargin: '260px 0px', threshold: 0.01 }
+    );
+    reviewsObserver.observe(reviewsStageRef.value);
+  }
 
   window.addEventListener('mousemove', onDrag as EventListener);
   window.addEventListener('mouseup', endDrag);
@@ -677,7 +716,9 @@ onBeforeUnmount(() => {
     clearInterval(titleInterval);
   }
 
-  cancelAnimationFrame(animationFrameId);
+  stopReviewsAnimation();
+  reviewsObserver?.disconnect();
+  reviewsObserver = null;
 
   if (manifestoGsapContext) {
     manifestoGsapContext.revert();
@@ -694,3 +735,10 @@ onBeforeUnmount(() => {
   window.removeEventListener('touchend', endDrag);
 });
 </script>
+
+<style scoped>
+.home-reviews-runtime {
+  display: block;
+  width: 100%;
+}
+</style>

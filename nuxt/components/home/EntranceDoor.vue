@@ -415,9 +415,9 @@ onMounted(() => {
   const FIRST_DOOR_SETTLE_START = 0.36;
   const TURNTABLE_START = 0.68;
   const TURNTABLE_END = 0.86;
-  const HORIZONTAL_SLIDE_START = 0.88;
-  const HORIZONTAL_SLIDE_END = 0.94;
-  const CTA_PATH_START = HORIZONTAL_SLIDE_END;
+  const HORIZONTAL_SLIDE_START = 0.865;
+  const HORIZONTAL_SLIDE_END = 0.985;
+  const CTA_PATH_START = 0.965;
   const DOOR_SNAP_POINTS = Array.from({ length: 5 }, (_, i) =>
     TURNTABLE_START + (i / 4) * (TURNTABLE_END - TURNTABLE_START)
   );
@@ -479,9 +479,7 @@ onMounted(() => {
     hero.style.setProperty("--hero-cue-opacity", `${1 - clamp01(p / 0.12)}`);
 
     const ttP = clamp01((p - TURNTABLE_START) / (TURNTABLE_END - TURNTABLE_START));
-    const horizontalSlideP = ctaTakeoverActive && p >= TURNTABLE_END - 0.006
-      ? 1
-      : easeInOut(clamp01((p - HORIZONTAL_SLIDE_START) / (HORIZONTAL_SLIDE_END - HORIZONTAL_SLIDE_START)));
+    const horizontalSlideP = easeInOut(clamp01((p - HORIZONTAL_SLIDE_START) / (HORIZONTAL_SLIDE_END - HORIZONTAL_SLIDE_START)));
     const ctaPathProgress = clamp01((p - CTA_PATH_START) / (1 - CTA_PATH_START));
     hero.style.setProperty("--showroom-page-x", `${horizontalSlideP * -100}%`);
     updateCtaPathMotion(ctaPathProgress);
@@ -500,8 +498,6 @@ onMounted(() => {
   let snapHoldTimer = 0;
   let previousProgress = 0;
   let lockedDoorIndex: number | undefined;
-  let ctaSlideSnapArmed = true;
-  let ctaTakeoverActive = false;
 
   const getProgressY = (progress: number) => {
     if (!trigger) return 0;
@@ -524,7 +520,7 @@ onMounted(() => {
       return progress >= midpoint ? TURNTABLE_START : FIRST_DOOR_SETTLE_START;
     }
 
-    if (progress >= TURNTABLE_START - 0.02 && progress <= TURNTABLE_END + 0.02) {
+    if (progress >= TURNTABLE_START - 0.02 && progress <= TURNTABLE_END + 0.006) {
       return getNearestDoorSnap(progress);
     }
 
@@ -604,43 +600,6 @@ onMounted(() => {
     });
   };
 
-  const getCatalogRevealY = () => {
-    const catalogShell = document.querySelector<HTMLElement>(".catalog-shell");
-    if (!trigger || !catalogShell) return getProgressY(1);
-
-    const catalogTop = window.scrollY + catalogShell.getBoundingClientRect().top;
-    const revealTop = window.innerHeight * 0.78;
-
-    return Math.max(getProgressY(1), catalogTop - revealTop);
-  };
-
-  const snapToCatalogReveal = () => {
-    if (!lenis || !trigger) return;
-
-    const targetY = getCatalogRevealY();
-    const duration = 1.18;
-
-    ctaTakeoverActive = true;
-    isSnapScrolling = true;
-    snapStartedAt = performance.now();
-    snapTargetProgress = undefined;
-    snapCooldownUntil = performance.now() + duration * 1000 + 360;
-    window.clearTimeout(snapIdleTimer);
-    window.clearTimeout(snapHoldTimer);
-    lenis.start();
-
-    lenis.scrollTo(targetY, {
-      duration,
-      easing: snapEase,
-      force: true,
-      lock: false,
-      onComplete: () => {
-        isSnapScrolling = false;
-        snapTargetProgress = undefined;
-      }
-    });
-  };
-
   const scheduleIdleSnap = (self: ScrollTrigger) => {
     if (!lenis || isSnapScrolling || performance.now() < snapCooldownUntil) return;
 
@@ -682,8 +641,7 @@ onMounted(() => {
 
     const targetIndex = direction > 0 ? lockedDoorIndex + 1 : lockedDoorIndex - 1;
     if (targetIndex >= DOOR_SNAP_POINTS.length) {
-      ctaSlideSnapArmed = false;
-      snapToCatalogReveal();
+      lockedDoorIndex = undefined;
       return;
     }
 
@@ -699,22 +657,6 @@ onMounted(() => {
     snapToProgress(target, 0.38, 0, 1250, true);
   };
 
-  const autoCompleteCtaSlide = (progress: number, progressDelta: number) => {
-    if (
-      !trigger ||
-      !ctaSlideSnapArmed ||
-      isSnapScrolling ||
-      progressDelta <= 0 ||
-      progress < TURNTABLE_END - 0.006 ||
-      progress >= 0.998
-    ) {
-      return;
-    }
-
-    ctaSlideSnapArmed = false;
-    snapToCatalogReveal();
-  };
-
   requestDoorStep = (direction: -1 | 1) => {
     if (!trigger) return;
 
@@ -728,7 +670,7 @@ onMounted(() => {
     }
 
     if (targetIndex >= DOOR_SNAP_POINTS.length) {
-      snapToProgress(HORIZONTAL_SLIDE_END, 0.82);
+      snapToProgress(HORIZONTAL_SLIDE_END, 1.55);
       return;
     }
 
@@ -771,12 +713,7 @@ onMounted(() => {
       }
 
       lockTurntableDoor(self.progress, progressDelta);
-      autoCompleteCtaSlide(self.progress, progressDelta);
       updateMaster(self.progress);
-      if (self.progress < TURNTABLE_END - 0.035) {
-        ctaSlideSnapArmed = true;
-        ctaTakeoverActive = false;
-      }
       scheduleIdleSnap(self);
     },
     onRefresh: (self) => {
