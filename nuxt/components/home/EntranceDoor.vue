@@ -454,6 +454,7 @@ onMounted(() => {
   let lastTouchY = 0;
   let doorSnapCooldownUntil = 0;
   let horizontalSlideCooldownUntil = 0;
+  let entranceDoorOwnsScrollInput = true;
 
   const consumeScrollEvent = (event: Event) => {
     event.preventDefault();
@@ -705,7 +706,7 @@ onMounted(() => {
     );
 
   const reverseSlideHorizontal = (event?: Event) => {
-    if (!trigger || !shouldReverseSlideHorizontal(-1)) return false;
+    if (!entranceDoorOwnsScrollInput || !trigger || !shouldReverseSlideHorizontal(-1)) return false;
 
     if (event) {
       consumeScrollEvent(event);
@@ -748,6 +749,8 @@ onMounted(() => {
   };
 
   const onSettleWheel = (event: WheelEvent) => {
+    if (!entranceDoorOwnsScrollInput) return;
+
     if (isHorizontalSlideCoolingDown()) {
       consumeScrollEvent(event);
       return;
@@ -789,6 +792,8 @@ onMounted(() => {
   };
 
   const onSettleTouchMove = (event: TouchEvent) => {
+    if (!entranceDoorOwnsScrollInput) return;
+
     const y = event.touches[0]?.clientY ?? lastTouchY;
     const direction = lastTouchY - y;
     lastTouchY = y;
@@ -830,6 +835,8 @@ onMounted(() => {
   };
 
   const onSettleKeydown = (event: KeyboardEvent) => {
+    if (!entranceDoorOwnsScrollInput) return;
+
     const forwardKeys = [" ", "ArrowDown", "PageDown", "End"];
     const backwardKeys = ["ArrowUp", "PageUp", "Home"];
     const direction = forwardKeys.includes(event.key)
@@ -905,6 +912,13 @@ onMounted(() => {
     onRefresh: (self) => {
       updateStagePosition();
       updateMaster(self.progress);
+    },
+    onLeave: () => {
+      entranceDoorOwnsScrollInput = false;
+      unlockInput?.();
+    },
+    onEnterBack: () => {
+      entranceDoorOwnsScrollInput = true;
     }
   });
 
@@ -983,7 +997,13 @@ onBeforeUnmount(() => {
       />
     </div>
 
-    <div class="entrance-door__next-panel" aria-hidden="true" />
+    <div class="entrance-door__next-panel">
+      <div class="entrance-door__next-panel-copy">
+        <span class="entrance-door__next-panel-kicker">Konfigüratör</span>
+        <span class="entrance-door__next-panel-title">Bir sonraki eşikte</span>
+        <span class="entrance-door__next-panel-hint">Aşağı kaydır</span>
+      </div>
+    </div>
 
     <!-- HERO + FRAME (üstte, zoom ile kaybolur) -->
     <div ref="zoomLayerRef" class="entrance-door__zoom-layer">
