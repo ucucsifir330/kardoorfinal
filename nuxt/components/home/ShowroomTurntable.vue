@@ -6,7 +6,7 @@
  * Scroll eşiklerinde snap yapar: aktif kapı merkezde büyük, yan kapılar flu/küçük.
  */
 
-import { computed } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import AdaCtaButton from "./AdaCtaButton.vue";
 
@@ -58,13 +58,16 @@ const doors: Door[] = [
     name: { tr: "Alüminyum Sistemler", en: "Alüminyum Sistemler" },
     nameDisplay: { lead: "Alüminyum", tail: "Sistemler" },
     series: { tr: "Dış İklim Koleksiyonu", en: "Dış İklim Koleksiyonu" },
-    image: ik("series/1.png", "1778762643897"),
+    image: ik(
+      "yenikatalogwebp-20260528T045330Z-3-001/yenikatalogwebp/Image69.webp",
+      "20260528",
+    ),
     spec: { tr: LOREM_TR, en: LOREM_EN },
     meta: { tr: META_TR, en: META_EN },
     visual: {
-      activeScale: 1.04,
+      activeScale: 1.08,
       activeX: -10,
-      activeY: 0,
+      activeY: -118,
       backdropScale: 1.05,
       backdropX: "-2vw",
       backdropY: "-4vh",
@@ -76,13 +79,16 @@ const doors: Door[] = [
     name: { tr: "Pivot Sistemler", en: "Pivot Sistemler" },
     nameDisplay: { lead: "Pivot", tail: "Sistemler" },
     series: { tr: "Exclusive Koleksiyonu", en: "Exclusive Koleksiyonu" },
-    image: ik("series/2.png", "1778762645386"),
+    image: ik(
+      "yenikatalogwebp-20260528T045330Z-3-001/yenikatalogwebp/Image161.webp",
+      "20260528",
+    ),
     spec: { tr: LOREM_TR, en: LOREM_EN },
     meta: { tr: META_TR, en: META_EN },
     visual: {
-      activeScale: 0.98,
+      activeScale: 1.24,
       activeX: 0,
-      activeY: 0,
+      activeY: -180,
       backdropScale: 0.96,
       backdropX: "-1vw",
       backdropY: "-4vh",
@@ -94,13 +100,16 @@ const doors: Door[] = [
     name: { tr: "Thermowood Sistemler", en: "Thermowood Sistemler" },
     nameDisplay: { lead: "Thermowood", tail: "Sistemler" },
     series: { tr: "Dış İklim Koleksiyonu", en: "Dış İklim Koleksiyonu" },
-    image: ik("series/3.png", "1778762644382"),
+    image: ik(
+      "yenikatalogwebp-20260528T045330Z-3-001/yenikatalogwebp/Image37.webp",
+      "20260528",
+    ),
     spec: { tr: LOREM_TR, en: LOREM_EN },
     meta: { tr: META_TR, en: META_EN },
     visual: {
-      activeScale: 1,
+      activeScale: 1.06,
       activeX: 0,
-      activeY: 0,
+      activeY: -140,
       backdropScale: 1,
       backdropX: "0vw",
       backdropY: "-4vh",
@@ -112,13 +121,16 @@ const doors: Door[] = [
     name: { tr: "Doğal Yüzeyler", en: "Doğal Yüzeyler" },
     nameDisplay: { lead: "Doğal", tail: "Yüzeyler" },
     series: { tr: "Dış İklim Koleksiyonu", en: "Dış İklim Koleksiyonu" },
-    image: ik("series/4.png", "1778762645568"),
+    image: ik(
+      "yenikatalogwebp-20260528T045330Z-3-001/yenikatalogwebp/Image106.webp",
+      "20260528",
+    ),
     spec: { tr: LOREM_TR, en: LOREM_EN },
     meta: { tr: META_TR, en: META_EN },
     visual: {
-      activeScale: 1.06,
+      activeScale: 1,
       activeX: -6,
-      activeY: 0,
+      activeY: -146,
       backdropScale: 0.94,
       backdropX: "-3vw",
       backdropY: "-4vh",
@@ -130,13 +142,16 @@ const doors: Door[] = [
     name: { tr: "Camlı Yüzeyler", en: "Camlı Yüzeyler" },
     nameDisplay: { lead: "Camlı", tail: "Yüzeyler" },
     series: { tr: "Dış İklim Koleksiyonu", en: "Dış İklim Koleksiyonu" },
-    image: ik("series/5.png", "1778762645583"),
+    image: ik(
+      "yenikatalogwebp-20260528T045330Z-3-001/yenikatalogwebp/Image147.webp",
+      "20260528",
+    ),
     spec: { tr: LOREM_TR, en: LOREM_EN },
     meta: { tr: META_TR, en: META_EN },
     visual: {
-      activeScale: 0.92,
+      activeScale: 1.22,
       activeX: 18,
-      activeY: 0,
+      activeY: -165,
       backdropScale: 0.96,
       backdropX: "0vw",
       backdropY: "-4vh",
@@ -160,6 +175,33 @@ const TOTAL_ROTATION = 360;
 const STEP = TOTAL_ROTATION / doors.length;
 const ORBIT_RADIUS_X = 360;
 const ORBIT_RADIUS_Y = 50;
+const MOBILE_ORBIT_MEDIA = "(max-width: 640px)";
+const MOBILE_ORBIT_RADIUS_X = 220;
+const MOBILE_ORBIT_RATIO = 0.3;
+
+const orbitRadiusX = ref(ORBIT_RADIUS_X);
+let orbitMediaQuery: MediaQueryList | null = null;
+
+const updateOrbitRadius = () => {
+  if (typeof window === "undefined") return;
+
+  orbitRadiusX.value = window.matchMedia(MOBILE_ORBIT_MEDIA).matches
+    ? Math.min(MOBILE_ORBIT_RADIUS_X, window.innerWidth * MOBILE_ORBIT_RATIO)
+    : ORBIT_RADIUS_X;
+};
+
+onMounted(() => {
+  orbitMediaQuery = window.matchMedia(MOBILE_ORBIT_MEDIA);
+  updateOrbitRadius();
+  orbitMediaQuery.addEventListener("change", updateOrbitRadius);
+  window.addEventListener("resize", updateOrbitRadius, { passive: true });
+});
+
+onBeforeUnmount(() => {
+  orbitMediaQuery?.removeEventListener("change", updateOrbitRadius);
+  window.removeEventListener("resize", updateOrbitRadius);
+  orbitMediaQuery = null;
+});
 
 const degToRad = (deg: number) => (deg * Math.PI) / 180;
 const clamp = (v: number, min: number, max: number) =>
@@ -188,7 +230,7 @@ const orbitDoors = computed(() => {
     const distance = Math.abs(offset);
     const angle = offset * STEP;
     const rad = degToRad(angle);
-    const x = Math.sin(rad) * ORBIT_RADIUS_X;
+    const x = Math.sin(rad) * orbitRadiusX.value;
     const y = (1 - Math.cos(rad)) * ORBIT_RADIUS_Y;
 
     // ── Sürekli eğriler ────────────────────────────────────────
@@ -198,10 +240,13 @@ const orbitDoors = computed(() => {
     const farTail = clamp(distance - 1, 0, 1.5); // 0 → 1.5
 
     // Scale: aktif 1.22 → komşu 0.62 → uzak 0.5
-    const scale =
+    const baseScale =
       distance <= 1
         ? lerp(0.62, 1.22, nearActive)
         : Math.max(0.5, lerp(0.62, 0.5, clamp(distance - 1, 0, 1)));
+    const visualScale =
+      1 + ((door.visual?.activeScale ?? 1) - 1) * nearActive;
+    const scale = baseScale * visualScale;
 
     // Opacity: aktif 1 → komşu 0.34 → uzak 0
     const baseOpacity =
@@ -225,10 +270,11 @@ const orbitDoors = computed(() => {
 
     // Aktife yakın olduğunda hafifçe yükselsin (cinematic lift)
     const lift = nearActive * -6;
+    const visualY = (door.visual?.activeY ?? 0) * nearActive;
     return {
       door,
       x,
-      y: y + lift,
+      y: y + lift + visualY,
       scale: isTrailingHidden ? 0.001 : scale,
       opacity,
       blur: isTrailingHidden ? 16 : blur,

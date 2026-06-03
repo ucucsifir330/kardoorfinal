@@ -127,6 +127,7 @@
                     :src="item.image"
                     alt="Kapı Modeli"
                     class="catalog-product-image"
+                    @error="handleCatalogImageError($event, item.localImage)"
                   >
 
                   <div
@@ -283,6 +284,7 @@
             :src="activeProduct.image"
             :alt="activeProduct.finish"
             class="product-modal-image"
+            @error="handleCatalogImageError($event, activeProduct.localImage)"
           >
         </div>
 
@@ -747,6 +749,16 @@ const handleCatalogMagnetLeave = (event: MouseEvent) => {
     ease: "elastic.out(1, 0.45)",
     overwrite: true
   });
+};
+
+const handleCatalogImageError = (event: Event, fallbackSrc?: string) => {
+  if (!fallbackSrc) return;
+
+  const image = event.currentTarget as HTMLImageElement | null;
+  if (!image || image.src.endsWith(fallbackSrc)) return;
+
+  image.onerror = null;
+  image.src = fallbackSrc;
 };
 
 const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
