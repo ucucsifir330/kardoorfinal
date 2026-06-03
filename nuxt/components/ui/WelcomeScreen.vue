@@ -76,6 +76,39 @@ const dismiss = () => {
   animation: ws-fade-up 0.6s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) 0.15s forwards;
 }
 
+.welcome-screen__brand :deep(.brand-mark) {
+  gap: 1.4rem;
+}
+
+.welcome-screen__brand :deep(.brand-symbol) {
+  width: 80px;
+  height: 98px;
+}
+
+.welcome-screen__brand :deep(.brand-symbol__left),
+.welcome-screen__brand :deep(.brand-symbol__right) {
+  width: 40px;
+  height: 80px;
+}
+
+.welcome-screen__brand :deep(.brand-symbol__core) {
+  left: 32px;
+  width: 24px;
+  height: 66px;
+}
+
+.welcome-screen__brand :deep(.brand-title) {
+  font-size: 2rem;
+}
+
+.welcome-screen__brand :deep(.brand-title) {
+  color: var(--text, #071018);
+}
+
+.welcome-screen__brand :deep(.brand-title strong) {
+  color: #3a83ff;
+}
+
 .welcome-screen__progress-wrap {
   display: flex;
   flex-direction: column;
@@ -87,7 +120,7 @@ const dismiss = () => {
 }
 
 .welcome-screen__progress-track {
-  width: 200px;
+  width: 320px;
   height: 2px;
   background: var(--line, rgba(7, 16, 24, 0.14));
   border-radius: 999px;
