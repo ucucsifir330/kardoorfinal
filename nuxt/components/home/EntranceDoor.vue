@@ -87,6 +87,7 @@ const zoomLayerRef = ref<HTMLElement | null>(null);
 const artboardRef = ref<HTMLElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+const ctaPathRef = ref<SVGSVGElement | null>(null);
 
 const turntableProgress = ref(0);
 const isShowroomActive = ref(false);
@@ -94,6 +95,28 @@ const isShowroomActive = ref(false);
 let teardown: (() => void) | undefined;
 let requestDoorStep: ((direction: -1 | 1) => void) | undefined;
 let requestDoorSelect: ((index: number) => void) | undefined;
+
+const CTA_PATH_LENGTH = 1320;
+const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
+
+const updateCtaPathMotion = (rawProgress: number) => {
+  const path = ctaPathRef.value;
+
+  if (!path) {
+    return;
+  }
+
+  const progress = clamp01(rawProgress);
+  const eased = 1 - Math.pow(1 - progress, 3);
+
+  path.style.setProperty("--cta-path-dashoffset", `${CTA_PATH_LENGTH * (1 - eased)}`);
+  path.style.setProperty("--cta-path-y", `${-34 * eased}px`);
+  path.style.setProperty("--cta-path-opacity", `${0.26 + eased * 0.56}`);
+
+  path.style.setProperty("--cta-dot-opacity", `${clamp01((progress - 0.82) / 0.16) * 0.46}`);
+
+  path.style.setProperty("--cta-dot-scale", `${0.55 + clamp01((progress - 0.82) / 0.16) * 0.45}`);
+};
 
 const onDoorStep = (direction: -1 | 1) => {
   requestDoorStep?.(direction);
@@ -375,8 +398,9 @@ onMounted(() => {
   const TURNTABLE_START = 0.68;
   const TURNTABLE_END = 0.86;
   const HORIZONTAL_SLIDE_START = 0.88;
+  const HORIZONTAL_SLIDE_END = 0.94;
+  const CTA_PATH_START = HORIZONTAL_SLIDE_END;
 
-  const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
   const easeInOut = (t: number) => t * t * (3 - 2 * t);
 
   const updateMaster = (raw: number) => {
@@ -431,8 +455,10 @@ onMounted(() => {
     hero.style.setProperty("--hero-cue-opacity", `${1 - clamp01(p / 0.12)}`);
 
     const ttP = clamp01((p - TURNTABLE_START) / (TURNTABLE_END - TURNTABLE_START));
-    const horizontalSlideP = easeInOut(clamp01((p - HORIZONTAL_SLIDE_START) / (1 - HORIZONTAL_SLIDE_START)));
+    const horizontalSlideP = easeInOut(clamp01((p - HORIZONTAL_SLIDE_START) / (HORIZONTAL_SLIDE_END - HORIZONTAL_SLIDE_START)));
+    const ctaPathProgress = clamp01((p - CTA_PATH_START) / (1 - CTA_PATH_START));
     hero.style.setProperty("--showroom-page-x", `${horizontalSlideP * -100}%`);
+    updateCtaPathMotion(ctaPathProgress);
     turntableProgress.value = ttP;
     isShowroomActive.value = p >= HOLD_END;
   };
@@ -634,9 +660,9 @@ onMounted(() => {
     if (targetIndex < 0) return;
 
     if (targetIndex >= DOOR_SNAP_POINTS.length) {
-      horizontalSlideCooldownUntil = performance.now() + 2600 + HORIZONTAL_SLIDE_COOLDOWN_MS;
-      autoSettleTo(1, {
-        duration: 2.6,
+      horizontalSlideCooldownUntil = performance.now() + 1050 + HORIZONTAL_SLIDE_COOLDOWN_MS;
+      autoSettleTo(HORIZONTAL_SLIDE_END, {
+        duration: 1.05,
         ease: "sine.inOut",
         markShowroomSettled: false
       });
@@ -676,7 +702,7 @@ onMounted(() => {
         direction > 0 &&
         hasAutoSettledIntoShowroom &&
         trigger.progress >= TURNTABLE_END - DOOR_SNAP_PAD &&
-        trigger.progress < 1
+        trigger.progress < HORIZONTAL_SLIDE_END
     );
 
   const autoSlideHorizontal = (event?: Event) => {
@@ -686,9 +712,9 @@ onMounted(() => {
       consumeScrollEvent(event);
     }
 
-    horizontalSlideCooldownUntil = performance.now() + 2600 + HORIZONTAL_SLIDE_COOLDOWN_MS;
-    autoSettleTo(1, {
-      duration: 2.6,
+    horizontalSlideCooldownUntil = performance.now() + 1050 + HORIZONTAL_SLIDE_COOLDOWN_MS;
+    autoSettleTo(HORIZONTAL_SLIDE_END, {
+      duration: 1.05,
       ease: "sine.inOut",
       markShowroomSettled: false
     });
@@ -702,7 +728,7 @@ onMounted(() => {
         direction < 0 &&
         hasAutoSettledIntoShowroom &&
         trigger.progress > TURNTABLE_END + DOOR_SNAP_PAD &&
-        trigger.progress <= 1
+        trigger.progress <= HORIZONTAL_SLIDE_END
     );
 
   const reverseSlideHorizontal = (event?: Event) => {
@@ -998,10 +1024,72 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="entrance-door__next-panel">
-      <div class="entrance-door__next-panel-copy">
-        <span class="entrance-door__next-panel-kicker">Konfigüratör</span>
-        <span class="entrance-door__next-panel-title">Bir sonraki eşikte</span>
-        <span class="entrance-door__next-panel-hint">Aşağı kaydır</span>
+      <div class="entrance-door__cta-panel">
+        <svg
+          ref="ctaPathRef"
+          class="entrance-door__cta-path"
+          viewBox="0 0 1920 980"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            class="entrance-door__cta-path-line entrance-door__cta-path-line--shadow"
+            d="M 960 0
+       C 960 78 914 110 914 178
+       C 914 252 1018 246 1037 317
+       C 1056 388 963 414 925 370
+       C 887 326 928 268 993 292
+       C 1084 326 1081 456 1004 506
+       C 934 552 873 514 872 604
+       C 871 704 1038 684 1055 789
+       C 1069 877 980 904 960 980"
+          />
+
+          <path
+            class="entrance-door__cta-path-line"
+            d="M 960 0
+       C 960 78 914 110 914 178
+       C 914 252 1018 246 1037 317
+       C 1056 388 963 414 925 370
+       C 887 326 928 268 993 292
+       C 1084 326 1081 456 1004 506
+       C 934 552 873 514 872 604
+       C 871 704 1038 684 1055 789
+       C 1069 877 980 904 960 980"
+          />
+
+          <circle class="entrance-door__cta-path-dot" cx="960" cy="980" r="5" />
+        </svg>
+        <div class="ada-spacer-copy">
+          <h2 class="ada-config-heading" aria-label="Kapınızı yalnızca seçmeyin. Kurgulayın.">
+            <span class="ada-heading-line"><span class="ada-heading-k">K</span>apınızı yalnızca seçmeyin.</span>
+            <span class="ada-heading-line">Kurgulayın.</span>
+          </h2>
+          <p class="ada-spacer-manifesto-copy">
+            Ege Kardoor kapı konfigüratörüyle seri, yüzey, renk, cam, kol ve detay seçeneklerini kendi projenize göre
+            deneyimleyin. Beğendiğiniz tasarımı bizimle paylaşın, showroom veya proje ekibimiz sizin için netleştirsin.
+          </p>
+          <div class="ada-spacer-cta-group" aria-label="Konfigüratör ve koleksiyon bağlantıları">
+            <a href="/catalog" class="ada-manifesto-cta ada-spacer-cta" aria-label="Konfigüratörü deneyin">
+              <span class="ada-manifesto-cta-text" data-text="Konfigüratörü Deneyin">Konfigüratörü Deneyin</span>
+              <span class="ada-manifesto-cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                  <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </a>
+            <a href="/catalog" class="ada-manifesto-cta ada-spacer-cta ada-spacer-cta--icon-left" aria-label="Koleksiyonu keşfet">
+              <span class="ada-manifesto-cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                  <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="ada-manifesto-cta-text" data-text="Koleksiyonu Keşfet">Koleksiyonu Keşfet</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
 

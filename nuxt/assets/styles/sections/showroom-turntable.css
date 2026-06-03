@@ -18,7 +18,7 @@
   --st-bg-deep: #0a0b0d;
   --st-bg-mid: #111316;
   --st-bg-soft: rgba(255, 255, 255, 0.03);
-  --st-spotlight: rgba(255, 255, 255, 0.22);
+  --st-spotlight: rgba(255, 255, 255, 0.07);
   --st-floor-line: rgba(255, 255, 255, 0.08);
   --st-floor-glow: rgba(212, 194, 160, 0.16);
   --st-text: #f7f7f2;
@@ -185,28 +185,9 @@
   }
 }
 
-/* Spotlight cone — yukarıdan gelen ışık */
+/* Spotlight cone — devre dışı */
 .showroom-turntable__spotlight {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 70%;
-  height: 100%;
-  transform: translateX(-50%);
-  z-index: 2;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      ellipse 50% 65% at 50% 30%,
-      var(--st-spotlight) 0%,
-      transparent 65%
-    );
-  mix-blend-mode: screen;
-}
-
-.app-shell--day .showroom-turntable__spotlight {
-  mix-blend-mode: multiply;
-  opacity: 0.7;
+  display: none;
 }
 
 /* 3D scene container */
@@ -315,19 +296,7 @@
 }
 
 .showroom-turntable__platform-glow {
-  position: absolute;
-  left: calc(var(--orbit-radius-x) * -0.55);
-  top: calc(var(--orbit-radius-y) * -1.15);
-  width: calc(var(--orbit-radius-x) * 1.1);
-  height: calc(var(--orbit-radius-y) * 2.3);
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    var(--st-floor-glow) 0%,
-    transparent 70%
-  );
-  filter: blur(20px);
-  opacity: 0.7;
+  display: none;
 }
 
 /* ──────────────────────────────────────────────────────────────

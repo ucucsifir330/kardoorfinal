@@ -1905,9 +1905,9 @@
 
 .catalog-structural-line-path {
   fill: none;
-  stroke: var(--catalog-stage-line-fill, #000);
+  stroke: url("#catalog-structural-line-gradient");
   stroke-width: 2.4px;
-  stroke-linecap: round;
+  stroke-linecap: butt;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
@@ -2002,7 +2002,7 @@
 
 /* Homepage catalog: CodePen-inspired card catalog form. */
 .home-page .catalog-section {
-  --catalog-content-left: clamp(56px, 4.8vw, 92px);
+  --catalog-content-left: clamp(34px, 3.55vw, 68px);
   --catalog-content-right: clamp(56px, 5.8vw, 112px);
   --catalog-stage-top-radius: clamp(34px, 5.8vw, 72px);
   --catalog-stage-line-track: #000;
@@ -2059,8 +2059,6 @@
   pointer-events: none !important;
   transform-origin: top !important;
   z-index: 3 !important;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 clamp(38px, 4vh, 56px), #000 100%) !important;
-  mask-image: linear-gradient(to bottom, transparent 0, #000 clamp(38px, 4vh, 56px), #000 100%) !important;
 }
 
 .home-page .catalog-sticky-title,
@@ -2075,7 +2073,7 @@
 }
 
 .home-page .catalog-title {
-  margin: 0 0 0 16px !important;
+  margin: 0 0 0 var(--catalog-info-column-width, 188px) !important;
   color: var(--text-primary, #111417) !important;
   font-size: clamp(92px, 7vw, 134px) !important;
   font-weight: 500 !important;
@@ -2092,7 +2090,7 @@
   column-gap: 0 !important;
   align-items: start !important;
   min-height: 0 !important;
-  margin: 0 0 clamp(56px, 5.55vh, 68px) 16px !important;
+  margin: 0 0 clamp(56px, 5.55vh, 68px) 0 !important;
 }
 
 .home-page .catalog-row:last-of-type {
@@ -2104,17 +2102,15 @@
   width: 188px !important;
   min-width: 0 !important;
   padding: 24px 20px 20px 24px !important;
-  color: #f6f3ec !important;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0) 42%),
-    #101820 !important;
-  border-radius: 4px 0 0 clamp(28px, 2.6vw, 42px) !important;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary, #111417) !important;
+  background: var(--catalog-stage-main-bg, #f4f1ea) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .home-page .catalog-product-family {
   margin: 0 0 4px !important;
-  color: #ffffff !important;
+  color: #111417 !important;
   font-size: 24px !important;
   font-weight: 500 !important;
   line-height: 1 !important;
@@ -2122,7 +2118,7 @@
 
 .home-page .catalog-designer {
   margin: 8px 0 40px !important;
-  color: rgba(246, 243, 236, 0.78) !important;
+  color: rgba(17, 20, 23, 0.66) !important;
   font-size: 15.5px !important;
   line-height: 1.25 !important;
 }
@@ -2132,7 +2128,7 @@
   flex-direction: column !important;
   align-items: flex-start !important;
   gap: 8px !important;
-  color: rgba(246, 243, 236, 0.9) !important;
+  color: rgba(17, 20, 23, 0.76) !important;
   font-size: 15.5px !important;
   line-height: 1.25 !important;
 }
@@ -2187,7 +2183,7 @@
 }
 
 .home-page .catalog-row-info .catalog-tag-line {
-  background: rgba(246, 243, 236, 0.68) !important;
+  background: rgba(17, 20, 23, 0.46) !important;
 }
 
 .home-page .catalog-tag-part:hover .catalog-tag-line {
@@ -2200,7 +2196,7 @@
   margin-left: -24px !important;
   padding: 24px !important;
   border-radius: 999px !important;
-  color: #ffffff !important;
+  color: #111417 !important;
   font: inherit !important;
   font-size: 15.5px !important;
   line-height: 1.2 !important;
@@ -2241,7 +2237,7 @@
   }
 
   .home-page .catalog-title {
-    margin-left: 16px !important;
+    margin-left: var(--catalog-info-column-width, 284px) !important;
   }
 
   .home-page .catalog-tag--summary {
@@ -2461,6 +2457,8 @@
   overflow: hidden !important;
   background: #fafafa !important;
   border-radius: 2px 2px clamp(24px, 2.2vw, 34px) 2px !important;
+  border-bottom-right-radius: clamp(24px, 2.2vw, 34px) !important;
+  transform: translateZ(0);
   transition: box-shadow 0.85s cubic-bezier(0.19, 1, 0.22, 1) !important;
 }
 
@@ -3509,117 +3507,204 @@
 
 /* Bu sınıf artık ana .catalog-card üzerine biniyor */
 @media (min-width: 1024px) {
-  .catalog-card.liquid-card,
   .home-page .catalog-card.liquid-card {
+    --liquid-extension-width: 240px;
+    --liquid-shift: calc(var(--catalog-info-column-width, 188px) + var(--catalog-row-gap, 0px));
+    --catalog-card-corner-radius: clamp(28px, 2.6vw, 42px);
     position: relative;
-    overflow: hidden !important;
+    overflow: visible !important;
     z-index: 2;
     padding-right: 60px !important;
     margin-left: 0 !important;
     transform: none;
     transition:
-      width 0.82s cubic-bezier(0.19, 1, 0.22, 1),
-      margin-left 0.82s cubic-bezier(0.19, 1, 0.22, 1),
+      transform 0.82s cubic-bezier(0.19, 1, 0.22, 1),
       box-shadow 0.82s cubic-bezier(0.19, 1, 0.22, 1);
-    will-change: width, margin-left;
+    will-change: transform, box-shadow;
+    border-radius: 4px 4px var(--catalog-card-corner-radius) 4px !important;
+    border-bottom-right-radius: var(--catalog-card-corner-radius) !important;
   }
 
   .home-page .catalog-row:last-of-type .catalog-card.liquid-card {
     padding-right: 60px !important;
-    overflow: hidden !important;
+    overflow: visible !important;
+    border-bottom-right-radius: var(--catalog-card-corner-radius) !important;
   }
 
   .home-page .catalog-row.is-liquid-expanded .catalog-card.liquid-card {
-    width: calc(100% + var(--catalog-info-column-width)) !important;
-    margin-left: calc(-1 * var(--catalog-info-column-width)) !important;
-    transform: none;
-    box-shadow: 0 22px 70px rgba(16, 24, 32, 0.14) !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    transform: translateX(calc(-1 * var(--liquid-shift))) !important;
+    border-radius: 4px 0 0 4px !important;
+    border-bottom-right-radius: 0 !important;
   }
 
-  .liquid-menu {
+  .home-page .liquid-menu {
     position: absolute;
     top: 0;
-    right: 0;
+    right: calc(-1 * var(--liquid-extension-width));
+    left: auto;
     height: 100%;
     width: 300px;
-    background: linear-gradient(90deg, #111111 0 60px, transparent 60px 100%);
-    transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.3s ease;
+    background: transparent;
+    overflow: visible;
+    clip-path: none;
+    border-radius: 0 4px clamp(28px, 2.6vw, 42px) 0;
+    transition:
+      opacity 0.3s ease;
     z-index: 50;
     opacity: 1;
-    pointer-events: auto;
-    transform: translateX(240px);
+    pointer-events: none;
+    transform: translateX(0);
+    isolation: isolate;
   }
 
-  .liquid-card:hover .liquid-menu,
-  .catalog-row:hover .liquid-menu,
-  .catalog-row.is-liquid-active .liquid-menu {
+  .home-page .catalog-row.is-liquid-active .liquid-menu {
     opacity: 1;
-    pointer-events: auto;
   }
 
-  .liquid-menu.is-expanded {
+  .home-page .catalog-row.is-liquid-expanded .liquid-menu.is-expanded {
     opacity: 1 !important;
-    pointer-events: auto;
     transform: translateX(0) !important;
   }
 
-  .liquid-menu-inner {
+  .home-page .liquid-menu-inner {
     width: 240px;
     height: 100%;
     position: absolute;
     top: 0;
-    right: 0;
-    background-color: #111111;
-    pointer-events: auto;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+    left: 59px;
+    right: auto;
+    background-color: #ffffff;
+    pointer-events: none;
+    box-shadow: none;
+    border-bottom-right-radius: var(--catalog-card-corner-radius);
     z-index: 2;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px);
+    transition:
+      opacity 0.26s ease,
+      visibility 0s linear 0.26s,
+      transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
   }
 
-  .liquid-blob {
-    position: absolute;
-    top: 0;
-    left: 60px;
-    height: 100%;
-    width: 60px;
-    transform: translateX(-100%) scaleX(-1);
-    transform-origin: right top;
-    z-index: 1;
+  .home-page .catalog-row.is-liquid-expanded .liquid-menu-inner {
+    box-shadow: -2px 0 0 #ffffff;
+  }
+
+  .home-page .catalog-row.is-liquid-expanded .liquid-menu.is-expanded .liquid-menu-inner {
+    opacity: 1;
+    visibility: visible;
     pointer-events: auto;
+    transform: translateX(0);
+    transition-delay: 0s;
   }
 
-  .liquid-blob-path {
-    fill: #111111;
-  }
-
-  .hamburger {
+  .home-page .liquid-edge-control {
     position: absolute;
-    left: 20px;
+    inset: 0 auto 0 0;
+    width: 116px;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    overflow: visible;
+  }
+
+  .home-page .liquid-blob {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 190px;
+    width: 94px;
+    transform: translateY(-50%);
+    transform-origin: left center;
+    z-index: 3;
+    pointer-events: none;
+    overflow: visible;
+    transition: width 0.62s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .home-page .liquid-blob-path {
+    fill: #ffffff;
+  }
+
+  .home-page .liquid-hover-zone {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 300px;
+    height: 124px;
+    margin-top: -62px;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 6;
+  }
+
+  .home-page .hamburger {
+    position: absolute;
+    left: 30px;
     top: 50%;
     width: 24px;
     height: 20px;
     margin-top: -10px;
-    cursor: pointer;
-    pointer-events: auto;
-    z-index: 3;
+    pointer-events: none;
+    z-index: 20;
+    overflow: visible !important;
+    transform: translate3d(
+      var(--hamburger-shift, 0px),
+      var(--hamburger-lift, 0px),
+      0
+    );
+    transition:
+      left 0.42s cubic-bezier(0.19, 1, 0.22, 1),
+      transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+    contain: layout paint;
   }
 
-  .hamburger .line {
-    width: 100%;
-    height: 2px;
-    background-color: #fff;
-    position: absolute;
-    border-radius: 2px;
-    transition: 0.3s ease;
+  .home-page .hamburger::before,
+  .home-page .hamburger::after {
+    content: none !important;
+    display: none !important;
   }
 
-  .hamburger .line:nth-child(2) { top: 50%; margin-top: -1px; }
-  .hamburger .line:nth-child(3) { bottom: 0; }
+  .home-page .hamburger-line {
+    position: absolute !important;
+    left: 0 !important;
+    display: block !important;
+    width: 24px !important;
+    height: 2px !important;
+    background-color: #111417 !important;
+    background-image: none !important;
+    border-radius: 2px !important;
+    opacity: 1 !important;
+    clip-path: none !important;
+    mask: none !important;
+    -webkit-mask: none !important;
+    transform: none !important;
+    transform-origin: center !important;
+    transition: background-color 0.2s ease !important;
+  }
 
-  .is-expanded .hamburger .line:nth-child(1) { transform: translateY(9px) rotate(45deg); }
-  .is-expanded .hamburger .line:nth-child(2) { opacity: 0; }
-  .is-expanded .hamburger .line:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+  .home-page .hamburger-line:nth-child(1) { top: 0 !important; }
+  .home-page .hamburger-line:nth-child(2) { top: 9px !important; margin-top: 0 !important; }
+  .home-page .hamburger-line:nth-child(3) { top: 18px !important; bottom: auto !important; }
 
-  .liquid-actions {
+  .home-page .catalog-row.is-liquid-expanded .hamburger-line:nth-child(1),
+  .home-page .catalog-row.is-liquid-expanded .hamburger-line:nth-child(2),
+  .home-page .catalog-row.is-liquid-expanded .hamburger-line:nth-child(3) {
+    opacity: 1;
+    transform: none;
+  }
+
+  .home-page .catalog-row.is-liquid-expanded .hamburger {
+    left: 26px;
+    --hamburger-shift: 0px;
+    --hamburger-lift: 0px;
+    transform: translate3d(0, 0, 0) !important;
+  }
+
+  .home-page .liquid-actions {
     padding: 0;
     margin: 0;
     list-style: none;
@@ -3630,18 +3715,18 @@
     transform: translateY(-50%);
   }
 
-  .liquid-actions li {
+  .home-page .liquid-actions li {
     padding: 18px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(17, 20, 23, 0.08);
   }
 
-  .liquid-actions li:last-child {
+  .home-page .liquid-actions li:last-child {
     border-bottom: none;
   }
 
-  .liquid-actions li a,
-  .liquid-actions li {
-    color: rgba(255, 255, 255, 0.7);
+  .home-page .liquid-actions li a,
+  .home-page .liquid-actions li {
+    color: rgba(17, 20, 23, 0.68);
     font-size: 14px;
     cursor: pointer;
     font-weight: 500;
@@ -3650,9 +3735,9 @@
     transition: color 0.3s;
   }
 
-  .liquid-actions li:hover,
-  .liquid-actions li a:hover {
-    color: #fff;
+  .home-page .liquid-actions li:hover,
+  .home-page .liquid-actions li a:hover {
+    color: #111417;
   }
 }
 

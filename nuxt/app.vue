@@ -25,6 +25,8 @@ useHead({
     :class="shellClasses"
     :data-ambience="mode"
   >
+    <WelcomeScreen />
+    <LoadingScreen />
     <SiteHeader />
     <SmoothCursor />
 

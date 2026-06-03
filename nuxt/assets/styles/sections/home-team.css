@@ -1,5 +1,5 @@
 .ada-team-section {
-  --team-section-bg: var(--catalog-stage-surface-bg, #14151d);
+  --team-section-bg: #0a0b0d;
   --team-section-text: #eae8e8;
   --cta-stage-width: min(100vw, 1920px);
   --cta-stage-left: calc((100vw - var(--cta-stage-width)) / 2);
@@ -1439,31 +1439,32 @@ span.ada-brand-logo {
   }
 
   .ada-manifesto-container {
+    height: auto;
     min-height: auto;
     align-items: flex-start;
-    padding: 2rem 1rem 3rem;
-    gap: 0.8rem;
+    padding: calc(var(--header) + 1rem) 1rem 3rem;
+    gap: 0.65rem;
   }
 
   .ada-scroll-line-wrapper {
     width: 2px;
-    height: clamp(430px, 94vw, 560px);
+    height: clamp(300px, 72vw, 420px);
   }
 
   .ada-manifesto-text {
-    max-width: calc(100vw - 3.25rem);
-    font-size: clamp(2.35rem, 10.2vw, 3.85rem);
-    line-height: 0.9;
-    overflow-wrap: anywhere;
+    max-width: calc(100vw - 3.6rem);
+    font-size: clamp(2rem, 8.2vw, 3.05rem);
+    line-height: 0.98;
+    overflow-wrap: normal;
   }
 
   .ada-manifesto-content {
-    transform: translateY(-72px);
+    transform: none;
   }
 
   .ada-manifesto-cta {
-    height: 48px;
-    margin-top: 44px;
+    height: 46px;
+    margin-top: 32px;
     padding: 0 18px 0 24px;
   }
 
