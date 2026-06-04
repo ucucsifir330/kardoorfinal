@@ -674,9 +674,9 @@
     --hero-opening-top: calc(var(--hero-door-top) + (var(--hero-door-width) * 1.2224576 * 0.08));
     --hero-opening-width: calc(var(--hero-door-width) * 0.62);
     --hero-opening-height: calc(var(--hero-door-width) * 1.2224576 * 0.84);
-    --hero-copy-mask-height: 100svh;
+    --hero-copy-mask-height: clamp(220px, 34svh, 320px);
     --hero-copy-left: clamp(18px, 5vw, 30px);
-    --hero-copy-top: 76svh;
+    --hero-copy-top: 78svh;
     --hero-copy-right: clamp(18px, 5vw, 30px);
     --hero-copy-bottom: auto;
     --hero-copy-width: auto;
@@ -730,6 +730,10 @@
   .entrance-door__cue {
     right: clamp(20px, 5vw, 40px);
     bottom: clamp(30px, 6vh, 64px);
+  }
+
+  .entrance-door__copy-mask::before {
+    display: none;
   }
 }
 
@@ -789,6 +793,35 @@
 
   .entrance-door__cta-row {
     margin-top: 24px;
+  }
+}
+
+@media (max-width: 760px), (pointer: coarse) {
+  .entrance-door__zoom-layer,
+  .entrance-door__showroom,
+  .entrance-door__showroom .showroom-turntable__stage,
+  .entrance-door__showroom .showroom-turntable__info,
+  .entrance-door__next-panel,
+  .entrance-door__stage,
+  .entrance-door__copy-mask,
+  .entrance-door__copy-reveal,
+  .entrance-door__cta-path {
+    will-change: auto;
+  }
+
+  .entrance-door__doorway-reveal {
+    clip-path: none;
+    will-change: opacity;
+  }
+
+  .entrance-door__cta-arrow {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .entrance-door__cue i,
+  .entrance-door__copy-mask::before {
+    animation: none;
   }
 }
 

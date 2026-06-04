@@ -5,6 +5,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 export default defineNuxtPlugin(() => {
   gsap.registerPlugin(ScrollTrigger);
 
+  const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+  document.documentElement.classList.toggle("is-touch-device", isTouchDevice);
+
+  if (isTouchDevice) {
+    return {
+      provide: {
+        lenis: null
+      }
+    };
+  }
+
   const lenis = new Lenis({
     smoothWheel: true,
     wheelMultiplier: 0.58,

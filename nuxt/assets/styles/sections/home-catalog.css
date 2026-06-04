@@ -2792,25 +2792,23 @@
     min-width: 0 !important;
   }
 
-  /* Görsel kapsayıcı: oran tabanlı yükseklik */
+  /* Görsel kapsayıcı: sabit yükseklik, ekrana sığar */
   .home-page .catalog-product-image-wrap {
-    height: 0 !important;
-    padding-bottom: 110% !important;
+    height: clamp(130px, 36vw, 180px) !important;
+    padding-bottom: 0 !important;
     position: relative !important;
     margin-bottom: 8px !important;
-    border-radius: 4px 4px 20px 4px !important;
+    border-radius: 4px 4px 18px 4px !important;
   }
 
   .home-page .catalog-product-image {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
+    position: static !important;
+    width: auto !important;
+    height: 82% !important;
+    max-width: 82% !important;
+    max-height: 82% !important;
     object-fit: contain !important;
-    padding: 10% !important;
+    padding: 0 !important;
   }
 
   /* Like butonu boyutu */
@@ -3446,28 +3444,31 @@
 }
 
 @media (max-width: 760px) {
+  /* ── Split: görsel tam ekran arka plan, bilgi altta overlay kart ── */
   .product-modal {
     align-items: stretch;
-    justify-content: flex-start;
+    justify-content: stretch;
     width: 100%;
     height: 100dvh;
     padding: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    background: #f4f4f0;
+    overflow: hidden;
+    background: #0a0a0a;
     backdrop-filter: none;
-    -webkit-overflow-scrolling: touch;
   }
 
   .product-modal-panel {
-    display: block;
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr auto;
     width: 100%;
-    min-height: 100dvh;
+    height: 100dvh;
+    min-height: 0;
     max-height: none;
     padding: 0;
-    overflow: visible;
+    overflow: hidden;
     border: 0;
-    background: #f7f7f3;
+    border-radius: 0;
+    background: transparent;
     box-shadow: none;
   }
 
@@ -3476,63 +3477,68 @@
     display: none;
   }
 
+  /* Kapatma — sağ üst, görsel üzerinde */
   .product-modal-close {
     position: fixed;
     top: calc(14px + env(safe-area-inset-top));
     right: 14px;
     z-index: 3020;
-    width: 44px;
-    height: 44px;
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    font-size: 28px;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
-    backdrop-filter: blur(14px);
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.88);
+    box-shadow: none;
+    backdrop-filter: blur(8px);
   }
 
+  /* Nav okları — görsel üzerinde ekran ortasında */
   .product-modal-nav {
     position: fixed;
-    top: clamp(170px, 24dvh, 260px);
-    bottom: auto;
+    top: 30dvh;
     z-index: 3010;
-    width: 46px;
-    height: 46px;
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.36);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 999px;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.12);
-    backdrop-filter: blur(14px);
+    box-shadow: none;
+    backdrop-filter: blur(8px);
     transform: none;
   }
 
-  .product-modal-prev {
-    left: 12px;
-  }
-
-  .product-modal-next {
-    right: 12px;
-  }
+  .product-modal-prev { left: 12px; }
+  .product-modal-next { right: 12px; }
 
   .product-modal-nav svg {
-    width: 30px;
-    stroke: rgba(0, 0, 0, 0.62);
+    width: 24px;
+    height: 10px;
+    stroke: rgba(255, 255, 255, 0.82);
+    stroke-width: 1.5;
   }
 
+  /* Görsel — grid'in üst hücresi, tam dolar */
   .product-modal-visual {
+    position: relative;
+    grid-row: 1;
     width: 100%;
-    padding: 14px 20px 0;
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
   }
 
   .product-modal-visual-frame,
   .product-modal-visual:not(:has(.product-modal-visual-frame)) {
-    height: clamp(330px, 45dvh, 470px);
+    width: 100%;
+    height: 100%;
     min-height: 0;
-    padding: 18px;
+    padding: 0;
     overflow: hidden;
     border: 0;
-    background:
-      linear-gradient(180deg, #ffffff, #f0f0ec),
-      #f3f3ef;
+    border-radius: 0;
+    background: #0e0e0e;
   }
 
   .product-modal-image {
@@ -3541,131 +3547,172 @@
     max-width: 100%;
     max-height: none;
     object-fit: contain;
-    filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.18));
+    padding: 8% 12%;
+    filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.5));
   }
 
   .product-modal-visual-caption {
-    margin-top: 10px;
-    padding: 0 2px;
-    font-size: 9px;
-    letter-spacing: 0.18em;
+    display: none;
   }
 
+  /* Bilgi kartı — grid'in alt hücresi, saydam kart */
   .product-modal-content {
+    grid-row: 2;
     display: block;
-    padding: 28px 26px 56px;
-    overflow: visible;
+    max-height: 52dvh;
+    padding: 20px 20px 28px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    background: rgba(248, 247, 243, 0.97);
+    backdrop-filter: blur(18px);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 0;
   }
+
+  .product-modal-content::-webkit-scrollbar { display: none; }
 
   .product-modal-kicker {
-    margin-bottom: 10px;
-    font-size: 10px;
+    margin-bottom: 4px;
+    font-size: 9px;
     letter-spacing: 0.22em;
+    color: rgba(0, 0, 0, 0.4);
   }
 
   .product-modal-content h2 {
-    font-size: clamp(52px, 16vw, 72px);
-    line-height: 0.9;
-    letter-spacing: -0.065em;
+    font-size: clamp(30px, 9vw, 44px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin: 0 0 8px;
   }
 
   .product-modal-meta {
-    gap: 8px 12px;
-    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    margin-top: 8px;
     font-size: 9px;
-    line-height: 1.45;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.08em;
   }
 
   .product-modal-meta span:not(:last-child)::after {
     display: none;
   }
 
-  .product-modal-description {
-    max-width: none;
-    margin-top: 22px;
-    font-size: 17px;
-    line-height: 1.42;
-    letter-spacing: -0.025em;
+  .product-modal-meta span {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.6);
   }
 
+  .product-modal-description {
+    max-width: none;
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.48;
+    letter-spacing: -0.01em;
+    color: rgba(0, 0, 0, 0.68);
+  }
+
+  /* Aksiyon butonları */
   .product-modal-actions {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 92px;
-    gap: 10px;
-    margin-top: 24px;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 14px;
   }
 
   .product-modal-like,
   .product-modal-quote {
     width: 100%;
-    min-height: 44px;
-    padding: 0 14px;
+    min-height: 42px;
+    padding: 0 12px;
     font-size: 13px;
+    border-radius: 10px;
   }
 
+  /* Detaylar — başlık tıklanabilir accordion gibi görünüm */
   .product-modal-details {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 34px;
-    margin-top: 42px;
+    gap: 20px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
   }
 
   .product-modal-info-block h3,
   .product-modal-details h3 {
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    font-size: 14px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.42);
   }
 
   .product-modal-info-block dl div,
   .product-modal-details dl div {
-    grid-template-columns: 90px minmax(0, 1fr);
-    gap: 14px;
-    padding: 11px 0;
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px 0;
     margin: 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    font-size: 14px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 13px;
     line-height: 1.35;
   }
 
   .product-modal-files {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 7px;
   }
 
   .product-modal-files a,
   .product-modal-details a {
     display: flex;
     align-items: center;
+    justify-content: center;
     width: auto;
-    min-height: 42px;
-    padding: 0 12px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.48);
-    font-size: 13px;
+    min-height: 36px;
+    padding: 0 10px;
+    border: 1px solid rgba(0, 0, 0, 0.09);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    text-align: center;
     text-decoration: none;
+    color: rgba(0, 0, 0, 0.64);
   }
 
   .product-modal-specs {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-    margin-top: 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 20px;
   }
 
   .product-modal-specs div {
     display: grid;
-    grid-template-columns: 38px 1fr;
+    grid-template-columns: 26px 1fr;
     align-items: center;
-    min-height: 54px;
-    padding: 12px 14px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   .product-modal-specs span {
     margin: 0;
+    font-size: 9px;
+  }
+
+  .product-modal-specs strong {
+    font-size: 12.5px;
   }
 
   .product-modal-finishes {
@@ -3673,8 +3720,8 @@
     z-index: auto;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin: 30px 0 0;
+    gap: 10px;
+    margin: 18px 0 0;
     padding: 0;
     background: transparent;
     border: 0;
@@ -3683,37 +3730,27 @@
 
   .product-modal-finishes button,
   .product-modal-finishes span {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
   }
 }
 
 @media (max-width: 420px) {
-  .product-modal-visual {
-    padding-inline: 16px;
-  }
-
-  .product-modal-visual-frame,
-  .product-modal-visual:not(:has(.product-modal-visual-frame)) {
-    height: 42dvh;
-    padding: 14px;
-  }
-
   .product-modal-content {
-    padding-inline: 22px;
-  }
-
-  .product-modal-actions,
-  .product-modal-files {
-    grid-template-columns: 1fr;
+    max-height: 55dvh;
+    padding: 16px 16px 24px;
   }
 
   .product-modal-content h2 {
-    font-size: 54px;
+    font-size: clamp(28px, 8.5vw, 38px);
   }
 
-  .product-modal-description {
-    font-size: 16px;
+  .product-modal-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .product-modal-files {
+    grid-template-columns: 1fr 1fr;
   }
 }
 /* ==========================================================================

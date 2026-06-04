@@ -166,6 +166,12 @@ const requestCatalogHandoffHeight = () => {
 const updateCatalogHandoffPin = () => {
   catalogHandoffPinFrame = 0;
 
+  if (window.innerWidth <= 760) {
+    const pin = catalogHandoffPinRef.value;
+    if (pin) pin.style.transform = '';
+    return;
+  }
+
   const hold = catalogHandoffRef.value;
   const pin = catalogHandoffPinRef.value;
   const frame = catalogHandoffFrameRef.value;

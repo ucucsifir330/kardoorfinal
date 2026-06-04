@@ -275,6 +275,16 @@
 }
 
 @media (max-width: 760px) {
+  .home-catalog-reference-stack__catalog {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .home-catalog-reference-stack__catalog-pin {
+    transform: none !important;
+    will-change: auto !important;
+  }
+
   .home-references-flip__intro {
     min-height: 82vh;
     align-items: flex-start;
