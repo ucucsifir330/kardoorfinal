@@ -107,6 +107,12 @@
               </div>
             </div>
 
+            <ul class="catalog-mobile-actions">
+              <li><NuxtLink to="/catalog">Tüm Seriyi İncele</NuxtLink></li>
+              <li>Seri Kataloğunu İndir</li>
+              <li>Koleksiyon Teklifi Al</li>
+            </ul>
+
             <transition-group
               name="catalog-list"
               tag="div"
@@ -116,7 +122,7 @@
               @enter="catalogEnter"
             >
               <article
-                v-for="(item, index) in (visibleRows.includes(block.index) ? getCatalogPreviewProducts(block) : [])"
+                v-for="(item, index) in (visibleRows.includes(block.index) ? getPreviewProducts(block) : [])"
                 :key="'row-' + block.index + '-item-' + item.id"
                 :data-index="index + 1"
                 class="catalog-product"
@@ -408,7 +414,7 @@
 
 <script setup lang="ts">
 import { gsap } from "gsap";
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { ComponentPublicInstance } from "vue";
 
 const {
@@ -427,6 +433,14 @@ const {
   handleProductModalKeydown,
   resetCatalogModalState
 } = useHomeCatalog();
+
+const isMobile = ref(false);
+const mobileProductLimit = 4;
+
+const getPreviewProducts = (block: any) => {
+  const all = getCatalogPreviewProducts(block);
+  return isMobile.value ? all.slice(0, mobileProductLimit) : all;
+};
 
 const isCatalogScrolled = ref(false);
 const catalogSectionRef = ref<HTMLElement | null>(null);
@@ -902,7 +916,12 @@ const initCatalogObserver = () => {
   requestCatalogRowCheck();
 };
 
+const checkMobile = () => { isMobile.value = window.innerWidth <= 760; };
+
 onMounted(() => {
+  checkMobile();
+  window.addEventListener("resize", checkMobile, { passive: true });
+
   nextTick(() => {
     const catalogMainEl = mainRef.value;
     if (catalogMainEl) {
@@ -942,6 +961,7 @@ onBeforeUnmount(() => {
 
   window.removeEventListener("scroll", requestCatalogLineProgress);
   window.removeEventListener("resize", refreshCatalogLine);
+  window.removeEventListener("resize", checkMobile);
   window.removeEventListener("keydown", handleProductModalKeydown);
   window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
   resetCatalogModalState();
