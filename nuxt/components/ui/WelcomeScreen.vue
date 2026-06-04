@@ -139,6 +139,21 @@ onBeforeUnmount(() => {
   color: #3a83ff;
 }
 
+.welcome-screen__brand :deep(.brand-title__kardoor) {
+  width: auto;
+  height: auto;
+  color: var(--text, #071018);
+  transform: none;
+}
+
+:global(.app-shell--night) .welcome-screen__brand :deep(.brand-title__kardoor) {
+  color: #f7f7f2;
+}
+
+.welcome-screen__brand :deep(.brand-title__kardoor)::before {
+  display: none;
+}
+
 .welcome-screen__progress-label {
   font-family: var(--font-body, Inter, system-ui, sans-serif);
   font-size: 0.72rem;

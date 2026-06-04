@@ -157,6 +157,21 @@ const segLen = Math.round(perimeter * 0.40);
   color: #3a83ff;
 }
 
+.ls-logo :deep(.brand-title__kardoor) {
+  width: auto;
+  height: auto;
+  color: var(--text, #071018);
+  transform: none;
+}
+
+:global(.app-shell--night) .ls-logo :deep(.brand-title__kardoor) {
+  color: #f7f7f2;
+}
+
+.ls-logo :deep(.brand-title__kardoor)::before {
+  display: none;
+}
+
 /* ── transitions ── */
 .loading-enter-from   { opacity: 0; }
 .loading-enter-active { transition: opacity 0.2s ease; }
