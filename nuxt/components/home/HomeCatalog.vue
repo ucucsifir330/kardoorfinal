@@ -236,6 +236,7 @@
     </div>
   </section>
 
+  <Teleport to="body">
   <div
     v-if="activeProduct"
     class="product-modal"
@@ -402,6 +403,7 @@
       </div>
     </section>
   </div>
+  </Teleport>
   </template>
 
 <script setup lang="ts">

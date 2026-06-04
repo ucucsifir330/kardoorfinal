@@ -62,40 +62,35 @@
   text-align: center;
 }
 
-.home-references-flip__eyebrow,
-.home-references-flip__label,
 .home-references-flip__copy span,
 .home-references-flip__scroll-hint {
+  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-.home-references-flip__eyebrow {
-  font-size: clamp(0.78rem, 0.82vw, 0.9rem);
-  letter-spacing: 0.1em;
-}
-
-.home-references-flip__eyebrow,
-.home-references-flip__label,
 .home-references-flip__copy span {
   color: var(--references-accent);
 }
 
 .home-references-flip__intro h2 {
   max-width: 840px;
+  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
   font-size: clamp(2.8rem, 7.66vw, 7.6rem);
   line-height: 0.94;
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
-.home-references-flip__intro p:not(.home-references-flip__eyebrow) {
-  max-width: 692px;
+.home-references-flip__intro p {
+  max-width: clamp(760px, 58vw, 1040px);
   color: var(--references-muted);
+  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
   font-size: clamp(1.08rem, 1.76vw, 1.5rem);
-  font-weight: 300;
-  line-height: 1.8;
+  font-weight: 400;
+  line-height: 1.56;
 }
 
 .home-references-flip__scroll-hint {
@@ -158,13 +153,16 @@
 .home-references-flip__copy h3 {
   margin-top: 12px;
   margin-bottom: 28px;
+  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
   font-size: clamp(1.8rem, 3.6vw, 4rem);
   line-height: 1;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
-.home-references-flip__copy p:not(.home-references-flip__label) {
+.home-references-flip__copy p {
   color: var(--references-muted);
+  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
   font-size: 0.98rem;
   line-height: 1.75;
   margin-bottom: 18px;

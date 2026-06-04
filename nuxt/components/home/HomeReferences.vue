@@ -27,7 +27,6 @@
     </div>
 
     <section class="home-references-flip__intro">
-      <p class="home-references-flip__eyebrow">KURUMSAL BELGESEL</p>
       <h2 id="home-references-title">
         Sınırların nasıl çizildiğine<br>
         tanık olun.
@@ -40,7 +39,6 @@
 
     <section ref="initialRef" class="home-references-flip__panel home-references-flip__initial">
       <div class="home-references-flip__copy">
-        <p class="home-references-flip__label">ÜRETİMİN RİTMİ</p>
         <h3>
           Mikro detaylardan,<br>
           makro projelere.

@@ -9,7 +9,7 @@
   overflow: hidden;
   background-color: var(--catalog-stage-surface-bg, var(--bg-color));
   margin: 0;
-  padding: clamp(92px, 10vw, 148px) 0 clamp(150px, 15vw, 240px);
+  padding: clamp(152px, 13vw, 220px) 0 clamp(150px, 15vw, 240px);
 }
 
 .title-area {
@@ -265,7 +265,7 @@
   .testimonial-wrapper {
     min-height: auto;
     align-items: flex-start;
-    padding: 112px 0 180px;
+    padding: 156px 0 180px;
   }
 
   .title-area {
@@ -314,7 +314,7 @@
 @media (max-width: 640px) {
   .testimonial-wrapper {
     flex-direction: column;
-    padding: 88px 0 150px;
+    padding: 124px 0 150px;
   }
 
   .title-area {

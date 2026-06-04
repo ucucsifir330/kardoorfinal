@@ -452,7 +452,7 @@
 }
 
 .entrance-door__heading {
-  font-family: "PP Neue Montreal", var(--font-display);
+  font-family: "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(44px, 4.89vw, 160px);
   line-height: 1.04;
   letter-spacing: 0;
@@ -505,7 +505,7 @@
 .entrance-door__subtitle {
   width: min(100%, clamp(232px, 18.59vw, 600px));
   margin: clamp(14px, 1.35vw, 40px) 0 0;
-  font-family: "General Sans", var(--font-body);
+  font-family: "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(18px, 1.35vw, 42px);
   line-height: 1.3;
   letter-spacing: 0;

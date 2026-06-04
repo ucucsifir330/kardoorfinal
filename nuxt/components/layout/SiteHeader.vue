@@ -31,10 +31,10 @@ const navItems = computed(() => {
 
   return [
     { to: "/", label: labels.home },
-    { to: "/doors", label: labels.products },
+    { to: "/doors", label: labels.products, disabled: true },
     { to: "/references", label: labels.references },
     { to: "/company", label: labels.about },
-    { to: "/contact", label: labels.contact }
+    { to: "/contact", label: labels.contact, disabled: true }
   ];
 });
 
@@ -213,16 +213,24 @@ watch(
         :aria-hidden="!isMenuOpen"
         :inert="!isMenuOpen"
       >
-        <NuxtLink
-          v-for="item in navItems"
-          :key="item.to"
-          class="site-header__nav-link"
-          :class="{ 'is-active': isActive(item.to) }"
-          :to="item.to"
-          :aria-current="isActive(item.to) ? 'page' : undefined"
-        >
-          {{ item.label }}
-        </NuxtLink>
+        <template v-for="item in navItems" :key="item.to">
+          <span
+            v-if="item.disabled"
+            class="site-header__nav-link site-header__nav-link--disabled"
+            aria-disabled="true"
+          >
+            {{ item.label }}
+          </span>
+          <NuxtLink
+            v-else
+            class="site-header__nav-link"
+            :class="{ 'is-active': isActive(item.to) }"
+            :to="item.to"
+            :aria-current="isActive(item.to) ? 'page' : undefined"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </template>
       </nav>
 
       <div class="site-header__utility" :aria-label="utilitiesLabel">
@@ -287,17 +295,25 @@ watch(
       :inert="!isMenuOpen"
     >
       <nav class="site-header__mobile-nav" :aria-label="mobileNavLabel">
-        <NuxtLink
-          v-for="item in navItems"
-          :key="item.to"
-          class="site-header__mobile-link"
-          :class="{ 'is-active': isActive(item.to) }"
-          :to="item.to"
-          :aria-current="isActive(item.to) ? 'page' : undefined"
-          @click="closeMenu"
-        >
-          {{ item.label }}
-        </NuxtLink>
+        <template v-for="item in navItems" :key="item.to">
+          <span
+            v-if="item.disabled"
+            class="site-header__mobile-link site-header__mobile-link--disabled"
+            aria-disabled="true"
+          >
+            {{ item.label }}
+          </span>
+          <NuxtLink
+            v-else
+            class="site-header__mobile-link"
+            :class="{ 'is-active': isActive(item.to) }"
+            :to="item.to"
+            :aria-current="isActive(item.to) ? 'page' : undefined"
+            @click="closeMenu"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </template>
       </nav>
     </div>
   </header>

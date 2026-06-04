@@ -118,7 +118,7 @@
   max-width: var(--manifesto-copy-width);
   flex-direction: column;
   align-items: flex-start;
-  transform: translateY(clamp(54px, 7vh, 92px));
+  transform: translateY(clamp(126px, 12vh, 180px));
 }
 
 .ada-manifesto-cta {
@@ -549,7 +549,7 @@ span.ada-brand-logo {
   justify-content: center;
   width: 100%;
   overflow: visible;
-  margin-top: clamp(112px, 10vw, 174px);
+  margin-top: clamp(168px, 13vw, 248px);
   margin-bottom: clamp(34px, 4vw, 72px);
   padding: 0 clamp(18px, 4vw, 76px);
 }
@@ -1458,7 +1458,7 @@ span.ada-brand-logo {
   }
 
   .ada-manifesto-content {
-    transform: translateY(clamp(18px, 5vh, 42px));
+    transform: translateY(clamp(58px, 8vh, 86px));
   }
 
   .ada-manifesto-cta {
@@ -1494,7 +1494,7 @@ span.ada-brand-logo {
   }
 
   .ada-title-container {
-    margin-top: 72px;
+    margin-top: 116px;
     margin-bottom: 46px;
     padding: 76px 1rem 0;
   }

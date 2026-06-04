@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import gsap from "gsap";
 import type { ComponentPublicInstance } from "vue";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 type Project = {
@@ -162,6 +162,10 @@ const closeModal = () => {
   selectedProject.value = null;
 };
 
+const onKeydown = (event: KeyboardEvent) => {
+  if (event.key === "Escape") closeModal();
+};
+
 const nextProject = () => {
   if (!selectedProject.value) return;
 
@@ -185,14 +189,14 @@ const onPanelEnter = (element: Element, done: () => void) => {
 
   timeline.fromTo(
     element,
-    { height: 0, opacity: 1 },
-    { height: "min(760px, calc(100vh - 120px))", duration: 1, ease: "power4.inOut" }
+    { opacity: 0 },
+    { opacity: 1, duration: 0.28, ease: "power2.out" }
   );
   timeline.fromTo(
     inner,
-    { opacity: 0, y: 30 },
-    { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
-    "-=0.4"
+    { opacity: 0, y: 24, scale: 0.96 },
+    { opacity: 1, y: 0, scale: 1, duration: 0.52, ease: "power3.out" },
+    "-=0.12"
   );
 };
 
@@ -200,19 +204,8 @@ const onPanelLeave = (element: Element, done: () => void) => {
   const inner = element.querySelector(".panel-inner");
   const timeline = gsap.timeline({ onComplete: done });
 
-  timeline.to(inner, { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" });
-  timeline.to(
-    element,
-    {
-      height: 0,
-      duration: 0.7,
-      ease: "power4.inOut",
-      onStart: () => {
-        if (element instanceof HTMLElement) element.style.overflow = "hidden";
-      }
-    },
-    "-=0.1"
-  );
+  timeline.to(inner, { opacity: 0, y: 18, scale: 0.98, duration: 0.22, ease: "power2.in" });
+  timeline.to(element, { opacity: 0, duration: 0.18, ease: "power2.in" }, "-=0.05");
 };
 
 const onProjectEnter = (element: Element, done: () => void) => {
@@ -265,10 +258,20 @@ onMounted(() => {
     ease: "power3.out",
     delay: 0.4
   });
+
+  window.addEventListener("keydown", onKeydown);
 });
 
 onBeforeUnmount(() => {
   marqueeTween?.kill();
+  window.removeEventListener("keydown", onKeydown);
+  document.body.style.overflow = "";
+});
+
+watch(selectedProject, (project) => {
+  if (!import.meta.client) return;
+
+  document.body.style.overflow = project ? "hidden" : "";
 });
 </script>
 
@@ -296,8 +299,8 @@ onBeforeUnmount(() => {
       </div>
 
       <Transition :css="false" @enter="onPanelEnter" @leave="onPanelLeave">
-        <div v-if="selectedProject" class="project-expansion-panel">
-          <div class="panel-inner">
+        <div v-if="selectedProject" class="project-expansion-panel" @click="closeModal">
+          <div class="panel-inner" @click.stop>
             <button type="button" class="panel-close" @click.stop.prevent="closeModal">
               <span class="close-text">{{ pageCopy.close }}</span>
               <span class="close-icon" aria-hidden="true">
@@ -400,4 +403,3 @@ onBeforeUnmount(() => {
     </section>
   </div>
 </template>
-

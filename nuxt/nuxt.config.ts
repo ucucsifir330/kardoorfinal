@@ -6,6 +6,30 @@ const appCdnUrl = process.env.NUXT_APP_CDN_URL || "";
 export default defineNuxtConfig({
   compatibilityDate: "2026-05-02",
   devtools: { enabled: false },
+  hooks: {
+    "pages:extend"(pages) {
+      const disabledRoutes = new Set(["/doors", "/doors/:slug", "/contact"]);
+
+      const removeDisabledRoutes = (routes: typeof pages) => {
+        for (let index = routes.length - 1; index >= 0; index -= 1) {
+          const route = routes[index];
+
+          if (!route) continue;
+
+          if (disabledRoutes.has(route.path)) {
+            routes.splice(index, 1);
+            continue;
+          }
+
+          if (route.children) {
+            removeDisabledRoutes(route.children);
+          }
+        }
+      };
+
+      removeDisabledRoutes(pages);
+    }
+  },
   modules: ["@nuxt/image"],
   components: [{ path: "~/components", pathPrefix: false }],
   css: ["~/assets/styles/main.css"],
@@ -27,6 +51,11 @@ export default defineNuxtConfig({
       link: [
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+        { rel: "preconnect", href: "https://api.fontshare.com" },
+        {
+          rel: "stylesheet",
+          href: "https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700,800&display=swap"
+        },
         {
           rel: "stylesheet",
           href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;700&display=swap"

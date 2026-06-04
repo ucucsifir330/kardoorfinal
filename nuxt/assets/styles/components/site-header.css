@@ -288,6 +288,17 @@
   background: var(--header-control-hover);
 }
 
+.site-header__nav-link--disabled,
+.site-header__mobile-link--disabled {
+  cursor: default;
+}
+
+.site-header__nav-link--disabled:hover,
+.site-header__mobile-link--disabled:hover {
+  color: var(--header-link);
+  background: transparent;
+}
+
 .site-header__nav-link.is-active {
   --header-glass-angle: -75deg;
   color: var(--header-link-active);
@@ -322,6 +333,11 @@
   --header-glass-angle: -75deg;
   --header-shine-angle: -15deg;
   transform: scale(0.975);
+}
+
+.site-header__nav-link--disabled:active,
+.site-header__mobile-link--disabled:active {
+  transform: none;
 }
 
 .site-header__nav-link:active::before,

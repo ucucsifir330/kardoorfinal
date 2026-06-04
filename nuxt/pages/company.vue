@@ -144,7 +144,7 @@ const resetCardStyles = () => {
 };
 
 const initScrollTimeline = async () => {
-  if (!sectionRef.value || window.matchMedia("(max-width: 820px)").matches) {
+  if (!sectionRef.value || window.matchMedia("(max-width: 1100px)").matches) {
     return;
   }
 
@@ -227,6 +227,12 @@ onBeforeUnmount(() => {
 
 <template>
   <section ref="sectionRef" class="company-timeline" aria-labelledby="company-timeline-title">
+    <a href="/#home-manifesto" class="company-timeline__back-cta" aria-label="Manifesto bölümüne geri dön">
+      <span class="company-timeline__back-icon" aria-hidden="true">
+        <span class="company-timeline__back-chevron">‹</span>
+      </span>
+    </a>
+
     <div class="company-timeline__mobile-list">
       <article
         v-for="(item, index) in timelineData"
@@ -302,4 +308,3 @@ onBeforeUnmount(() => {
     </div>
   </section>
 </template>
-
