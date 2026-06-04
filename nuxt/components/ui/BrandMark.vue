@@ -7,7 +7,10 @@
     </span>
 
     <span class="brand-copy">
-      <span class="brand-title"><strong>EGE</strong> KARDOOR</span>
+      <span class="brand-title">
+        <strong class="brand-title__ege">EGE</strong>
+        <span class="brand-title__kardoor" aria-hidden="true">KARDOOR</span>
+      </span>
     </span>
   </span>
 </template>
@@ -67,13 +70,42 @@
 }
 
 .brand-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.26em;
   font-size: 1.05rem;
   font-weight: 900;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
-.brand-title strong {
+.brand-title__ege {
   color: #3a83ff;
+}
+
+.brand-title__kardoor {
+  display: inline-block;
+  position: relative;
+  width: 5.42em;
+  height: 1.14em;
+  overflow: visible;
+  color: transparent;
+  transform: translateY(0.08em);
+}
+
+.brand-title__kardoor::before {
+  content: "";
+  position: absolute;
+  inset: -0.05em -0.02em -0.06em;
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: invert(1);
+  -webkit-backdrop-filter: invert(1);
+  mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 91 19'%3E%3Ctext x='0' y='15.5' font-family='Inter, Arial, sans-serif' font-size='17' font-weight='900' letter-spacing='0'%3EKARDOOR%3C/text%3E%3C/svg%3E")
+    0 0 / 100% 100% no-repeat;
+  -webkit-mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 91 19'%3E%3Ctext x='0' y='15.5' font-family='Inter, Arial, sans-serif' font-size='17' font-weight='900' letter-spacing='0'%3EKARDOOR%3C/text%3E%3C/svg%3E")
+    0 0 / 100% 100% no-repeat;
 }
 
 @media (max-width: 820px) {

@@ -1,0 +1,331 @@
+.floating-contact {
+  --contact-size: 68px;
+  --contact-bottom: clamp(18px, 2.3vw, 34px);
+  --contact-right: clamp(18px, 2.45vw, 42px);
+  --contact-glass: rgba(255, 255, 255, 0.54);
+  --contact-glass-strong: rgba(255, 255, 255, 0.72);
+  --contact-ink: rgba(5, 12, 18, 0.94);
+  --contact-muted: rgba(5, 12, 18, 0.58);
+  --contact-line: rgba(255, 255, 255, 0.58);
+  --contact-shadow: rgba(0, 0, 0, 0.18);
+  --contact-blue: #006cff;
+  --floating-contact-opacity: 1;
+  --floating-contact-y: 0px;
+  --floating-contact-pointer: auto;
+
+  position: fixed;
+  right: var(--contact-right);
+  bottom: var(--contact-bottom);
+  z-index: 82;
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+  font-family: var(--header-font, var(--font-body));
+  opacity: var(--floating-contact-opacity);
+  pointer-events: var(--floating-contact-pointer);
+  transform: translate3d(0, var(--floating-contact-y), 0);
+  transition:
+    opacity 0.12s linear,
+    transform 0.12s linear;
+  will-change: opacity, transform;
+}
+
+.app-shell--night .floating-contact {
+  --contact-glass: rgba(14, 18, 22, 0.62);
+  --contact-glass-strong: rgba(21, 26, 32, 0.78);
+  --contact-ink: rgba(247, 247, 242, 0.96);
+  --contact-muted: rgba(247, 247, 242, 0.62);
+  --contact-line: rgba(255, 255, 255, 0.2);
+  --contact-shadow: rgba(0, 0, 0, 0.34);
+}
+
+.floating-contact::before {
+  content: "";
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  width: 148px;
+  height: 148px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(0, 108, 255, 0.18), rgba(0, 108, 255, 0) 68%);
+  filter: blur(18px);
+  opacity: 0.38;
+  transform: scale(0.72);
+  transition:
+    opacity 0.35s var(--ease-soft),
+    transform 0.35s var(--ease-soft);
+}
+
+.floating-contact.is-open::before {
+  opacity: 0.72;
+  transform: scale(1);
+}
+
+.floating-contact__trigger,
+.floating-contact__panel,
+.floating-contact__primary,
+.floating-contact__action {
+  pointer-events: auto;
+}
+
+.floating-contact__trigger,
+.floating-contact__panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--contact-line);
+  color: var(--contact-ink);
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.22) 42%, rgba(255, 255, 255, 0.46)),
+    var(--contact-glass);
+  box-shadow:
+    0 18px 46px var(--contact-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(24px) saturate(1.24);
+  -webkit-backdrop-filter: blur(24px) saturate(1.24);
+}
+
+.floating-contact__trigger::after,
+.floating-contact__panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 120% at 8% 0%, rgba(255, 255, 255, 0.68), transparent 52%),
+    linear-gradient(135deg, rgba(0, 108, 255, 0.16), transparent 36%);
+  opacity: 0.82;
+}
+
+.floating-contact__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: var(--contact-size);
+  padding: 8px 8px 8px 19px;
+  border-radius: 999px;
+  font: inherit;
+  cursor: pointer;
+  transform: translateZ(0);
+  transition:
+    box-shadow 0.28s var(--ease-soft),
+    transform 0.28s var(--ease-soft),
+    border-color 0.28s var(--ease-soft);
+}
+
+.floating-contact__trigger:hover,
+.floating-contact.is-open .floating-contact__trigger {
+  border-color: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 16px 34px var(--contact-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.floating-contact__trigger:focus-visible,
+.floating-contact__primary:focus-visible,
+.floating-contact__action:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 4px;
+}
+
+.floating-contact__trigger-copy,
+.floating-contact__primary span {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.floating-contact__trigger-copy {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.floating-contact__trigger-copy small,
+.floating-contact__primary small {
+  color: var(--contact-muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.floating-contact__trigger-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--contact-size) - 16px);
+  height: calc(var(--contact-size) - 16px);
+  border-radius: 999px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.34), transparent 38%),
+    linear-gradient(135deg, #071018, #14202b 54%, var(--contact-blue));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.floating-contact__trigger-icon svg {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  transition:
+    opacity 0.22s var(--ease-soft),
+    transform 0.22s var(--ease-soft);
+}
+
+.floating-contact__icon-close {
+  opacity: 0;
+  transform: scale(0.76) rotate(-45deg);
+}
+
+.floating-contact.is-open .floating-contact__icon-chat {
+  opacity: 0;
+  transform: scale(0.76) rotate(45deg);
+}
+
+.floating-contact.is-open .floating-contact__icon-close {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.floating-contact__panel {
+  display: grid;
+  width: min(292px, calc(100vw - 36px));
+  padding: 10px;
+  border-radius: 26px;
+  opacity: 0;
+  transform: translateY(16px) scale(0.96);
+  transform-origin: right bottom;
+  visibility: hidden;
+  transition:
+    opacity 0.24s var(--ease-soft),
+    transform 0.3s var(--ease-soft),
+    visibility 0.24s linear;
+}
+
+.floating-contact.is-open .floating-contact__panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+}
+
+.floating-contact__primary,
+.floating-contact__action {
+  display: flex;
+  align-items: center;
+  color: var(--contact-ink);
+  text-decoration: none;
+}
+
+.floating-contact__primary {
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 68px;
+  padding: 14px 14px 14px 16px;
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.18)),
+    var(--contact-glass-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.1;
+  transition:
+    background 0.24s var(--ease-soft),
+    transform 0.24s var(--ease-soft);
+}
+
+.floating-contact__primary svg {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+}
+
+.floating-contact__primary:hover,
+.floating-contact__action:hover {
+  transform: translateX(-2px);
+}
+
+.floating-contact__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.floating-contact__action {
+  justify-content: center;
+  min-height: 66px;
+  padding: 9px 6px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  transition:
+    background 0.24s var(--ease-soft),
+    transform 0.24s var(--ease-soft);
+}
+
+.floating-contact__action {
+  flex-direction: column;
+  gap: 7px;
+}
+
+.floating-contact__action svg {
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+}
+
+.floating-contact__action:hover {
+  background: rgba(255, 255, 255, 0.42);
+}
+
+@media (max-width: 720px) {
+  .floating-contact {
+    --contact-size: 62px;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .floating-contact__trigger {
+    padding-left: 8px;
+  }
+
+  .floating-contact__trigger-copy {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  .floating-contact__panel {
+    width: min(286px, calc(100vw - 28px));
+    border-radius: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-contact,
+  .floating-contact *,
+  .floating-contact::before {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

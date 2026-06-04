@@ -9,6 +9,7 @@
 /* Shared components */
 @import "./components/buttons.css";
 @import "./components/site-header.css";
+@import "./components/floating-contact.css";
 
 /* Page / section styles */
 @import "./sections/entrance-door.css";

@@ -136,6 +136,11 @@
   min-width: 0;
   color: var(--header-brand-text);
   text-decoration: none;
+  filter: none;
+}
+
+.site-header__brand .brand-symbol,
+.site-header__brand .brand-title__ege {
   filter: drop-shadow(var(--header-brand-shadow));
 }
 
@@ -939,6 +944,11 @@
 
 /* Light mode logo contrast fix */
 [data-theme="light"] .site-header__brand {
+  filter: none;
+}
+
+[data-theme="light"] .site-header__brand .brand-symbol,
+[data-theme="light"] .site-header__brand .brand-title__ege {
   filter:
     drop-shadow(0 1px 0 rgba(255, 255, 255, 0.32))
     drop-shadow(0 12px 28px rgba(0, 0, 0, 0.12));
@@ -946,5 +956,10 @@
 
 /* Dark mode logo stays stronger */
 [data-theme="dark"] .site-header__brand {
+  filter: none;
+}
+
+[data-theme="dark"] .site-header__brand .brand-symbol,
+[data-theme="dark"] .site-header__brand .brand-title__ege {
   filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.34));
 }

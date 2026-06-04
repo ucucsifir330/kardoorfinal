@@ -28,6 +28,7 @@ useHead({
     <WelcomeScreen />
     <LoadingScreen />
     <SiteHeader />
+    <FloatingContactHub />
     <SmoothCursor />
 
     <main>
