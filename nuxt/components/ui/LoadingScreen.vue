@@ -150,11 +150,11 @@ const segLen = Math.round(perimeter * 0.40);
 
 .ls-logo :deep(.brand-title) {
   font-size: 2.2rem;
-  color: #ffffff;
+  color: #071018;
 }
 
 .ls-logo :deep(.brand-title strong) {
-  color: #3ebffa;
+  color: #3a83ff;
 }
 
 /* ── transitions ── */

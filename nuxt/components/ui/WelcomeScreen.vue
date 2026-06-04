@@ -1,29 +1,31 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-
-const SESSION_KEY = "kardoor-welcomed";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const visible = ref(false);
 const leaving = ref(false);
 const progress = ref(0);
 
+let tickTimer = 0;
+let dismissTimer = 0;
+
 onMounted(() => {
-  if (sessionStorage.getItem(SESSION_KEY)) return;
-
   visible.value = true;
+  leaving.value = false;
+  progress.value = 0;
 
-  const DURATION = 2200;
+  const DURATION = 2800;
   const INTERVAL = 16;
   const steps = DURATION / INTERVAL;
   let current = 0;
 
-  const tick = setInterval(() => {
+  tickTimer = window.setInterval(() => {
     current++;
     const ratio = Math.min(1, current / steps);
-    progress.value = Math.round((1 - Math.pow(1 - ratio, 2.4)) * 100);
+    progress.value = Math.round(Math.pow(ratio, 1.35) * 100);
 
     if (ratio >= 1) {
-      clearInterval(tick);
+      window.clearInterval(tickTimer);
+      tickTimer = 0;
       progress.value = 100;
       dismiss();
     }
@@ -32,26 +34,33 @@ onMounted(() => {
 
 const dismiss = () => {
   leaving.value = true;
-  setTimeout(() => {
+  dismissTimer = window.setTimeout(() => {
     visible.value = false;
-    sessionStorage.setItem(SESSION_KEY, "1");
+    dismissTimer = 0;
   }, 700);
 };
+
+onBeforeUnmount(() => {
+  window.clearInterval(tickTimer);
+  window.clearTimeout(dismissTimer);
+});
 </script>
 
 <template>
   <Transition name="welcome">
     <div v-if="visible" class="welcome-screen" :class="{ 'is-leaving': leaving }" aria-hidden="true">
+      <div class="welcome-screen__top-progress">
+        <div
+          class="welcome-screen__top-progress-bar"
+          :style="{ transform: `scaleX(${progress / 100})` }"
+        />
+      </div>
+
       <div class="welcome-screen__brand">
         <BrandMark />
       </div>
 
-      <div class="welcome-screen__progress-wrap">
-        <div class="welcome-screen__progress-track">
-          <div class="welcome-screen__progress-bar" :style="{ width: progress + '%' }" />
-        </div>
-        <span class="welcome-screen__progress-label">{{ progress }}%</span>
-      </div>
+      <span class="welcome-screen__progress-label">{{ progress }}%</span>
     </div>
   </Transition>
 </template>
@@ -65,9 +74,30 @@ const dismiss = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3rem;
+  gap: 1.35rem;
   background: var(--bg, #f8f6ef);
   color: var(--text, #071018);
+}
+
+.welcome-screen__top-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  background: rgba(7, 16, 24, 0.10);
+}
+
+.welcome-screen__top-progress-bar {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--accent-blue, #006cff);
+  box-shadow: 0 0 18px rgba(0, 108, 255, 0.34);
+  transition: transform 60ms linear;
+  will-change: transform;
 }
 
 .welcome-screen__brand {
@@ -109,37 +139,15 @@ const dismiss = () => {
   color: #3a83ff;
 }
 
-.welcome-screen__progress-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  opacity: 0;
-  transform: translateY(8px);
-  animation: ws-fade-up 0.6s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) 0.35s forwards;
-}
-
-.welcome-screen__progress-track {
-  width: 320px;
-  height: 2px;
-  background: var(--line, rgba(7, 16, 24, 0.14));
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.welcome-screen__progress-bar {
-  height: 100%;
-  background: var(--accent-blue, #006cff);
-  border-radius: 999px;
-  transition: width 60ms linear;
-}
-
 .welcome-screen__progress-label {
   font-family: var(--font-body, Inter, system-ui, sans-serif);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.12em;
-  color: var(--muted, rgba(7, 16, 24, 0.68));
+  letter-spacing: 0.14em;
+  color: var(--muted, rgba(7, 16, 24, 0.58));
+  opacity: 0;
+  transform: translateY(6px);
+  animation: ws-fade-up 0.55s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) 0.32s forwards;
 }
 
 /* exit */
