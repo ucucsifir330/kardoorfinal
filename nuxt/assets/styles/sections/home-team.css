@@ -112,6 +112,34 @@
   text-align: left;
 }
 
+.ada-split-quote {
+  cursor: pointer;
+}
+
+.ada-split-quote .ts-line {
+  display: block;
+  overflow: hidden;
+  margin: 0 0 -0.1em;
+  padding: 0 0 0.2em;
+}
+
+.ada-split-quote .ada-manifesto-word {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.ada-split-quote small {
+  display: block;
+  margin-top: 0.22em;
+  color: rgba(234, 232, 232, 0.7);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.26em;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.15;
+  text-align: right;
+}
+
 
 .ada-manifesto-content {
   display: flex;

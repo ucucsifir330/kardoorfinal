@@ -9,7 +9,22 @@ type TimelineItem = {
   image: string;
 };
 
+type LenisControls = {
+  scrollTo?: (
+    target: number,
+    options?: {
+      duration?: number;
+      easing?: (t: number) => number;
+      force?: boolean;
+      lock?: boolean;
+      immediate?: boolean;
+      onComplete?: () => void;
+    }
+  ) => void;
+};
+
 const { locale } = useKardoorLocale();
+const { $lenis } = useNuxtApp();
 
 const copy = computed(() => {
   if (locale.value === "tr") {
@@ -20,7 +35,7 @@ const copy = computed(() => {
       experienceLabel: "Yıllık",
       experienceValue: "deneyim",
       yearsAriaLabel: "Şirket zaman çizelgesi yılları",
-      experienceAriaLabel: "18 yıllık deneyim",
+      experienceAriaLabel: "10 yıllık deneyim",
       timeline: [
         {
           year: 1995,
@@ -75,7 +90,7 @@ const copy = computed(() => {
     experienceLabel: "Years of",
     experienceValue: "experience",
     yearsAriaLabel: "Company timeline years",
-    experienceAriaLabel: "18 years of experience",
+    experienceAriaLabel: "10 years of experience",
     timeline: [
       {
         year: 1995,
@@ -134,10 +149,11 @@ const cardStyles = ref<Record<string, string | number>[]>([]);
 const timelineData = computed(() => copy.value.timeline);
 
 let cleanupGsap: (() => void) | null = null;
+let goToTimelineIndex: ((index: number) => void) | null = null;
 
 const resetCardStyles = () => {
   cardStyles.value = timelineData.value.map((_, index) => ({
-    transform: index === 0 ? "translateY(0) scale(1)" : "translateY(100vh) scale(1)",
+    transform: index === 0 ? "translateY(0)" : "translateY(100vh)",
     opacity: index === 0 ? 1 : 0,
     zIndex: index + 1
   }));
@@ -148,58 +164,159 @@ const initScrollTimeline = async () => {
     return;
   }
 
-  const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
+  const [{ default: gsap }, { ScrollTrigger }, { ScrollToPlugin }] = await Promise.all([
     import("gsap"),
-    import("gsap/ScrollTrigger")
+    import("gsap/ScrollTrigger"),
+    import("gsap/ScrollToPlugin")
   ]);
 
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
   const context = gsap.context(() => {
-    const scrollDistance = timelineData.value.length * 800;
+    const maxIndex = timelineData.value.length - 1;
+    const stepDistance = Math.max(window.innerHeight * 1.05, 940);
+    const scrollDistance = maxIndex * stepDistance;
+    const clampProgress = gsap.utils.clamp(0, 1);
+    const lenis = $lenis as LenisControls | null | undefined;
+    let isStepping = false;
+    let isTimelineActive = false;
+
+    const applyTimelineProgress = (progress: number) => {
+      const currentFloat = clampProgress(progress) * maxIndex;
+
+      activeIndex.value = Math.round(currentFloat);
+      cardStyles.value = timelineData.value.map((_, index) => {
+        const delta = currentFloat - index;
+
+        if (delta >= 0) {
+          return {
+            transform: "translateY(0)",
+            opacity: Math.max(0, 1 - delta),
+            zIndex: index + 1
+          };
+        }
+
+        return {
+          transform: `translateY(${Math.abs(delta) * 100}dvh)`,
+          opacity: 1,
+          zIndex: index + 1
+        };
+      });
+    };
+
     const trigger = ScrollTrigger.create({
       trigger: sectionRef.value,
       start: "top top",
       end: `+=${scrollDistance}`,
       pin: true,
-      scrub: 1,
-      snap: {
-        snapTo: 1 / (timelineData.value.length - 1),
-        duration: 0.3,
-        ease: "power1.inOut"
-      },
+      scrub: 0.35,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
       onUpdate: (self) => {
-        const progress = self.progress;
-        const maxIndex = timelineData.value.length - 1;
-        const currentFloat = progress * maxIndex;
-
-        activeIndex.value = Math.round(currentFloat);
-        cardStyles.value = timelineData.value.map((_, index) => {
-          const delta = currentFloat - index;
-
-          if (delta >= 0) {
-            const scale = Math.max(0, 1 - delta * 0.05);
-
-            return {
-              transform: `translateY(0) scale(${scale})`,
-              opacity: Math.max(0, 1 - delta),
-              zIndex: index + 1
-            };
-          }
-
-          return {
-            transform: `translateY(${Math.abs(delta) * 100}vh) scale(1)`,
-            opacity: 1,
-            zIndex: index + 1
-          };
-        });
+        if (isStepping) return;
+        applyTimelineProgress(self.progress);
+      },
+      onToggle: (self) => {
+        isTimelineActive = self.isActive;
+        if (!self.isActive) isStepping = false;
+      },
+      onRefresh: (self) => {
+        applyTimelineProgress(self.progress);
       }
     });
 
+    const settleToIndex = (targetIndex: number, allowExit = false) => {
+      if (isStepping) return;
+
+      if (targetIndex < 0 || targetIndex > maxIndex) {
+        if (!allowExit) return;
+
+        isStepping = true;
+        const exitY = targetIndex < 0 ? Math.max(0, trigger.start - 2) : trigger.end + 2;
+        lenis?.scrollTo?.(exitY, {
+          duration: 0.75,
+          force: true,
+          lock: true,
+          easing: (t) => 1 - Math.pow(1 - t, 3),
+          onComplete: () => {
+            isStepping = false;
+          }
+        });
+        return;
+      }
+
+      const settledIndex = Math.min(maxIndex, Math.max(0, targetIndex));
+      const targetProgress = settledIndex / maxIndex;
+      const targetY = trigger.start + stepDistance * settledIndex;
+
+      const currentProgress = clampProgress((window.scrollY - trigger.start) / scrollDistance);
+      const progressProxy = { value: currentProgress };
+
+      isStepping = true;
+      gsap.killTweensOf(progressProxy);
+      gsap.to(progressProxy, {
+        value: targetProgress,
+        duration: 0.64,
+        ease: "power2.inOut",
+        overwrite: true,
+        onUpdate: () => {
+          applyTimelineProgress(progressProxy.value);
+        },
+        onComplete: () => {
+          applyTimelineProgress(targetProgress);
+          isStepping = false;
+        }
+      });
+
+      if (lenis?.scrollTo) {
+        lenis.scrollTo(targetY, {
+          duration: 0.64,
+          force: true,
+          lock: true,
+          easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+        });
+      } else {
+        gsap.to(window, {
+          duration: 0.64,
+          ease: "power2.inOut",
+          overwrite: true,
+          scrollTo: {
+            y: targetY,
+            autoKill: false
+          }
+        });
+      }
+    };
+
+    const stepTimeline = (direction: 1 | -1) => {
+      if (!isTimelineActive) return;
+      settleToIndex(activeIndex.value + direction, true);
+    };
+
+    const handleTimelineWheel = (event: WheelEvent) => {
+      const delta = event.deltaY;
+      if (Math.abs(delta) < 8) return;
+
+      if (!isTimelineActive) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (isStepping) return;
+
+      stepTimeline(delta > 0 ? 1 : -1);
+    };
+
+    isTimelineActive = window.scrollY >= trigger.start && window.scrollY <= trigger.end;
+    window.addEventListener("wheel", handleTimelineWheel, { passive: false, capture: true });
+
+    goToTimelineIndex = settleToIndex;
+
     cleanupGsap = () => {
-      trigger.kill();
+      gsap.killTweensOf(window);
+      window.removeEventListener("wheel", handleTimelineWheel, { capture: true });
       context.revert();
       cleanupGsap = null;
+      goToTimelineIndex = null;
     };
   }, sectionRef.value);
 
@@ -223,16 +340,19 @@ watch(timelineData, async () => {
 onBeforeUnmount(() => {
   cleanupGsap?.();
 });
+
+const handleYearClick = (index: number) => {
+  if (goToTimelineIndex) {
+    goToTimelineIndex(index);
+    return;
+  }
+
+  activeIndex.value = index;
+};
 </script>
 
 <template>
   <section ref="sectionRef" class="company-timeline" aria-labelledby="company-timeline-title">
-    <a href="/#home-manifesto" class="company-timeline__back-cta" aria-label="Manifesto bölümüne geri dön">
-      <span class="company-timeline__back-icon" aria-hidden="true">
-        <span class="company-timeline__back-chevron">‹</span>
-      </span>
-    </a>
-
     <div class="company-timeline__mobile-list">
       <article
         v-for="(item, index) in timelineData"
@@ -274,8 +394,15 @@ onBeforeUnmount(() => {
             v-for="(item, index) in timelineData"
             :key="`year-${item.year}`"
             :class="{ 'is-active': activeIndex === index }"
+            @click="handleYearClick(index)"
           >
-            {{ item.year }}
+            <button
+              type="button"
+              :aria-current="activeIndex === index ? 'step' : undefined"
+              @click="handleYearClick(index)"
+            >
+              {{ item.year }}
+            </button>
           </li>
         </ul>
       </div>
@@ -300,7 +427,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="company-timeline__experience" :aria-label="copy.experienceAriaLabel">
-      <span class="company-timeline__number">18</span>
+      <span class="company-timeline__number">10</span>
       <span class="company-timeline__experience-copy">
         <span>{{ copy.experienceLabel }}</span>
         <strong>{{ copy.experienceValue }}</strong>

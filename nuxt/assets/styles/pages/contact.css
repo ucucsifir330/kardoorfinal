@@ -281,14 +281,28 @@
 }
 
 .contact-map__label {
-  transition: background-size 0.9s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-.contact-map__label::before,
-.contact-map__label::after {
+  display: block;
+  position: relative;
+  color: var(--contact-ink);
+  white-space: nowrap;
+  transform-origin: 50% 50%;
   transition:
     transform 0.9s cubic-bezier(0.77, 0, 0.175, 1),
     opacity 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+  will-change: transform, opacity;
+}
+
+.contact-map__label--short {
+  opacity: 1;
+  transform: translateY(0%) rotateX(0deg);
+}
+
+.contact-map__label--full {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transform: translateY(100%) rotateX(-90deg);
 }
 
 .contact-info__group p .flip-text-link {
@@ -459,29 +473,46 @@
 }
 
 .contact-map__branch p {
-  margin: 1.15rem 0 0;
-  color: var(--contact-muted);
+  position: absolute;
+  left: clamp(1.05rem, 1.35vw, 1.7rem);
+  bottom: clamp(1.25rem, 1.8vw, 2rem);
+  z-index: 7;
+  margin: 0;
+  color: var(--contact-ink);
   font-family: var(--contact-gotham);
-  font-size: 1rem;
+  font-size: clamp(0.78rem, 0.72vw, 1rem);
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
-  text-align: center;
+  text-align: left;
   text-transform: uppercase;
   text-decoration: none;
+  pointer-events: none;
+  transform: rotate(-90deg);
+  transform-origin: left bottom;
+  transition:
+    left 0.9s cubic-bezier(0.77, 0, 0.175, 1),
+    bottom 0.9s cubic-bezier(0.77, 0, 0.175, 1),
+    transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+  will-change: transform, left, bottom;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .contact-map__branch:hover .contact-map__label {
-    background-size: 100% 1px;
+  .contact-map__branch:hover p,
+  .contact-map__branch--active p {
+    left: clamp(1.15rem, 1.7vw, 2rem);
+    bottom: clamp(1.35rem, 2vw, 2.2rem);
+    transform: rotate(0deg);
   }
 
-  .contact-map__branch:hover .contact-map__label::before {
+  .contact-map__branch:hover .contact-map__label--short,
+  .contact-map__branch--active .contact-map__label--short {
     opacity: 0;
     transform: translateY(-100%) rotateX(90deg);
   }
 
-  .contact-map__branch:hover .contact-map__label::after {
+  .contact-map__branch:hover .contact-map__label--full,
+  .contact-map__branch--active .contact-map__label--full {
     opacity: 1;
     transform: translateY(0%) rotateX(0deg);
   }

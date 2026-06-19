@@ -107,51 +107,28 @@ onBeforeUnmount(() => {
 }
 
 .welcome-screen__brand :deep(.brand-mark) {
-  gap: 1.4rem;
+  gap: 0.54rem;
 }
 
 .welcome-screen__brand :deep(.brand-symbol) {
-  width: 80px;
-  height: 98px;
-}
-
-.welcome-screen__brand :deep(.brand-symbol__left),
-.welcome-screen__brand :deep(.brand-symbol__right) {
-  width: 40px;
-  height: 80px;
-}
-
-.welcome-screen__brand :deep(.brand-symbol__core) {
-  left: 32px;
-  width: 24px;
-  height: 66px;
+  width: 25px;
+  height: 30px;
 }
 
 .welcome-screen__brand :deep(.brand-title) {
-  font-size: 2rem;
+  font-size: 1.06rem;
 }
 
 .welcome-screen__brand :deep(.brand-title) {
   color: var(--text, #071018);
 }
 
-.welcome-screen__brand :deep(.brand-title strong) {
+.welcome-screen__brand :deep(.brand-title__ege) {
   color: #3a83ff;
 }
 
 .welcome-screen__brand :deep(.brand-title__kardoor) {
-  width: auto;
-  height: auto;
-  color: var(--text, #071018);
-  transform: none;
-}
-
-:global(.app-shell--night) .welcome-screen__brand :deep(.brand-title__kardoor) {
-  color: #f7f7f2;
-}
-
-.welcome-screen__brand :deep(.brand-title__kardoor)::before {
-  display: none;
+  font-size: 1.02em;
 }
 
 .welcome-screen__progress-label {

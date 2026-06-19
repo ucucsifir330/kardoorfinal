@@ -29,6 +29,10 @@ const form = reactive({
 const branchMaps = [
   {
     id: "izmir",
+    shortLabels: {
+      en: "IZMIR",
+      tr: "\u0130ZM\u0130R"
+    },
     labels: {
       en: "IZMIR BRANCH",
       tr: "\u0130ZM\u0130R \u015eUBES\u0130"
@@ -39,6 +43,10 @@ const branchMaps = [
   },
   {
     id: "kocaeli",
+    shortLabels: {
+      en: "KOCAELI",
+      tr: "KOCAEL\u0130"
+    },
     labels: {
       en: "KOCAELI BRANCH",
       tr: "KOCAEL\u0130 \u015eUBES\u0130"
@@ -52,6 +60,10 @@ const branchMaps = [
   },
   {
     id: "manisa",
+    shortLabels: {
+      en: "MANISA",
+      tr: "MAN\u0130SA"
+    },
     labels: {
       en: "MANISA BRANCH",
       tr: "MAN\u0130SA \u015eUBES\u0130"
@@ -66,6 +78,7 @@ const branchMaps = [
 const contactBranches = computed(() =>
   branchMaps.map((branch) => ({
     ...branch,
+    shortLabel: locale.value === "en" ? branch.shortLabels.en : branch.shortLabels.tr,
     label: locale.value === "en" ? branch.labels.en : branch.labels.tr
   }))
 );
@@ -231,6 +244,7 @@ onMounted(() => {
         gsap.to(map, { columnGap: 0, duration: DUR, ease: EASE, overwrite: "auto" });
         branches.forEach((branch, i) => {
           const isActive = i === active;
+          branch.classList.toggle("contact-map__branch--active", isActive);
           gsap.to(branch, {
             flexGrow: isActive ? 1 : 0,
             duration: DUR,
@@ -250,6 +264,7 @@ onMounted(() => {
         const branches = liveBranches();
         gsap.to(map, { columnGap: restGap, duration: DUR, ease: EASE, overwrite: "auto" });
         branches.forEach((branch) => {
+          branch.classList.remove("contact-map__branch--active");
           gsap.to(branch, { flexGrow: 1, duration: DUR, ease: EASE, overwrite: true });
           gsap.to(branch.children, {
             autoAlpha: 1,
@@ -283,6 +298,7 @@ onMounted(() => {
         map.removeEventListener("pointerover", onOver);
         map.removeEventListener("pointerleave", onLeave);
         const branches = liveBranches();
+        branches.forEach((branch) => branch.classList.remove("contact-map__branch--active"));
         gsap.set(branches, { clearProps: "flexGrow,opacity,visibility" });
         gsap.set(branches.flatMap((b) => [...b.children]), {
           clearProps: "opacity,visibility"
@@ -460,6 +476,14 @@ onBeforeUnmount(() => {
                 <circle cx="24" cy="23" r="7.25" />
               </svg>
             </span>
+            <p>
+              <span class="contact-map__label contact-map__label--short">
+                {{ branch.shortLabel }}
+              </span>
+              <span class="contact-map__label contact-map__label--full">
+                {{ branch.label }}
+              </span>
+            </p>
             <button
               type="button"
               class="contact-map__link"
@@ -467,11 +491,6 @@ onBeforeUnmount(() => {
               @click="openBranchMap(branch)"
             />
           </div>
-          <p>
-            <span class="contact-map__label flip-text-link" :data-text="branch.label">
-              {{ branch.label }}
-            </span>
-          </p>
         </article>
       </div>
     </div>

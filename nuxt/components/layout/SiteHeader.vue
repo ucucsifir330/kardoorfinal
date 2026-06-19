@@ -34,7 +34,7 @@ const navItems = computed(() => {
     { to: "/doors", label: labels.products, disabled: true },
     { to: "/references", label: labels.references },
     { to: "/company", label: labels.about },
-    { to: "/contact", label: labels.contact, disabled: true }
+    { to: "/contact", label: labels.contact, disabled: false }
   ];
 });
 
@@ -202,7 +202,11 @@ watch(
     </svg>
 
     <div class="site-header__inner">
-      <NuxtLink class="site-header__brand" to="/" :aria-label="brandLabel">
+      <NuxtLink
+        class="site-header__brand site-header__brand--ghost"
+        to="/"
+        :aria-label="brandLabel"
+      >
         <BrandMark />
       </NuxtLink>
 
@@ -317,4 +321,32 @@ watch(
       </nav>
     </div>
   </header>
+
+  <Teleport to="body">
+    <!-- Symbol + KARDOOR: blends against the whole page like the cursor. -->
+    <div
+      class="brand-blend-layer brand-blend-layer--ink"
+      :class="{ 'is-scrolled': isScrolled }"
+      aria-hidden="true"
+    >
+      <div class="brand-blend-layer__inner">
+        <span class="site-header__brand brand-blend-layer__brand">
+          <BrandMark />
+        </span>
+      </div>
+    </div>
+
+    <!-- EGE only: rendered normally on top so it keeps its blue. -->
+    <div
+      class="brand-blend-layer brand-blend-layer--ege"
+      :class="{ 'is-scrolled': isScrolled }"
+      aria-hidden="true"
+    >
+      <div class="brand-blend-layer__inner">
+        <span class="site-header__brand brand-blend-layer__brand">
+          <BrandMark />
+        </span>
+      </div>
+    </div>
+  </Teleport>
 </template>

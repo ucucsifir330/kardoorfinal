@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   hooks: {
     "pages:extend"(pages) {
-      const disabledRoutes = new Set(["/doors", "/doors/:slug", "/contact"]);
+      const disabledRoutes = new Set(["/doors", "/doors/:slug"]);
 
       const removeDisabledRoutes = (routes: typeof pages) => {
         for (let index = routes.length - 1; index >= 0; index -= 1) {
@@ -58,7 +58,7 @@ export default defineNuxtConfig({
         },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;700&display=swap"
+          href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;700&family=Science+Gothic:wght@300;400;500;700&display=swap"
         },
         { id: "kardoor-theme", rel: "stylesheet", href: "/themes/light.css" }
       ]

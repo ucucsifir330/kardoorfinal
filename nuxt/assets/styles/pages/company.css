@@ -2,13 +2,16 @@
   --company-left-width: clamp(38rem, 48vw, 57.5rem);
   --company-center-width: clamp(6.5rem, 8vw, 10rem);
   --company-right-offset: clamp(1.25rem, 2.6vw, 3rem);
+  --company-page-bg: #111115;
 
-  width: 100%;
-  min-height: 100svh;
+  width: 100vw;
+  margin: 0;
+  min-height: 100dvh;
   position: relative;
   display: flex;
   overflow: hidden;
-  background: #111115;
+  isolation: isolate;
+  background: var(--company-page-bg);
   color: #fff;
 }
 
@@ -16,7 +19,7 @@
   width: var(--company-left-width);
   flex: 0 0 var(--company-left-width);
   max-width: 50vw;
-  min-height: 100svh;
+  min-height: 100dvh;
   position: relative;
   display: flex;
   align-items: flex-start;
@@ -26,68 +29,10 @@
   display: none;
 }
 
-.company-timeline__back-cta {
-  position: absolute;
-  left: clamp(1.25rem, 3.2vw, 3.25rem);
-  top: calc(var(--header) + clamp(0.85rem, 1.6vw, 1.45rem));
-  z-index: 20;
-  display: inline-flex;
-  align-items: center;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  color: rgba(255, 255, 255, 0.86);
-  background: transparent;
-  box-shadow: none;
-  text-decoration: none;
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  transition: transform 0.35s ease, border-color 0.35s ease, background 0.35s ease, color 0.35s ease;
-}
-
-.company-timeline__back-cta:hover {
-  transform: translateX(-3px);
-  background: transparent;
-  color: #fff;
-}
-
-.company-timeline__back-icon {
-  width: 34px;
-  height: 34px;
-  display: inline-grid;
-  place-items: center;
-  overflow: hidden;
-}
-
-.company-timeline__back-chevron {
-  display: block;
-  color: currentColor;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 2.1rem;
-  font-weight: 700;
-  line-height: 0.78;
-  text-shadow: 0 0 0 currentColor;
-  transform: translateX(1px);
-  transition:
-    text-shadow 0.6s linear,
-    transform 0.6s linear;
-}
-
-.company-timeline__back-cta:hover .company-timeline__back-chevron {
-  text-shadow:
-    14px 0 0 currentColor,
-    28px 0 0 currentColor,
-    42px 0 0 currentColor;
-  transform: translateX(-6px);
-}
-
 .company-timeline__cards {
   width: 100%;
-  height: 96svh;
+  height: 100dvh;
   position: relative;
-  margin-top: 2svh;
   perspective: 1000px;
 }
 
@@ -97,8 +42,8 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border-radius: 0 8px 8px 0;
-  box-shadow: 14px 18px 46px rgba(0, 0, 0, 0.22);
+  border-radius: 0 0 34px 0;
+  box-shadow: none;
   display: flex;
   align-items: center;
   transform-origin: left center;
@@ -107,16 +52,15 @@
 
 .company-timeline__card img {
   width: 100%;
-  height: auto;
-  max-height: 100%;
+  height: 100%;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .company-timeline__center {
   width: var(--company-center-width);
   flex: 0 0 var(--company-center-width);
-  min-height: 100svh;
+  min-height: 100dvh;
   display: flex;
   align-items: flex-start;
   padding-top: 35svh;
@@ -169,23 +113,54 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  opacity: 0.35;
+  cursor: pointer;
+  transition: opacity 0.4s ease;
+}
+
+.company-timeline__years button {
+  display: inline-flex;
+  align-items: center;
+  min-width: 4.5rem;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   color: #fff;
+  background: transparent;
+  font: inherit;
   font-size: 1rem;
   font-weight: 600;
-  opacity: 0.35;
-  transition: opacity 0.4s ease, font-size 0.4s ease;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.4s ease, font-size 0.4s ease, opacity 0.4s ease;
 }
 
 .company-timeline__years li.is-active {
+  opacity: 1;
+}
+
+.company-timeline__years li.is-active button {
   font-size: 1.25rem;
   font-weight: 800;
+}
+
+.company-timeline__years button:hover,
+.company-timeline__years button:focus-visible {
   opacity: 1;
+}
+
+.company-timeline__years button:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 4px;
 }
 
 .company-timeline__right {
   flex: 1;
   min-width: 0;
-  min-height: 100svh;
+  min-height: 100dvh;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -290,23 +265,55 @@
 }
 
 .app-shell--day .company-timeline {
-  background: linear-gradient(180deg, #f8f5ee 0%, #ede8dd 56%, #f7f3eb 100%);
+  --company-page-bg: #f8f6ef;
+  background: linear-gradient(180deg, #f8f5ee 0%, #ede8dd 56%, var(--company-page-bg) 100%);
   color: #111417;
 }
 
-.app-shell--day .company-timeline__back-cta {
-  color: rgba(17, 20, 23, 0.78);
-  background: transparent;
-  box-shadow: none;
+body:has(.company-timeline),
+body:has(.company-timeline) .app-shell,
+body:has(.company-timeline) main {
+  background: #111115;
 }
 
-.app-shell--day .company-timeline__back-cta:hover {
-  color: #111417;
-  background: transparent;
+html[data-theme="light"]:has(.company-timeline),
+html[data-theme="light"]:has(.company-timeline) body,
+html[data-theme="light"]:has(.company-timeline) .app-shell,
+html[data-theme="light"]:has(.company-timeline) main,
+body:has(.app-shell--day .company-timeline),
+body:has(.app-shell--day .company-timeline) .app-shell,
+body:has(.app-shell--day .company-timeline) main {
+  background: #f8f6ef;
 }
 
-.app-shell--day .company-timeline__back-icon {
-  background: transparent;
+.app-shell--day:has(.company-timeline),
+.app-shell--day:has(.company-timeline) main {
+  background: #f8f6ef;
+}
+
+.app-shell:has(.company-timeline) .footer-wrapper {
+  margin-top: -2px;
+  padding-top: clamp(8rem, 13svh, 11rem);
+  background: #111115 !important;
+}
+
+.app-shell:has(.company-timeline) .footer-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -2px 0 auto;
+  height: 4px;
+  z-index: 1;
+  pointer-events: none;
+  background: #111115;
+}
+
+.app-shell:has(.company-timeline) .footer-dome {
+  transform: none !important;
+}
+
+.app-shell--day:has(.company-timeline) .footer-wrapper,
+.app-shell--day:has(.company-timeline) .footer-wrapper::before {
+  background: #f8f6ef !important;
 }
 
 .app-shell--day .company-timeline__track::before {
@@ -323,6 +330,10 @@
   opacity: 0.34;
 }
 
+.app-shell--day .company-timeline__years button {
+  color: #111417;
+}
+
 .app-shell--day .company-timeline__years li.is-active {
   opacity: 1;
 }
@@ -332,7 +343,7 @@
 }
 
 .app-shell--day .company-timeline__card {
-  box-shadow: 14px 18px 46px rgba(30, 27, 20, 0.13);
+  box-shadow: none;
 }
 
 .app-shell--day .company-timeline__experience,
@@ -372,27 +383,9 @@
   .company-timeline {
     display: block;
     min-height: auto;
+    width: 100%;
     padding: calc(var(--header) + 0.75rem) 1rem 2.75rem;
     overflow-x: hidden;
-  }
-
-  .company-timeline__back-cta {
-    position: relative;
-    left: auto;
-    top: auto;
-    margin: 0 0 1.35rem;
-    min-height: 0;
-    padding: 0;
-    font-size: 0.82rem;
-  }
-
-  .company-timeline__back-icon {
-    width: 31px;
-    height: 31px;
-  }
-
-  .company-timeline__back-chevron {
-    font-size: 1.95rem;
   }
 
   .company-timeline__left,
@@ -423,7 +416,7 @@
     aspect-ratio: 16 / 10;
     display: block;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: 0 0 28px 0;
     box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
   }
 

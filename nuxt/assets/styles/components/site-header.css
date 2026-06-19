@@ -139,7 +139,86 @@
   filter: none;
 }
 
-.site-header__brand .brand-symbol,
+/* ───────────────────────────────────────────────────────────────
+   Cursor-style negative logo.
+   The real header brand lives inside the fixed header, whose stacking
+   context traps mix-blend-mode (it can only blend against the header,
+   not the page) — so the logo would stay flat white. The cursor works
+   because it sits at <body> level and blends against the whole page.
+   To match it exactly we teleport a visual twin of the brand to <body>
+   (.brand-blend-layer) and reproduce the header geometry with the SAME
+   tokens, so it is always pixel-aligned with zero JS. The real header
+   brand stays as the click/keyboard target but its ink is hidden on
+   desktop (where the cursor exists). On touch devices there is no
+   cursor, so we keep the normal header logo and drop the blend layer.
+   ─────────────────────────────────────────────────────────────── */
+.brand-blend-layer {
+  display: none;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .site-header__brand--ghost {
+    opacity: 0;
+  }
+
+  .brand-blend-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 81;
+    display: block;
+    width: 100%;
+    padding: var(--header-offset-y) var(--header-offset-x);
+    pointer-events: none;
+    transition: padding 0.35s var(--ease-soft);
+  }
+
+  /* INK layer: blend on the fixed element ITSELF (like .smooth-cursor) so the
+     symbol + KARDOOR invert against the whole page. EGE is hidden here (but
+     still occupies space, so KARDOOR keeps its position). */
+  .brand-blend-layer--ink {
+    mix-blend-mode: difference;
+  }
+
+  .brand-blend-layer--ink .brand-symbol,
+  .brand-blend-layer--ink .brand-title__kardoor {
+    mix-blend-mode: normal; /* single page-level inversion done by the layer */
+  }
+
+  .brand-blend-layer--ink .brand-title__ege {
+    visibility: hidden;
+  }
+
+  /* EGE layer: sits on top, no blend, keeps its blue. Symbol + KARDOOR are
+     hidden here (they live in the ink layer) but still reserve their space so
+     EGE lands in exactly the same spot. */
+  .brand-blend-layer--ege {
+    z-index: 82;
+  }
+
+  .brand-blend-layer--ege .brand-symbol,
+  .brand-blend-layer--ege .brand-title__kardoor {
+    visibility: hidden;
+  }
+
+  .brand-blend-layer.is-scrolled {
+    padding-top: calc(var(--header-offset-y) * 0.58);
+    padding-bottom: calc(var(--header-offset-y) * 0.58);
+  }
+
+  .brand-blend-layer__inner {
+    display: flex;
+    align-items: center;
+    width: min(100%, var(--header-max-width));
+    min-height: var(--header-pill-height);
+    margin: 0 auto;
+  }
+
+  .brand-blend-layer__brand {
+    width: max-content;
+  }
+}
+
 .site-header__brand .brand-title__ege {
   filter: drop-shadow(var(--header-brand-shadow));
 }
@@ -947,7 +1026,6 @@
   filter: none;
 }
 
-[data-theme="light"] .site-header__brand .brand-symbol,
 [data-theme="light"] .site-header__brand .brand-title__ege {
   filter:
     drop-shadow(0 1px 0 rgba(255, 255, 255, 0.32))
@@ -959,7 +1037,6 @@
   filter: none;
 }
 
-[data-theme="dark"] .site-header__brand .brand-symbol,
 [data-theme="dark"] .site-header__brand .brand-title__ege {
   filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.34));
 }

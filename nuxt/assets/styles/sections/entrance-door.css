@@ -486,6 +486,11 @@
   margin-top: -0.08em;
 }
 
+.entrance-door__heading-line:not(.entrance-door__heading-line--accent) {
+  font-family: var(--font-serif);
+  font-style: normal;
+}
+
 .entrance-door__heading-line--accent {
   font-family: var(--font-serif);
   font-style: italic;
@@ -834,5 +839,33 @@
   .entrance-door__hero-picture,
   .entrance-door__zoom-layer {
     transition: none !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   DESKTOP HERO LOCK (≥1181px) — CTA-on-wall, anchored to 1920×1080.
+   On viewports 16:9 and wider the hero image (object-fit: cover) fills
+   the full viewport height and crops the sides, so the wall band sits at
+   a FIXED fraction of viewport HEIGHT. The copy block therefore scales
+   with height (svh) so the CTA stays glued to the wall as the screen
+   scales up/down from the 1920×1080 reference. Each value is capped with
+   the original width-based size via min(), so it never overflows on
+   narrow-but-tall desktops and stays pixel-identical at 1920×1080.
+   ────────────────────────────────────────────────────────────── */
+@media (min-width: 1181px) {
+  .entrance-door__heading {
+    /* 1920×1080 ref: 4.89vw ≈ 93.9px ≈ 8.69svh */
+    font-size: min(8.69svh, 4.89vw);
+  }
+
+  .entrance-door__subtitle {
+    /* ref: 1.35vw ≈ 25.9px ≈ 2.4svh */
+    margin-top: min(2.4svh, 1.35vw);
+    font-size: min(2.4svh, 1.35vw);
+  }
+
+  .entrance-door__cta-row {
+    /* ref: 32px ≈ 2.96svh */
+    margin-top: 2.96svh;
   }
 }

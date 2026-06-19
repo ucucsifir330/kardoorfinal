@@ -2,8 +2,15 @@
   <div ref="manifestoContainerRef" class="ada-manifesto-container">
     <div class="ada-scroll-line-wrapper" aria-hidden="true"></div>
     <div class="ada-manifesto-content">
-      <h3 class="ada-manifesto-text scroll-reveal" id="manifesto-text">
-        Bir kapının değeri yalnızca görünüşüyle değil; yıllara meydan okuyan dayanımı ve taşıdığı güvenle ölçülür. Tavizsiz işçilik ve doğru mühendislikle, sadece bir kapı değil güven üretiyoruz.
+      <h3
+        ref="manifestoQuoteRef"
+        class="ada-manifesto-text ada-split-quote scroll-reveal"
+        id="manifesto-text"
+        data-gsap-quote="true"
+        @click="playQuoteExit"
+      >
+        Kapıdan öte, mimari bir imza istiyoruz.
+        <small>Ege Kardoor</small>
       </h3>
       <a href="/company" class="ada-manifesto-cta" aria-label="Hakkımızda sayfasına git">
         <span class="ada-manifesto-cta-text" data-text="Hikâyemizi Keşfet">Hikâyemizi Keşfet</span>
@@ -21,7 +28,7 @@
 
   <div class="ada-title-container">
     <h4 class="ada-giant-title">
-      Referanslarımız
+      Seçili Ege Kardoor Projeleri
     </h4>
   </div>
 
@@ -55,16 +62,21 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { gsap } from "gsap";
 import { SplitText } from "gsap/SplitText";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const ctaLineStageRef = ref<HTMLElement | null>(null);
 const ctaSpacerRef = ref<HTMLElement | null>(null);
 const manifestoContainerRef = ref<HTMLElement | null>(null);
+const manifestoQuoteRef = ref<HTMLElement | null>(null);
 const ctaLineSvgRef = ref<SVGSVGElement | null>(null);
 const ctaBottomLineRef = ref<SVGPathElement | null>(null);
 let ctaResizeObserver: ResizeObserver | null = null;
 let ctaMeasureFrame = 0;
 let headingRevealTimeline: gsap.core.Timeline | null = null;
 let manifestoSplit: SplitText | null = null;
+let quoteSplit: SplitText | null = null;
+let quoteTimeline: gsap.core.Timeline | null = null;
+let quoteScrollTrigger: ScrollTrigger | null = null;
 let shouldPlayHeadingReveal = false;
 
 const manifestoRevealTiming = {
@@ -86,6 +98,18 @@ const playHeadingReveal = () => {
 const resetHeadingReveal = () => {
   shouldPlayHeadingReveal = false;
   headingRevealTimeline?.pause(0);
+};
+
+const playQuoteEnter = () => {
+  if (!quoteTimeline) return;
+
+  quoteTimeline.pause(0).play("enter");
+};
+
+const playQuoteExit = () => {
+  if (!quoteTimeline) return;
+
+  quoteTimeline.play("exit");
 };
 
 const getResponsiveClamp = (min: number, preferredVw: number, max: number) =>
@@ -139,7 +163,85 @@ const updateCtaLineGeometry = () => {
 onMounted(async () => {
   await nextTick();
   updateCtaLineGeometry();
-  gsap.registerPlugin(SplitText);
+  gsap.registerPlugin(SplitText, ScrollTrigger);
+
+  const quoteElement = manifestoQuoteRef.value;
+
+  if (quoteElement) {
+    quoteSplit = SplitText.create(quoteElement, {
+      type: "lines,words",
+      linesClass: "ts-line",
+      wordsClass: "ada-manifesto-word"
+    });
+
+    const words = quoteSplit.words as HTMLElement[];
+    const note = quoteElement.querySelector<HTMLElement>("small");
+
+    quoteTimeline = gsap.timeline({
+      delay: 0.2,
+      paused: true
+    });
+
+    quoteTimeline
+      .addLabel("enter")
+      .fromTo(
+        words,
+        { yPercent: 100 },
+        {
+          yPercent: 0,
+          duration: 0.6,
+          ease: "circ.out",
+          stagger: 0.2
+        },
+        "enter"
+      )
+      .fromTo(
+        words,
+        { autoAlpha: 0 },
+        {
+          autoAlpha: 1,
+          duration: 0.6,
+          ease: "power1.out",
+          stagger: 0.2
+        },
+        "enter"
+      )
+      .fromTo(note, { autoAlpha: 0 }, { autoAlpha: 0.72, duration: 1, ease: "none" })
+      .addPause()
+      .addLabel("exit")
+      .to(note, { autoAlpha: 0, duration: 0.5, ease: "none" }, "exit")
+      .to(
+        words,
+        {
+          yPercent: -200,
+          duration: 0.4,
+          ease: "circ.in",
+          stagger: 0.1
+        },
+        "exit"
+      )
+      .to(
+        words,
+        {
+          autoAlpha: 0,
+          duration: 0.4,
+          ease: "power1.in",
+          stagger: 0.1
+        },
+        "exit"
+      );
+
+    quoteScrollTrigger = ScrollTrigger.create({
+      trigger: quoteElement,
+      start: "top 82%",
+      endTrigger: ".ada-title-container",
+      end: "top 54%",
+      invalidateOnRefresh: true,
+      onEnter: playQuoteEnter,
+      onEnterBack: playQuoteEnter,
+      onLeave: playQuoteExit
+    });
+  }
 
   const headingLines = Array.from(ctaSpacerRef.value?.querySelectorAll<HTMLElement>(".ada-heading-line") || []);
   const spacerManifestoCopy = ctaSpacerRef.value?.querySelector<HTMLElement>(".ada-spacer-manifesto-copy");
@@ -250,6 +352,12 @@ onBeforeUnmount(() => {
   if (ctaMeasureFrame) window.cancelAnimationFrame(ctaMeasureFrame);
   headingRevealTimeline?.kill();
   headingRevealTimeline = null;
+  quoteScrollTrigger?.kill();
+  quoteScrollTrigger = null;
+  quoteTimeline?.kill();
+  quoteTimeline = null;
+  quoteSplit?.revert();
+  quoteSplit = null;
   manifestoSplit?.revert();
   manifestoSplit = null;
   ctaResizeObserver?.disconnect();

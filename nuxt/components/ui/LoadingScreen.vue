@@ -128,48 +128,25 @@ const segLen = Math.round(perimeter * 0.40);
 }
 
 .ls-logo :deep(.brand-mark) {
-  gap: 1.4rem;
+  gap: 0.54rem;
 }
 
 .ls-logo :deep(.brand-symbol) {
-  width: 80px;
-  height: 98px;
-}
-
-.ls-logo :deep(.brand-symbol__left),
-.ls-logo :deep(.brand-symbol__right) {
-  width: 40px;
-  height: 80px;
-}
-
-.ls-logo :deep(.brand-symbol__core) {
-  left: 32px;
-  width: 24px;
-  height: 66px;
+  width: 25px;
+  height: 30px;
 }
 
 .ls-logo :deep(.brand-title) {
-  font-size: 2.2rem;
+  font-size: 1.06rem;
   color: #071018;
 }
 
-.ls-logo :deep(.brand-title strong) {
+.ls-logo :deep(.brand-title__ege) {
   color: #3a83ff;
 }
 
 .ls-logo :deep(.brand-title__kardoor) {
-  width: auto;
-  height: auto;
-  color: var(--text, #071018);
-  transform: none;
-}
-
-:global(.app-shell--night) .ls-logo :deep(.brand-title__kardoor) {
-  color: #f7f7f2;
-}
-
-.ls-logo :deep(.brand-title__kardoor)::before {
-  display: none;
+  font-size: 1.02em;
 }
 
 /* ── transitions ── */

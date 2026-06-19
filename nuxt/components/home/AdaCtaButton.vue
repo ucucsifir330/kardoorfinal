@@ -167,12 +167,14 @@ const resetHoverDirection = (event: PointerEvent) => {
     color 450ms cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-.ada-cta-button:hover {
-  --ada-cta-text-color: var(--ada-cta-hover-fg);
+@media (hover: hover) and (pointer: fine) {
+  .ada-cta-button:hover {
+    --ada-cta-text-color: var(--ada-cta-hover-fg);
 
-  background: var(--ada-cta-hover-bg);
-  border-color: var(--ada-cta-hover-border);
-  color: var(--ada-cta-hover-fg);
+    background: var(--ada-cta-hover-bg);
+    border-color: var(--ada-cta-hover-border);
+    color: var(--ada-cta-hover-fg);
+  }
 }
 
 .ada-cta-button__fill {
@@ -233,8 +235,10 @@ const resetHoverDirection = (event: PointerEvent) => {
   white-space: nowrap;
 }
 
-.ada-cta-button:hover .ada-cta-button__text-track {
-  transform: translate3d(0, -50%, 0);
+@media (hover: hover) and (pointer: fine) {
+  .ada-cta-button:hover .ada-cta-button__text-track {
+    transform: translate3d(0, -50%, 0);
+  }
 }
 
 .ada-cta-button__icon {
@@ -276,15 +280,17 @@ const resetHoverDirection = (event: PointerEvent) => {
 .ada-cta-button__rocket-bottom {
   stroke-dasharray: 30, 75.39;
   transition:
-    stroke-dasharray 800ms cubic-bezier(0.6, 0.33, 0.67, 1.29),
-    stroke-dashoffset 800ms cubic-bezier(0.6, 0.33, 0.67, 1.29);
+    stroke-dasharray 640ms cubic-bezier(0.16, 1, 0.3, 1),
+    stroke-dashoffset 640ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: stroke-dasharray, stroke-dashoffset;
 }
 
-.ada-cta-button:hover .ada-cta-button__rocket-top,
-.ada-cta-button:hover .ada-cta-button__rocket-bottom {
-  stroke-dasharray: 75.39;
-  stroke-dashoffset: -60;
+@media (hover: hover) and (pointer: fine) {
+  .ada-cta-button:hover .ada-cta-button__rocket-top,
+  .ada-cta-button:hover .ada-cta-button__rocket-bottom {
+    stroke-dasharray: 75.39;
+    stroke-dashoffset: -60;
+  }
 }
 
 @media (max-width: 720px) {

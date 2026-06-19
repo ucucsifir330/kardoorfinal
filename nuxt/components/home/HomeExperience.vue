@@ -559,7 +559,7 @@ const initManifestoAnimations = () => {
       });
     }
 
-    if (revealElement) {
+    if (revealElement && revealElement.dataset.gsapQuote !== 'true') {
       splitTextToRevealChars(revealElement);
       const chars = Array.from(revealElement.querySelectorAll<HTMLElement>('.reveal-char'));
       let revealFrame = 0;

@@ -366,7 +366,7 @@ body {
 }
 
 .footer-wrapper {
-  height: 1720px !important;
+  height: 2200px !important;
 }
 
 .footer-dome {
@@ -379,7 +379,7 @@ body {
 /* User note pass: tighten team title/cards, restore card stature, and rebalance neighboring sections. */
 
 .footer-info {
-  bottom: 190px !important;
+  bottom: 820px !important;
 }
 
 .catalog-section {
@@ -437,11 +437,11 @@ body {
 }
 
 .footer-info {
-  bottom: 162px !important;
+  bottom: 820px !important;
 }
 
 .footer-bottom {
-  bottom: 22px !important;
+  bottom: 0 !important;
 }
 
 /* Clean catalog pass: remove artificial shadows and let the page scroll naturally. */
@@ -526,7 +526,7 @@ body {
 @media (min-aspect-ratio: 8 / 5) and (max-height: 900px) and (min-width: 1025px) {
 
   .footer-info {
-    bottom: 132px !important;
+    bottom: 820px !important;
   }
 }
 
@@ -1328,4 +1328,394 @@ body,
     #F4F1EA 60%,
     rgba(244, 241, 234, 0) 100%
   ) !important;
+}
+
+/* Footer stack fix: CTA/logo first, directory and showrooms below. */
+.footer-wrapper {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.footer-dome {
+  height: auto !important;
+  min-height: 100svh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 0 0 clamp(260px, 20vw, 360px) !important;
+}
+
+.footer-main {
+  width: min(100%, 1680px) !important;
+  min-height: clamp(720px, 72svh, 900px) !important;
+  display: grid !important;
+  grid-template-columns: minmax(360px, 560px) minmax(520px, 860px) !important;
+  align-items: start !important;
+  justify-content: space-between !important;
+  column-gap: clamp(64px, 8vw, 150px) !important;
+  padding: clamp(126px, 12vw, 190px) 56px 0 !important;
+}
+
+.footer-socials {
+  position: relative !important;
+  transform: none !important;
+  width: min(100%, 540px) !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, 96px) !important;
+  grid-auto-rows: 96px !important;
+  gap: 22px !important;
+  align-content: start !important;
+  justify-content: start !important;
+}
+
+.footer-brand {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  height: clamp(330px, 31vw, 520px) !important;
+  margin: 0 0 18px !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
+}
+
+.footer-logo {
+  width: clamp(390px, 31vw, 620px) !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: left center !important;
+}
+
+.social-btn {
+  width: 96px !important;
+  height: 96px !important;
+}
+
+.footer-panel {
+  max-width: 860px !important;
+  margin: 0 0 0 auto !important;
+}
+
+.footer-info {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: min(calc(100% - 112px), 1680px) !important;
+  margin: clamp(24px, 5vw, 76px) auto 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(360px, 520px) minmax(0, 1fr) !important;
+  column-gap: clamp(64px, 8vw, 150px) !important;
+}
+
+@media (max-width: 1180px) {
+  .footer-main {
+    min-height: auto !important;
+    grid-template-columns: 1fr !important;
+    row-gap: 70px !important;
+    padding-inline: 36px !important;
+  }
+
+  .footer-socials {
+    width: 100% !important;
+    grid-template-columns: repeat(6, 72px) !important;
+    grid-auto-rows: 72px !important;
+    align-items: center !important;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1 !important;
+    height: 220px !important;
+  }
+
+  .footer-logo {
+    width: min(420px, 72vw) !important;
+  }
+
+  .social-btn {
+    width: 72px !important;
+    height: 72px !important;
+  }
+
+  .footer-panel {
+    margin-inline: 0 !important;
+  }
+
+  .footer-info {
+    width: calc(100% - 72px) !important;
+    grid-template-columns: 1fr !important;
+    row-gap: 64px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer-dome {
+    padding-bottom: 250px !important;
+  }
+
+  .footer-main {
+    padding: 88px 22px 0 !important;
+    row-gap: 44px !important;
+  }
+
+  .footer-socials {
+    width: min(100%, 360px) !important;
+    margin: 0 auto !important;
+    grid-template-columns: repeat(3, 64px) !important;
+    grid-auto-rows: 64px !important;
+    justify-content: center !important;
+    gap: 16px !important;
+  }
+
+  .footer-brand {
+    height: 96px !important;
+    justify-content: center !important;
+    margin-bottom: 8px !important;
+  }
+
+  .footer-logo {
+    width: min(220px, 70vw) !important;
+    object-position: center !important;
+  }
+
+  .social-btn {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .footer-info {
+    width: calc(100% - 44px) !important;
+    margin-top: 54px !important;
+  }
+}
+
+/* Footer social media buttons sit beside the wordmark. */
+.footer-socials {
+  position: static !important;
+}
+
+.footer-socials > .social-btn {
+  position: absolute !important;
+  right: var(--footer-social-right, 56px) !important;
+  bottom: clamp(122px, 8.5vw, 172px) !important;
+  z-index: 6 !important;
+  width: clamp(46px, 3.1vw, 58px) !important;
+  height: clamp(46px, 3.1vw, 58px) !important;
+  border: 1px solid rgba(230, 231, 235, 0.72) !important;
+  background: rgba(44, 44, 49, 0.26) !important;
+  color: #E6E7EB !important;
+  backdrop-filter: blur(8px);
+}
+
+.footer-socials > .social-btn:nth-of-type(1) {
+  --footer-social-right: calc(clamp(28px, 2.8vw, 58px) + 234px);
+}
+
+.footer-socials > .social-btn:nth-of-type(2) {
+  --footer-social-right: calc(clamp(28px, 2.8vw, 58px) + 156px);
+}
+
+.footer-socials > .social-btn:nth-of-type(3) {
+  --footer-social-right: calc(clamp(28px, 2.8vw, 58px) + 78px);
+}
+
+.footer-socials > .social-btn:nth-of-type(4) {
+  --footer-social-right: clamp(28px, 2.8vw, 58px);
+}
+
+.footer-socials > .mail-btn,
+.footer-socials > .phone-btn {
+  display: none !important;
+}
+
+.footer-socials > .social-btn svg {
+  width: clamp(20px, 1.45vw, 28px) !important;
+  height: clamp(20px, 1.45vw, 28px) !important;
+}
+
+@media (max-width: 760px) {
+  .footer-socials > .social-btn {
+    position: static !important;
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .footer-socials > .mail-btn,
+  .footer-socials > .phone-btn {
+    display: inline-flex !important;
+  }
+}
+
+/* Footer spacing correction: keep the buttons plain and give the lower directory full width. */
+.footer-dome {
+  padding-bottom: clamp(560px, 34vw, 720px) !important;
+}
+
+.footer-info {
+  width: 100% !important;
+  max-width: none !important;
+  padding: 0 56px !important;
+  box-sizing: border-box !important;
+  grid-template-columns: minmax(500px, 36vw) minmax(0, 1fr) !important;
+  column-gap: clamp(72px, 6.5vw, 160px) !important;
+}
+
+.footer-locations,
+.location-cards {
+  width: 100% !important;
+}
+
+.footer-socials > .social-btn {
+  bottom: clamp(340px, 13vw, 420px) !important;
+  border: 0 !important;
+  background: #2C2C31 !important;
+  color: #E6E7EB !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+@media (max-width: 1180px) {
+  .footer-info {
+    padding: 0 36px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer-dome {
+    padding-bottom: 300px !important;
+  }
+
+  .footer-info {
+    padding: 0 22px !important;
+  }
+}
+
+/* Final footer placement pass: include mail/phone and keep the classic circular buttons. */
+.footer-info {
+  margin-top: clamp(140px, 10vw, 220px) !important;
+  transform: translateY(clamp(100px, 5vw, 140px)) !important;
+}
+
+.footer-dome {
+  padding-bottom: clamp(620px, 36vw, 780px) !important;
+}
+
+.footer-socials > .social-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: clamp(54px, 3.45vw, 68px) !important;
+  height: clamp(54px, 3.45vw, 68px) !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 999px !important;
+  bottom: clamp(300px, 11.8vw, 390px) !important;
+  background-color: #2C2C31 !important;
+  color: #E6E7EB !important;
+}
+
+.footer-socials > .social-btn:nth-of-type(1) {
+  --footer-social-right: calc(clamp(28px, 2.8vw, 58px) + 390px);
+}
+
+.footer-socials > .social-btn:nth-of-type(2) {
+  --footer-social-right: calc(clamp(28px, 2.8vw, 58px) + 312px);
+}
+
+.footer-socials > .social-btn:nth-of-type(3) {
+  --footer-social-right: calc(clamp(28px, 2.8vw, 58px) + 234px);
+}
+
+.footer-socials > .social-btn:nth-of-type(4) {
+  --footer-social-right: calc(clamp(28px, 2.8vw, 58px) + 156px);
+}
+
+.footer-socials > .social-btn:nth-of-type(5) {
+  --footer-social-right: calc(clamp(28px, 2.8vw, 58px) + 78px);
+}
+
+.footer-socials > .social-btn:nth-of-type(6) {
+  --footer-social-right: clamp(28px, 2.8vw, 58px);
+}
+
+.footer-socials > .mail-btn,
+.footer-socials > .phone-btn {
+  display: inline-flex !important;
+}
+
+@media (max-width: 760px) {
+  .footer-dome {
+    padding-bottom: 330px !important;
+  }
+
+  .footer-info {
+    margin-top: 110px !important;
+    transform: translateY(60px) !important;
+  }
+}
+
+/* Top footer adjustment: lower the CTA composition and enlarge the K mark. */
+.footer-main {
+  padding-top: clamp(190px, 15vw, 260px) !important;
+}
+
+.footer-brand {
+  height: clamp(560px, 36vw, 700px) !important;
+  margin-top: clamp(18px, 2vw, 40px) !important;
+}
+
+.footer-logo {
+  width: clamp(560px, 36vw, 720px) !important;
+}
+
+@media (max-width: 1180px) {
+  .footer-main {
+    padding-top: 126px !important;
+  }
+
+  .footer-brand {
+    height: 280px !important;
+    margin-top: 0 !important;
+  }
+
+  .footer-logo {
+    width: min(480px, 78vw) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer-main {
+    padding-top: 104px !important;
+  }
+
+  .footer-brand {
+    height: 116px !important;
+  }
+
+  .footer-logo {
+    width: min(260px, 74vw) !important;
+  }
+}
+
+/* Overscale the visible K mark so it spans from the heading top to the message row. */
+.footer-brand {
+  overflow: visible !important;
+}
+
+.footer-logo {
+  transform: translate(-42%, -4.5%) scale(2.28) !important;
+  transform-origin: center center !important;
+}
+
+@media (max-width: 1180px) {
+  .footer-logo {
+    transform: scale(1.2) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer-logo {
+    transform: none !important;
+  }
 }

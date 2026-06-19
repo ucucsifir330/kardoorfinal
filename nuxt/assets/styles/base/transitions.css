@@ -1,12 +1,100 @@
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 220ms ease, transform 220ms ease;
+/* Page transitions — ease-out feels instant, scale(0.98) avoids "out of nowhere" */
+.page-enter-active {
+  transition: opacity 240ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1)),
+              transform 240ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
-.page-enter-from,
+.page-leave-active {
+  /* Exit faster than enter — system responds quickly */
+  transition: opacity 160ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1)),
+              transform 160ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px) scale(0.99);
+}
+
 .page-leave-to {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(-4px) scale(0.99);
 }
 
+/* Fade — for overlays, modals */
+.fade-enter-active {
+  transition: opacity 200ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.fade-leave-active {
+  transition: opacity 140ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
+/* Slide up — for drawers, bottom sheets */
+.slide-up-enter-active {
+  transition: opacity 300ms var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1)),
+              transform 300ms var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1));
+}
+.slide-up-leave-active {
+  transition: opacity 200ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1)),
+              transform 200ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(100%);
+}
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+/* Scale in — for popovers, tooltips, dropdowns */
+.scale-enter-active {
+  transition: opacity 160ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1)),
+              transform 160ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.scale-leave-active {
+  transition: opacity 100ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1)),
+              transform 100ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.scale-enter-from {
+  opacity: 0;
+  transform: scale(0.95);
+}
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.97);
+}
+
+/* Stagger utility — add to list containers */
+.stagger > *:nth-child(1) { transition-delay: 0ms; }
+.stagger > *:nth-child(2) { transition-delay: 40ms; }
+.stagger > *:nth-child(3) { transition-delay: 80ms; }
+.stagger > *:nth-child(4) { transition-delay: 120ms; }
+.stagger > *:nth-child(5) { transition-delay: 160ms; }
+.stagger > *:nth-child(6) { transition-delay: 200ms; }
+
+/* Reduced motion — opacity only, no movement */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active,
+  .fade-enter-active,
+  .fade-leave-active,
+  .slide-up-enter-active,
+  .slide-up-leave-active,
+  .scale-enter-active,
+  .scale-leave-active {
+    transition: opacity 120ms ease;
+  }
+
+  .page-enter-from,
+  .page-leave-to,
+  .slide-up-enter-from,
+  .slide-up-leave-to,
+  .scale-enter-from,
+  .scale-leave-to {
+    transform: none;
+  }
+}

@@ -1,353 +1,49 @@
-<script setup lang="ts">
-import gsap from "gsap";
-import type { ComponentPublicInstance } from "vue";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useKardoorLocale } from "~/composables/useKardoorLocale";
-
-type Project = {
-  id: number;
-  title: string;
-  location: string;
-  image: string;
-};
-
-const { locale } = useKardoorLocale();
-
-const pageCopy = computed(() =>
-  locale.value === "tr"
-    ? {
-        title: "REFERANSLAR",
-        close: "Kapat",
-        previous: "Önceki referans",
-        next: "Sonraki referans",
-        metaTitle: "Referanslar",
-        metaDescription: "Ege Kardoor referans projeleri ve uygulama örnekleri."
-      }
-    : {
-        title: "REFERENCES",
-        close: "Close",
-        previous: "Previous reference",
-        next: "Next reference",
-        metaTitle: "References",
-        metaDescription: "Ege Kardoor reference projects and installation examples."
-      }
-);
-
-useSeoMeta({
-  title: () => pageCopy.value.metaTitle,
-  description: () => pageCopy.value.metaDescription
-});
-
-const titleLetters = computed(() => pageCopy.value.title.split(""));
-const letterRefs = ref<HTMLElement[]>([]);
-const brandRef = ref<HTMLElement | null>(null);
-const cardRefs = ref<HTMLElement[]>([]);
-const trackRef = ref<HTMLElement | null>(null);
-const wrapperRef = ref<HTMLElement | null>(null);
-
-const projects = ref<Project[]>([
-  {
-    id: 1,
-    title: "Kardoor Villa",
-    location: "İzmir, Çeşme",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600"
-  },
-  {
-    id: 2,
-    title: "Modern Çelik Kapı",
-    location: "İstanbul, Beşiktaş",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600"
-  },
-  {
-    id: 3,
-    title: "Lüks Apartman",
-    location: "Ankara, Çankaya",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600"
-  },
-  {
-    id: 4,
-    title: "Prestij Konutları",
-    location: "Bursa, Nilüfer",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600"
-  },
-  {
-    id: 5,
-    title: "Kıyı Yalı",
-    location: "İstanbul, Sarıyer",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600"
-  }
-]);
-
-const selectedProject = ref<Project | null>(null);
-const driftDirection = ref(1);
-
-let marqueeTween: gsap.core.Tween | null = null;
-let isDragging = false;
-let startX = 0;
-let pointerStartX = 0;
-let hasDragged = false;
-let dragOffset = 0;
-
-const resolveTemplateElement = (element: Element | ComponentPublicInstance | null) => {
-  if (element instanceof HTMLElement) return element;
-  if (element && "$el" in element && element.$el instanceof HTMLElement) return element.$el;
-  return null;
-};
-
-const setLetterRef = (element: Element | ComponentPublicInstance | null, index: number) => {
-  const htmlElement = resolveTemplateElement(element);
-  if (htmlElement) letterRefs.value[index] = htmlElement;
-};
-
-const setCardRef = (element: Element | ComponentPublicInstance | null, index: number) => {
-  const htmlElement = resolveTemplateElement(element);
-  if (htmlElement) cardRefs.value[index] = htmlElement;
-};
-
-const onDragStart = (event: PointerEvent) => {
-  isDragging = true;
-  startX = event.pageX - dragOffset;
-  pointerStartX = event.pageX;
-  hasDragged = false;
-  marqueeTween?.pause();
-  wrapperRef.value?.setPointerCapture(event.pointerId);
-  if (wrapperRef.value) wrapperRef.value.style.cursor = "grabbing";
-};
-
-const onDragMove = (event: PointerEvent) => {
-  if (!isDragging || !trackRef.value) return;
-
-  event.preventDefault();
-  hasDragged = Math.abs(event.pageX - pointerStartX) > 8;
-  dragOffset = event.pageX - startX;
-
-  const totalWidth = trackRef.value.offsetWidth / 2;
-  if (dragOffset > 0) dragOffset -= totalWidth;
-  if (dragOffset < -totalWidth) dragOffset += totalWidth;
-
-  gsap.set(trackRef.value, { x: dragOffset });
-};
-
-const onDragEnd = (event: PointerEvent) => {
-  if (!isDragging) return;
-
-  isDragging = false;
-  wrapperRef.value?.releasePointerCapture(event.pointerId);
-  if (wrapperRef.value) wrapperRef.value.style.cursor = "grab";
-  marqueeTween?.play();
-};
-
-const onPointerEnter = () => {
-  if (marqueeTween && !isDragging) {
-    gsap.to(marqueeTween, { timeScale: 0, duration: 1.2, ease: "power2.out" });
-  }
-};
-
-const onPointerLeave = (event: PointerEvent) => {
-  onDragEnd(event);
-
-  if (marqueeTween && !isDragging) {
-    gsap.to(marqueeTween, { timeScale: 1, duration: 1.2, ease: "power2.inOut" });
-  }
-};
-
-const handleCardClick = (project: Project) => {
-  if (hasDragged) return;
-  if (selectedProject.value) return;
-
-  selectedProject.value = project;
-};
-
-const closeModal = () => {
-  selectedProject.value = null;
-};
-
-const onKeydown = (event: KeyboardEvent) => {
-  if (event.key === "Escape") closeModal();
-};
-
-const nextProject = () => {
-  if (!selectedProject.value) return;
-
-  driftDirection.value = 1;
-  const currentIndex = projects.value.findIndex((project) => project.id === selectedProject.value?.id);
-  selectedProject.value = projects.value[(currentIndex + 1) % projects.value.length];
-};
-
-const prevProject = () => {
-  if (!selectedProject.value) return;
-
-  driftDirection.value = -1;
-  const currentIndex = projects.value.findIndex((project) => project.id === selectedProject.value?.id);
-  selectedProject.value =
-    projects.value[(currentIndex - 1 + projects.value.length) % projects.value.length];
-};
-
-const onPanelEnter = (element: Element, done: () => void) => {
-  const inner = element.querySelector(".panel-inner");
-  const timeline = gsap.timeline({ onComplete: done });
-
-  timeline.fromTo(
-    element,
-    { opacity: 0 },
-    { opacity: 1, duration: 0.28, ease: "power2.out" }
-  );
-  timeline.fromTo(
-    inner,
-    { opacity: 0, y: 24, scale: 0.96 },
-    { opacity: 1, y: 0, scale: 1, duration: 0.52, ease: "power3.out" },
-    "-=0.12"
-  );
-};
-
-const onPanelLeave = (element: Element, done: () => void) => {
-  const inner = element.querySelector(".panel-inner");
-  const timeline = gsap.timeline({ onComplete: done });
-
-  timeline.to(inner, { opacity: 0, y: 18, scale: 0.98, duration: 0.22, ease: "power2.in" });
-  timeline.to(element, { opacity: 0, duration: 0.18, ease: "power2.in" }, "-=0.05");
-};
-
-const onProjectEnter = (element: Element, done: () => void) => {
-  gsap.fromTo(
-    element,
-    { xPercent: 8 * driftDirection.value, opacity: 0 },
-    { xPercent: 0, opacity: 1, duration: 0.6, ease: "power3.out", onComplete: done }
-  );
-};
-
-const onProjectLeave = (element: Element, done: () => void) => {
-  gsap.to(element, {
-    xPercent: -8 * driftDirection.value,
-    opacity: 0,
-    duration: 0.3,
-    ease: "power2.in",
-    onComplete: done
-  });
-};
-
-onMounted(() => {
-  if (trackRef.value) {
-    marqueeTween = gsap.to(trackRef.value, {
-      x: () => -(trackRef.value ? trackRef.value.offsetWidth / 2 : 0),
-      duration: 35,
-      ease: "none",
-      repeat: -1,
-      onUpdate: () => {
-        if (!isDragging && trackRef.value) {
-          dragOffset = Number(gsap.getProperty(trackRef.value, "x"));
-        }
-      }
-    });
-  }
-
-  gsap.set([brandRef.value, letterRefs.value, cardRefs.value], { autoAlpha: 1 });
-  gsap.from(brandRef.value, { x: -30, opacity: 0, duration: 1, ease: "power3.out" });
-  gsap.from(letterRefs.value, {
-    y: 60,
-    opacity: 0,
-    duration: 0.8,
-    stagger: 0.04,
-    ease: "back.out(1.5)"
-  });
-  gsap.from(cardRefs.value, {
-    y: 40,
-    opacity: 0,
-    duration: 0.8,
-    stagger: 0.05,
-    ease: "power3.out",
-    delay: 0.4
-  });
-
-  window.addEventListener("keydown", onKeydown);
-});
-
-onBeforeUnmount(() => {
-  marqueeTween?.kill();
-  window.removeEventListener("keydown", onKeydown);
-  document.body.style.overflow = "";
-});
-
-watch(selectedProject, (project) => {
-  if (!import.meta.client) return;
-
-  document.body.style.overflow = project ? "hidden" : "";
-});
-</script>
-
 <template>
-  <div class="references-page">
-    <section class="references-hero">
+  <div class="viewport-wrapper">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300&family=Instrument+Serif&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <div ref="refStackRef" class="ref-stack">
+      <section ref="heroRef" class="hero">
       <div class="hero-inner">
-        <div ref="brandRef" class="hero-brand">
-          <span class=""></span>
-          <span class=""> <span class="reg-mark"></span></span>
-        </div>
-
-        <h1 class="hero-title" :aria-label="pageCopy.title">
-          <span class="title-block" aria-hidden="true">
+        <div class="hero-title">
+          <div class="title-block">
             <span
-              v-for="(letter, index) in titleLetters"
-              :key="`${letter}-${index}`"
-              :ref="(element) => setLetterRef(element, index)"
-              class="hero-letter"
+              v-for="(words, i) in titleLines"
+              :key="i"
+              class="hero-line ts-line"
             >
-              {{ letter }}
+              <template v-for="(word, j) in words" :key="j">
+                <span :ref="setWordRef" class="ts-word">{{ word }}</span><span
+                  v-if="j < words.length - 1"
+                  class="ts-space"
+                > </span>
+              </template>
             </span>
-          </span>
-        </h1>
-      </div>
-
-      <Transition :css="false" @enter="onPanelEnter" @leave="onPanelLeave">
-        <div v-if="selectedProject" class="project-expansion-panel" @click="closeModal">
-          <div class="panel-inner" @click.stop>
-            <button type="button" class="panel-close" @click.stop.prevent="closeModal">
-              <span class="close-text">{{ pageCopy.close }}</span>
-              <span class="close-icon" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </span>
-            </button>
-
-            <div class="panel-content">
-              <div class="panel-carousel">
-                <button type="button" class="nav-btn prev" :aria-label="pageCopy.previous" @click="prevProject">
-                  ‹
-                </button>
-
-                <div class="image-viewport">
-                  <Transition
-                    :css="false"
-                    mode="out-in"
-                    @enter="onProjectEnter"
-                    @leave="onProjectLeave"
-                  >
-                    <div :key="selectedProject.id" class="project-display">
-                      <div class="display-img-container">
-                        <img :src="selectedProject.image" :alt="selectedProject.title" />
-                      </div>
-                      <div class="display-info">
-                        <h2>{{ selectedProject.title }}</h2>
-                        <p class="panel-location">{{ selectedProject.location }}</p>
-                      </div>
-                    </div>
-                  </Transition>
-                </div>
-
-                <button type="button" class="nav-btn next" :aria-label="pageCopy.next" @click="nextProject">
-                  ›
-                </button>
-              </div>
-            </div>
           </div>
+          <p class="hero-kicker">
+            <span ref="kickerArrowRef" class="kicker-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
+            <span class="ts-line ts-line--kicker">
+              <template v-for="(word, k) in kickerWords" :key="k">
+                <span :ref="setWordRef" class="ts-word">{{ word }}</span><span
+                  v-if="k < kickerWords.length - 1"
+                  class="ts-space"
+                > </span>
+              </template>
+            </span>
+          </p>
         </div>
-      </Transition>
-    </section>
+      </div>
+      </section>
 
-    <section class="cards-section">
-      <div class="top-transition-shadow" aria-hidden="true" />
+      <section ref="cardsFrameRef" class="cards-section ref-stack__panel">
+      <div ref="cardsInnerRef" class="cards-inner">
+      <div class="top-transition-shadow"></div>
+
+      <h2 class="ref-projects-title">Referanslarımız</h2>
 
       <div
         ref="wrapperRef"
@@ -355,51 +51,1023 @@ watch(selectedProject, (project) => {
         @pointerdown="onDragStart"
         @pointermove="onDragMove"
         @pointerup="onDragEnd"
-        @pointercancel="onDragEnd"
-        @pointerenter="onPointerEnter"
-        @pointerleave="onPointerLeave"
+        @pointerleave="onDragEnd"
+        @mouseenter="onPointerEnter"
+        @mouseleave="onPointerLeave"
       >
         <div ref="trackRef" class="marquee-track">
-          <div class="marquee-group">
-            <button
-              v-for="(project, index) in projects"
-              :key="`group-a-${project.id}`"
-              :ref="(element) => setCardRef(element, index)"
-              type="button"
-              class="reference-card"
-              @click="handleCardClick(project)"
-            >
-              <span class="card-image">
-                <img :src="project.image" :alt="project.title" />
-              </span>
-              <span class="card-body">
-                <span class="card-title"><span aria-hidden="true">→</span> {{ project.title }}</span>
-                <span class="card-location">{{ project.location }}</span>
-              </span>
-            </button>
-          </div>
-
-          <div class="marquee-group" aria-hidden="true">
-            <button
-              v-for="(project, index) in projects"
-              :key="`group-b-${project.id}`"
-              :ref="(element) => setCardRef(element, index + projects.length)"
-              type="button"
-              class="reference-card"
-              tabindex="-1"
-              @click="handleCardClick(project)"
-            >
-              <span class="card-image">
-                <img :src="project.image" :alt="project.title" />
-              </span>
-              <span class="card-body">
-                <span class="card-title"><span aria-hidden="true">→</span> {{ project.title }}</span>
-                <span class="card-location">{{ project.location }}</span>
-              </span>
-            </button>
+          <div
+            v-for="(_, copyIndex) in marqueeCopies"
+            :key="'copy-' + copyIndex"
+            :ref="copyIndex === 0 ? setFirstGroupRef : undefined"
+            class="marquee-group"
+            :aria-hidden="copyIndex > 0 ? 'true' : undefined"
+          >
+            <template v-for="(project, i) in projects" :key="'g' + copyIndex + '-' + project.id">
+              <div
+                :ref="el => { if (el) cardRefs[(copyIndex * projects.length) + i] = el }"
+                class="card"
+                @click="handleCardClick(project, $event)"
+              >
+                <div class="card-image">
+                  <img :src="project.image" :alt="project.title">
+                </div>
+                <div class="card-body">
+                  <p class="card-title"><span>→</span> {{ project.title }}</p>
+                  <p class="card-location">{{ project.location }}</p>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
+
+      <div class="reference-brand-stage" aria-label="Referans marka bantları">
+        <div class="reference-logo-row reference-logo-row--top">
+          <div class="reference-logo-track">
+            <div v-for="group in 2" :key="'reference-primary-' + group" class="reference-logo-group" :aria-hidden="group === 2 ? 'true' : undefined">
+              <span v-for="brand in primaryBrands" :key="group + brand.name" class="reference-logo-item">
+                <img :src="brand.src" :alt="brand.name">
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="reference-logo-row reference-logo-row--bottom">
+          <div class="reference-logo-track">
+            <div v-for="group in 2" :key="'reference-secondary-' + group" class="reference-logo-group" :aria-hidden="group === 2 ? 'true' : undefined">
+              <span v-for="brand in secondaryBrands" :key="group + brand.name" class="reference-logo-item">
+                <span v-if="brand.name === 'Microsoft'" class="reference-logo-mark" aria-label="Microsoft" role="img">
+                  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4h26v26H4V4Zm30 0h26v26H34V4ZM4 34h26v26H4V34Zm30 0h26v26H34V34Z" fill="currentColor"/>
+                  </svg>
+                </span>
+                <img v-else :src="brand.src" :alt="brand.name">
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
     </section>
+    </div>
+
+    <transition :css="false" @enter="onEnter" @leave="onLeave">
+      <div v-if="selectedProject" class="project-expansion-panel">
+        <div class="panel-inner">
+          <button type="button" class="panel-close" @click.stop.prevent="closeModal">
+            <span class="close-text">Kapat</span>
+            <span class="close-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </span>
+          </button>
+
+          <div class="panel-content">
+            <div class="panel-carousel">
+              <button type="button" class="nav-btn prev" @click="prevProject">‹</button>
+
+              <div class="image-viewport">
+                <transition :css="false" mode="out-in" @enter="onProjectEnter" @leave="onProjectLeave">
+                  <div :key="selectedProject.id" class="project-display">
+                    <div class="display-img-container">
+                      <img :src="selectedProject.image" :alt="selectedProject.title">
+                    </div>
+                    <div class="display-info">
+                      <h3>{{ selectedProject.title }}</h3>
+                      <p class="panel-location">{{ selectedProject.location }}</p>
+                    </div>
+                  </div>
+                </transition>
+              </div>
+
+              <button type="button" class="nav-btn next" @click="nextProject">›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
+
+<script setup>
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import gsap from "gsap";
+
+const titleLines = [["KAPIDAN", "ÖTE"], ["MİMARİ", "BİR"], ["İMZA", "ÜRETİYORUZ"]];
+const kickerWords = ["SEÇİLİ", "EGE", "KARDOOR", "PROJELERİ"];
+const wordRefs = ref([]);
+const setWordRef = (el) => {
+  if (el && !wordRefs.value.includes(el)) wordRefs.value.push(el);
+};
+const cardRefs = ref([]);
+const trackRef = ref(null);
+const firstGroupRef = ref(null);
+const heroRef = ref(null);
+const wrapperRef = ref(null);
+const cardsFrameRef = ref(null);
+const cardsInnerRef = ref(null);
+const refStackRef = ref(null);
+const kickerArrowRef = ref(null);
+const marqueeCopies = Array.from({ length: 6 });
+
+const projects = ref([
+  { id: 1, title: "Kardoor Villa", location: "İzmir, Çeşme", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600" },
+  { id: 2, title: "Modern Çelik Kapı", location: "İstanbul, Beşiktaş", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600" },
+  { id: 3, title: "Lüks Apartman", location: "Ankara, Çankaya", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600" },
+  { id: 4, title: "Prestij Konutları", location: "Bursa, Nilüfer", image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600" },
+  { id: 5, title: "Kıyı Yalı", location: "İstanbul, Sarıyer", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600" }
+]);
+
+const primaryBrands = [
+  { name: "Apple", src: "https://cdn.simpleicons.org/apple/14151D" },
+  { name: "Nike", src: "https://cdn.simpleicons.org/nike/14151D" },
+  { name: "Tesla", src: "https://cdn.simpleicons.org/tesla/14151D" },
+  { name: "Sony", src: "https://cdn.simpleicons.org/sony/14151D" },
+  { name: "Meta", src: "https://cdn.simpleicons.org/meta/14151D" },
+  { name: "Google", src: "https://cdn.simpleicons.org/google/14151D" },
+  { name: "IKEA", src: "https://cdn.simpleicons.org/ikea/14151D" },
+  { name: "McDonald's", src: "https://cdn.simpleicons.org/mcdonalds/14151D" },
+  { name: "Visa", src: "https://cdn.simpleicons.org/visa/14151D" },
+  { name: "BMW", src: "https://cdn.simpleicons.org/bmw/14151D" }
+];
+
+const secondaryBrands = [
+  { name: "Adidas", src: "https://cdn.simpleicons.org/adidas/14151D" },
+  { name: "Mastercard", src: "https://cdn.simpleicons.org/mastercard/14151D" },
+  { name: "Netflix", src: "https://cdn.simpleicons.org/netflix/14151D" },
+  { name: "Samsung", src: "https://cdn.simpleicons.org/samsung/14151D" },
+  { name: "Spotify", src: "https://cdn.simpleicons.org/spotify/14151D" },
+  { name: "Puma", src: "https://cdn.simpleicons.org/puma/14151D" },
+  { name: "Toyota", src: "https://cdn.simpleicons.org/toyota/14151D" },
+  { name: "Honda", src: "https://cdn.simpleicons.org/honda/14151D" },
+  { name: "Microsoft", src: "" },
+  { name: "NVIDIA", src: "https://cdn.simpleicons.org/nvidia/14151D" }
+];
+
+const selectedProject = ref(null);
+let marqueeTween = null;
+const driftDirection = ref(1);
+
+let isDragging = false;
+let startX = 0;
+let dragOffset = 0;
+let loopWidth = 0;
+let resizeObserver = null;
+
+const setFirstGroupRef = (el) => {
+  firstGroupRef.value = el;
+};
+
+const normalizeMarqueeX = (value) => {
+  if (!loopWidth) return value;
+  return gsap.utils.wrap(-loopWidth, 0, value);
+};
+
+const startMarquee = () => {
+  if (!trackRef.value || !firstGroupRef.value) return;
+
+  marqueeTween?.kill();
+  loopWidth = firstGroupRef.value.offsetWidth;
+  dragOffset = normalizeMarqueeX(Number(gsap.getProperty(trackRef.value, "x")) || 0);
+  gsap.set(trackRef.value, { x: dragOffset });
+
+  marqueeTween = gsap.to(trackRef.value, {
+    x: `-=${loopWidth}`,
+    duration: loopWidth / 55,
+    ease: "none",
+    repeat: -1,
+    modifiers: {
+      x: gsap.utils.unitize((x) => normalizeMarqueeX(parseFloat(x)))
+    },
+    onUpdate: () => {
+      if (!isDragging) {
+        dragOffset = normalizeMarqueeX(Number(gsap.getProperty(trackRef.value, "x")) || 0);
+      }
+    }
+  });
+};
+
+const onDragStart = (e) => {
+  isDragging = true;
+  startX = e.pageX - dragOffset;
+  if (marqueeTween) marqueeTween.pause();
+  wrapperRef.value.style.cursor = "grabbing";
+};
+
+const onDragMove = (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const x = e.pageX;
+  dragOffset = x - startX;
+  dragOffset = normalizeMarqueeX(dragOffset);
+  gsap.set(trackRef.value, { x: dragOffset });
+};
+
+const onDragEnd = () => {
+  if (!isDragging) return;
+  isDragging = false;
+  wrapperRef.value.style.cursor = "grab";
+  if (marqueeTween) marqueeTween.play();
+};
+
+const onPointerEnter = () => {
+  if (marqueeTween && !isDragging) gsap.to(marqueeTween, { timeScale: 0, duration: 1.2, ease: "power2.out" });
+};
+
+const onPointerLeave = () => {
+  if (marqueeTween && !isDragging) gsap.to(marqueeTween, { timeScale: 1, duration: 1.2, ease: "power2.inOut" });
+};
+
+const handleCardClick = (project, e) => {
+  if (Math.abs(startX - (e.pageX - dragOffset)) > 5) return;
+  if (selectedProject.value) return;
+  selectedProject.value = project;
+};
+
+const closeModal = () => {
+  selectedProject.value = null;
+};
+
+const nextProject = () => {
+  if (!selectedProject.value) return;
+  driftDirection.value = 1;
+  const currentIndex = projects.value.findIndex(p => p.id === selectedProject.value?.id);
+  selectedProject.value = projects.value[(currentIndex + 1) % projects.value.length];
+};
+
+const prevProject = () => {
+  if (!selectedProject.value) return;
+  driftDirection.value = -1;
+  const currentIndex = projects.value.findIndex(p => p.id === selectedProject.value?.id);
+  selectedProject.value = projects.value[(currentIndex - 1 + projects.value.length) % projects.value.length];
+};
+
+const onEnter = (el, done) => {
+  const inner = el.querySelector(".panel-inner");
+  const tl = gsap.timeline({ onComplete: done });
+  tl.fromTo(el, { height: 0, opacity: 1 }, { height: "760px", duration: 1, ease: "power4.inOut" });
+  tl.fromTo(inner, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, "-=0.4");
+};
+
+const onLeave = (el, done) => {
+  const inner = el.querySelector(".panel-inner");
+  const tl = gsap.timeline({ onComplete: done });
+  tl.to(inner, { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" });
+  tl.to(el, { height: 0, duration: 0.7, ease: "power4.inOut", onStart: () => { el.style.overflow = "hidden"; } }, "-=0.1");
+};
+
+const onProjectEnter = (el, done) => {
+  gsap.fromTo(el, { xPercent: 8 * driftDirection.value, opacity: 0 }, { xPercent: 0, opacity: 1, duration: 0.6, ease: "power3.out", onComplete: done });
+};
+
+const onProjectLeave = (el, done) => {
+  gsap.to(el, { xPercent: -8 * driftDirection.value, opacity: 0, duration: 0.3, ease: "power2.in", onComplete: done });
+};
+
+onMounted(() => {
+  nextTick(() => {
+    startMarquee();
+
+    if (firstGroupRef.value) {
+      resizeObserver = new ResizeObserver(() => startMarquee());
+      resizeObserver.observe(firstGroupRef.value);
+    }
+  });
+
+  gsap.set(cardRefs.value, { autoAlpha: 1 });
+  gsap.from(cardRefs.value, { y: 40, opacity: 0, duration: 0.8, stagger: 0.05, ease: "power3.out", delay: 0.4 });
+
+  // CodePen-style SplitText word reveal (https://codepen.io/shshaw/pen/KXwawQ)
+  // Headline first, kicker follows in the same visual language via the shared stagger.
+  const reduceMotion = typeof window !== "undefined"
+    && window.matchMedia
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const arrow = kickerArrowRef.value;
+  const card = cardsFrameRef.value;
+
+  if (reduceMotion) {
+    gsap.set(wordRefs.value, { yPercent: 0, opacity: 1 });
+    if (arrow) gsap.set(arrow, { opacity: 1, y: 0 });
+    if (card) gsap.set(card, { y: 0 });
+  } else {
+    gsap.set(wordRefs.value, { yPercent: 100, opacity: 0 });
+    if (arrow) gsap.set(arrow, { opacity: 0, y: 8 });
+    // Card starts pushed down (tip hidden), then slides up after the text.
+    if (card) gsap.set(card, { y: 170 });
+
+    const revealTl = gsap.timeline({ delay: 0.5 });
+    revealTl.to(wordRefs.value, {
+      yPercent: 0,
+      duration: 0.6,
+      ease: "circ.out",
+      stagger: 0.2
+    }, 0);
+    revealTl.to(wordRefs.value, {
+      opacity: 1,
+      duration: 0.6,
+      ease: "power1.out",
+      stagger: 0.2
+    }, 0);
+
+    // Arrow fades/slides in with the tail of the text reveal.
+    if (arrow) {
+      revealTl.to(arrow, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: "power1.out"
+      }, ">-0.15");
+    }
+
+    // Once the whole text is in, the card rises smoothly to its peek position.
+    if (card) {
+      revealTl.to(card, {
+        y: 0,
+        duration: 1.1,
+        ease: "power3.out"
+      }, ">0.05");
+    }
+  }
+});
+
+onBeforeUnmount(() => {
+  marqueeTween?.kill();
+
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+  }
+
+});
+</script>
+
+<style scoped>
+:global(body) {
+  margin: 0;
+  padding: 0;
+  font-family: "Montserrat", sans-serif;
+  background: var(--catalog-stage-surface-bg, #F4F1EA);
+  overflow-x: clip;
+  user-select: none;
+}
+
+:global(.app-shell),
+:global(.footer-wrapper) {
+  background: var(--ref-surface, #111111);
+}
+
+:global(.site-header) {
+  z-index: 1300;
+}
+
+:global(.brand-blend-layer) {
+  z-index: 1301;
+}
+
+:global(.brand-blend-layer--ege) {
+  z-index: 1302;
+}
+
+.viewport-wrapper {
+  /* Hero height < 100svh so the rounded card tip peeks at the bottom on load. */
+  --ref-hero-h: 92svh;
+
+  /* Same dark palette as /contact. */
+  --ref-surface: #111111;
+  --ref-page-bg: linear-gradient(180deg, #111111 0%, #111111 100%);
+  --ref-ink: #f5f3ef;
+  --ref-ink-soft: rgba(245, 243, 239, 0.72);
+  --ref-title-ink: #f5f3ef;
+  --ref-card-bg: rgba(255, 255, 255, 0.04);
+  --ref-card-border: rgba(245, 243, 239, 0.24);
+  --ref-card-title: #f5f3ef;
+  --ref-card-loc: rgba(245, 243, 239, 0.48);
+  --ref-accent: #2ce3ff;
+  --ref-logo-filter: invert(1) brightness(1.7);
+  --ref-modal-bg: #111111;
+  --ref-modal-ink: #f5f3ef;
+  --ref-modal-sub: rgba(245, 243, 239, 0.72);
+  --ref-modal-shadow: 0 50px 120px rgba(0, 0, 0, 0.55);
+  --ref-close-chip: #f5f3ef;
+  --ref-close-ink: #111111;
+
+  width: 100%;
+  position: relative;
+  background: var(--ref-page-bg);
+  min-height: 100vh;
+}
+
+/* Same light palette as /contact. */
+:global(.app-shell--day .viewport-wrapper) {
+  --ref-surface: #f5f1e8;
+  --ref-page-bg:
+    radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.76), transparent 26rem),
+    linear-gradient(180deg, #faf7ef 0%, var(--ref-surface) 58%, #eee8db 100%);
+  --ref-ink: #111417;
+  --ref-ink-soft: rgba(17, 20, 23, 0.68);
+  --ref-title-ink: #111417;
+  --ref-card-bg: rgba(255, 255, 255, 0.72);
+  --ref-card-border: rgba(17, 20, 23, 0.24);
+  --ref-card-title: #111417;
+  --ref-card-loc: rgba(17, 20, 23, 0.48);
+  --ref-accent: #d71920;
+  --ref-logo-filter: none;
+  --ref-modal-bg: #f5f1e8;
+  --ref-modal-ink: #111417;
+  --ref-modal-sub: rgba(17, 20, 23, 0.68);
+  --ref-modal-shadow: 0 50px 120px rgba(81, 69, 53, 0.22);
+  --ref-close-chip: #111417;
+  --ref-close-ink: #f5f1e8;
+}
+
+:global(html[data-theme="dark"]) :global(body) {
+  background: #111111;
+}
+
+/* Scroll handoff (CSS sticky, smooth): the hero sticks to the top so the card
+   rises and covers it (reveal), then everything scrolls normally into the
+   footer. No pinning/locking — keeps it jank-free. */
+.ref-stack {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero {
+  width: 100%;
+  min-height: var(--ref-hero-h, 92svh);
+  background: var(--ref-page-bg);
+  padding: calc(var(--header, 86px) + 24px) clamp(18px, 4vw, 64px) clamp(76px, 8vw, 120px);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 0.85vw, 18px);
+  letter-spacing: 0;
+  margin-left: 0;
+  text-align: center;
+}
+
+.hero-line {
+  font-family: "Barlow Condensed", "Montserrat", sans-serif;
+  font-size: clamp(5.85rem, 10.1vw, 14.15rem);
+  font-weight: 800;
+  color: var(--ref-ink);
+  line-height: 0.9;
+  display: block;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* SplitText-style reveal mask. Padding gives the words clearance to slide
+   in/out; the matching negative margin keeps the static layout untouched. */
+.ts-line {
+  overflow: hidden;
+  padding: 0.18em 0 0.22em;
+  margin: -0.18em 0 -0.22em;
+}
+
+.ts-word {
+  display: inline-block;
+  will-change: transform;
+}
+
+.ts-space {
+  display: inline-block;
+  width: 0.25em;
+}
+
+.ts-line--kicker {
+  display: inline-block;
+  padding: 0.12em 0 0.18em;
+  margin: -0.12em 0 -0.18em;
+  vertical-align: middle;
+}
+
+.hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin: clamp(34px, 5.2vw, 72px) 0 0;
+  color: var(--ref-ink-soft);
+  font-family: "Montserrat", sans-serif;
+  font-size: clamp(0.64rem, 0.74vw, 0.78rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.hero-kicker .kicker-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--ref-ink);
+  flex: 0 0 auto;
+}
+
+.hero-kicker .kicker-arrow svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: kicker-arrow-bob 1.8s ease-in-out infinite;
+}
+
+@keyframes kicker-arrow-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-kicker .kicker-arrow {
+    animation: none;
+  }
+}
+
+.project-expansion-panel {
+  position: absolute;
+  top: var(--ref-hero-h, 92svh);
+  left: 50%;
+  width: 1550px;
+  max-width: 95vw;
+  transform: translateX(-50%);
+  background: var(--ref-modal-bg);
+  z-index: 1200;
+  border-radius: 28px;
+  box-shadow: var(--ref-modal-shadow);
+  will-change: height;
+}
+
+.panel-inner {
+  max-width: 1550px;
+  margin: 0 auto;
+  padding: 64px 80px 80px;
+  height: 760px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.panel-close {
+  position: absolute;
+  top: 44px;
+  right: 80px;
+  background: none;
+  border: none;
+  color: var(--ref-modal-ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  z-index: 10;
+}
+
+.close-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--ref-close-chip);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.panel-close:hover .close-icon {
+  transform: rotate(90deg);
+}
+
+.close-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--ref-close-ink);
+}
+
+.panel-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.panel-carousel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.image-viewport {
+  flex: 1;
+  position: relative;
+  height: 520px;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.project-display {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.display-img-container {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.display-img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.display-info {
+  padding-bottom: 20px;
+}
+
+.display-info h3 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--ref-modal-ink);
+  margin-bottom: 4px;
+}
+
+.panel-location {
+  font-family: "Inter", sans-serif;
+  font-weight: 300;
+  font-size: 18px;
+  color: var(--ref-modal-sub);
+  margin: 0;
+  line-height: 1.6;
+  padding-bottom: 15px;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: var(--ref-modal-ink);
+  font-size: 80px;
+  cursor: pointer;
+  opacity: 0.2;
+  transition: 0.3s;
+  padding: 10px;
+}
+
+.nav-btn:hover {
+  opacity: 1;
+  color: var(--ref-accent);
+}
+
+.cards-section {
+  background: var(--ref-page-bg);
+  min-height: 100svh;
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.cards-inner {
+  width: 100%;
+  min-height: 100svh;
+  box-sizing: border-box;
+  padding: clamp(30px, 3.8vw, 52px) 0 clamp(34px, 4vw, 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.ref-stack__panel {
+  border-top-left-radius: clamp(2rem, 4.2vw, 4.25rem);
+  border-top-right-radius: clamp(2rem, 4.2vw, 4.25rem);
+  box-shadow: 0 -24px 70px -26px rgba(8, 10, 12, 0.28);
+  overflow: hidden;
+  will-change: transform;
+}
+
+.top-transition-shadow {
+  display: none;
+}
+
+/* Serif section title carried over from the home "Seçili Ege Kardoor
+   Projeleri" band, sitting directly above the projects marquee. */
+.ref-projects-title {
+  width: 100%;
+  margin: 0 0 clamp(28px, 3.4vw, 56px);
+  padding: 0 clamp(18px, 4vw, 76px);
+  box-sizing: border-box;
+  color: var(--ref-title-ink);
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(56px, 8vw, 168px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .ref-projects-title {
+    font-size: clamp(3rem, 12vw, 4.25rem);
+    white-space: normal;
+  }
+}
+
+.marquee-wrapper {
+  width: 100%;
+  overflow: hidden;
+  padding: clamp(18px, 2.2vw, 32px) 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.marquee-wrapper:active {
+  cursor: grabbing;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  padding-right: 60px;
+}
+
+.card {
+  background: var(--ref-card-bg);
+  width: 320px;
+  border-radius: 20px;
+  padding: 14px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 20px -5px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  border: 1px solid var(--ref-card-border);
+}
+
+.card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 102, 169, 0.08);
+}
+
+.card-image img {
+  width: 100%;
+  aspect-ratio: 1/1.1;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+  pointer-events: none;
+}
+
+.card-body {
+  padding: 24px 10px 10px;
+  pointer-events: none;
+}
+
+.card-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ref-card-title);
+  margin-bottom: 8px;
+}
+
+.card-title span {
+  color: var(--ref-accent);
+  margin-right: 6px;
+}
+
+.card-location {
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  color: var(--ref-card-loc);
+  font-weight: 500;
+  margin: 0;
+}
+
+.reference-brand-stage {
+  width: 100%;
+  margin-top: clamp(130px, 13vw, 240px);
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+.reference-logo-row {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  max-width: none;
+  overflow: hidden;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.reference-logo-row + .reference-logo-row {
+  margin-top: clamp(16px, 2vw, 28px);
+}
+
+.reference-logo-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+  animation: reference-logo-right 120s linear infinite;
+}
+
+.reference-logo-row--bottom .reference-logo-track {
+  animation-name: reference-logo-left;
+}
+
+.reference-logo-row:hover .reference-logo-track {
+  animation-play-state: paused;
+}
+
+.reference-logo-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.reference-logo-item {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: clamp(116px, 8.5vw, 168px);
+  height: clamp(42px, 3.8vw, 68px);
+  margin: 0 clamp(22px, 3vw, 54px);
+  color: rgba(20, 21, 29, 0.92);
+  opacity: 0.9;
+}
+
+.reference-logo-item img,
+.reference-logo-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.reference-logo-item img {
+  filter: var(--ref-logo-filter);
+}
+
+.reference-logo-mark {
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+  color: var(--ref-ink);
+}
+
+@keyframes reference-logo-left {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes reference-logo-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+:global(.app-shell--references),
+:global(.app-shell--references .footer-wrapper) {
+  background: #111111;
+}
+
+:global(.app-shell--day.app-shell--references),
+:global(.app-shell--day.app-shell--references .footer-wrapper) {
+  background: #eee8db;
+}
+
+:global(.app-shell--references .footer-wrapper) {
+  margin-top: 0;
+}
+
+:global(.app-shell--references .footer-dome) {
+  background-color: #2a2a30;
+  box-shadow: none;
+}
+
+/* No visible chip ring around the footer social buttons on references. */
+:global(.app-shell--references .social-btn) {
+  background-color: transparent;
+}
+
+:global(.app-shell--references .social-btn:hover) {
+  background-color: #e6e7eb;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    min-height: 100svh;
+    padding-top: calc(var(--header, 86px) + 22px);
+    padding-bottom: 72px;
+  }
+
+  .hero-line {
+    font-size: clamp(4.9rem, 17vw, 9.1rem);
+    line-height: 0.92;
+  }
+
+  .cards-section {
+    min-height: 100svh;
+    padding-top: 44px;
+    padding-bottom: 62px;
+  }
+
+  .reference-logo-item {
+    width: clamp(108px, 24vw, 148px);
+    height: clamp(44px, 12vw, 68px);
+    margin: 0 clamp(18px, 5vw, 34px);
+  }
+}
+
+@media (max-width: 540px) {
+  .hero {
+    min-height: 100svh;
+    padding-inline: 16px;
+    padding-bottom: 64px;
+  }
+
+  .hero-line {
+    font-size: clamp(3.15rem, 14.5vw, 4.8rem);
+    line-height: 0.94;
+  }
+
+  .hero-kicker {
+    margin-top: 36px;
+    font-size: 0.64rem;
+  }
+
+  .marquee-group {
+    gap: 28px;
+    padding-right: 28px;
+  }
+
+  .card {
+    width: min(72vw, 280px);
+  }
+
+  .reference-brand-stage {
+    margin-top: clamp(72px, 18vw, 120px);
+    margin-bottom: clamp(56px, 14vw, 96px);
+  }
+
+  .reference-logo-row + .reference-logo-row {
+    margin-top: 18px;
+  }
+}
+</style>
