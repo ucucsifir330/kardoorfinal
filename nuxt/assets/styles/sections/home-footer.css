@@ -42,7 +42,15 @@
   height: clamp(842px, 35.94vw, 1110px);
   display: block;
   object-fit: contain;
-  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.22));
+  /* Inset/debossed shadow that follows the K glyph (see #kInnerShadow). */
+  filter: url(#kInnerShadow);
+}
+
+.footer-logo-filter {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
 
 .footer-main {
@@ -249,6 +257,7 @@
 .footer-heading em {
   font-style: italic;
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .footer-heading__rest {
@@ -530,7 +539,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 30px;
+  bottom: 27px;
   z-index: 1;
   pointer-events: none;
   text-align: center;
@@ -661,15 +670,16 @@
   transform: none;
 }
 
-.catalog-row {
+.footer-wrapper .catalog-row {
   min-height: clamp(640px, 69.44vh, 750px) !important;
 }
 
-.catalog-row:last-of-type {
+.footer-wrapper .catalog-row:last-of-type {
   min-height: auto !important;
   margin-bottom: 0 !important;
 }
-.catalog-row:last-of-type .catalog-card {
+
+.footer-wrapper .catalog-row:last-of-type .catalog-card {
   box-shadow:
     0 2px 10px rgba(0, 0, 0, 0.03),
     0 34px 80px -48px rgba(0, 0, 0, 0.42);
@@ -682,12 +692,14 @@
 
 .app-shell--day.app-shell--references,
 .app-shell--day.app-shell--references .footer-wrapper {
-  background: #eee8db !important;
+  background: #f6f2e9 !important;
 }
 
 .app-shell--references .footer-dome {
   background-color: #2a2a30 !important;
-  box-shadow: none;
+  box-shadow: inset 0 0 0 2px #2a2a30, 0 0 0 2px #2a2a30 !important;
+  outline: 1px solid #2a2a30;
+  outline-offset: -1px;
 }
 
 /* No visible chip ring around the footer social buttons on references. */
@@ -755,11 +767,26 @@
   width: min(100%, 1680px) !important;
   min-height: clamp(720px, 72svh, 900px) !important;
   display: grid !important;
-  grid-template-columns: minmax(360px, 560px) minmax(520px, 860px) !important;
-  align-items: start !important;
+  grid-template-columns: minmax(360px, 560px) auto minmax(520px, 860px) !important;
+  align-items: stretch !important;
   justify-content: space-between !important;
   column-gap: clamp(64px, 8vw, 150px) !important;
   padding: clamp(126px, 12vw, 190px) 56px 0 !important;
+}
+
+/* K (sol sütun) ile form arasında ortadaki dikey ayraç. Kendi grid sütununda
+   durduğu için iki yanındaki column-gap simetrik = eşit boşluk. */
+.footer-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: clamp(8px, 1.4vw, 24px) 0 clamp(40px, 6vw, 90px);
+  background: linear-gradient(
+    180deg,
+    rgba(230, 231, 235, 0) 0%,
+    rgba(230, 231, 235, 0.22) 12%,
+    rgba(230, 231, 235, 0.22) 88%,
+    rgba(230, 231, 235, 0) 100%
+  );
 }
 
 .footer-socials {
@@ -780,17 +807,17 @@
   left: auto !important;
   grid-column: 1 / -1 !important;
   width: 100% !important;
-  height: clamp(330px, 31vw, 520px) !important;
+  height: clamp(300px, 27vw, 460px) !important;
   margin: 0 0 18px !important;
-  justify-content: flex-start !important;
+  justify-content: center !important;
   overflow: visible !important;
 }
 
 .footer-logo {
-  width: clamp(390px, 31vw, 620px) !important;
+  width: clamp(340px, 26vw, 520px) !important;
   height: 100% !important;
   object-fit: contain !important;
-  object-position: left center !important;
+  object-position: center center !important;
 }
 
 .social-btn {
@@ -801,6 +828,8 @@
 .footer-panel {
   max-width: 860px !important;
   margin: 0 0 0 auto !important;
+  /* Paneli divider'dan biraz sağa it (mockup dengesi). Tek ayar düğmesi. */
+  padding-left: clamp(28px, 4vw, 88px) !important;
 }
 
 .footer-info {
@@ -821,6 +850,10 @@
     grid-template-columns: 1fr !important;
     row-gap: 70px !important;
     padding-inline: 36px !important;
+  }
+
+  .footer-divider {
+    display: none !important;
   }
 
   .footer-socials {
@@ -1084,43 +1117,4 @@
     margin-top: 0 !important;
   }
 
-  .footer-logo {
-    width: min(480px, 78vw) !important;
-  }
-}
-
-@media (max-width: 760px) {
-  .footer-main {
-    padding-top: 104px !important;
-  }
-
-  .footer-brand {
-    height: 116px !important;
-  }
-
-  .footer-logo {
-    width: min(260px, 74vw) !important;
-  }
-}
-
-/* Overscale the visible K mark so it spans from the heading top to the message row. */
-.footer-brand {
-  overflow: visible !important;
-}
-
-.footer-logo {
-  transform: translate(-42%, -4.5%) scale(2.28) !important;
-  transform-origin: center center !important;
-}
-
-@media (max-width: 1180px) {
-  .footer-logo {
-    transform: scale(1.2) !important;
-  }
-}
-
-@media (max-width: 760px) {
-  .footer-logo {
-    transform: none !important;
-  }
-}
+  .

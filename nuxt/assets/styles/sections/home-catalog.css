@@ -2094,11 +2094,12 @@
   grid-template-columns: 188px minmax(0, 1fr) !important;
   column-gap: 0 !important;
   align-items: start !important;
-  min-height: 0 !important;
+  min-height: calc(clamp(572px, 59.6vh, 644px) + 92px) !important;
   margin: 0 0 clamp(56px, 5.55vh, 68px) 0 !important;
 }
 
 .home-page .catalog-row:last-of-type {
+  min-height: calc(clamp(572px, 59.6vh, 644px) + 92px) !important;
   margin-bottom: 0 !important;
 }
 
@@ -2610,6 +2611,11 @@
     max-width: 100% !important;
     grid-template-columns: 142px minmax(0, 1fr) !important;
     margin-left: 0 !important;
+    min-height: calc(clamp(858px, 89.4vh, 966px) + 92px) !important;
+  }
+
+  .home-page .catalog-row:last-of-type {
+    min-height: calc(clamp(858px, 89.4vh, 966px) + 92px) !important;
   }
 
   .home-page .catalog-row-info {
@@ -2630,6 +2636,11 @@
   .home-page .catalog-row {
     grid-template-columns: 1fr !important;
     row-gap: 16px !important;
+    min-height: calc(clamp(1144px, 119.2vh, 1288px) + 92px) !important;
+  }
+
+  .home-page .catalog-row:last-of-type {
+    min-height: calc(clamp(1144px, 119.2vh, 1288px) + 92px) !important;
   }
 
   .home-page .catalog-row-info {
@@ -2712,7 +2723,12 @@
   .home-page .catalog-row {
     grid-template-columns: 1fr !important;
     row-gap: 12px !important;
+    min-height: 0 !important;
     margin: 0 0 clamp(28px, 7vw, 48px) 0 !important;
+  }
+
+  .home-page .catalog-row:last-of-type {
+    min-height: 0 !important;
   }
 
   .home-page .catalog-row-info {
@@ -3981,22 +3997,4 @@
     color: rgba(17, 20, 23, 0.68);
     font-size: 14px;
     cursor: pointer;
-    font-weight: 500;
-    text-decoration: none;
-    display: block;
-    transition: color 0.3s;
-  }
-
-  .home-page .liquid-actions li:hover,
-  .home-page .liquid-actions li a:hover {
-    color: #111417;
-  }
-}
-
-html.smooth-cursor-active .home-page .catalog-product,
-html.smooth-cursor-active .home-page .catalog-product *,
-html.smooth-cursor-active .home-page .catalog-product-image-wrap,
-html.smooth-cursor-active .home-page .catalog-product-image,
-html.smooth-cursor-active .home-page .catalog-product-info {
-  cursor: none !important;
-}
+ 

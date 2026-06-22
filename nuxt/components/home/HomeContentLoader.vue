@@ -6,6 +6,7 @@ const mountRef = ref<HTMLElement | null>(null);
 
 let observer: IntersectionObserver | null = null;
 let renderFrame: number | null = null;
+let renderFallbackTimer = 0;
 
 const refreshScrollTriggers = async () => {
   try {
@@ -32,10 +33,13 @@ const scheduleRenderFlow = () => {
 
   const run = () => {
     renderFrame = null;
+    window.clearTimeout(renderFallbackTimer);
+    renderFallbackTimer = 0;
     renderFlow();
   };
 
   renderFrame = window.requestAnimationFrame(run);
+  renderFallbackTimer = window.setTimeout(run, 120);
 };
 
 onMounted(() => {
@@ -54,20 +58,10 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (renderFrame) window.cancelAnimationFrame(renderFrame);
+  window.clearTimeout(renderFallbackTimer);
   observer?.disconnect();
 });
 </script>
 
 <template>
-  <div ref="mountRef" class="home-content-loader">
-    <ClientOnly>
-      <LazyHomeExperience v-if="shouldRender" />
-    </ClientOnly>
-  </div>
-</template>
-
-<style scoped>
-.home-content-loader {
-  min-height: 1px;
-}
-</style>
+  <div ref="mountRef" cl

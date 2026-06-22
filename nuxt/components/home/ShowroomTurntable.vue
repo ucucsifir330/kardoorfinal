@@ -6,7 +6,7 @@
  * Scroll eşiklerinde snap yapar: aktif kapı merkezde büyük, yan kapılar flu/küçük.
  */
 
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import AdaCtaButton from "./AdaCtaButton.vue";
 
@@ -188,6 +188,9 @@ const updateOrbitRadius = () => {
   orbitRadiusX.value = window.matchMedia(MOBILE_ORBIT_MEDIA).matches
     ? Math.min(MOBILE_ORBIT_RADIUS_X, window.innerWidth * MOBILE_ORBIT_RATIO)
     : ORBIT_RADIUS_X;
+
+  // Re-apply the orbit imperatively after a radius change (resize / breakpoint).
+  applyOrbit(props.progress);
 };
 
 onMounted(() => {
@@ -208,47 +211,52 @@ const clamp = (v: number, min: number, max: number) =>
   Math.min(max, Math.max(min, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-// Sürekli (float) kapı index'i — scrub progress'inden direkt türetilir.
-// Math.round YOK; orbit pozisyonları sürekli interpolate edilir.
-const floatIndex = computed(() =>
-  clamp(props.progress * (doors.length - 1), 0, doors.length - 1)
-);
+// Sürekli (float) kapı index'i — scrub progress'inden türetilir.
+const getFloatIndex = (progress: number) =>
+  clamp(progress * (doors.length - 1), 0, doors.length - 1);
 
-// Info panel için yine ayrık (rounded) index — sadece Vue Transition tetiklensin.
-const activeIndex = computed(() => Math.round(floatIndex.value));
+// Info panel için ayrık (rounded) index — ağır info/backdrop/counter DOM swap'ini
+// tetikler. Swap'i SADECE kapı (neredeyse) oturduğunda commit ediyoruz; hop'un
+// tam ortasında değil → kapı geçişindeki "hop" takılması biter.
+const activeIndex = ref(Math.round(getFloatIndex(props.progress)));
 
-const orbitDoors = computed(() => {
+// ── PERFORMANS: orbit imperatif (doğrudan DOM yazımı) güncelleniyor, Vue'nun
+// reaktif render'ı ile DEĞİL. 5 kapının transform'unu reaktif :style ile sürmek
+// tüm bileşeni saniyede 60 kez ana-thread'de yeniden render ediyordu — scroll
+// kasmasının asıl sebebi buydu. Artık tek bir watch, CSS değişkenlerini doğrudan
+// slot elemanlarına yazıyor; progress değişiminde Vue HİÇ re-render etmiyor.
+const slotEls: (HTMLElement | null)[] = [];
+const setSlotRef = (el: Element | null, i: number) => {
+  slotEls[i] = (el as HTMLElement) ?? null;
+};
+
+const applyOrbit = (progress: number) => {
   const count = doors.length;
-  const f = floatIndex.value;
+  const f = getFloatIndex(progress);
 
-  return doors.map((door, i) => {
+  for (let i = 0; i < count; i++) {
+    const el = slotEls[i];
+    if (!el) continue;
+    const door = doors[i]!;
+
     const rawOffset = i - f;
     let offset = rawOffset;
     if (offset > count / 2) offset -= count;
     if (offset < -count / 2) offset += count;
 
     const distance = Math.abs(offset);
-    const angle = offset * STEP;
-    const rad = degToRad(angle);
+    const rad = degToRad(offset * STEP);
     const x = Math.sin(rad) * orbitRadiusX.value;
     const y = (1 - Math.cos(rad)) * ORBIT_RADIUS_Y;
 
-    // ── Sürekli eğriler ────────────────────────────────────────
-    // distance: 0 = aktif, 1 = komşu, 2+ = uzak
-    const nearActive = clamp(1 - distance, 0, 1); // 1 → 0
-    const nearNeighbor = clamp(1 - Math.abs(distance - 1), 0, 1); // 0→1→0
-    const farTail = clamp(distance - 1, 0, 1.5); // 0 → 1.5
+    const nearActive = clamp(1 - distance, 0, 1);
 
-    // Scale: aktif 1.22 → komşu 0.62 → uzak 0.5
     const baseScale =
       distance <= 1
         ? lerp(0.62, 1.22, nearActive)
         : Math.max(0.5, lerp(0.62, 0.5, clamp(distance - 1, 0, 1)));
-    const visualScale =
-      1 + ((door.visual?.activeScale ?? 1) - 1) * nearActive;
-    const scale = baseScale * visualScale;
+    const scale = baseScale * (1 + ((door.visual?.activeScale ?? 1) - 1) * nearActive);
 
-    // Opacity: aktif 1 → komşu 0.34 → uzak 0
     const baseOpacity =
       distance <= 1
         ? lerp(0.34, 1, nearActive)
@@ -259,33 +267,32 @@ const orbitDoors = computed(() => {
     const isTrailingHidden = isWrappedTrailingDoor && lastDoorApproach >= 0.01;
     const opacity = isTrailingHidden ? 0 : baseOpacity * trailingFade;
 
-    // Blur: aktif 0 → komşu 7 → uzak 10
-    const blur =
-      distance <= 1
-        ? lerp(7, 0, nearActive)
-        : Math.min(10, lerp(7, 10, clamp(distance - 1, 0, 1)));
-
-    // zIndex sürekli mesafeye göre — aktife en yakın olan üstte
     const zIndex = isTrailingHidden ? -1 : Math.round(40 - distance * 12);
-
-    // Aktife yakın olduğunda hafifçe yükselsin (cinematic lift)
     const lift = nearActive * -6;
     const visualY = (door.visual?.activeY ?? 0) * nearActive;
-    return {
-      door,
-      x,
-      y: y + lift + visualY,
-      scale: isTrailingHidden ? 0.001 : scale,
-      opacity,
-      blur: isTrailingHidden ? 16 : blur,
-      zIndex,
-      angle,
-      nearActive,
-      nearNeighbor,
-      farTail
-    };
-  });
-});
+    const nonActive = 1 - nearActive;
+
+    const s = el.style;
+    s.setProperty("--slot-x", `${x}px`);
+    s.setProperty("--slot-y", `${y + lift + visualY}px`);
+    s.setProperty("--slot-scale", `${isTrailingHidden ? 0.001 : scale}`);
+    s.setProperty("--slot-opacity", `${opacity}`);
+    s.setProperty("--slot-non-active", `${nonActive}`);
+    s.setProperty(
+      "--slot-neighbor-rise",
+      `calc(var(--showroom-neighbor-rise-y, 0px) * ${nonActive})`
+    );
+    s.zIndex = `${zIndex}`;
+  }
+
+  // Kapı oturunca info/backdrop/counter swap'ini tetikle.
+  const idx = Math.round(f);
+  if (idx !== activeIndex.value && Math.abs(f - idx) < 0.04) {
+    activeIndex.value = idx;
+  }
+};
+
+watch(() => props.progress, applyOrbit);
 
 const activeDoor = computed(() => doors[activeIndex.value]!);
 const backdropMarqueeText = computed(() =>
@@ -363,25 +370,16 @@ const ui = computed(() =>
       <div class="showroom-turntable__scene">
         <div class="showroom-turntable__carousel">
           <div
-            v-for="item in orbitDoors"
-            :key="item.door.id"
+            v-for="(door, i) in doors"
+            :key="door.id"
+            :ref="(el) => setSlotRef(el as Element | null, i)"
             class="showroom-turntable__slot"
-            :style="{
-              '--slot-x': `${item.x}px`,
-              '--slot-y': `${item.y}px`,
-              '--slot-scale': `${item.scale}`,
-              '--slot-opacity': `${item.opacity}`,
-              '--slot-blur': `${item.blur}px`,
-              '--slot-non-active': `${1 - item.nearActive}`,
-              '--slot-neighbor-rise': `calc(var(--showroom-neighbor-rise-y, 0px) * ${1 - item.nearActive})`,
-              zIndex: item.zIndex
-            }"
           >
             <img
-              :src="item.door.image"
-              :alt="t(item.door.name)"
+              :src="door.image"
+              :alt="t(door.name)"
               class="showroom-turntable__door-image"
-              :class="`showroom-turntable__door-image--${item.door.id}`"
+              :class="`showroom-turntable__door-image--${door.id}`"
               loading="lazy"
               decoding="async"
               draggable="false"
@@ -484,8 +482,3 @@ const ui = computed(() =>
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 6L15 12L9 18" />
-        </svg>
-      </button>
-    </nav>
-  </div>
-</template>

@@ -9,9 +9,11 @@
   /* ── Composition ── */
   --orbit-radius-x: 360px;
   --orbit-radius-y: 50px;
-  --st-door-height: clamp(420px, 58vh, 640px);
-  --st-door-width: clamp(190px, 21vw, 300px);
-  --st-stage-x: clamp(18%, 28vw, 34%);
+  /* Door cluster size + horizontal placement (tunable).
+     ↑ width/height = bigger doors · ↑ stage-x = shift the cluster right/center. */
+  --st-door-height: clamp(470px, 64vh, 710px);
+  --st-door-width: clamp(215px, 23vw, 345px);
+  --st-stage-x: clamp(22%, 31vw, 39%);
   --st-stage-y: 96%;
 
   /* ── Dark theme (default) ── */
@@ -699,19 +701,16 @@
 .st-counter-number-leave-active {
   transition:
     opacity 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    filter 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .st-counter-number-enter-from {
   opacity: 0;
-  filter: blur(8px);
   transform: translate3d(0, 9px, 0);
 }
 
 .st-counter-number-leave-to {
   opacity: 0;
-  filter: blur(8px);
   transform: translate3d(0, -9px, 0);
 }
 
@@ -827,7 +826,10 @@
   }
 }
 
-@media (max-width: 760px), (pointer: coarse) {
+/* Mobile/touch optimizations — gate coarse on a small width so DevTools device
+   emulation at desktop sizes (1920×1080) keeps the full experience (the grey
+   marquee, clip reveals, etc.) instead of being treated as a phone. */
+@media (max-width: 760px), (pointer: coarse) and (max-width: 1024px) {
   .showroom-turntable__backdrop-text,
   .showroom-turntable__backdrop-marquee,
   .showroom-turntable__slot,

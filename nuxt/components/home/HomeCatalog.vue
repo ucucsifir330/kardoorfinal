@@ -130,9 +130,11 @@
               >
                 <div class="catalog-product-image-wrap">
                   <img
-                    :src="item.image"
+                    :src="thumb(item.image)"
                     alt="Kapı Modeli"
                     class="catalog-product-image"
+                    loading="eager"
+                    decoding="async"
                     @error="handleCatalogImageError($event, item.localImage)"
                   >
 
@@ -414,6 +416,7 @@
 
 <script setup lang="ts">
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { ComponentPublicInstance } from "vue";
 
@@ -442,6 +445,16 @@ const getPreviewProducts = (block: any) => {
   return isMobile.value ? all.slice(0, mobileProductLimit) : all;
 };
 
+// Catalog grid thumbnails are tiny (~120px) but the source ImageKit files are
+// full-res (~1400x2300, ~3.5MP each). Decoding/compositing ~36 of those while
+// scrolling was the real cause of the jank (measured: p95 40ms -> 12ms once
+// resized). Serve a 360px-wide ImageKit variant for the grid; the modal keeps
+// the original full-res URL untouched.
+const thumb = (url?: string) => {
+  if (!url || !url.includes("ik.imagekit.io")) return url || "";
+  return `${url.split("?")[0]}?tr=w-360,q-82`;
+};
+
 const isCatalogScrolled = ref(false);
 const catalogSectionRef = ref<HTMLElement | null>(null);
 const catalogTitleRef = ref<HTMLElement | null>(null);
@@ -453,9 +466,10 @@ const catalogLineGradientRef = ref<SVGLinearGradientElement | null>(null);
 
 let catalogRowsFrame = 0;
 let catalogObserver: IntersectionObserver | null = null;
-let catalogLineFrame = 0;
+let catalogLineST: ScrollTrigger | null = null;
 let catalogLinePathLength = 0;
 let catalogHeadingLineConnected = false;
+let catalogLineRefreshTimer = 0;
 
 // --- LIQUID MENU STATE & LOGIC ---
 const activeLiquidCard = ref<string | null>(null);
@@ -690,23 +704,36 @@ const catalogEnter = (el: Element, done: () => void) => {
 const revealCatalogRow = (rowIndex: number) => {
   if (rowIndex && !visibleRows.value.includes(rowIndex)) {
     visibleRows.value.push(rowIndex);
+    scheduleCatalogLineRefresh();
+  }
+
+  // Keep the next rows warm so the row 07 -> references handoff never competes
+  // with a fresh grid mount/image queue on the same scroll frames.
+  for (let offset = 1; offset <= 2; offset++) {
+    const nextRowIndex = rowIndex + offset;
+    if (nextRowIndex <= catalogBlocks.length && !visibleRows.value.includes(nextRowIndex)) {
+      visibleRows.value.push(nextRowIndex);
+      scheduleCatalogLineRefresh();
+    }
   }
 };
 
 const checkCatalogRows = () => {
   catalogRowsFrame = 0;
-  const rootEl = mainRef.value;
 
-  if (!rootEl) return;
+  if (!mainRef.value) return;
 
-  const rootRect = rootEl.getBoundingClientRect();
-  const revealLine = rootRect.top + rootRect.height * 0.84;
+  // Viewport-based reveal (was keyed off the tall .catalog-main, which revealed
+  // every row at once). Only reveal rows that are at/near the viewport so the
+  // door images load in batches as you scroll down.
+  const vh = window.innerHeight;
+  const revealLine = vh * 1.85;
 
   rowRefs.value.forEach((el) => {
     const rect = el.getBoundingClientRect();
     const rowIndex = parseInt(el.getAttribute("data-row-index") || "0");
 
-    if (rect.top < revealLine && rect.bottom > rootRect.top) {
+    if (rect.top < revealLine && rect.bottom > -vh * 0.1) {
       revealCatalogRow(rowIndex);
     }
   });
@@ -779,18 +806,6 @@ const handleCatalogImageError = (event: Event, fallbackSrc?: string) => {
 
 const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
 
-const getLayoutDocumentTop = (element: HTMLElement) => {
-  let top = 0;
-  let current: HTMLElement | null = element;
-
-  while (current) {
-    top += current.offsetTop;
-    current = current.offsetParent as HTMLElement | null;
-  }
-
-  return top;
-};
-
 const updateCatalogLineGeometry = () => {
   const section = catalogSectionRef.value;
   const svg = catalogLineSvgRef.value;
@@ -829,60 +844,64 @@ const updateCatalogLineGeometry = () => {
   path.style.strokeDashoffset = `${catalogLinePathLength}`;
 };
 
-const updateCatalogLineProgress = () => {
-  catalogLineFrame = 0;
-
-  const section = catalogSectionRef.value;
+const drawCatalogLine = (progress: number) => {
   const path = catalogLinePathRef.value;
+  if (!path || !catalogLinePathLength) return;
 
-  if (!section || !path || !catalogLinePathLength) return;
+  const value = clampProgress(progress);
+  path.style.strokeDashoffset = `${catalogLinePathLength * (1 - value)}`;
 
-  const viewportHeight = window.innerHeight || 1;
-  const sectionTop = getLayoutDocumentTop(section);
-  const sectionBottom = sectionTop + section.offsetHeight;
-  const start = sectionTop - viewportHeight * 0.2;
-  const end = sectionBottom - viewportHeight * 0.28;
-  const progress = clampProgress((window.scrollY - start) / Math.max(end - start, 1));
-
-  path.style.strokeDashoffset = `${catalogLinePathLength * (1 - progress)}`;
-
-  if (progress >= 0.965 && !catalogHeadingLineConnected) {
+  if (value >= 0.965 && !catalogHeadingLineConnected) {
     catalogHeadingLineConnected = true;
     window.dispatchEvent(new CustomEvent("kardoor:heading-line-connected"));
-  } else if (progress < 0.82 && catalogHeadingLineConnected) {
+  } else if (value < 0.82 && catalogHeadingLineConnected) {
     catalogHeadingLineConnected = false;
     window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
   }
 };
 
-const requestCatalogLineProgress = () => {
-  if (catalogLineFrame) return;
-
+// Drive the structural line from a GSAP ScrollTrigger so it samples the exact
+// same smoothed playhead as ScrollSmoother. The old engine read the raw
+// (un-smoothed) window.scrollY on a manual rAF loop, so the line raced the
+// lagged content and felt janky. start/end mirror the previous math:
+//   progress 0 at sectionTop - 0.2vh  -> trigger top at 20% of the viewport
+//   progress 1 at sectionBottom - 0.28vh -> trigger bottom at 28% of the viewport
+const buildCatalogLineTrigger = () => {
   const section = catalogSectionRef.value;
-  if (section) {
-    const rect = section.getBoundingClientRect();
-    const viewportHeight = window.innerHeight || 1;
+  if (!section) return;
 
-    if (rect.bottom < -240) {
-      if (catalogLinePathLength && catalogLinePathRef.value) {
-        catalogLinePathRef.value.style.strokeDashoffset = "0";
-      }
-      if (!catalogHeadingLineConnected) {
-        catalogHeadingLineConnected = true;
-        window.dispatchEvent(new CustomEvent("kardoor:heading-line-connected"));
-      }
-      return;
-    }
-
-    if (rect.top > viewportHeight + 240) return;
-  }
-
-  catalogLineFrame = requestAnimationFrame(updateCatalogLineProgress);
+  catalogLineST?.kill();
+  catalogLineST = ScrollTrigger.create({
+    trigger: section,
+    start: "top 20%",
+    end: "bottom 28%",
+    onUpdate: (self) => drawCatalogLine(self.progress),
+    onRefresh: (self) => drawCatalogLine(self.progress),
+    onLeave: () => drawCatalogLine(1),
+    onLeaveBack: () => drawCatalogLine(0)
+  });
 };
 
 const refreshCatalogLine = () => {
   updateCatalogLineGeometry();
-  updateCatalogLineProgress();
+
+  if (catalogLineST) {
+    catalogLineST.refresh();
+  } else {
+    buildCatalogLineTrigger();
+  }
+
+  if (catalogLineST) drawCatalogLine(catalogLineST.progress);
+};
+
+const scheduleCatalogLineRefresh = () => {
+  window.clearTimeout(catalogLineRefreshTimer);
+  catalogLineRefreshTimer = window.setTimeout(() => {
+    catalogLineRefreshTimer = 0;
+    nextTick(() => {
+      window.requestAnimationFrame(refreshCatalogLine);
+    });
+  }, 180);
 };
 
 const initCatalogObserver = () => {
@@ -904,8 +923,12 @@ const initCatalogObserver = () => {
       }
     });
   }, {
-    root: rootEl,
-    rootMargin: "0px 0px 42% 0px",
+    // Observe against the VIEWPORT (not the tall .catalog-main container). With
+    // root=main every row counted as intersecting at once, so all 7 rows + ~68
+    // door images mounted/loaded together on first paint. Viewport root reveals
+    // rows — and loads their door images — progressively as you scroll down.
+    root: null,
+    rootMargin: "0px 0px 85% 0px",
     threshold: 0.01
   });
 
@@ -913,57 +936,4 @@ const initCatalogObserver = () => {
     catalogObserver?.observe(el);
   });
 
-  requestCatalogRowCheck();
-};
-
-const checkMobile = () => { isMobile.value = window.innerWidth <= 760; };
-
-onMounted(() => {
-  checkMobile();
-  window.addEventListener("resize", checkMobile, { passive: true });
-
-  nextTick(() => {
-    const catalogMainEl = mainRef.value;
-    if (catalogMainEl) {
-      catalogMainEl.scrollTop = 0;
-      isCatalogScrolled.value = false;
-    }
-
-    requestAnimationFrame(() => {
-      initCatalogObserver();
-      refreshCatalogLine();
-    });
-  });
-
-  if (document.fonts?.ready) {
-    document.fonts.ready.then(refreshCatalogLine).catch(() => undefined);
-  }
-
-  window.addEventListener("scroll", requestCatalogLineProgress, { passive: true });
-  window.addEventListener("resize", refreshCatalogLine, { passive: true });
-  window.addEventListener("keydown", handleProductModalKeydown);
-});
-
-onBeforeUnmount(() => {
-  if (catalogRowsFrame) {
-    cancelAnimationFrame(catalogRowsFrame);
-    catalogRowsFrame = 0;
-  }
-
-  if (catalogObserver) {
-    catalogObserver.disconnect();
-  }
-
-  if (catalogLineFrame) {
-    cancelAnimationFrame(catalogLineFrame);
-    catalogLineFrame = 0;
-  }
-
-  window.removeEventListener("scroll", requestCatalogLineProgress);
-  window.removeEventListener("resize", refreshCatalogLine);
-  window.removeEventListener("resize", checkMobile);
-  window.removeEventListener("keydown", handleProductModalKeydown);
-  window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
-  resetCatalogModalState();
-});
-</script>
+  r

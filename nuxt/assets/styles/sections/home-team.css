@@ -34,7 +34,7 @@
   --team-card-overlay: transparent;
   --team-card-overlay-text: #eae8e8;
   --team-card-shadow: none;
-  --manifesto-copy-width: clamp(760px, 72vw, 979px);
+  --manifesto-copy-width: clamp(760px, 84vw, 1360px);
 
   position: relative;
   z-index: 1;
@@ -148,6 +148,7 @@
   align-items: flex-start;
   transform: translateY(clamp(126px, 12vh, 180px));
 }
+
 
 .ada-manifesto-cta {
   --ada-cta-text-color: #eae8e8;
@@ -430,10 +431,12 @@
 .ada-subtitle-container {
   margin-top: clamp(126px, 15vh, 190px);
   margin-bottom: clamp(68px, 6vw, 112px);
+  padding-block: clamp(14px, 1.6vw, 28px);
 }
 
 .ada-subtitle-container-reverse {
   margin-bottom: clamp(150px, 16vh, 240px);
+  padding-block: clamp(14px, 1.6vw, 28px);
 }
 
 .ada-loop-track,
@@ -537,6 +540,16 @@
   height: 100%;
   object-fit: contain;
   color: #eae8e8;
+  transform-origin: center center;
+  transition: transform 420ms cubic-bezier(0.165, 0.84, 0.44, 1),
+    opacity 420ms ease;
+}
+
+/* Hover'da o anki logo büyür — marquee zaten hover'da durduğu için hangi
+   logonun üstünde olduğumuz net okunur. */
+.ada-loop-item:hover .ada-brand-logo {
+  transform: scale(1.32);
+  opacity: 1;
 }
 
 span.ada-brand-logo {
@@ -607,8 +620,13 @@ span.ada-brand-logo {
 .ada-title-float-word {
   display: inline-block;
   min-height: clamp(68px, 8.4vw, 170px);
+  /* Kuyruklu harfler (ç, ğ, ı) maskenin altında kesilmesin diye nefes payı.
+     Reveal harfleri yPercent:115 ile çok daha aşağıdan geldiği için bu küçük
+     pay maskeyi/animasyonu bozmaz, sadece dip kırpmasını kaldırır. */
+  padding-bottom: 0.2em;
   overflow: hidden;
   white-space: nowrap;
+  vertical-align: bottom;
 }
 
 .ada-title-float-char {
@@ -1313,6 +1331,7 @@ span.ada-brand-logo {
   color: rgba(20, 21, 29, 0.92);
 }
 
+
 .app-shell--day .ada-manifesto-spacer,
 .app-shell--day .ada-manifesto-container {
   background: var(--team-section-bg, var(--catalog-stage-surface-bg, #eae8e8));
@@ -1605,50 +1624,4 @@ span.ada-brand-logo {
     height: 42px;
   }
 
-  .ada-carousel-wrapper::-webkit-scrollbar {
-    display: none;
-  }
-
-  .ada-founders-grid {
-    display: flex;
-    width: max-content;
-    gap: 16px;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-
-  .ada-card {
-    flex: 0 0 min(78vw, 310px);
-    width: min(78vw, 310px);
-    height: 560px;
-    min-height: 0;
-    border-radius: 24px;
-    scroll-snap-align: center;
-  }
-
-  .ada-name {
-    padding-inline: 10px;
-    font-size: clamp(2.35rem, 10vw, 3.05rem);
-    overflow-wrap: anywhere;
-  }
-
-  .ada-hover-overlay {
-    opacity: 1;
-    transform: none;
-    padding: 80px 20px 24px;
-    background: transparent;
-  }
-
-  .ada-bio {
-    font-size: 0.9rem;
-  }
-
-  .ada-modal-name {
-    font-size: 4rem;
-  }
-
-  .ada-modal-content {
-    flex-direction: column;
-    gap: 2rem;
-  }
-}
+  .ada-carousel-wrapper:

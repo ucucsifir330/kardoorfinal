@@ -9,7 +9,7 @@
         data-gsap-quote="true"
         @click="playQuoteExit"
       >
-        Kapıdan öte, mimari bir imza istiyoruz.
+        Bir kapının değeri yalnızca görünüşüyle değil; yıllara meydan okuyan dayanımı ve taşıdığı güvenle ölçülür. Tavizsiz işçilik ve doğru mühendislikle, sadece bir kapı değil güven üretiyoruz.
         <small>Ege Kardoor</small>
       </h3>
       <a href="/company" class="ada-manifesto-cta" aria-label="Hakkımızda sayfasına git">
@@ -28,7 +28,7 @@
 
   <div class="ada-title-container">
     <h4 class="ada-giant-title">
-      Seçili Ege Kardoor Projeleri
+      Birlikte çalıştığımız markalar
     </h4>
   </div>
 
@@ -384,10 +384,4 @@ const secondaryBrands = [
   { name: "Netflix", src: "https://cdn.simpleicons.org/netflix/EAE8E8" },
   { name: "Samsung", src: "https://cdn.simpleicons.org/samsung/EAE8E8" },
   { name: "Spotify", src: "https://cdn.simpleicons.org/spotify/EAE8E8" },
-  { name: "Puma", src: "https://cdn.simpleicons.org/puma/EAE8E8" },
-  { name: "Toyota", src: "https://cdn.simpleicons.org/toyota/EAE8E8" },
-  { name: "Honda", src: "https://cdn.simpleicons.org/honda/EAE8E8" },
-  { name: "Microsoft", src: "" },
-  { name: "NVIDIA", src: "https://cdn.simpleicons.org/nvidia/EAE8E8" }
-];
-</script>
+  { nam

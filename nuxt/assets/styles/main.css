@@ -24,3 +24,17 @@
 @import "./pages/catalog.css";
 @import "./pages/company.css";
 @import "./pages/contact.css";
+
+/* ──────────────────────────────────────────────────────────────
+   PERFORMANCE — drop backdrop-filter while actively scrolling.
+   backdrop-filter re-blurs everything behind the element every frame;
+   during the pinned cinematic scroll that is one of the heaviest paints.
+   The blur is restored ~120ms after scroll settles (toggled in
+   plugins/scroll.client.ts). Glass UI is unchanged at rest.
+   ────────────────────────────────────────────────────────────── */
+html.is-scrolling *,
+html.is-scrolling *::before,
+html.is-scrolling *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}

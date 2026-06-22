@@ -35,10 +35,16 @@ useHead({
     <FloatingContactHub v-if="!isReferencesRoute" />
     <SmoothCursor v-if="!isReferencesRoute" />
 
-    <main>
-      <NuxtPage />
-    </main>
+    <!-- ScrollSmoother containers. Fixed overlays above stay OUTSIDE so the
+         #smooth-content transform doesn't break their positioning. -->
+    <div id="smooth-wrapper">
+      <div id="smooth-content">
+        <main>
+          <NuxtPage />
+        </main>
 
-    <HomeFooter />
+        <HomeFooter />
+      </div>
+    </div>
   </div>
 </template>

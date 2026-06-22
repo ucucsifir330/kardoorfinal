@@ -28,8 +28,9 @@
 
     <section class="home-references-flip__intro">
       <h2 id="home-references-title">
-        Sınırların nasıl çizildiğine<br>
-        tanık olun.
+        <span>Sınırların nasıl</span>
+        <span>çizildiğine</span>
+        <span>tanık olun.</span>
       </h2>
       <p>
         Ege Kardoor’un üretim felsefesi. Ham çeliğin, yüksek mühendislik ve
@@ -89,9 +90,31 @@ const documentaryYoutubeEmbedUrl = computed(() => {
   return `https://www.youtube.com/embed/${documentaryYoutubeId}?${params.toString()}`;
 });
 
+// Flip ilerlemesinin bu oranını geçip scroll bırakılınca video sona tamamlanır;
+// altındaysa başa döner. Hissi canlıda ayarlamak için tek düğme (0–1).
+const FLIP_SNAP_THRESHOLD = 0.25;
+
 let flipContext: ReturnType<typeof GsapNamespace.context> | null = null;
 let resizeHandler: (() => void) | null = null;
 let documentaryStartScrollY = 0;
+// Catalog rows reserve their final height before product batches reveal, so this
+// trigger should not drift during normal scroll. If an upstream responsive/layout
+// change still moves this section, refresh ONLY this trigger instance. A global
+// ScrollTrigger.refresh() would re-pin the hero/turntable and yank the scroll
+// position.
+let flipScrollTrigger: { refresh: () => void } | null = null;
+let catalogResizeObserver: ResizeObserver | null = null;
+let catalogResizeTimer = 0;
+
+const scheduleFlipTriggerRefresh = () => {
+  window.clearTimeout(catalogResizeTimer);
+  catalogResizeTimer = window.setTimeout(() => {
+    catalogResizeTimer = 0;
+    window.requestAnimationFrame(() => {
+      flipScrollTrigger?.refresh();
+    });
+  }, 180);
+};
 
 const stopDocumentary = () => {
   isDocumentaryStarted.value = false;
@@ -141,11 +164,12 @@ const setupFlip = async () => {
 
   const create = () => {
     flipContext?.revert();
+    flipScrollTrigger = null;
 
     flipContext = gsap.context(() => {
       if (!mediaRef.value || !startMarkerRef.value || !finalMarkerRef.value || !initialRef.value || !finalRef.value) return;
 
-      gsap.fromTo(
+      const flipTween = gsap.fromTo(
         mediaRef.value,
         {
           autoAlpha: 1,
@@ -156,48 +180,4 @@ const setupFlip = async () => {
         },
         {
           height: () => getBounds(finalMarkerRef.value as HTMLElement).height,
-          left: () => getBounds(finalMarkerRef.value as HTMLElement).left,
-          top: () => getBounds(finalMarkerRef.value as HTMLElement).top,
-          width: () => getBounds(finalMarkerRef.value as HTMLElement).width,
-          ease: "none",
-          immediateRender: true,
-          scrollTrigger: {
-            trigger: initialRef.value,
-            start: "top 24%",
-            endTrigger: finalRef.value,
-            end: "bottom bottom",
-            scrub: 1,
-            invalidateOnRefresh: true
-          }
-        }
-      );
-
-    }, section);
-
-    ScrollTrigger.refresh();
-  };
-
-  create();
-  resizeHandler = create;
-  window.addEventListener("resize", create);
-};
-
-onMounted(() => {
-  nextTick(() => {
-    setupFlip();
-  });
-
-  window.addEventListener("scroll", handleDocumentaryScroll, { passive: true });
-});
-
-onBeforeUnmount(() => {
-  if (resizeHandler) {
-    window.removeEventListener("resize", resizeHandler);
-    resizeHandler = null;
-  }
-
-  flipContext?.revert();
-  flipContext = null;
-  window.removeEventListener("scroll", handleDocumentaryScroll);
-});
-</script>
+          left: () => getBounds(finalMarkerRef.value as HT

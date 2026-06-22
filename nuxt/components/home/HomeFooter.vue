@@ -4,6 +4,26 @@
       <div class="footer-main">
         <div class="footer-socials">
           <div class="footer-brand">
+            <!-- Inner-shadow filter: turns the K's outer drop-shadow into an
+                 inset/debossed shadow that follows the glyph's alpha, so the K
+                 reads as carved out of the footer surface. Alpha-based, so it
+                 works even on the cross-origin PNG. -->
+            <svg class="footer-logo-filter" width="0" height="0" aria-hidden="true" focusable="false">
+              <filter id="kInnerShadow" x="-25%" y="-25%" width="150%" height="150%">
+                <feComponentTransfer in="SourceAlpha" result="invAlpha">
+                  <feFuncA type="table" tableValues="1 0"></feFuncA>
+                </feComponentTransfer>
+                <feGaussianBlur in="invAlpha" stdDeviation="6" result="blur"></feGaussianBlur>
+                <feOffset in="blur" dx="0" dy="4" result="ob"></feOffset>
+                <feFlood flood-color="#000000" flood-opacity="0.3" result="col"></feFlood>
+                <feComposite in="col" in2="ob" operator="in" result="shadow"></feComposite>
+                <feComposite in="shadow" in2="SourceAlpha" operator="in" result="sc"></feComposite>
+                <feMerge>
+                  <feMergeNode in="SourceGraphic"></feMergeNode>
+                  <feMergeNode in="sc"></feMergeNode>
+                </feMerge>
+              </filter>
+            </svg>
             <img src="https://i.hizliresim.com/q70qm97.png" alt="ADA Logo" class="footer-logo">
           </div>
 
@@ -47,10 +67,12 @@
           </a>
         </div>
 
+        <div class="footer-divider" aria-hidden="true"></div>
+
         <div class="footer-panel">
           <h2 class="footer-heading">
             Size en yakın showroomu seçin;<br>
-            projeniz için <em>görüşme talebi</em> <span class="footer-heading__rest">bırakın.</span>
+            projeniz için <em>görüşme talebi</em><br><span class="footer-heading__rest">bırakın.</span>
           </h2>
 
           <div class="location-group">
@@ -275,8 +297,4 @@ onMounted(() => {
   initFooterAnimation()
 })
 
-onBeforeUnmount(() => {
-  cleanupFooter?.()
-  cleanupFooter = null
-})
-</script>
+onBeforeUnmount((

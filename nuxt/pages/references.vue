@@ -155,6 +155,7 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const titleLines = [["KAPIDAN", "ÖTE"], ["MİMARİ", "BİR"], ["İMZA", "ÜRETİYORUZ"]];
 const kickerWords = ["SEÇİLİ", "EGE", "KARDOOR", "PROJELERİ"];
@@ -209,6 +210,8 @@ const secondaryBrands = [
 
 const selectedProject = ref(null);
 let marqueeTween = null;
+let cardRiseTrigger = null;
+let heroPinTrigger = null;
 const driftDirection = ref(1);
 
 let isDragging = false;
@@ -328,12 +331,31 @@ const onProjectLeave = (el, done) => {
 };
 
 onMounted(() => {
+  gsap.registerPlugin(ScrollTrigger);
+
   nextTick(() => {
     startMarquee();
 
     if (firstGroupRef.value) {
       resizeObserver = new ResizeObserver(() => startMarquee());
       resizeObserver.observe(firstGroupRef.value);
+    }
+
+    // CSS `position:sticky` breaks under ScrollSmoother (the transformed
+    // #smooth-content becomes the sticky containing block, so the hero never
+    // sticks → everything just scrolls normally). Pin the hero with
+    // ScrollTrigger instead — works WITH the smoother — so the cards section
+    // (higher z-index) rises up and covers the held hero, exactly like the
+    // home catalog → references handoff.
+    if (heroRef.value) {
+      heroPinTrigger = ScrollTrigger.create({
+        trigger: heroRef.value,
+        start: "top top",
+        end: () => "+=" + (heroRef.value?.offsetHeight || window.innerHeight),
+        pin: heroRef.value,
+        pinSpacing: false,
+        invalidateOnRefresh: true
+      });
     }
   });
 
@@ -391,11 +413,36 @@ onMounted(() => {
         ease: "power3.out"
       }, ">0.05");
     }
+
+    // Scroll-driven rise ON TOP of the load reveal (home-like feel). Applied to
+    // the inner content (NOT the .cards-section that the load tween drives) so
+    // the two never fight: as the section scrolls up over the sticky hero, the
+    // inner content rises a touch more, scrubbed to scroll position.
+    if (cardsInnerRef.value && cardsFrameRef.value) {
+      cardRiseTrigger = gsap.fromTo(
+        cardsInnerRef.value,
+        { y: 90 },
+        {
+          y: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: cardsFrameRef.value,
+            start: "top bottom",
+            end: "top top",
+            scrub: true
+          }
+        }
+      ).scrollTrigger;
+    }
   }
 });
 
 onBeforeUnmount(() => {
   marqueeTween?.kill();
+  cardRiseTrigger?.kill();
+  cardRiseTrigger = null;
+  heroPinTrigger?.kill();
+  heroPinTrigger = null;
 
   if (resizeObserver) {
     resizeObserver.disconnect();
@@ -409,9 +456,23 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 0;
   font-family: "Montserrat", sans-serif;
-  background: var(--catalog-stage-surface-bg, #F4F1EA);
+  background: #f6f2e9;
   overflow-x: clip;
   user-select: none;
+}
+
+/* The global theme paints html/body dark (#111417). On the references day view
+   the page surface is cream; a dark body behind the cream sections can bleed
+   through sub-pixel gaps as a hairline on certain widths (e.g. 21:9). Force the
+   root surfaces to the same cream with a :has() rule that outranks the theme. */
+:global(html:has(.app-shell--day.app-shell--references)),
+:global(body:has(.app-shell--day.app-shell--references)) {
+  background: #f6f2e9 !important;
+}
+
+:global(html:has(.app-shell--references):not(:has(.app-shell--day))),
+:global(body:has(.app-shell--references):not(:has(.app-shell--day))) {
+  background: #111111 !important;
 }
 
 :global(.app-shell),
@@ -438,6 +499,7 @@ onBeforeUnmount(() => {
   /* Same dark palette as /contact. */
   --ref-surface: #111111;
   --ref-page-bg: linear-gradient(180deg, #111111 0%, #111111 100%);
+  --ref-panel-bg: #111111;
   --ref-ink: #f5f3ef;
   --ref-ink-soft: rgba(245, 243, 239, 0.72);
   --ref-title-ink: #f5f3ef;
@@ -456,16 +518,17 @@ onBeforeUnmount(() => {
 
   width: 100%;
   position: relative;
-  background: var(--ref-page-bg);
+  background: var(--ref-panel-bg);
   min-height: 100vh;
 }
 
 /* Same light palette as /contact. */
 :global(.app-shell--day .viewport-wrapper) {
-  --ref-surface: #f5f1e8;
+  --ref-surface: #f6f2e9;
   --ref-page-bg:
     radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.76), transparent 26rem),
     linear-gradient(180deg, #faf7ef 0%, var(--ref-surface) 58%, #eee8db 100%);
+  --ref-panel-bg: #f6f2e9;
   --ref-ink: #111417;
   --ref-ink-soft: rgba(17, 20, 23, 0.68);
   --ref-title-ink: #111417;
@@ -498,10 +561,10 @@ onBeforeUnmount(() => {
 .hero {
   width: 100%;
   min-height: var(--ref-hero-h, 92svh);
-  background: var(--ref-page-bg);
+  background: var(--ref-panel-bg);
   padding: calc(var(--header, 86px) + 24px) clamp(18px, 4vw, 64px) clamp(76px, 8vw, 120px);
-  position: sticky;
-  top: 0;
+  /* Pinned via ScrollTrigger in JS (CSS sticky breaks under ScrollSmoother). */
+  position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -752,7 +815,7 @@ onBeforeUnmount(() => {
 }
 
 .cards-section {
-  background: var(--ref-page-bg);
+  background: var(--ref-panel-bg);
   min-height: 100svh;
   box-sizing: border-box;
   width: 100%;
@@ -776,7 +839,11 @@ onBeforeUnmount(() => {
   border-top-right-radius: clamp(2rem, 4.2vw, 4.25rem);
   box-shadow: 0 -24px 70px -26px rgba(8, 10, 12, 0.28);
   overflow: hidden;
-  will-change: transform;
+  /* No permanent compositing layer here: will-change:transform promoted the
+     panel to its own GPU layer, and on wide (21:9) viewports its bottom edge
+     left a 1px hairline against the cream footer behind it. GSAP adds
+     will-change itself for the duration of the reveal tween, so the load
+     animation stays smooth without a persistent layer. */
 }
 
 .top-transition-shadow {
@@ -809,8 +876,9 @@ onBeforeUnmount(() => {
 
 .marquee-wrapper {
   width: 100%;
-  overflow: hidden;
-  padding: clamp(18px, 2.2vw, 32px) 0;
+  overflow-x: clip;
+  overflow-y: visible;
+  padding: clamp(28px, 3vw, 48px) 0;
   cursor: grab;
   touch-action: none;
 }
@@ -888,7 +956,7 @@ onBeforeUnmount(() => {
 .reference-brand-stage {
   width: 100%;
   margin-top: clamp(130px, 13vw, 240px);
-  margin-bottom: 0;
+  margin-bottom: clamp(90px, 9vw, 170px);
   overflow: hidden;
 }
 
@@ -901,6 +969,8 @@ onBeforeUnmount(() => {
   overflow: hidden;
   margin-left: -50vw;
   margin-right: -50vw;
+  /* Hover büyümesinde logolar dikeyde kırpılmasın diye pay. */
+  padding-block: clamp(10px, 1.2vw, 20px);
 }
 
 .reference-logo-row + .reference-logo-row {
@@ -949,125 +1019,13 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transform-origin: center center;
+  transition: transform 420ms cubic-bezier(0.165, 0.84, 0.44, 1),
+    opacity 420ms ease;
 }
 
-.reference-logo-item img {
-  filter: var(--ref-logo-filter);
-}
-
-.reference-logo-mark {
-  display: inline-flex;
-  width: 100%;
-  height: 100%;
-  color: var(--ref-ink);
-}
-
-@keyframes reference-logo-left {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes reference-logo-right {
-  from {
-    transform: translateX(-50%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
-}
-
-:global(.app-shell--references),
-:global(.app-shell--references .footer-wrapper) {
-  background: #111111;
-}
-
-:global(.app-shell--day.app-shell--references),
-:global(.app-shell--day.app-shell--references .footer-wrapper) {
-  background: #eee8db;
-}
-
-:global(.app-shell--references .footer-wrapper) {
-  margin-top: 0;
-}
-
-:global(.app-shell--references .footer-dome) {
-  background-color: #2a2a30;
-  box-shadow: none;
-}
-
-/* No visible chip ring around the footer social buttons on references. */
-:global(.app-shell--references .social-btn) {
-  background-color: transparent;
-}
-
-:global(.app-shell--references .social-btn:hover) {
-  background-color: #e6e7eb;
-}
-
-@media (max-width: 900px) {
-  .hero {
-    min-height: 100svh;
-    padding-top: calc(var(--header, 86px) + 22px);
-    padding-bottom: 72px;
-  }
-
-  .hero-line {
-    font-size: clamp(4.9rem, 17vw, 9.1rem);
-    line-height: 0.92;
-  }
-
-  .cards-section {
-    min-height: 100svh;
-    padding-top: 44px;
-    padding-bottom: 62px;
-  }
-
-  .reference-logo-item {
-    width: clamp(108px, 24vw, 148px);
-    height: clamp(44px, 12vw, 68px);
-    margin: 0 clamp(18px, 5vw, 34px);
-  }
-}
-
-@media (max-width: 540px) {
-  .hero {
-    min-height: 100svh;
-    padding-inline: 16px;
-    padding-bottom: 64px;
-  }
-
-  .hero-line {
-    font-size: clamp(3.15rem, 14.5vw, 4.8rem);
-    line-height: 0.94;
-  }
-
-  .hero-kicker {
-    margin-top: 36px;
-    font-size: 0.64rem;
-  }
-
-  .marquee-group {
-    gap: 28px;
-    padding-right: 28px;
-  }
-
-  .card {
-    width: min(72vw, 280px);
-  }
-
-  .reference-brand-stage {
-    margin-top: clamp(72px, 18vw, 120px);
-    margin-bottom: clamp(56px, 14vw, 96px);
-  }
-
-  .reference-logo-row + .reference-logo-row {
-    margin-top: 18px;
-  }
-}
-</style>
+/* Hover'da o anki logo büyür (home ile aynı his); bant zaten hover'da durduğu
+   için hangi logonun üstünde olduğumuz net okunur. */
+.reference-logo-item:hover img,
+.reference-logo-item:hover .reference-logo-mark svg {
+  transform: scale

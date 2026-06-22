@@ -20,12 +20,11 @@
     <HomeReviews
       :dynamic-gap="dynamicGap"
       :title-width="titleWidth"
-      :title-words="titleWords"
-      :title-index="titleIndex"
       :row1="row1"
       :row2="row2"
       :set-static-text-ref="setStaticTextRef"
       :set-hidden-span-ref="setHiddenSpanRef"
+      :set-typewriter-ref="setTypewriterRef"
       :set-inner1-ref="setInner1Ref"
       :set-inner2-ref="setInner2Ref"
       :start-drag="startDrag"
@@ -85,6 +84,8 @@ const catalogHandoffFrameRef = ref<HTMLElement | null>(null);
 let catalogHandoffObserver: ResizeObserver | null = null;
 let catalogHandoffFrame = 0;
 let catalogHandoffPinFrame = 0;
+let catalogHandoffTrigger: ScrollTrigger | null = null;
+let catalogHandoffFrameHeight = 0;
 
 const setHiddenSpanRef = (el: Element | ComponentPublicInstance | null) => {
   hiddenSpan.value = el as HTMLElement | null;
@@ -92,6 +93,12 @@ const setHiddenSpanRef = (el: Element | ComponentPublicInstance | null) => {
 
 const setStaticTextRef = (el: Element | ComponentPublicInstance | null) => {
   staticText.value = el as HTMLElement | null;
+};
+
+const typewriter = ref<HTMLElement | null>(null);
+
+const setTypewriterRef = (el: Element | ComponentPublicInstance | null) => {
+  typewriter.value = el as HTMLElement | null;
 };
 
 const setInner1Ref = (el: Element | ComponentPublicInstance | null) => {
@@ -153,7 +160,9 @@ const updateCatalogHandoffHeight = () => {
 
   if (!hold || !frame) return;
 
-  hold.style.setProperty('--catalog-handoff-height', `${frame.scrollHeight}px`);
+  const frameHeight = frame.scrollHeight;
+  catalogHandoffFrameHeight = frameHeight;
+  hold.style.setProperty('--catalog-handoff-height', `${frameHeight}px`);
   requestCatalogHandoffPin();
 };
 
@@ -179,7 +188,7 @@ const updateCatalogHandoffPin = () => {
   if (!hold || !pin || !frame) return;
 
   const holdRect = hold.getBoundingClientRect();
-  const frameHeight = frame.scrollHeight;
+  const frameHeight = catalogHandoffFrameHeight || frame.scrollHeight;
   const viewportHeight = window.innerHeight || 1;
   const naturalTop = holdRect.top;
   const naturalBottom = naturalTop + frameHeight;
@@ -222,14 +231,21 @@ let activeTrack: number | null = null;
 let animationFrameId = 0;
 let reviewsObserver: IntersectionObserver | null = null;
 let reviewsAnimationActive = false;
-let titleInterval: ReturnType<typeof setInterval> | null = null;
+let typewriterTl: gsap.core.Timeline | null = null;
+let cursorTween: gsap.core.Tween | null = null;
+let activeTitleWord = titleWords.value[0] ?? '';
 
+// Measure the pill width for `activeTitleWord` via the hidden span and animate
+// the static "Son" word a touch to keep the composition balanced. The pill width
+// is set to the full word up-front so the centered typewriter has room and the
+// caret never clips while characters stream in.
 const updateTitleWidth = () => {
   const hiddenSpanEl = hiddenSpan.value as HTMLElement | null;
   const staticTextEl = staticText.value as HTMLElement | null;
 
   if (!hiddenSpanEl) return;
 
+  hiddenSpanEl.textContent = activeTitleWord;
   const measuredWidth = hiddenSpanEl.getBoundingClientRect().width;
   titleWidth.value = measuredWidth;
 
@@ -241,6 +257,62 @@ const updateTitleWidth = () => {
     const offset = (measuredWidth - baseTitleWidth.value) * 0.18;
     staticTextEl.style.transform = `translateX(${offset}px)`;
   }
+};
+
+// Feel knobs (seconds). Tuned live with the user — keep these readable.
+const TYPE_PER_CHAR = 0.14;
+const ERASE_PER_CHAR = 0.07;
+const WORD_HOLD = 1.5;
+
+// One GSAP timeline drives the whole "sözü → kararı → yorumu" cycle:
+// type the word in (TextPlugin), hold, erase it, advance to the next. The pill
+// width is re-measured per word BEFORE typing so the centered word + caret sit
+// in a correctly sized pill. The caret blink is a separate stepped tween.
+const buildTypewriter = () => {
+  const el = typewriter.value as HTMLElement | null;
+  if (!el) return;
+
+  typewriterTl?.kill();
+  el.textContent = '';
+
+  const cursorEl = el.parentElement?.querySelector(
+    '.typewriter-cursor'
+  ) as HTMLElement | null;
+  if (cursorEl) {
+    cursorTween?.kill();
+    cursorTween = gsap.to(cursorEl, {
+      opacity: 0,
+      duration: 0.5,
+      ease: 'steps(1)',
+      repeat: -1,
+      yoyo: true
+    });
+  }
+
+  const words = titleWords.value;
+  typewriterTl = gsap.timeline({ repeat: -1 });
+
+  words.forEach((word) => {
+    typewriterTl!
+      .call(() => {
+        activeTitleWord = word;
+        updateTitleWidth();
+      })
+      .to(el, {
+        duration: Math.max(0.4, word.length * TYPE_PER_CHAR),
+        text: { value: word, delimiter: '' },
+        ease: 'none'
+      })
+      .to(
+        el,
+        {
+          duration: Math.max(0.3, word.length * ERASE_PER_CHAR),
+          text: { value: '', delimiter: '' },
+          ease: 'none'
+        },
+        `+=${WORD_HOLD}`
+      );
+  });
 };
 
 const dynamicGap = computed(() => {
@@ -740,100 +812,13 @@ onMounted(() => {
       catalogHandoffObserver.observe(catalogHandoffFrameRef.value);
     }
 
-    const fonts = (document as any).fonts;
-
-    if (fonts?.ready) {
-      fonts.ready.then(() => {
-        updateTitleWidth();
-        requestCatalogHandoffHeight();
-        requestCatalogHandoffPin();
-        ScrollTrigger.refresh();
-      });
-    }
-
-    initManifestoAnimations();
-  });
-
-  window.addEventListener('resize', updateTitleWidth);
-  window.addEventListener('resize', requestCatalogHandoffHeight);
-  window.addEventListener('resize', requestCatalogHandoffPin);
-  window.addEventListener('scroll', requestCatalogHandoffPin, { passive: true });
-
-  titleInterval = setInterval(() => {
-    titleIndex.value = (titleIndex.value + 1) % titleWords.value.length;
-
-    nextTick(() => {
-      updateTitleWidth();
-    });
-  }, 7000);
-
-  track2State.x = -400;
-
-  if (reviewsStageRef.value) {
-    reviewsObserver = new IntersectionObserver(
-      (entries) => {
-        reviewsAnimationActive = entries.some((entry) => entry.isIntersecting);
-        if (reviewsAnimationActive) requestReviewsAnimation();
-        else if (!track1State.isDragging && !track2State.isDragging) stopReviewsAnimation();
-      },
-      { rootMargin: '260px 0px', threshold: 0.01 }
-    );
-    reviewsObserver.observe(reviewsStageRef.value);
-  }
-
-  window.addEventListener('mousemove', onDrag as EventListener);
-  window.addEventListener('mouseup', endDrag);
-  window.addEventListener('touchmove', onDrag as EventListener, { passive: false });
-  window.addEventListener('touchend', endDrag);
-});
-
-onBeforeUnmount(() => {
-  if (titleInterval) {
-    clearInterval(titleInterval);
-  }
-
-  stopReviewsAnimation();
-  reviewsObserver?.disconnect();
-  reviewsObserver = null;
-  catalogHandoffObserver?.disconnect();
-  catalogHandoffObserver = null;
-
-  if (catalogHandoffFrame) {
-    cancelAnimationFrame(catalogHandoffFrame);
-    catalogHandoffFrame = 0;
-  }
-
-  if (catalogHandoffPinFrame) {
-    cancelAnimationFrame(catalogHandoffPinFrame);
-    catalogHandoffPinFrame = 0;
-  }
-
-  if (catalogHandoffPinRef.value) {
-    catalogHandoffPinRef.value.style.transform = '';
-  }
-
-  if (manifestoGsapContext) {
-    manifestoGsapContext.revert();
-    manifestoGsapContext = null;
-  }
-
-  manifestoCleanupTasks.forEach((task) => task());
-  manifestoCleanupTasks = [];
-
-  window.removeEventListener('resize', updateTitleWidth);
-  window.removeEventListener('resize', requestCatalogHandoffHeight);
-  window.removeEventListener('resize', requestCatalogHandoffPin);
-  window.removeEventListener('scroll', requestCatalogHandoffPin);
-  window.removeEventListener('mousemove', onDrag as EventListener);
-  window.removeEventListener('mouseup', endDrag);
-  window.removeEventListener('touchmove', onDrag as EventListener);
-  window.removeEventListener('touchend', endDrag);
-});
-</script>
-
-<style scoped>
-.home-reviews-runtime {
-  display: block;
-  width: 100%;
-}
-</style>
+    // Pin update'ini ScrollSmoother ile AYNI tick'te çalıştır (native scroll event yerine).
+    // ScrollSmoother içerik transform'unu uyguladıktan sonra ScrollTrigger.update tetiklenir;
+    // rect bu noktada okunduğu için pinli katalogun frame'i titremez (handoff jitter fix).
+    if (catalogHandoffRef.value) {
+      catalogHandoffTrigger = ScrollTrigger.create({
+        trigger: catalogHandoffRef.value,
+        start: 'top bottom',
+        end: 'bottom top',
+        onUpdate: updateCatalogHandoffPin,
+        onRefresh: updateCa

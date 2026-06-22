@@ -254,6 +254,9 @@
   transform: scale(var(--zoom-scale));
   opacity: var(--zoom-fade);
   will-change: transform, opacity;
+  /* Isolate paint so the 17× scale + inner canvas redraws stay on this GPU
+     layer and don't invalidate the rest of the scene during the intro. */
+  contain: layout paint;
 }
 
 .entrance-door__artboard {
@@ -315,6 +318,9 @@
   clip-path: inset(0 var(--doorway-reveal-clip, 100%) 0 0);
   pointer-events: none;
   will-change: clip-path, opacity;
+  /* Bound the clip-path reveal repaint to this element; the clipped turntable
+     inside is static during the intro, so keep its raster off the main scene. */
+  contain: layout paint;
 }
 
 .entrance-door__doorway-interior {
@@ -801,7 +807,9 @@
   }
 }
 
-@media (max-width: 760px), (pointer: coarse) {
+/* Mobile/touch optimizations — gate coarse on a small width so DevTools device
+   emulation at desktop sizes keeps the full desktop experience. */
+@media (max-width: 760px), (pointer: coarse) and (max-width: 1024px) {
   .entrance-door__zoom-layer,
   .entrance-door__showroom,
   .entrance-door__showroom .showroom-turntable__stage,
