@@ -1,12 +1,66 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useRoute } from "#imports";
+import type PageTransitionOverlay from "~/components/ui/PageTransitionOverlay.vue";
+import { computed, nextTick, onBeforeUnmount, ref } from "vue";
+import { useRoute, useRouter } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 const route = useRoute();
+const router = useRouter();
 const { mode, isHydrated } = useShowroomAmbience();
 const { locale } = useKardoorLocale();
 const isReferencesRoute = computed(() => route.path === "/references");
+const shouldMountStartupScreens = ref(!isReferencesRoute.value);
+const transitionOverlay = ref<InstanceType<typeof PageTransitionOverlay> | null>(null);
+const transitionRoutes = new Set(["/", "/references", "/company", "/contact"]);
+
+let shouldRunPageTransition = false;
+
+const normalizeTransitionPath = (path: string) => {
+  const normalized = path.replace(/\/+$/, "");
+  return normalized || "/";
+};
+
+const isTransitionRoute = (path: string) => transitionRoutes.has(normalizeTransitionPath(path));
+
+const removeRouteGuard = import.meta.client
+  ? router.beforeEach(async (to, from) => {
+      const fromPath = normalizeTransitionPath(from.path);
+      const toPath = normalizeTransitionPath(to.path);
+
+      shouldRunPageTransition =
+        from.matched.length > 0 &&
+        fromPath !== toPath &&
+        isTransitionRoute(fromPath) &&
+        isTransitionRoute(toPath);
+
+      if (shouldRunPageTransition) {
+        shouldMountStartupScreens.value = false;
+        await nextTick();
+        await transitionOverlay.value?.cover();
+      }
+
+      return true;
+    })
+  : undefined;
+
+const removeRouteAfterHook = import.meta.client
+  ? router.afterEach(async () => {
+      if (!shouldRunPageTransition) return;
+
+      await nextTick();
+      await transitionOverlay.value?.reveal();
+      shouldRunPageTransition = false;
+    })
+  : undefined;
+
+const handleStartupComplete = async () => {
+  if (!shouldMountStartupScreens.value) return;
+
+  await transitionOverlay.value?.cover();
+  shouldMountStartupScreens.value = false;
+  await nextTick();
+  await transitionOverlay.value?.reveal();
+};
 
 const shellClasses = computed(() => [
   `app-shell--${mode.value}`,
@@ -21,6 +75,11 @@ useHead({
     lang: locale
   }
 });
+
+onBeforeUnmount(() => {
+  removeRouteGuard?.();
+  removeRouteAfterHook?.();
+});
 </script>
 
 <template>
@@ -29,8 +88,12 @@ useHead({
     :class="shellClasses"
     :data-ambience="mode"
   >
-    <WelcomeScreen v-if="!isReferencesRoute" />
-    <LoadingScreen v-if="!isReferencesRoute" />
+    <PageTransitionOverlay ref="transitionOverlay" />
+    <WelcomeScreen
+      v-if="shouldMountStartupScreens"
+      @complete="handleStartupComplete"
+    />
+    <LoadingScreen v-if="shouldMountStartupScreens" />
     <SiteHeader />
     <FloatingContactHub v-if="!isReferencesRoute" />
     <SmoothCursor v-if="!isReferencesRoute" />

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 import { useRouter } from "#imports";
 
 const visible = ref(false);
@@ -7,6 +7,17 @@ const visible = ref(false);
 let resolveTimer: ReturnType<typeof setTimeout> | null = null;
 let startedAt = 0;
 const MIN_VISIBLE = 1400;
+const pageTransitionRoutes = new Set(["/", "/references", "/company", "/contact"]);
+
+const normalizePath = (path: string) => {
+  const normalized = path.replace(/\/+$/, "");
+  return normalized || "/";
+};
+
+const shouldSkipLoading = (toPath: string, fromPath: string) =>
+  pageTransitionRoutes.has(normalizePath(toPath)) &&
+  pageTransitionRoutes.has(normalizePath(fromPath)) &&
+  normalizePath(toPath) !== normalizePath(fromPath);
 
 const startLoading = () => {
   if (resolveTimer) { clearTimeout(resolveTimer); resolveTimer = null; }
@@ -23,8 +34,23 @@ const finishLoading = () => {
 };
 
 const router = useRouter();
-router.beforeEach(() => { startLoading(); });
-router.afterEach(() => { finishLoading(); });
+const removeBeforeGuard = router.beforeEach((to, from) => {
+  if (shouldSkipLoading(to.path, from.path)) return;
+  startLoading();
+});
+const removeAfterHook = router.afterEach((to, from) => {
+  if (shouldSkipLoading(to.path, from.path)) return;
+  finishLoading();
+});
+
+onBeforeUnmount(() => {
+  removeBeforeGuard();
+  removeAfterHook();
+  if (resolveTimer) {
+    clearTimeout(resolveTimer);
+    resolveTimer = null;
+  }
+});
 
 // SVG rect dimensions (viewBox units)
 // W × H of the rect, stroke sits on the border
