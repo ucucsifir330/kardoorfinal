@@ -307,4 +307,32 @@
     max-width: 100%;
   }
 
-  .home-references-flip
+  .home-references-flip__initial {
+    flex-direction: column;
+    min-height: 74vh;
+  }
+
+  .home-references-flip__marker--start {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .home-references-flip__final {
+    min-height: 78vh;
+  }
+
+  .home-references-flip__marker--final {
+    height: 78vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-references-flip__scroll-hint span:last-child {
+    animation: none;
+  }
+
+  .home-references-flip__final {
+    min-height: auto;
+    padding-top: 0;
+  }
+}

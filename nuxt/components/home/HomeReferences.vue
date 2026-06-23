@@ -180,4 +180,89 @@ const setupFlip = async () => {
         },
         {
           height: () => getBounds(finalMarkerRef.value as HTMLElement).height,
-          left: () => getBounds(finalMarkerRef.value as HT
+          left: () => getBounds(finalMarkerRef.value as HTMLElement).left,
+          top: () => getBounds(finalMarkerRef.value as HTMLElement).top,
+          width: () => getBounds(finalMarkerRef.value as HTMLElement).width,
+          ease: "none",
+          immediateRender: true,
+          scrollTrigger: {
+            trigger: initialRef.value,
+            start: "top 24%",
+            endTrigger: finalRef.value,
+            end: "bottom bottom",
+            // ScrollSmoother already eases the page; keep this card locked to
+            // that smoothed playhead instead of adding a second one-second lag.
+            scrub: true,
+            invalidateOnRefresh: true,
+            // Take over once the user passes the threshold and releases scroll:
+            // GSAP completes the flip to the full-bleed end (or rolls it back if
+            // still below the threshold). Runs on the smoother's own tick, so no
+            // manual scrollTo fight / desync. FLIP_SNAP_THRESHOLD is the live knob.
+            snap: {
+              snapTo: (value: number) => (value < FLIP_SNAP_THRESHOLD ? 0 : 1),
+              duration: { min: 0.25, max: 0.6 },
+              delay: 0.03,
+              inertia: false,
+              ease: "power2.inOut"
+            }
+          }
+        }
+      );
+
+      flipScrollTrigger = flipTween.scrollTrigger ?? null;
+    }, section);
+  };
+
+  create();
+  resizeHandler = create;
+  window.addEventListener("resize", create);
+
+  if ("ResizeObserver" in window) {
+    catalogResizeObserver?.disconnect();
+
+    const upstreamTargets = [
+      document.querySelector<HTMLElement>(".catalog-section"),
+      document.querySelector<HTMLElement>(".home-catalog-reference-stack__catalog-frame")
+    ].filter((target): target is HTMLElement => Boolean(target));
+
+    if (upstreamTargets.length) {
+      let lastHeight = upstreamTargets.reduce((height, target) => height + target.getBoundingClientRect().height, 0);
+
+      catalogResizeObserver = new ResizeObserver(() => {
+        const nextHeight = upstreamTargets.reduce((height, target) => height + target.getBoundingClientRect().height, 0);
+        if (Math.abs(nextHeight - lastHeight) < 1) return;
+
+        lastHeight = nextHeight;
+        scheduleFlipTriggerRefresh();
+      });
+
+      upstreamTargets.forEach((target) => catalogResizeObserver?.observe(target));
+    }
+  }
+};
+
+onMounted(() => {
+  nextTick(() => {
+    setupFlip();
+  });
+
+  window.addEventListener("scroll", handleDocumentaryScroll, { passive: true });
+});
+
+onBeforeUnmount(() => {
+  if (resizeHandler) {
+    window.removeEventListener("resize", resizeHandler);
+    resizeHandler = null;
+  }
+
+  window.clearTimeout(catalogResizeTimer);
+  catalogResizeTimer = 0;
+  catalogResizeObserver?.disconnect();
+  catalogResizeObserver = null;
+  flipScrollTrigger = null;
+
+  flipContext?.revert();
+  flipContext = null;
+  window.removeEventListener("scroll", handleDocumentaryScroll);
+});
+</script>

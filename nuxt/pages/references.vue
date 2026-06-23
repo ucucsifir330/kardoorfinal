@@ -1028,4 +1028,129 @@ onBeforeUnmount(() => {
    için hangi logonun üstünde olduğumuz net okunur. */
 .reference-logo-item:hover img,
 .reference-logo-item:hover .reference-logo-mark svg {
-  transform: scale
+  transform: scale(1.32);
+  opacity: 1;
+}
+
+.reference-logo-item img {
+  filter: var(--ref-logo-filter);
+}
+
+.reference-logo-mark {
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+  color: var(--ref-ink);
+}
+
+@keyframes reference-logo-left {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes reference-logo-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+:global(.app-shell--references),
+:global(.app-shell--references .footer-wrapper) {
+  background: #111111 !important;
+  background-color: #111111 !important;
+}
+
+:global(.app-shell--day.app-shell--references),
+:global(.app-shell--day.app-shell--references .footer-wrapper) {
+  background: #f6f2e9 !important;
+  background-color: #f6f2e9 !important;
+}
+
+:global(.app-shell--references .footer-wrapper) {
+  margin-top: 0;
+}
+
+:global(.app-shell--references .footer-dome) {
+  background-color: #2a2a30;
+  box-shadow: 0 0 0 1px #2a2a30;
+}
+
+/* No visible chip ring around the footer social buttons on references. */
+:global(.app-shell--references .social-btn) {
+  background-color: transparent;
+}
+
+:global(.app-shell--references .social-btn:hover) {
+  background-color: #e6e7eb;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    min-height: 100svh;
+    padding-top: calc(var(--header, 86px) + 22px);
+    padding-bottom: 72px;
+  }
+
+  .hero-line {
+    font-size: clamp(4.9rem, 17vw, 9.1rem);
+    line-height: 0.92;
+  }
+
+  .cards-section {
+    min-height: 100svh;
+    padding-top: 44px;
+    padding-bottom: 62px;
+  }
+
+  .reference-logo-item {
+    width: clamp(108px, 24vw, 148px);
+    height: clamp(44px, 12vw, 68px);
+    margin: 0 clamp(18px, 5vw, 34px);
+  }
+}
+
+@media (max-width: 540px) {
+  .hero {
+    min-height: 100svh;
+    padding-inline: 16px;
+    padding-bottom: 64px;
+  }
+
+  .hero-line {
+    font-size: clamp(3.15rem, 14.5vw, 4.8rem);
+    line-height: 0.94;
+  }
+
+  .hero-kicker {
+    margin-top: 36px;
+    font-size: 0.64rem;
+  }
+
+  .marquee-group {
+    gap: 28px;
+    padding-right: 28px;
+  }
+
+  .card {
+    width: min(72vw, 280px);
+  }
+
+  .reference-brand-stage {
+    margin-top: clamp(72px, 18vw, 120px);
+    margin-bottom: clamp(56px, 14vw, 96px);
+  }
+
+  .reference-logo-row + .reference-logo-row {
+    margin-top: 18px;
+  }
+}
+</style>

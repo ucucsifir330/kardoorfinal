@@ -910,4 +910,120 @@ onBeforeUnmount(() => {
             Ege Kardoor kapı konfigüratörüyle seri, yüzey, renk, cam, kol ve detay seçeneklerini kendi projenize göre
             deneyimleyin. Beğendiğiniz tasarımı bizimle paylaşın, showroom veya proje ekibimiz sizin için netleştirsin.
           </p>
-          <div class="ada-spacer-cta-group" aria-label="Konfig
+          <div class="ada-spacer-cta-group" aria-label="Konfigüratör ve koleksiyon bağlantıları">
+            <a href="/catalog" class="ada-manifesto-cta ada-spacer-cta" aria-label="Konfigüratörü deneyin">
+              <span class="ada-manifesto-cta-text" data-text="Konfigüratörü Deneyin">Konfigüratörü Deneyin</span>
+              <span class="ada-manifesto-cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                  <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </a>
+            <a href="/catalog" class="ada-manifesto-cta ada-spacer-cta ada-spacer-cta--icon-left" aria-label="Koleksiyonu keşfet">
+              <span class="ada-manifesto-cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                  <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="ada-manifesto-cta-text" data-text="Koleksiyonu Keşfet">Koleksiyonu Keşfet</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO + FRAME (üstte, zoom ile kaybolur) -->
+    <div ref="zoomLayerRef" class="entrance-door__zoom-layer">
+      <div ref="artboardRef" class="entrance-door__artboard">
+        <picture class="entrance-door__hero-picture entrance-door__hero-picture--day">
+          <source :srcset="heroAssets.day.mobile" media="(max-width: 767px)">
+          <source :srcset="heroAssets.day.tabletPortrait" media="(min-width: 768px) and (max-width: 1180px) and (orientation: portrait)">
+          <source :srcset="heroAssets.day.tabletLandscape" media="(min-width: 768px) and (max-width: 1180px) and (orientation: landscape)">
+          <img
+            ref="heroImageRef"
+            :src="heroAssets.day.master"
+            :alt="copy.imageAlt"
+            class="entrance-door__hero-image"
+            decoding="async"
+            loading="eager"
+            fetchpriority="high"
+            draggable="false"
+            crossorigin="anonymous"
+          >
+        </picture>
+
+        <picture class="entrance-door__hero-picture entrance-door__hero-picture--night" aria-hidden="true">
+          <source :srcset="heroAssets.night.mobile" media="(max-width: 767px)">
+          <source :srcset="heroAssets.night.tabletPortrait" media="(min-width: 768px) and (max-width: 1180px) and (orientation: portrait)">
+          <source :srcset="heroAssets.night.tabletLandscape" media="(min-width: 768px) and (max-width: 1180px) and (orientation: landscape)">
+          <img
+            :src="heroAssets.night.master"
+            alt=""
+            class="entrance-door__hero-image"
+            decoding="async"
+            loading="eager"
+            draggable="false"
+            crossorigin="anonymous"
+          >
+        </picture>
+
+        <div class="entrance-door__doorway-reveal" aria-hidden="true">
+          <!-- During the door-opening reveal the real turntable is always at door 0
+               (turntableProgress is 0 until the showroom phase, by which point this
+               peek-through layer has faded out). Feeding a constant 0 keeps this
+               second turntable from re-rendering every frame for nothing. -->
+          <ShowroomTurntable
+            class="entrance-door__doorway-interior"
+            :progress="0"
+          />
+        </div>
+
+        <!-- Canvas: kapı açılış sekansı (siyah alanlar şeffaf) -->
+        <div ref="stageRef" class="entrance-door__stage" aria-hidden="true">
+          <canvas ref="canvasRef" class="entrance-door__canvas" />
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO COPY -->
+    <div class="entrance-door__copy-mask">
+      <div class="entrance-door__copy">
+        <div class="entrance-door__copy-stack">
+          <h1 class="entrance-door__heading">
+            <span class="entrance-door__heading-line entrance-door__copy-reveal">
+              <span>{{ copy.line1 }}</span>
+            </span>
+            <span class="entrance-door__heading-line entrance-door__heading-line--accent entrance-door__copy-reveal">
+              <span>
+                <em>{{ copy.accent }}</em> {{ copy.line2 }}
+              </span>
+            </span>
+          </h1>
+          <p class="entrance-door__subtitle entrance-door__copy-reveal">
+            <span class="entrance-door__subtitle-line">
+              <span>
+                {{ copy.subtitleLead }}{{ copy.subtitleAccent ? " " : "" }}<em v-if="copy.subtitleAccent">{{ copy.subtitleAccent }}</em>
+              </span>
+            </span>
+          </p>
+          <div class="entrance-door__cta-row entrance-door__copy-reveal" aria-label="Hero aksiyonları">
+            <AdaCtaButton :label="copy.ctaLabel" href="#" variant="filled" icon-position="none" />
+            <a class="entrance-door__cta-arrow" href="#" :aria-label="copy.ctaLabel">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12H19" />
+                <path d="M14 7L19 12L14 17" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="entrance-door__cue" aria-hidden="true">
+      <span>{{ copy.scrollCue }}</span>
+      <i />
+    </div>
+  </section>
+</template>

@@ -936,4 +936,59 @@ const initCatalogObserver = () => {
     catalogObserver?.observe(el);
   });
 
-  r
+  revealCatalogRow(1);
+  requestCatalogRowCheck();
+};
+
+const checkMobile = () => { isMobile.value = window.innerWidth <= 760; };
+
+onMounted(() => {
+  checkMobile();
+  window.addEventListener("resize", checkMobile, { passive: true });
+
+  nextTick(() => {
+    const catalogMainEl = mainRef.value;
+    if (catalogMainEl) {
+      catalogMainEl.scrollTop = 0;
+      isCatalogScrolled.value = false;
+    }
+
+    requestAnimationFrame(() => {
+      initCatalogObserver();
+      refreshCatalogLine();
+    });
+  });
+
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(refreshCatalogLine).catch(() => undefined);
+  }
+
+  window.addEventListener("resize", refreshCatalogLine, { passive: true });
+  window.addEventListener("keydown", handleProductModalKeydown);
+});
+
+onBeforeUnmount(() => {
+  if (catalogRowsFrame) {
+    cancelAnimationFrame(catalogRowsFrame);
+    catalogRowsFrame = 0;
+  }
+
+  if (catalogObserver) {
+    catalogObserver.disconnect();
+  }
+
+  if (catalogLineST) {
+    catalogLineST.kill();
+    catalogLineST = null;
+  }
+
+  window.clearTimeout(catalogLineRefreshTimer);
+  catalogLineRefreshTimer = 0;
+
+  window.removeEventListener("resize", refreshCatalogLine);
+  window.removeEventListener("resize", checkMobile);
+  window.removeEventListener("keydown", handleProductModalKeydown);
+  window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
+  resetCatalogModalState();
+});
+</script>

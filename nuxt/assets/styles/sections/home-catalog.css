@@ -3997,4 +3997,22 @@
     color: rgba(17, 20, 23, 0.68);
     font-size: 14px;
     cursor: pointer;
- 
+    font-weight: 500;
+    text-decoration: none;
+    display: block;
+    transition: color 0.3s;
+  }
+
+  .home-page .liquid-actions li:hover,
+  .home-page .liquid-actions li a:hover {
+    color: #111417;
+  }
+}
+
+html.smooth-cursor-active .home-page .catalog-product,
+html.smooth-cursor-active .home-page .catalog-product *,
+html.smooth-cursor-active .home-page .catalog-product-image-wrap,
+html.smooth-cursor-active .home-page .catalog-product-image,
+html.smooth-cursor-active .home-page .catalog-product-info {
+  cursor: none !important;
+}

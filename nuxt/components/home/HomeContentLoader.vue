@@ -64,4 +64,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="mountRef" cl
+  <div ref="mountRef" class="home-content-loader">
+    <ClientOnly>
+      <LazyHomeExperience v-if="shouldRender" />
+    </ClientOnly>
+  </div>
+</template>
+
+<style scoped>
+.home-content-loader {
+  min-height: 1px;
+}
+</style>

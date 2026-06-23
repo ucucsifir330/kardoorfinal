@@ -1624,4 +1624,50 @@ span.ada-brand-logo {
     height: 42px;
   }
 
-  .ada-carousel-wrapper:
+  .ada-carousel-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ada-founders-grid {
+    display: flex;
+    width: max-content;
+    gap: 16px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .ada-card {
+    flex: 0 0 min(78vw, 310px);
+    width: min(78vw, 310px);
+    height: 560px;
+    min-height: 0;
+    border-radius: 24px;
+    scroll-snap-align: center;
+  }
+
+  .ada-name {
+    padding-inline: 10px;
+    font-size: clamp(2.35rem, 10vw, 3.05rem);
+    overflow-wrap: anywhere;
+  }
+
+  .ada-hover-overlay {
+    opacity: 1;
+    transform: none;
+    padding: 80px 20px 24px;
+    background: transparent;
+  }
+
+  .ada-bio {
+    font-size: 0.9rem;
+  }
+
+  .ada-modal-name {
+    font-size: 4rem;
+  }
+
+  .ada-modal-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}

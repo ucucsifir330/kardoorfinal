@@ -384,4 +384,10 @@ const secondaryBrands = [
   { name: "Netflix", src: "https://cdn.simpleicons.org/netflix/EAE8E8" },
   { name: "Samsung", src: "https://cdn.simpleicons.org/samsung/EAE8E8" },
   { name: "Spotify", src: "https://cdn.simpleicons.org/spotify/EAE8E8" },
-  { nam
+  { name: "Puma", src: "https://cdn.simpleicons.org/puma/EAE8E8" },
+  { name: "Toyota", src: "https://cdn.simpleicons.org/toyota/EAE8E8" },
+  { name: "Honda", src: "https://cdn.simpleicons.org/honda/EAE8E8" },
+  { name: "Microsoft", src: "" },
+  { name: "NVIDIA", src: "https://cdn.simpleicons.org/nvidia/EAE8E8" }
+];
+</script>

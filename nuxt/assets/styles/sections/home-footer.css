@@ -1117,4 +1117,43 @@
     margin-top: 0 !important;
   }
 
-  .
+  .footer-logo {
+    width: min(480px, 78vw) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer-main {
+    padding-top: 104px !important;
+  }
+
+  .footer-brand {
+    height: 116px !important;
+  }
+
+  .footer-logo {
+    width: min(260px, 74vw) !important;
+  }
+}
+
+/* Overscale the visible K mark so it spans from the heading top to the message row. */
+.footer-brand {
+  overflow: visible !important;
+}
+
+.footer-logo {
+  transform: translate(-42%, -4.5%) scale(2.28) !important;
+  transform-origin: center center !important;
+}
+
+@media (max-width: 1180px) {
+  .footer-logo {
+    transform: scale(1.2) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer-logo {
+    transform: none !important;
+  }
+}

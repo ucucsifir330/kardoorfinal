@@ -821,4 +821,100 @@ onMounted(() => {
         start: 'top bottom',
         end: 'bottom top',
         onUpdate: updateCatalogHandoffPin,
-        onRefresh: updateCa
+        onRefresh: updateCatalogHandoffPin
+      });
+    }
+
+    const fonts = (document as any).fonts;
+
+    if (fonts?.ready) {
+      fonts.ready.then(() => {
+        updateTitleWidth();
+        requestCatalogHandoffHeight();
+        requestCatalogHandoffPin();
+        ScrollTrigger.refresh();
+      });
+    }
+
+    initManifestoAnimations();
+  });
+
+  window.addEventListener('resize', updateTitleWidth);
+  window.addEventListener('resize', requestCatalogHandoffHeight);
+  window.addEventListener('resize', requestCatalogHandoffPin);
+
+  buildTypewriter();
+
+  track2State.x = -400;
+
+  if (reviewsStageRef.value) {
+    reviewsObserver = new IntersectionObserver(
+      (entries) => {
+        reviewsAnimationActive = entries.some((entry) => entry.isIntersecting);
+        if (reviewsAnimationActive) requestReviewsAnimation();
+        else if (!track1State.isDragging && !track2State.isDragging) stopReviewsAnimation();
+      },
+      { rootMargin: '260px 0px', threshold: 0.01 }
+    );
+    reviewsObserver.observe(reviewsStageRef.value);
+  }
+
+  window.addEventListener('mousemove', onDrag as EventListener);
+  window.addEventListener('mouseup', endDrag);
+  window.addEventListener('touchmove', onDrag as EventListener, { passive: false });
+  window.addEventListener('touchend', endDrag);
+});
+
+onBeforeUnmount(() => {
+  typewriterTl?.kill();
+  typewriterTl = null;
+  cursorTween?.kill();
+  cursorTween = null;
+
+  stopReviewsAnimation();
+  reviewsObserver?.disconnect();
+  reviewsObserver = null;
+  catalogHandoffObserver?.disconnect();
+  catalogHandoffObserver = null;
+
+  catalogHandoffTrigger?.kill();
+  catalogHandoffTrigger = null;
+
+  if (catalogHandoffFrame) {
+    cancelAnimationFrame(catalogHandoffFrame);
+    catalogHandoffFrame = 0;
+  }
+
+  if (catalogHandoffPinFrame) {
+    cancelAnimationFrame(catalogHandoffPinFrame);
+    catalogHandoffPinFrame = 0;
+  }
+
+  if (catalogHandoffPinRef.value) {
+    catalogHandoffPinRef.value.style.transform = '';
+  }
+
+  if (manifestoGsapContext) {
+    manifestoGsapContext.revert();
+    manifestoGsapContext = null;
+  }
+
+  manifestoCleanupTasks.forEach((task) => task());
+  manifestoCleanupTasks = [];
+
+  window.removeEventListener('resize', updateTitleWidth);
+  window.removeEventListener('resize', requestCatalogHandoffHeight);
+  window.removeEventListener('resize', requestCatalogHandoffPin);
+  window.removeEventListener('mousemove', onDrag as EventListener);
+  window.removeEventListener('mouseup', endDrag);
+  window.removeEventListener('touchmove', onDrag as EventListener);
+  window.removeEventListener('touchend', endDrag);
+});
+</script>
+
+<style scoped>
+.home-reviews-runtime {
+  display: block;
+  width: 100%;
+}
+</style>

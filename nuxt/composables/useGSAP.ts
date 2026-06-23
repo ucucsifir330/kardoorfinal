@@ -22,4 +22,5 @@ export function registerGsap() {
 
 export function useGSAP() {
   registerGsap();
-  return {
+  return { gsap, ScrollTrigger, ScrollSmoother, ScrollToPlugin, TextPlugin };
+}

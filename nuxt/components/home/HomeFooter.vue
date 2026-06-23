@@ -217,7 +217,7 @@
 <script setup lang="ts">
 // @ts-nocheck
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { gsap } from 'gsap'
+import { gsap } from "gsap"
 
 const footerWrapper = ref<HTMLElement | null>(null)
 const footerDome = ref<HTMLElement | null>(null)
@@ -297,4 +297,8 @@ onMounted(() => {
   initFooterAnimation()
 })
 
-onBeforeUnmount((
+onBeforeUnmount(() => {
+  cleanupFooter?.()
+  cleanupFooter = null
+})
+</script>
