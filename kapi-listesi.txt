@@ -1,0 +1,174 @@
+KARDOOR KAPI LİSTESİ
+Toplam kapı: 169
+
+Format: Kod | İsim | Tür
+
+AL-001 | Avero | Alüminyum Sistemler
+AL-002 | Velora | Alüminyum Sistemler
+AL-003 | Noven | Alüminyum Sistemler
+AL-004 | Altra | Alüminyum Sistemler
+AL-005 | Liven | Alüminyum Sistemler
+AL-006 | Meron | Alüminyum Sistemler
+AL-007 | Savio | Alüminyum Sistemler
+AL-008 | Orlen | Alüminyum Sistemler
+AL-009 | Vanta | Alüminyum Sistemler
+AL-010 | Celon | Alüminyum Sistemler
+AL-011 | Avero | Alüminyum Sistemler
+AL-012 | Velora | Alüminyum Sistemler
+AL-013 | Noven | Alüminyum Sistemler
+AL-014 | Altra | Alüminyum Sistemler
+AL-015 | Liven | Alüminyum Sistemler
+AL-016 | Meron | Alüminyum Sistemler
+AL-017 | Savio | Alüminyum Sistemler
+AL-018 | Orlen | Alüminyum Sistemler
+AL-019 | Vanta | Alüminyum Sistemler
+AL-020 | Celon | Alüminyum Sistemler
+AL-021 | Avero | Alüminyum Sistemler
+AL-022 | Velora | Alüminyum Sistemler
+AL-023 | Noven | Alüminyum Sistemler
+AL-024 | Altra | Alüminyum Sistemler
+AL-025 | Liven | Alüminyum Sistemler
+AL-026 | Meron | Alüminyum Sistemler
+AL-027 | Savio | Alüminyum Sistemler
+AL-028 | Orlen | Alüminyum Sistemler
+AL-029 | Vanta | Alüminyum Sistemler
+AL-030 | Celon | Alüminyum Sistemler
+AL-031 | Avero | Alüminyum Sistemler
+AL-032 | Velora | Alüminyum Sistemler
+DY-001 | Cedra | Doğal Yüzeyler
+DY-002 | Ligna | Doğal Yüzeyler
+DY-003 | Arlo | Doğal Yüzeyler
+DY-004 | Venia | Doğal Yüzeyler
+DY-005 | Caldo | Doğal Yüzeyler
+DY-006 | Rovio | Doğal Yüzeyler
+DY-007 | Selva | Doğal Yüzeyler
+DY-008 | Norra | Doğal Yüzeyler
+DY-009 | Lando | Doğal Yüzeyler
+DY-010 | Evora | Doğal Yüzeyler
+DY-011 | Cedra | Doğal Yüzeyler
+DY-012 | Ligna | Doğal Yüzeyler
+DY-013 | Arlo | Doğal Yüzeyler
+DY-014 | Venia | Doğal Yüzeyler
+DY-015 | Caldo | Doğal Yüzeyler
+DY-016 | Rovio | Doğal Yüzeyler
+DY-017 | Selva | Doğal Yüzeyler
+DY-018 | Norra | Doğal Yüzeyler
+DY-019 | Lando | Doğal Yüzeyler
+DY-020 | Evora | Doğal Yüzeyler
+DY-021 | Cedra | Doğal Yüzeyler
+DY-022 | Ligna | Doğal Yüzeyler
+DY-023 | Arlo | Doğal Yüzeyler
+CM-001 | Clara | Camlı Modeller
+CM-002 | Lumio | Camlı Modeller
+CM-003 | Glora | Camlı Modeller
+CM-004 | Avena | Camlı Modeller
+CM-005 | Mirra | Camlı Modeller
+CM-006 | Solia | Camlı Modeller
+CM-007 | Elvia | Camlı Modeller
+CM-008 | Noris | Camlı Modeller
+CM-009 | Alira | Camlı Modeller
+CM-010 | Vionna | Camlı Modeller
+CM-011 | Clara | Camlı Modeller
+CM-012 | Lumio | Camlı Modeller
+CM-013 | Glora | Camlı Modeller
+CM-014 | Avena | Camlı Modeller
+CM-015 | Mirra | Camlı Modeller
+CM-016 | Solia | Camlı Modeller
+CM-017 | Elvia | Camlı Modeller
+CM-018 | Noris | Camlı Modeller
+CM-019 | Alira | Camlı Modeller
+CM-020 | Vionna | Camlı Modeller
+CM-021 | Clara | Camlı Modeller
+CM-022 | Lumio | Camlı Modeller
+CM-023 | Glora | Camlı Modeller
+CM-024 | Avena | Camlı Modeller
+CM-025 | Mirra | Camlı Modeller
+CM-026 | Solia | Camlı Modeller
+CM-027 | Elvia | Camlı Modeller
+CM-028 | Noris | Camlı Modeller
+CM-029 | Alira | Camlı Modeller
+CM-030 | Vionna | Camlı Modeller
+CM-031 | Clara | Camlı Modeller
+CM-032 | Lumio | Camlı Modeller
+CM-033 | Glora | Camlı Modeller
+CM-034 | Avena | Camlı Modeller
+CM-035 | Mirra | Camlı Modeller
+CM-036 | Solia | Camlı Modeller
+CM-037 | Elvia | Camlı Modeller
+CM-038 | Noris | Camlı Modeller
+CM-039 | Alira | Camlı Modeller
+CM-040 | Vionna | Camlı Modeller
+MK-001 | Krono | Metal & Kompozit
+MK-002 | Nexa | Metal & Kompozit
+MK-003 | Modra | Metal & Kompozit
+MK-004 | Helio | Metal & Kompozit
+MK-005 | Brion | Metal & Kompozit
+MK-006 | Solix | Metal & Kompozit
+MK-007 | Travo | Metal & Kompozit
+MK-008 | Monza | Metal & Kompozit
+MK-009 | Avex | Metal & Kompozit
+MK-010 | Rado | Metal & Kompozit
+MK-011 | Krono | Metal & Kompozit
+MK-012 | Nexa | Metal & Kompozit
+MK-013 | Modra | Metal & Kompozit
+MK-014 | Helio | Metal & Kompozit
+PL-001 | Noira | PVC & Laminoks
+PL-002 | Grisio | PVC & Laminoks
+PL-003 | Antra | PVC & Laminoks
+PL-004 | Silvio | PVC & Laminoks
+PL-005 | Trenza | PVC & Laminoks
+PL-006 | Lamora | PVC & Laminoks
+PL-007 | Invero | PVC & Laminoks
+PL-008 | Noxia | PVC & Laminoks
+PL-009 | Argen | PVC & Laminoks
+PL-010 | Voltra | PVC & Laminoks
+PL-011 | Noira | PVC & Laminoks
+PL-012 | Grisio | PVC & Laminoks
+PL-013 | Antra | PVC & Laminoks
+PL-014 | Silvio | PVC & Laminoks
+PL-015 | Trenza | PVC & Laminoks
+PL-016 | Lamora | PVC & Laminoks
+PL-017 | Invero | PVC & Laminoks
+PL-018 | Noxia | PVC & Laminoks
+PL-019 | Argen | PVC & Laminoks
+PL-020 | Voltra | PVC & Laminoks
+PL-021 | Noira | PVC & Laminoks
+PL-022 | Grisio | PVC & Laminoks
+PL-023 | Antra | PVC & Laminoks
+PL-024 | Silvio | PVC & Laminoks
+PL-025 | Trenza | PVC & Laminoks
+PL-026 | Lamora | PVC & Laminoks
+PL-027 | Invero | PVC & Laminoks
+PL-028 | Noxia | PVC & Laminoks
+PL-029 | Argen | PVC & Laminoks
+PL-030 | Voltra | PVC & Laminoks
+PL-031 | Noira | PVC & Laminoks
+PL-032 | Grisio | PVC & Laminoks
+PL-033 | Antra | PVC & Laminoks
+PL-034 | Silvio | PVC & Laminoks
+PL-035 | Trenza | PVC & Laminoks
+PL-036 | Lamora | PVC & Laminoks
+PL-037 | Invero | PVC & Laminoks
+PL-038 | Noxia | PVC & Laminoks
+MO-001 | Aureo | Mimari Özel
+MO-002 | Velaro | Mimari Özel
+MO-003 | Mareno | Mimari Özel
+MO-004 | Soreva | Mimari Özel
+MO-005 | Arlento | Mimari Özel
+MO-006 | Loreno | Mimari Özel
+MO-007 | Vareno | Mimari Özel
+MO-008 | Elvian | Mimari Özel
+MO-009 | Aureo | Mimari Özel
+MO-010 | Velaro | Mimari Özel
+MO-011 | Mareno | Mimari Özel
+MO-012 | Soreva | Mimari Özel
+MO-013 | Arlento | Mimari Özel
+MO-014 | Loreno | Mimari Özel
+GT-001 | Sentra | Giriş & Teknik
+GT-002 | Guardio | Giriş & Teknik
+GT-003 | Dravo | Giriş & Teknik
+GT-004 | Korven | Giriş & Teknik
+GT-005 | Vardon | Giriş & Teknik
+GT-006 | Ralix | Giriş & Teknik
+GT-007 | Kavon | Giriş & Teknik
+GT-008 | Maxen | Giriş & Teknik
