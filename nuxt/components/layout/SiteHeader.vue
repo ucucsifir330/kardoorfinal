@@ -7,9 +7,10 @@ const route = useRoute();
 const { isNight, theme, setTheme } = useShowroomAmbience();
 const { locale, locales, localeLabels, setLocale } = useKardoorLocale();
 
-const isScrolled = ref(false);
+const isHidden = ref(false);
 const isMenuOpen = ref(false);
 const menuButtonRef = ref<HTMLButtonElement | null>(null);
+let lastScrollY = 0;
 
 const navItems = computed(() => {
   const labels = {
@@ -45,7 +46,7 @@ const isActive = (to: string) => {
 };
 
 const headerClass = computed(() => ({
-  "site-header--scrolled": isScrolled.value,
+  "site-header--hidden": isHidden.value,
   "site-header--night": isNight.value,
   "site-header--menu-open": isMenuOpen.value
 }));
@@ -153,7 +154,22 @@ const switchThemeWithTransition = (nextTheme: "light" | "dark", event: MouseEven
 };
 
 const onScroll = () => {
-  isScrolled.value = window.scrollY > 24;
+  const currentY = window.scrollY;
+
+  // Never hide while the mobile menu is open or near the very top of the page.
+  if (isMenuOpen.value || currentY < 80) {
+    isHidden.value = false;
+    lastScrollY = currentY;
+    return;
+  }
+
+  const delta = currentY - lastScrollY;
+
+  // Small dead-zone so tiny jitters don't toggle the header.
+  if (Math.abs(delta) < 6) return;
+
+  isHidden.value = delta > 0;
+  lastScrollY = currentY;
 };
 
 const onKeydown = (event: KeyboardEvent) => {
@@ -161,6 +177,7 @@ const onKeydown = (event: KeyboardEvent) => {
 };
 
 onMounted(() => {
+  lastScrollY = window.scrollY;
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("keydown", onKeydown);
@@ -214,10 +231,35 @@ watch(
         id="site-primary-nav"
         class="site-header__nav"
         :aria-label="primaryNavLabel"
-        :aria-hidden="!isMenuOpen"
-        :inert="!isMenuOpen"
       >
-        <template v-for="item in navItems" :key="item.to">
+        <template v-for="item in navItems.slice(0, 2)" :key="item.to">
+          <span
+            v-if="item.disabled"
+            class="site-header__nav-link site-header__nav-link--disabled"
+            aria-disabled="true"
+          >
+            {{ item.label }}
+          </span>
+          <NuxtLink
+            v-else
+            class="site-header__nav-link"
+            :class="{ 'is-active': isActive(item.to) }"
+            :to="item.to"
+            :aria-current="isActive(item.to) ? 'page' : undefined"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </template>
+
+        <NuxtLink
+          class="site-header__nav-mark"
+          to="/"
+          :aria-label="brandLabel"
+        >
+          <span aria-hidden="true" />
+        </NuxtLink>
+
+        <template v-for="item in navItems.slice(2)" :key="item.to">
           <span
             v-if="item.disabled"
             class="site-header__nav-link site-header__nav-link--disabled"
@@ -282,7 +324,7 @@ watch(
           type="button"
           :aria-label="menuLabel"
           :aria-expanded="isMenuOpen"
-          aria-controls="site-primary-nav site-mobile-menu"
+          aria-controls="site-mobile-menu"
           @click="toggleMenu"
         >
           <span />
@@ -326,7 +368,6 @@ watch(
     <!-- Symbol + KARDOOR: blends against the whole page like the cursor. -->
     <div
       class="brand-blend-layer brand-blend-layer--ink"
-      :class="{ 'is-scrolled': isScrolled }"
       aria-hidden="true"
     >
       <div class="brand-blend-layer__inner">
@@ -339,7 +380,6 @@ watch(
     <!-- EGE only: rendered normally on top so it keeps its blue. -->
     <div
       class="brand-blend-layer brand-blend-layer--ege"
-      :class="{ 'is-scrolled': isScrolled }"
       aria-hidden="true"
     >
       <div class="brand-blend-layer__inner">

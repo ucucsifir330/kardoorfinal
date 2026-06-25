@@ -102,7 +102,8 @@
   flex-direction: column;
   align-items: center;
   gap: clamp(20px, 2.5vw, 40px);
-  max-width: min(900px, 92%);
+  /* Copy'nin 2 satıra sığması için genişletildi (eski: 900px). */
+  max-width: min(1180px, 92%);
 }
 
 /* Başlık — EntranceDoor "Kurgulayın" paneliyle BİREBİR (Gotham/sans, boyut). */
@@ -122,7 +123,8 @@
 
 .entrance-lab__configure-copy {
   margin: 0;
-  max-width: 60ch;
+  /* 2 satıra sığsın diye geniş tutuldu (60ch'te 3 satır sarıyordu). */
+  max-width: 80ch;
   font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
   font-size: clamp(20px, 1.35vw, 26px);
   line-height: 1.32;
@@ -136,7 +138,9 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 14px;
-  margin-top: clamp(4px, 1vw, 16px);
+  /* CTA'lar referanstaki gibi panelin alt yarısına çekilir (metinle buton
+     arasındaki boşluk artırılarak). Tunable. */
+  margin-top: clamp(40px, 7vh, 120px);
 }
 
 /* Global .ada-manifesto-cta absolute/margin taşıyordu (ada-spacer-* sınıfları
@@ -156,6 +160,12 @@
    sadece hover'da ALT katmanın (::after) içeriği data-hover'dan gelir. */
 .entrance-lab__soon-cta .ada-manifesto-cta-text::after {
   content: attr(data-hover);
+}
+
+.entrance-lab__soon-cta {
+  appearance: none;
+  border: 0;
+  cursor: default;
 }
 
 /* Hover'da ikon dönmesin (mesaj net kalsın); buton zemini "yakında" hissi için
@@ -414,8 +424,9 @@
 .entrance-lab__next {
   position: relative;
   /* Kısa tampon — pin'in açılması için yeter; tam ekran boş sayfa değil.
-     Configure paneliyle aynı zemin (tema-bazlı). */
-  min-height: 50vh;
+     Configure paneliyle aynı zemin (tema-bazlı). svh: katalog overlap'i
+     (home-references.css --catalog-entrance-overlap) bununla eşleşmeli. */
+  min-height: 50svh;
   background: radial-gradient(80% 90% at 50% 40%, #14151b 0%, #0b0b0d 72%);
 }
 

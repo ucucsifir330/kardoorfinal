@@ -1326,6 +1326,10 @@ span.ada-brand-logo {
   color: #14151d;
 }
 
+.app-shell--day .ada-split-quote small {
+  color: rgba(20, 21, 29, 0.62);
+}
+
 .app-shell--day .ada-loop-item,
 .app-shell--day .reg-mark {
   color: rgba(20, 21, 29, 0.92);

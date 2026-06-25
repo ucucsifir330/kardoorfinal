@@ -2017,6 +2017,11 @@
   background: transparent !important;
 }
 
+html[data-theme="dark"] .home-page .catalog-section {
+  --catalog-stage-line-track: rgba(244, 241, 234, 0.18);
+  --catalog-stage-line-fill: #F4F1EA;
+}
+
 .home-page .catalog-section::before,
 .home-page .catalog-section::after {
   opacity: 0 !important;
@@ -2576,6 +2581,26 @@
   line-height: 1 !important;
   letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
+}
+
+html[data-theme="dark"] .home-page .catalog-product-family,
+html[data-theme="dark"] .home-page .catalog-designer {
+  color: #F4F1EA !important;
+}
+
+html[data-theme="dark"] .home-page .catalog-card-title,
+html[data-theme="dark"] .home-page .catalog-product:hover .catalog-finish {
+  color: #14151D !important;
+}
+
+html[data-theme="dark"] .home-page .catalog-finish {
+  color: #6b7280 !important;
+}
+
+html[data-theme="dark"] .home-page .catalog-card-title span,
+html[data-theme="dark"] .home-page .catalog-card-subtitle,
+html[data-theme="dark"] .home-page .catalog-code {
+  color: #8f99a3 !important;
 }
 
 .home-page .catalog-product-arrow-wrap {

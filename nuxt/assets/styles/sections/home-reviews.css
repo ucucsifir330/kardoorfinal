@@ -9,7 +9,7 @@
   overflow: hidden;
   background-color: var(--catalog-stage-surface-bg, var(--bg-color));
   margin: 0;
-  padding: clamp(152px, 13vw, 220px) 0 clamp(150px, 15vw, 240px);
+  padding: clamp(80px, 7vw, 128px) 0 clamp(150px, 15vw, 240px);
 }
 
 .title-area {

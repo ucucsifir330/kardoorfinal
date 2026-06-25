@@ -1,6 +1,6 @@
 <template>
-  <EntranceDoor />
-  <section class="home-catalog-reference-stack">
+  <EntranceDoorLab />
+  <section ref="catalogStackRef" class="home-catalog-reference-stack">
     <div ref="catalogHandoffRef" class="home-catalog-reference-stack__catalog">
       <div ref="catalogHandoffPinRef" class="home-catalog-reference-stack__catalog-pin">
         <div ref="catalogHandoffFrameRef" class="home-catalog-reference-stack__catalog-frame">
@@ -77,6 +77,7 @@ const baseTitleWidth = ref(0);
 const inner1 = ref<HTMLElement | null>(null);
 const inner2 = ref<HTMLElement | null>(null);
 const reviewsStageRef = ref<HTMLElement | null>(null);
+const catalogStackRef = ref<HTMLElement | null>(null);
 const catalogHandoffRef = ref<HTMLElement | null>(null);
 const catalogHandoffPinRef = ref<HTMLElement | null>(null);
 const catalogHandoffFrameRef = ref<HTMLElement | null>(null);
@@ -86,6 +87,7 @@ let catalogHandoffFrame = 0;
 let catalogHandoffPinFrame = 0;
 let catalogHandoffTrigger: ScrollTrigger | null = null;
 let catalogHandoffFrameHeight = 0;
+let catalogCurtainTween: gsap.core.Tween | null = null;
 
 const setHiddenSpanRef = (el: Element | ComponentPublicInstance | null) => {
   hiddenSpan.value = el as HTMLElement | null;
@@ -835,6 +837,34 @@ onMounted(() => {
     }
 
     initManifestoAnimations();
+
+    // PERDE (parallax): katalog stack scroll'dan daha hızlı yukarı gelir →
+    // "Kurgulayın" panelinin/CTA'ların üzerine biner. --catalog-curtain-y 0'dan
+    // -extra'ya scrub edilir; katalog ekranın altından üst-orta bölgeye girerken
+    // ekstra yukarı tırmanır. catalogHandoff PIN'i transform'a değil pin div'ine
+    // dokunduğu için çakışmaz (ayrı katman). Sadece masaüstü.
+    if (catalogStackRef.value && window.innerWidth > 760) {
+      const extra =
+        parseFloat(
+          getComputedStyle(catalogStackRef.value).getPropertyValue('--catalog-curtain-extra')
+        ) || 240;
+
+      catalogCurtainTween = gsap.fromTo(
+        catalogStackRef.value,
+        { '--catalog-curtain-y': '0px' },
+        {
+          '--catalog-curtain-y': `${-extra}px`,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: catalogStackRef.value,
+            start: 'top bottom',
+            end: 'top center',
+            scrub: true,
+            invalidateOnRefresh: true
+          }
+        }
+      );
+    }
   });
 
   window.addEventListener('resize', updateTitleWidth);
@@ -877,6 +907,10 @@ onBeforeUnmount(() => {
 
   catalogHandoffTrigger?.kill();
   catalogHandoffTrigger = null;
+
+  catalogCurtainTween?.scrollTrigger?.kill();
+  catalogCurtainTween?.kill();
+  catalogCurtainTween = null;
 
   if (catalogHandoffFrame) {
     cancelAnimationFrame(catalogHandoffFrame);

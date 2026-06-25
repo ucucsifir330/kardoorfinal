@@ -112,9 +112,10 @@
     </section>
     </div>
 
-    <transition :css="false" @enter="onEnter" @leave="onLeave">
-      <div v-if="selectedProject" class="project-expansion-panel">
-        <div class="panel-inner">
+    <Teleport to="body">
+      <transition :css="false" @enter="onEnter" @leave="onLeave">
+        <div v-if="selectedProject" class="project-expansion-panel">
+          <div class="panel-inner">
           <button type="button" class="panel-close" @click.stop.prevent="closeModal">
             <span class="close-text">Kapat</span>
             <span class="close-icon">
@@ -146,9 +147,10 @@
               <button type="button" class="nav-btn next" @click="nextProject">›</button>
             </div>
           </div>
+          </div>
         </div>
-      </div>
-    </transition>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
@@ -1140,6 +1142,110 @@ onBeforeUnmount(() => {
 
   .card {
     width: min(72vw, 280px);
+  }
+
+  .project-expansion-panel {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    min-height: 100svh;
+    height: 100dvh !important;
+    max-width: none;
+    transform: none !important;
+    z-index: 10000;
+    border-radius: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .panel-inner {
+    min-height: 100%;
+    height: auto !important;
+    max-width: none;
+    padding: calc(var(--header, 70px) + 18px) 18px 28px;
+  }
+
+  .panel-close {
+    top: 18px;
+    right: 16px;
+    gap: 10px;
+    z-index: 20;
+  }
+
+  .close-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .panel-content {
+    margin-top: 18px;
+    align-items: stretch;
+  }
+
+  .panel-carousel {
+    position: relative;
+    display: block;
+    min-height: 0;
+  }
+
+  .image-viewport {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    border-radius: 18px;
+  }
+
+  .project-display {
+    height: auto;
+    min-height: 0;
+    gap: 18px;
+  }
+
+  .display-img-container {
+    flex: none;
+    width: min(100%, 360px);
+    height: auto;
+    aspect-ratio: 4 / 5;
+    margin: 0 auto;
+    border-radius: 18px;
+  }
+
+  .display-info {
+    width: min(100%, 360px);
+    margin: 0 auto;
+    padding-bottom: 0;
+    text-align: left;
+  }
+
+  .display-info h3 {
+    font-size: clamp(2rem, 10vw, 3rem);
+    line-height: 0.95;
+    overflow-wrap: anywhere;
+  }
+
+  .panel-location {
+    font-size: 1rem;
+    line-height: 1.45;
+    padding-bottom: 0;
+  }
+
+  .nav-btn {
+    position: absolute;
+    top: min(40vw, 220px);
+    transform: translateY(-50%);
+    padding: 10px;
+    font-size: 62px;
+    line-height: 1;
+    z-index: 3;
+  }
+
+  .nav-btn.prev {
+    left: -4px;
+  }
+
+  .nav-btn.next {
+    right: -4px;
   }
 
   .reference-brand-stage {

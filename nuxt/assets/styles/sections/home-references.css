@@ -1,7 +1,18 @@
 
 .home-catalog-reference-stack {
   --catalog-reference-handoff: 100svh;
+  /* PERDE (parallax): katalog, scroll'dan daha hızlı yukarı gelerek "Kurgulayın"
+     panelinin/CTA'ların üzerine biner. Hareket JS'ten (HomeExperience parallax
+     ScrollTrigger) --catalog-curtain-y ile sürülür. Negatif margin = başlangıç
+     overlap'i: tamponu (.entrance-lab__next 50svh) örtüp panele bir miktar biner.
+     --catalog-curtain-extra = scroll boyunca ekstra yukarı tırmanma mesafesi. */
+  --catalog-entrance-peek: 100px;
+  --catalog-curtain-extra: 240px;
   position: relative;
+  z-index: 2; /* tamponun/panelin ÜSTÜNDE kalsın */
+  margin-top: calc(-1 * (50svh + var(--catalog-entrance-peek)));
+  transform: translate3d(0, var(--catalog-curtain-y, 0px), 0);
+  will-change: transform;
   isolation: isolate;
   background: transparent;
 }
@@ -286,6 +297,16 @@
 }
 
 @media (max-width: 760px) {
+  /* Mobilde overlap + perde TAMAMEN kapalı — masraflı scroll-transform yok,
+     stacking context sıfırlanır (alt bölümler üst üste binmesin). Normal akar. */
+  .home-catalog-reference-stack {
+    margin-top: 0 !important;
+    transform: none !important;
+    will-change: auto !important;
+    isolation: auto !important;
+    z-index: auto !important;
+  }
+
   .home-catalog-reference-stack__catalog {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;

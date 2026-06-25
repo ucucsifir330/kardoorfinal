@@ -38,3 +38,53 @@ html.is-scrolling *::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
+
+/* ──────────────────────────────────────────────────────────────
+   SCROLLSMOOTHER SEAM FIX — scroll/geçiş anında bölüm sınırlarında
+   beliren 1px yatay hairline'ı yok eder.
+
+   Kök neden: ScrollSmoother #smooth-content'i GPU transform'una alır.
+   Scroll sırasında transform kesirli (sub-pixel) bir değere oturunca,
+   içindeki tam-ekran bölümlerin kenarında anti-alias bir seam görünür;
+   arkadaki iki bölümün rengi sızdığı için zemine göre renk değiştirir
+   ve scroll durup transform tam sayıya oturunca kaybolur.
+
+   Çözüm: içeriği kendi compositing katmanına sabitleyip kenar
+   karelerini düzleştir (backface gizle), böylece komşu katman kenarları
+   yarım piksel açık kalmaz. Görsel olarak hiçbir şeyi değiştirmez.
+   ────────────────────────────────────────────────────────────── */
+#smooth-content {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: flat;
+}
+
+/* Pin'li / transform'lu bölümler kendi compositing katmanlarında render edilir.
+   ScrollSmoother content'i kesirli (sub-pixel) translate ettiğinde bu
+   katmanların kenarında 1px boya seam'i belirir (DOM'da eleman değil —
+   hit-test/querySelector görmez; sadece scroll anında, zemine göre renk
+   değiştirerek görünür).
+
+   Çözüm — .home-references-flip için zaten kullanılan kanıtlanmış yöntem
+   (bkz. home-references.css): her bölümün arka plan rengini box-shadow ile
+   kenarın 1px dışına taşırıp dikişi kendi rengiyle mühürlemek. backface-
+   visibility tek başına yetmedi; bu, seam'i fiziksel pikselle kapatır. */
+.entrance-lab {
+  box-shadow: 0 0 0 1px #0b0b0d;
+}
+
+.entrance-lab__next {
+  box-shadow: 0 0 0 1px #0b0b0d;
+}
+
+.entrance-lab__next[data-ambience="day"] {
+  box-shadow: 0 0 0 1px #d9d6cd;
+}
+
+.ada-team-section {
+  box-shadow: 0 0 0 1px var(--team-section-bg, #14151d);
+}
+
+.testimonial-wrapper {
+  box-shadow: 0 0 0 1px var(--catalog-stage-surface-bg, var(--bg-color));
+}
