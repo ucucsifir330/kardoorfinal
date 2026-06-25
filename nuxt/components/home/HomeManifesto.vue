@@ -163,7 +163,6 @@ const updateCtaLineGeometry = () => {
 onMounted(async () => {
   await nextTick();
   updateCtaLineGeometry();
-  gsap.registerPlugin(SplitText, ScrollTrigger);
 
   const quoteElement = manifestoQuoteRef.value;
 

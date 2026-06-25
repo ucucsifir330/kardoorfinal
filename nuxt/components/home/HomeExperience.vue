@@ -528,8 +528,6 @@ const initManifestoAnimations = () => {
   manifestoCleanupTasks.forEach((task) => task());
   manifestoCleanupTasks = [];
 
-  gsap.registerPlugin(ScrollTrigger);
-
   manifestoGsapContext = gsap.context(() => {
     const scrollLineFill = document.querySelector<HTMLElement>('.ada-scroll-line-fill');
     const manifestoContainer = document.querySelector<HTMLElement>('.ada-manifesto-container');

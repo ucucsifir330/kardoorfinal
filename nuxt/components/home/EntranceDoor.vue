@@ -141,8 +141,6 @@ onMounted(() => {
 
   if (!hero || !heroImage || !zoomLayer || !artboard || !stage || !canvas) return;
 
-  gsap.registerPlugin(ScrollTrigger);
-
   const context = canvas.getContext("2d");
   if (!context) return;
 

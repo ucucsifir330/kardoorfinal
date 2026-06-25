@@ -1,0 +1,349 @@
+/* ──────────────────────────────────────────────────────────────
+   SHOWROOM LAB — entrance-lab zoom'u içeri girince beliren turntable sahnesi.
+   (ShowroomLab.vue ile. Eski showroom-turntable.css'in sade/yeni hali.)
+
+   Düzen:
+     .showroom-lab            tam ekran grid: sol stage + sağ info
+       .showroom-lab__stage   orbit carousel + platform (sol/geniş)
+       .showroom-lab__info    aktif kapı bilgisi (sağ)
+
+   Orbit slot transform'ları --slot-* değişkenlerinden gelir (JS imperatif).
+   ────────────────────────────────────────────────────────────── */
+
+.showroom-lab {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr clamp(320px, 32vw, 520px);
+  align-items: center;
+  font-family: var(--font-body);
+  overflow: hidden;
+
+  /* Tema değişkenleri — varsayılan NIGHT (koyu). [data-ambience="day"] override. */
+  --sl-bg-1: #14151b;
+  --sl-bg-2: #0b0b0d;
+  --sl-vignette-a: rgba(60, 62, 78, 0.35);
+  --sl-vignette-b: rgba(0, 0, 0, 0.55);
+  --sl-text: #f7f7f2;
+  --sl-text-soft: rgba(247, 247, 242, 0.66);
+  --sl-text-faint: rgba(247, 247, 242, 0.5);
+  --sl-line: rgba(247, 247, 242, 0.24);
+  --sl-backdrop: rgba(247, 247, 242, 0.05);
+
+  background:
+    radial-gradient(80% 90% at 40% 38%, var(--sl-bg-1) 0%, var(--sl-bg-2) 72%);
+  color: var(--sl-text);
+}
+
+/* LIGHT mod — aydınlık galeri (ekran görüntüsündeki krem/açık zemin).
+   Selector SADECE entrance-lab section'ına bağlı — html[data-ambience] gibi
+   üst elementler bunu yanlışlıkla tetiklemesin (night'ta da light kalıyordu). */
+.entrance-lab[data-ambience="day"] .showroom-lab {
+  --sl-bg-1: #f3f1ea;
+  --sl-bg-2: #d9d6cd;
+  --sl-vignette-a: rgba(255, 255, 255, 0.4);
+  --sl-vignette-b: rgba(120, 116, 104, 0.22);
+  --sl-text: #14151d;
+  --sl-text-soft: rgba(20, 21, 29, 0.66);
+  --sl-text-faint: rgba(20, 21, 29, 0.46);
+  --sl-line: rgba(20, 21, 29, 0.18);
+  --sl-backdrop: rgba(20, 21, 29, 0.06);
+}
+
+/* Atmosfer — merkeze doğru hafif aydınlanma (tema değişkeniyle). */
+.showroom-lab__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(80% 60% at 38% 42%, var(--sl-vignette-a) 0%, transparent 60%),
+    radial-gradient(120% 120% at 50% 120%, var(--sl-vignette-b) 0%, transparent 70%);
+}
+
+/* ── ARKADAN AKAN DEV YAZI BANDI ─────────────────────────────── */
+.showroom-lab__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* kapıların (z-index 40+) arkasında, vignette üstünde */
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.showroom-lab__backdrop-text {
+  display: block;
+  font-family: var(--font-display, var(--font-serif));
+  font-size: clamp(120px, 19vw, 460px);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.04;
+  white-space: nowrap;
+  color: var(--sl-backdrop);
+  user-select: none;
+}
+
+.showroom-lab__backdrop-marquee {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: sl-backdrop-marquee 90s linear infinite;
+  will-change: transform;
+}
+
+.showroom-lab__backdrop-group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.showroom-lab__backdrop-group span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.showroom-lab__backdrop-group span::after {
+  content: "·";
+  margin: 0 0.18em;
+}
+
+@keyframes sl-backdrop-marquee {
+  from { transform: translate3d(8vw, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Backdrop swap geçişi (kapı değişince). */
+.sl-backdrop-enter-active,
+.sl-backdrop-leave-active {
+  transition: opacity 500ms ease;
+}
+.sl-backdrop-enter-from,
+.sl-backdrop-leave-to {
+  opacity: 0;
+}
+
+/* ── STAGE (orbit) ───────────────────────────────────────────── */
+.showroom-lab__stage {
+  position: relative;
+  z-index: 1;
+  grid-column: 1;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.showroom-lab__carousel {
+  position: relative;
+  width: 1px;
+  height: 1px;
+  /* Orbit merkezi sahnenin biraz altına — kapılar dik dursun. */
+  transform: translateY(6%);
+}
+
+.showroom-lab__slot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  /* Sabit slot genişliği — orbit merkezi (1×1px carousel) etrafında
+     translate(-50%) ile ortalanır. Genişlik olmadan slot içeriğe çöküp
+     translate hesabı bozuluyordu (kapılar 1px görünmez kalıyordu). */
+  width: clamp(180px, 17vw, 300px);
+  /* JS --slot-* yazar; germe yok, kapı kendi oranını korur. */
+  transform:
+    translate3d(-50%, -50%, 0)
+    translate3d(var(--slot-x, 0), var(--slot-y, 0), 0)
+    scale(var(--slot-scale, 1));
+  opacity: var(--slot-opacity, 1);
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.showroom-lab__door-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.55));
+  user-select: none;
+}
+
+/* Oval zemin diski — kapıların altında. */
+.showroom-lab__platform {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: clamp(420px, 46vw, 820px);
+  height: clamp(90px, 10vw, 180px);
+  transform: translate3d(-50%, 0, 0);
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.12) 0%, transparent 72%);
+  pointer-events: none;
+}
+
+/* ── INFO PANELİ ─────────────────────────────────────────────── */
+.showroom-lab__info {
+  position: relative;
+  z-index: 2;
+  grid-column: 2;
+  padding: clamp(24px, 3vw, 64px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 28px);
+}
+
+.showroom-lab__counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--sl-text-faint);
+}
+
+.showroom-lab__counter-current {
+  display: inline-block;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--sl-text);
+}
+
+/* Dolan çizgi — 01..05 arasında --counter-progress ile altın dolum. */
+.showroom-lab__counter-line {
+  position: relative;
+  width: 40px;
+  height: 1px;
+  background: var(--sl-line);
+  overflow: hidden;
+}
+
+.showroom-lab__counter-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(var(--counter-progress, 0));
+  background: #c9a978;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Sayı flip geçişi (kapı değişince). */
+.sl-counter-enter-active,
+.sl-counter-leave-active {
+  transition:
+    opacity 460ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sl-counter-enter-from {
+  opacity: 0;
+  transform: translateY(9px);
+}
+.sl-counter-leave-to {
+  opacity: 0;
+  transform: translateY(-9px);
+}
+
+.showroom-lab__name {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(30px, 3vw, 56px);
+  line-height: 1.05;
+  font-weight: 400;
+  color: var(--sl-text);
+}
+
+.showroom-lab__name-lead {
+  display: block;
+}
+
+.showroom-lab__name-tail {
+  display: block;
+  font-style: italic;
+  color: #c9a978;
+}
+
+.showroom-lab__series {
+  margin: 0;
+  font-size: clamp(13px, 1vw, 16px);
+  letter-spacing: 0.06em;
+  color: var(--sl-text-soft);
+}
+
+.showroom-lab__divider {
+  width: 56px;
+  height: 1px;
+  background: var(--sl-line);
+}
+
+.showroom-lab__spec {
+  margin: 0;
+  font-size: clamp(14px, 1.05vw, 18px);
+  line-height: 1.5;
+  color: var(--sl-text-soft);
+}
+
+.showroom-lab__meta {
+  margin: 0;
+  font-size: clamp(12px, 0.85vw, 14px);
+  letter-spacing: 0.04em;
+  color: var(--sl-text-faint);
+}
+
+/* CTA butonları — animasyonlu AdaCtaButton (Detaylar/Teklif Al). */
+.showroom-lab__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: clamp(8px, 1vw, 16px);
+}
+
+/* NIGHT modda outline buton (Teklif Al) tema rengiyle görünür olsun —
+   varsayılan koyu metin koyu zeminde kaybolur. Custom property'ler scoped
+   bileşene miras yoluyla geçer. */
+.entrance-lab[data-ambience="night"] .showroom-lab__actions .ada-cta-button--outline {
+  --ada-cta-fg: #f7f7f2;
+  --ada-cta-border: rgba(247, 247, 242, 0.4);
+  --ada-cta-hover-fg: #14151d;
+  --ada-cta-hover-bg: #f7f7f2;
+  --ada-cta-hover-border: #f7f7f2;
+  --ada-cta-fill-surface: #f7f7f2;
+}
+
+/* Info swap geçişi. */
+.sl-info-enter-active,
+.sl-info-leave-active {
+  transition: opacity 360ms ease, transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sl-info-enter-from {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.sl-info-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .showroom-lab {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+  .showroom-lab__stage {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .showroom-lab__info {
+    grid-column: 1;
+    grid-row: 2;
+    padding-bottom: clamp(32px, 8vh, 80px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showroom-lab__slot {
+    will-change: auto;
+  }
+}

@@ -10,7 +10,7 @@ useSeoMeta({
   description: "Contact Ege Kardoor for catalogs, project inquiries and steel door production requests."
 });
 
-type ContactFormState = "idle" | "submitting" | "success";
+type ContactFormState = "idle" | "submitting" | "success" | "error";
 
 const formState = ref<ContactFormState>("idle");
 const newsletter = ref(false);
@@ -23,7 +23,8 @@ const form = reactive({
   lastName: "",
   email: "",
   phone: "",
-  message: ""
+  message: "",
+  company: ""
 });
 
 const branchMaps = [
@@ -98,6 +99,7 @@ const copy = computed(() => {
         "I want to subscribe to updates about new collections, project launches and Kardoor news.",
       submit: formState.value === "submitting" ? "Sending" : "Start the project",
       success: "Thanks. Our team will get back to you shortly.",
+      error: "We could not send your message. Please try again or email info@egekardoor.com.",
       groups: [
         {
           title: "Social",
@@ -142,6 +144,7 @@ const copy = computed(() => {
       "Yeni koleksiyonlar, proje ilhamları ve Kardoor'dan haberler için bültene abone olmak istiyorum.",
     submit: formState.value === "submitting" ? "Gönderiliyor" : "Projeyi başlat",
     success: "Teşekkürler. Ekibimiz kısa süre içinde size dönüş yapacak.",
+    error: "Mesajınız gönderilemedi. Lütfen tekrar deneyin veya info@egekardoor.com'a yazın.",
     groups: [
       {
         title: "Sosyal Ağlar",
@@ -177,8 +180,20 @@ async function handleSubmit() {
   if (formState.value === "submitting") return;
 
   formState.value = "submitting";
-  await new Promise(resolve => setTimeout(resolve, 800));
-  formState.value = "success";
+
+  try {
+    await $fetch("/api/contact", {
+      method: "POST",
+      body: {
+        ...form,
+        newsletter: newsletter.value,
+        locale: locale.value
+      }
+    });
+    formState.value = "success";
+  } catch {
+    formState.value = "error";
+  }
 }
 
 function openBranchMap(branch: (typeof branchMaps)[number]) {
@@ -327,6 +342,17 @@ onBeforeUnmount(() => {
         :class="{ 'contact-form--sent': formState === 'success' }"
         @submit.prevent="handleSubmit"
       >
+        <label class="contact-form__trap" aria-hidden="true" tabindex="-1">
+          <span>Company</span>
+          <input
+            v-model="form.company"
+            name="company"
+            type="text"
+            autocomplete="off"
+            tabindex="-1"
+          />
+        </label>
+
         <label
           class="contact-form__field"
           :class="{ 'contact-form__field--filled': form.firstName.trim().length > 0 }"
@@ -429,6 +455,9 @@ onBeforeUnmount(() => {
 
         <p v-if="formState === 'success'" class="contact-form__status" role="status">
           {{ copy.success }}
+        </p>
+        <p v-else-if="formState === 'error'" class="contact-form__status" role="alert">
+          {{ copy.error }}
         </p>
       </form>
 

@@ -170,8 +170,6 @@ const initScrollTimeline = async () => {
     import("gsap/ScrollToPlugin")
   ]);
 
-  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
-
   const context = gsap.context(() => {
     const maxIndex = timelineData.value.length - 1;
     const stepDistance = Math.max(window.innerHeight * 1.05, 940);

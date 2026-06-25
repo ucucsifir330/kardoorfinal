@@ -84,9 +84,20 @@
 }
 
 .contact-form {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 4.25rem clamp(2rem, 2.7vw, 3.5rem) 0 0;
+}
+
+.contact-form__trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .contact-form__field {

@@ -108,6 +108,7 @@
             <div class="form-row form-row-message">
               <input type="text" placeholder="Mesajınız">
               <button type="submit" class="submit-btn" aria-label="Gönder">
+                <span class="submit-btn__label">Randevu Oluştur</span>
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M8 5L15 12L8 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>

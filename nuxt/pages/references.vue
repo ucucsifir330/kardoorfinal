@@ -331,8 +331,6 @@ const onProjectLeave = (el, done) => {
 };
 
 onMounted(() => {
-  gsap.registerPlugin(ScrollTrigger);
-
   nextTick(() => {
     startMarquee();
 

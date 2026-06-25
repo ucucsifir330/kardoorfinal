@@ -3,6 +3,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { TextPlugin } from "gsap/TextPlugin";
+import { SplitText } from "gsap/SplitText";
 
 /**
  * Single source of truth for GSAP plugin registration.
@@ -16,11 +17,11 @@ let registered = false;
 
 export function registerGsap() {
   if (registered || !import.meta.client) return;
-  gsap.registerPlugin(ScrollTrigger, ScrollSmoother, ScrollToPlugin, TextPlugin);
+  gsap.registerPlugin(ScrollTrigger, ScrollSmoother, ScrollToPlugin, TextPlugin, SplitText);
   registered = true;
 }
 
 export function useGSAP() {
   registerGsap();
-  return { gsap, ScrollTrigger, ScrollSmoother, ScrollToPlugin, TextPlugin };
+  return { gsap, ScrollTrigger, ScrollSmoother, ScrollToPlugin, TextPlugin, SplitText };
 }

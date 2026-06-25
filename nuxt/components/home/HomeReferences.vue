@@ -148,8 +148,6 @@ const setupFlip = async () => {
     import("gsap/ScrollTrigger")
   ]);
 
-  gsap.registerPlugin(ScrollTrigger);
-
   const getBounds = (element: HTMLElement) => {
     const sectionRect = section.getBoundingClientRect();
     const rect = element.getBoundingClientRect();

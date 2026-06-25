@@ -15,8 +15,13 @@ Thumbs.db
 *.log
 chrome-*.png
 nuxt/.playwright-cli/
+.playwright-cli/
 nuxt/output/
 nuxt/127.0.0.1/
+
+# Raw door sprite source frames (packed sprite committed instead)
+nuxt/public/Render_light/
+nuxt/public/Render_night/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

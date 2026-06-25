@@ -2,6 +2,10 @@ import process from "node:process";
 
 const assetBaseUrl = process.env.NUXT_PUBLIC_ASSET_BASE_URL || "";
 const appCdnUrl = process.env.NUXT_APP_CDN_URL || "";
+const brevoApiKey = process.env.BREVO_API_KEY || "";
+const contactToEmail = process.env.NUXT_CONTACT_TO_EMAIL || "ucucsifir@gmail.com";
+const contactFromEmail = process.env.NUXT_CONTACT_FROM_EMAIL || "";
+const contactFromName = process.env.NUXT_CONTACT_FROM_NAME || "Kardoor Website";
 
 export default defineNuxtConfig({
   compatibilityDate: "2026-05-02",
@@ -37,7 +41,7 @@ export default defineNuxtConfig({
     cdnURL: appCdnUrl,
     head: {
       titleTemplate: "%s | Ege Kardoor",
-      htmlAttrs: { lang: "en" },
+      htmlAttrs: { lang: "tr" },
       meta: [
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         { charset: "utf-8" },
@@ -45,7 +49,7 @@ export default defineNuxtConfig({
         {
           name: "description",
           content:
-            "Ege Kardoor manufactures steel doors in Turkiye for international buyers, dealers and project supply."
+            "Ege Kardoor; çelik, alüminyum, ahşap, PVC ve cam kapıları dijital showroom deneyimiyle sergiler. Mimarlar ve son kullanıcılar için katalog, teklif ve iletişim."
         }
       ],
       link: [
@@ -78,6 +82,10 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    brevoApiKey,
+    contactToEmail,
+    contactFromEmail,
+    contactFromName,
     public: {
       assetBaseUrl
     }

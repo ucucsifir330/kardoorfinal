@@ -8,10 +8,15 @@ defineProps<{
 </script>
 
 <template>
-  <NuxtLink
+  <!--
+    TEMPORARY: product detail route (/doors/:slug) is disabled in nuxt.config
+    (pages:extend), so linking here would 404. Rendered as a non-navigating
+    element until the detail flow is decided. To re-enable, restore <NuxtLink>
+    with :to="`/doors/${item.slug}`".
+  -->
+  <div
     class="catalog-product"
     :data-index="index + 1"
-    :to="`/doors/${item.slug}`"
   >
     <div class="catalog-product__image">
       <img :src="item.image" :alt="`${item.name} ${item.code}`" />
@@ -32,5 +37,5 @@ defineProps<{
         <polyline points="22,0 31,5 22,10" />
       </svg>
     </div>
-  </NuxtLink>
+  </div>
 </template>

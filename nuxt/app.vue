@@ -93,7 +93,6 @@ onBeforeUnmount(() => {
       v-if="shouldMountStartupScreens"
       @complete="handleStartupComplete"
     />
-    <LoadingScreen v-if="shouldMountStartupScreens" />
     <SiteHeader />
     <FloatingContactHub v-if="!isReferencesRoute" />
     <SmoothCursor v-if="!isReferencesRoute" />

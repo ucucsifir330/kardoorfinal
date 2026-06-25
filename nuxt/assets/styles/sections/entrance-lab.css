@@ -1,0 +1,448 @@
+/* ──────────────────────────────────────────────────────────────
+   ENTRANCE LAB — tek background görsel + kapı sprite hero zemini
+   (EntranceDoor yeniden yazımının başlangıç noktası)
+
+   Z-stack:
+     .entrance-lab__artboard  görsel oranına kilitli kutu (JS ile konumlanır)
+       0  .entrance-lab__bg     tek hero background görseli (tema ile değişir)
+       1  .entrance-lab__stage  kapı canvas'ı (siyah boşluğun üstünde)
+     2  .entrance-lab__content  üstteki içerik (copy sonra buraya)
+
+   KAPI KALİBRASYONU:
+     Aşağıdaki --door-* değerleri L-21X9.png'deki siyah kapı boşluğundan
+     ANALİTİK olarak ölçüldü (sütun/satır histogramı). Hero görseli
+     değişirse yeniden ölçülmeli. Artboard görsel oranına kilitli olduğu
+     için bu yüzdeler her viewport oranında boşlukla hizalı kalır.
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-lab {
+  position: relative;
+  width: 100%;
+  /* Aşamalı fallback: dvh destekleyen tarayıcı sonuncuyu kullanır. */
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  /* KÖK NEDEN: hero'daki kapı boşluğu ŞEFFAF (alpha=0). Hero full-bleed cover
+     olduğu için section zemini YALNIZCA o delikten görünür → her iki temada da
+     koyu olmalı ki kapının ince kenar boşluğu gölge/recess gibi okunsun (light
+     temada krem zemin olsaydı kapı etrafında beyaz çerçeve görünürdü). */
+  background: #0b0b0d;
+  color: #f7f7f2;
+  font-family: var(--font-body);
+}
+
+.entrance-lab[data-ambience="day"] {
+  color: #071018;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SHOWROOM — zoom kapıdan içeri girince beliren en arka katman.
+   --showroom-p (0→1, fade) JS'ten gelir. İçindeki ShowroomLab kendi tema
+   zeminini taşır (light/night). Burada zemin YOK — yoksa light modda sızar.
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-lab__showroom {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: var(--showroom-p, 0);
+  /* Zoom katmanı silinirken showroom hafifçe yakınlaşıp gelir (kameranın
+     içeri girip durması hissi). */
+  transform: scale(calc(1.08 - 0.08 * var(--showroom-p, 0)));
+  visibility: hidden;
+}
+
+.entrance-lab__showroom.is-active {
+  visibility: visible;
+}
+
+/* Yatay kayan track: [showroom] [configure]. --page-x (JS) sola kaydırır. */
+.entrance-lab__slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  /* Viewport bazlı — parent (pin sırasında genişleyebilir) etkilemesin.
+     İki slide × 100vw. --page-x: 0 → showroom, -100vw → panel. */
+  width: 200vw;
+  transform: translate3d(var(--page-x, 0%), 0, 0);
+  will-change: transform;
+}
+
+.entrance-lab__slide {
+  position: relative;
+  flex: 0 0 100vw; /* her slide tam viewport genişliği */
+  width: 100vw;
+  height: 100%;
+  /* Showroom içeriği (cover-box) slide'dan taşmasın → komşu slide'a sızıp
+     siyah/boş bant göstermesin. */
+  overflow: hidden;
+}
+
+/* KURGULAYIN paneli — tema zeminiyle (showroom ile aynı his). */
+.entrance-lab__configure {
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 6vw, 120px);
+  background: radial-gradient(80% 90% at 50% 40%, #14151b 0%, #0b0b0d 72%);
+  color: #f7f7f2;
+  text-align: center;
+}
+
+.entrance-lab[data-ambience="day"] .entrance-lab__configure {
+  background: radial-gradient(80% 90% at 50% 40%, #f3f1ea 0%, #d9d6cd 72%);
+  color: #14151d;
+}
+
+.entrance-lab__configure-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 2.5vw, 40px);
+  max-width: min(900px, 92%);
+}
+
+/* Başlık — EntranceDoor "Kurgulayın" paneliyle BİREBİR (Gotham/sans, boyut). */
+.entrance-lab__configure-heading {
+  margin: 0;
+  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
+  font-size: clamp(56px, 4.55vw, 88px);
+  line-height: 1.03;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.entrance-lab__configure-heading span {
+  display: block;
+  white-space: nowrap;
+}
+
+.entrance-lab__configure-copy {
+  margin: 0;
+  max-width: 60ch;
+  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
+  font-size: clamp(20px, 1.35vw, 26px);
+  line-height: 1.32;
+  letter-spacing: 0;
+  color: inherit;
+  opacity: 0.78;
+}
+
+.entrance-lab__configure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: clamp(4px, 1vw, 16px);
+}
+
+/* Global .ada-manifesto-cta absolute/margin taşıyordu (ada-spacer-* sınıfları
+   kaldırıldı). Configure flex akışında normal akmasını garanti et. */
+.entrance-lab__configure-actions .ada-manifesto-cta {
+  position: relative;
+  margin-top: 0;
+}
+
+/* İkon solda varyant — sağ padding'i de aç (simetri). */
+.entrance-lab__cta--icon-left {
+  padding: 0 clamp(22px, 1.8vw, 34px) 0 clamp(18px, 1.45vw, 26px);
+}
+
+/* "Çok Yakında!" hover swap — Konfigüratörü Deneyin butonu.
+   Mevcut text-reveal (::before yukarı çıkar, ::after aşağıdan gelir) korunur;
+   sadece hover'da ALT katmanın (::after) içeriği data-hover'dan gelir. */
+.entrance-lab__soon-cta .ada-manifesto-cta-text::after {
+  content: attr(data-hover);
+}
+
+/* Hover'da ikon dönmesin (mesaj net kalsın); buton zemini "yakında" hissi için
+   hafif altın tona kaysın. */
+.entrance-lab__soon-cta:hover {
+  background: #c9a978;
+  color: #14151d;
+}
+
+.entrance-lab__soon-cta:hover .ada-manifesto-cta-icon {
+  transform: scale(0.001);
+  opacity: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   ZOOM KATMANI — hero + kapı. Kapı boşluğunun merkezine doğru ölçeklenir
+   (--zoom-scale) ve dolarken silinir (opacity JS). transform-origin = delik
+   merkezi (--zoom-origin-*), placeDoor'dan px olarak gelir.
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-lab__zoom {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-origin: var(--zoom-origin-x, 50%) var(--zoom-origin-y, 50%);
+  transform: scale(var(--zoom-scale, 1));
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   HERO — zoom katmanını dolduran full-bleed background görsel (cover).
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-lab__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  user-select: none;
+  pointer-events: none;
+  /* Tema değişiminde src swap'ini yumuşatmak için. */
+  transition: opacity 600ms var(--ease-soft, ease);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   KAPI CANVAS STAGE — hero deliğinin üstünde. left/top/width/height JS
+   (placeDoor) tarafından, görselin cover-render kutusuna göre px set edilir.
+   Kalibrasyon değerleri entrance-lab.vue → DOOR_BOX içinde (tema bazlı).
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-lab__stage {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  /* Uzun pin boyunca canvas yeniden çizimlerini bu katmanda tut. */
+  contain: layout paint;
+}
+
+.entrance-lab__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   HERO COPY — sol üst. --hero-copy-opacity / --hero-copy-y JS'ten (scroll'la
+   kaybolur). Tema rengi [data-ambience] ile.
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-lab__copy-mask {
+  position: absolute;
+  /* EntranceDoor masaüstü copy konumuyla birebir. */
+  left: clamp(20px, 3.9vw, 126px);
+  top: clamp(130px, 19svh, 340px);
+  width: clamp(280px, 32.33vw, 1000px);
+  max-width: 100%;
+  z-index: 3;
+  opacity: var(--hero-copy-opacity, 1);
+  transform: translateY(var(--hero-copy-y, 0));
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.entrance-lab__copy {
+  pointer-events: auto;
+  text-align: left;
+}
+
+.entrance-lab__heading {
+  margin: 0;
+  font-family: "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(44px, 4.89vw, 160px);
+  line-height: 1.04;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: #071018;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__heading {
+  color: #f7f7f2;
+}
+
+.entrance-lab__heading-line {
+  display: block;
+  padding-bottom: 0.06em;
+}
+
+.entrance-lab__heading-line:not(.entrance-lab__heading-line--accent) {
+  font-family: var(--font-serif);
+  font-style: normal;
+}
+
+.entrance-lab__heading-line + .entrance-lab__heading-line {
+  margin-top: -0.08em;
+}
+
+.entrance-lab__heading-line--accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.86em;
+  letter-spacing: 0;
+  color: #8b6a3f;
+}
+
+.entrance-lab__heading em {
+  font-family: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+.entrance-lab__subtitle {
+  width: min(100%, clamp(232px, 18.59vw, 600px));
+  margin: clamp(14px, 1.35vw, 40px) 0 0;
+  font-family: "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(18px, 1.35vw, 42px);
+  line-height: 1.3;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: #071018;
+  text-wrap: balance;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__subtitle {
+  color: rgba(247, 247, 242, 0.82);
+}
+
+.entrance-lab__subtitle em {
+  font-style: normal;
+  color: #8b6a3f;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__subtitle em {
+  color: #d4c2a0;
+}
+
+.entrance-lab__cta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+  pointer-events: auto;
+}
+
+.entrance-lab__cta-arrow {
+  width: clamp(62px, 3.7vw, 72px);
+  height: clamp(48px, 2.92vw, 56px);
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0.75px solid rgba(20, 21, 29, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  color: #14151d;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 14px 34px rgba(20, 21, 29, 0.1);
+  backdrop-filter: blur(18px) saturate(1.16);
+  -webkit-backdrop-filter: blur(18px) saturate(1.16);
+  text-decoration: none;
+  transition: transform 450ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.entrance-lab__cta-arrow:hover {
+  transform: translate3d(2px, -2px, 0);
+}
+
+.entrance-lab__cta-arrow svg {
+  width: clamp(21px, 1.35vw, 26px);
+  height: clamp(18px, 1.12vw, 22px);
+  display: block;
+}
+
+.entrance-lab__cta-arrow path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__cta-arrow {
+  border-color: rgba(247, 247, 242, 0.26);
+  background: rgba(247, 247, 242, 0.16);
+  color: #f7f7f2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 14px 34px rgba(0, 0, 0, 0.2);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   KAYDIR ipucu — sol alt. --hero-cue-opacity JS'ten (scroll'la kaybolur).
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-lab__cue {
+  position: absolute;
+  left: clamp(24px, 5vw, 96px);
+  bottom: clamp(24px, 4vh, 56px);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  opacity: var(--hero-cue-opacity, 1);
+  pointer-events: none;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(247, 247, 242, 0.62);
+}
+
+.entrance-lab[data-ambience="day"] .entrance-lab__cue {
+  color: rgba(7, 16, 24, 0.5);
+}
+
+.entrance-lab__cue i {
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(currentColor, transparent);
+  animation: entrance-lab-cue 1800ms ease-in-out infinite;
+  transform-origin: top;
+}
+
+@keyframes entrance-lab-cue {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SONRAKI BÖLÜM — pin'in açıldığı yer (rubber-band'i önler)
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-lab__next {
+  position: relative;
+  /* Kısa tampon — pin'in açılması için yeter; tam ekran boş sayfa değil.
+     Configure paneliyle aynı zemin (tema-bazlı). */
+  min-height: 50vh;
+  background: radial-gradient(80% 90% at 50% 40%, #14151b 0%, #0b0b0d 72%);
+}
+
+.entrance-lab__next[data-ambience="day"] {
+  background: radial-gradient(80% 90% at 50% 40%, #f3f1ea 0%, #d9d6cd 72%);
+}
+
+/* Geniş ekranda copy boyutu — EntranceDoor ile BİREBİR. Heading/subtitle vw
+   yerine svh ile sınırlanır (yükseklikle ölçeklenir), böylece 1920×1080'de
+   ana sayfa hero'suyla aynı render eder. */
+@media (min-width: 1181px) {
+  .entrance-lab__heading {
+    font-size: min(8.69svh, 4.89vw);
+  }
+
+  .entrance-lab__subtitle {
+    margin-top: min(2.4svh, 1.35vw);
+    font-size: min(2.4svh, 1.35vw);
+  }
+
+  .entrance-lab__cta-row {
+    margin-top: 2.96svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entrance-lab__bg {
+    transition: none;
+  }
+}

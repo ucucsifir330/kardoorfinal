@@ -152,7 +152,7 @@ defineExpose({
   min-width: 0;
   min-height: 100svh;
   background: #2C2C31;
-  border-inline-end: 1px solid var(--line);
+  margin-inline-end: -1px;
   transform: translate3d(0, 0, 0);
   will-change: transform;
   backface-visibility: hidden;
