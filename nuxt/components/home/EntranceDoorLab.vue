@@ -23,6 +23,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useShowroomAmbience } from "~/composables/useShowroomAmbience";
 import { useDoorSprite } from "~/composables/useDoorSprite";
+import { useShowroomDoors } from "~/composables/useShowroomDoors";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 import ShowroomLab from "~/components/home/ShowroomLab.vue";
@@ -33,15 +34,17 @@ const easeInOut = (t: number) => t * t * (3 - 2 * t);
 // Master progress faz haritası (tek pinli scrub boyunca):
 //   0.00–0.42  PORTAL     : kapı kapalıdan açığa (sprite), zoom yok
 //   0.42–0.50  HOLD       : kapı tam açık, kısa duraklama
-//   0.50–0.78  ZOOM       : hero+kapı katmanı boşluğa doğru ölçeklenip kaybolur
-//   0.62–0.80  SHOWROOM   : zoom dolarken erken belirir, 0.80'de TAM görünür
-//   0.80–0.90  ORBIT      : kapılar arası gezinme (turntable döner)
-//   0.90–1.00  HORIZONTAL : showroom + "Kurgulayın" paneli yatay kayar
+//   0.50–0.72  ZOOM       : hero+kapı katmanı boşluğa doğru ölçeklenip kaybolur
+//   0.60–0.72  SHOWROOM   : zoom dolarken erken belirir, 0.72'de TAM görünür
+//   0.70–0.90  ORBIT      : kapılar arası gezinme — geniş dilim (tek scroll ≈ tek
+//                           kapı). 5 kapı %20'ye yayılır → her geçiş ~%5 yol.
+//   0.90–1.00  HORIZONTAL : showroom + "Kurgulayın" paneli yatay kayar — %10'luk
+//                           rahat dilim, panel yumuşak gelir (eski %4 çok hızlıydı).
 const PORTAL_END = 0.42;
 const HOLD_END = 0.5;
-const ZOOM_END = 0.78;
-const SHOWROOM_START = 0.62;
-const SHOWROOM_FULL = 0.8; // showroom'un tam görünür olduğu nokta (fade burada biter)
+const ZOOM_END = 0.7;
+const SHOWROOM_START = 0.58;
+const SHOWROOM_FULL = 0.7; // showroom'un tam görünür olduğu nokta (fade burada biter)
 const ORBIT_END = 0.9; // turntable dönüşü burada biter
 const HORIZONTAL_START = 0.9; // yatay kayma burada başlar
 const ZOOM_MAX = 14; // boşluğa girerkenki en yüksek ölçek (tunable)
@@ -98,8 +101,26 @@ const showroomFadeRef = ref(0); // 0→1 showroom görünürlüğü (fade, orbit
 const isShowroomActive = ref(false);
 
 const door = useDoorSprite(canvasRef);
+const { doors: showroomDoors } = useShowroomDoors();
 let trigger: ScrollTrigger | undefined;
 let teardown: (() => void) | undefined;
+
+// Orbit fazında (SHOWROOM_FULL→ORBIT_END) kapı sayısı kadar SNAP noktası üret.
+// ScrollTrigger.snap GLOBAL progress (0→1) üzerinden çalışır; biz orbit aralığını
+// kapı sayısına böler, dışını snap'siz bırakırız (hero/zoom akışı bozulmasın).
+const SNAP_GRAB = 0.012; // bu yakınlıkta değer varsa orbit snap'i devreye girer
+const snapProgress = (value: number): number => {
+  const count = showroomDoors.value.length;
+  if (count < 2) return value;
+  // Orbit penceresi dışındaysa dokunma.
+  if (value < SHOWROOM_FULL - SNAP_GRAB || value > ORBIT_END + SNAP_GRAB) {
+    return value;
+  }
+  const span = ORBIT_END - SHOWROOM_FULL;
+  const local = clamp01((value - SHOWROOM_FULL) / span); // 0→1 orbit içi
+  const snappedLocal = Math.round(local * (count - 1)) / (count - 1);
+  return SHOWROOM_FULL + snappedLocal * span;
+};
 
 // Kapı kanadının hero deliğine BİREBİR oturduğu kalibrasyon (cover kutusuna
 // göre yüzde). Hero ŞEFFAF delik + render kanat içerik sınırlarından ölçüldü.
@@ -201,11 +222,18 @@ onMounted(() => {
   trigger = ScrollTrigger.create({
     trigger: section,
     start: "top top",
-    end: () => `+=${Math.round(window.innerHeight * 9)}`, // pin süresi (tunable)
+    end: () => `+=${Math.round(window.innerHeight * 11)}`, // pin süresi (tunable)
     scrub: true,
     pin: true,
     pinSpacing: true,
     invalidateOnRefresh: true,
+    // Orbit fazında kapıya OTUR: scroll bırakılınca en yakın kapı noktasına kayar
+    // → kapı tam merkeze gelir. Orbit aralığı dışı snap'siz (snapProgress içinde).
+    snap: {
+      snapTo: snapProgress,
+      duration: { min: 0.15, max: 0.5 },
+      ease: "power2.inOut"
+    },
     onUpdate: (self) => updateMaster(self.progress),
     onRefresh: (self) => {
       placeDoor();

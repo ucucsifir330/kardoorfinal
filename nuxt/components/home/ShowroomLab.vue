@@ -1,21 +1,28 @@
 <script setup lang="ts">
 /**
  * ShowroomLab — entrance-lab'in zoom'u kapıdan içeri girince beliren showroom
- * sahnesi. EntranceDoor'un ShowroomTurntable'ının sade/yeniden yazılmış hali:
+ * sahnesi.
  *
  *  • Veri GERÇEK katalogdan gelir (useShowroomDoors → nuxt/data/products).
  *  • Kapı SAYISINDAN bağımsız orbit matematiği (magic-number yok).
  *  • Orbit transform'ları Vue reaktivitesiyle DEĞİL, doğrudan DOM'a CSS değişkeni
- *    yazılarak sürülür → progress değişiminde re-render yok (scroll kasmaz).
+ *    yazılarak sürülür → re-render yok (scroll kasmaz).
  *  • Tek prop: progress (0→1). entrance-lab master'ı SHOWROOM fazında besler.
+ *
+ *  AKIŞ: Gelen `progress` ScrollTrigger scrub + SNAP ile sürülür → scroll
+ *  bırakılınca scroll'un kendisi en yakın kapıya kayar, yani `progress` bir kapı
+ *  noktasına oturur. ShowroomLab burada sadece o hedefi RAF ile YUMUŞATARAK takip
+ *  eder (görünen değer hedefe lerp'lenir) → ani sıçrama / "patlama" olmaz, kapı
+ *  da snap sayesinde tam merkeze oturur. İç idle-snap YOK; kavga etmesin diye
+ *  snap kararı tek yerde (ScrollTrigger) verilir. Aktif kapıda büyüme/zıplama yok.
  */
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useShowroomDoors } from "~/composables/useShowroomDoors";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 
 const props = defineProps<{
-  progress: number; // 0 → 1 (showroom faz ilerlemesi)
+  progress: number; // 0 → 1 (showroom faz ilerlemesi) — HAM scroll hedefi
 }>();
 
 const { doors } = useShowroomDoors();
@@ -29,11 +36,25 @@ const ORBIT_RADIUS_X = 360;
 const ORBIT_RADIUS_Y = 50;
 const stepDeg = computed(() => 360 / Math.max(1, doors.value.length));
 
-// progress → sürekli (float) kapı index'i.
-const floatIndex = (p: number) => clamp(p * (doors.value.length - 1), 0, doors.value.length - 1);
+const maxIndex = () => Math.max(0, doors.value.length - 1);
+// progress (0→1) → sürekli (float) kapı index'i.
+const floatIndex = (p: number) => clamp(p * maxIndex(), 0, maxIndex());
 
-// Aktif (oturmuş) kapı — ağır info DOM swap'ini SADECE kapı merkeze yakınken commit et.
-const activeIndex = ref(Math.round(floatIndex(props.progress)));
+// ── SMOOTH FOLLOW state ────────────────────────────────────────────
+// targetFloat : ScrollTrigger scrub+snap'ten gelen hedef float index.
+// displayFloat: ekrana çizilen yumuşatılmış float index (hedefe lerp).
+let targetFloat = floatIndex(props.progress);
+let displayFloat = targetFloat;
+
+// Yumuşak takip katsayısı (frame başına lerp). Yüksek = çevik, düşük = yumuşak.
+const FOLLOW = 0.16;
+
+let rafId = 0;
+let running = false;
+let reduceMotion = false;
+
+// Aktif (oturmuş) kapı — ağır info DOM swap'i SADECE kapı merkeze yakınken.
+const activeIndex = ref(Math.round(displayFloat));
 const activeDoor = computed(() => doors.value[activeIndex.value]);
 
 // Slot DOM elemanları (imperatif transform yazımı için).
@@ -42,9 +63,8 @@ const setSlotRef = (el: Element | null, i: number) => {
   slotEls[i] = (el as HTMLElement) ?? null;
 };
 
-const applyOrbit = (p: number) => {
+const applyOrbit = (f: number) => {
   const count = doors.value.length;
-  const f = floatIndex(p);
   const step = stepDeg.value;
 
   for (let i = 0; i < count; i++) {
@@ -79,20 +99,75 @@ const applyOrbit = (p: number) => {
   }
 
   // Kapı (neredeyse) oturduğunda info panelini güncelle.
-  const idx = Math.round(f);
-  if (idx !== activeIndex.value && Math.abs(f - idx) < 0.04) {
+  const idx = clamp(Math.round(f), 0, maxIndex());
+  if (idx !== activeIndex.value && Math.abs(f - idx) < 0.06) {
     activeIndex.value = idx;
   }
 };
 
-watch(() => props.progress, applyOrbit);
-// doors yüklenince / değişince yeniden yerleş. nextTick: slot ref'leri bağlandıktan
-// sonra (DOM güncel) uygula — yoksa --slot-* değişkenleri boş kalır.
-watch(doors, () => nextTick(() => applyOrbit(props.progress)));
+// ── RAF döngüsü: hedefi yumuşatarak takip et ───────────────────────
+const tick = () => {
+  displayFloat += (targetFloat - displayFloat) * FOLLOW;
 
-// İlk yerleşim: mount sonrası slot ref'leri kesin bağlı. progress 0 olsa bile
-// orbit transform'larını yaz, yoksa kapılar 1×1px görünmez kalır.
-onMounted(() => nextTick(() => applyOrbit(props.progress)));
+  // Hedefe yeterince yakınsak yapış ve döngüyü durdur (boşa CPU yok).
+  const settled = Math.abs(targetFloat - displayFloat) < 0.0008;
+  if (settled) displayFloat = targetFloat;
+
+  applyOrbit(displayFloat);
+
+  if (settled) {
+    running = false;
+    rafId = 0;
+    return;
+  }
+  rafId = requestAnimationFrame(tick);
+};
+
+const ensureRunning = () => {
+  if (running) return;
+  running = true;
+  rafId = requestAnimationFrame(tick);
+};
+
+// Ham progress değişince hedefi güncelle ve döngüyü uyandır.
+watch(
+  () => props.progress,
+  (p) => {
+    targetFloat = floatIndex(p);
+    if (reduceMotion) {
+      // Hareket azaltılmışsa: animasyon yok, anında en yakın kapıya otur.
+      displayFloat = clamp(Math.round(targetFloat), 0, maxIndex());
+      applyOrbit(displayFloat);
+      return;
+    }
+    ensureRunning();
+  }
+);
+
+// doors yüklenince / değişince yeniden yerleş (slot ref'leri bağlandıktan sonra).
+watch(doors, () =>
+  nextTick(() => {
+    targetFloat = floatIndex(props.progress);
+    displayFloat = targetFloat;
+    applyOrbit(displayFloat);
+  })
+);
+
+onMounted(() => {
+  reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  nextTick(() => {
+    targetFloat = floatIndex(props.progress);
+    displayFloat = targetFloat;
+    applyOrbit(displayFloat);
+  });
+});
+
+onBeforeUnmount(() => {
+  if (rafId) cancelAnimationFrame(rafId);
+  running = false;
+});
 
 const doorNumber = computed(() => String(activeIndex.value + 1).padStart(2, "0"));
 const totalDoors = computed(() => String(doors.value.length).padStart(2, "0"));
