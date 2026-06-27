@@ -43,7 +43,7 @@
       <div ref="cardsInnerRef" class="cards-inner">
       <div class="top-transition-shadow"></div>
 
-      <h2 class="ref-projects-title">Referanslarımız</h2>
+      <h2 class="ref-projects-title">{{ pageCopy.projectsTitle }}</h2>
 
       <div
         ref="wrapperRef"
@@ -82,7 +82,7 @@
         </div>
       </div>
 
-      <div class="reference-brand-stage" aria-label="Referans marka bantları">
+      <div class="reference-brand-stage" :aria-label="pageCopy.brandStageLabel">
         <div class="reference-logo-row reference-logo-row--top">
           <div class="reference-logo-track">
             <div v-for="group in 2" :key="'reference-primary-' + group" class="reference-logo-group" :aria-hidden="group === 2 ? 'true' : undefined">
@@ -117,7 +117,7 @@
         <div v-if="selectedProject" class="project-expansion-panel">
           <div class="panel-inner">
           <button type="button" class="panel-close" @click.stop.prevent="closeModal">
-            <span class="close-text">Kapat</span>
+            <span class="close-text">{{ pageCopy.closeLabel }}</span>
             <span class="close-icon">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -155,12 +155,47 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
-const titleLines = [["KAPIDAN", "ÖTE"], ["MİMARİ", "BİR"], ["İMZA", "ÜRETİYORUZ"]];
-const kickerWords = ["SEÇİLİ", "EGE", "KARDOOR", "PROJELERİ"];
+const { locale } = useKardoorLocale();
+
+const pageCopies = {
+  tr: {
+    titleLines: [["KAPIDAN", "ÖTE"], ["MİMARİ", "BİR"], ["İMZA", "ÜRETİYORUZ"]],
+    kickerWords: ["SEÇİLİ", "EGE", "KARDOOR", "PROJELERİ"],
+    projectsTitle: "Referanslarımız",
+    brandStageLabel: "Referans marka bantları",
+    closeLabel: "Kapat",
+    projects: [
+      { id: 1, title: "Kardoor Villa", location: "İzmir, Çeşme", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600" },
+      { id: 2, title: "Modern Çelik Kapı", location: "İstanbul, Beşiktaş", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600" },
+      { id: 3, title: "Lüks Apartman", location: "Ankara, Çankaya", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600" },
+      { id: 4, title: "Prestij Konutları", location: "Bursa, Nilüfer", image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600" },
+      { id: 5, title: "Kıyı Yalı", location: "İstanbul, Sarıyer", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600" }
+    ]
+  },
+  en: {
+    titleLines: [["BEYOND", "THE", "DOOR"], ["WE", "CRAFT"], ["ARCHITECTURAL"], ["SIGNATURES"]],
+    kickerWords: ["SELECTED", "EGE", "KARDOOR", "PROJECTS"],
+    projectsTitle: "Selected Works",
+    brandStageLabel: "Reference brand marquees",
+    closeLabel: "Close",
+    projects: [
+      { id: 1, title: "Kardoor Private Villa", location: "Izmir, Cesme", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600" },
+      { id: 2, title: "Modern Steel Entrance", location: "Istanbul, Besiktas", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600" },
+      { id: 3, title: "Luxury Residence", location: "Ankara, Cankaya", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600" },
+      { id: 4, title: "Prestige Residences", location: "Bursa, Nilufer", image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600" },
+      { id: 5, title: "Coastal Mansion", location: "Istanbul, Sariyer", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600" }
+    ]
+  }
+};
+
+const pageCopy = computed(() => pageCopies[locale.value] ?? pageCopies.tr);
+const titleLines = computed(() => pageCopy.value.titleLines);
+const kickerWords = computed(() => pageCopy.value.kickerWords);
 const wordRefs = ref([]);
 const setWordRef = (el) => {
   if (el && !wordRefs.value.includes(el)) wordRefs.value.push(el);
@@ -176,13 +211,7 @@ const refStackRef = ref(null);
 const kickerArrowRef = ref(null);
 const marqueeCopies = Array.from({ length: 6 });
 
-const projects = ref([
-  { id: 1, title: "Kardoor Villa", location: "İzmir, Çeşme", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600" },
-  { id: 2, title: "Modern Çelik Kapı", location: "İstanbul, Beşiktaş", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600" },
-  { id: 3, title: "Lüks Apartman", location: "Ankara, Çankaya", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600" },
-  { id: 4, title: "Prestij Konutları", location: "Bursa, Nilüfer", image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600" },
-  { id: 5, title: "Kıyı Yalı", location: "İstanbul, Sarıyer", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600" }
-]);
+const projects = computed(() => pageCopy.value.projects);
 
 const primaryBrands = [
   { name: "Apple", src: "https://cdn.simpleicons.org/apple/14151D" },
@@ -592,7 +621,7 @@ onBeforeUnmount(() => {
 
 .hero-line {
   font-family: "Barlow Condensed", "Montserrat", sans-serif;
-  font-size: clamp(5.85rem, 10.1vw, 14.15rem);
+  font-size: min(clamp(5.85rem, 10.1vw, 14.15rem), calc((100vw - 40px) / 6.8));
   font-weight: 800;
   color: var(--ref-ink);
   line-height: 0.9;
@@ -1155,7 +1184,7 @@ onBeforeUnmount(() => {
   }
 
   .hero-line {
-    font-size: clamp(4.9rem, 17vw, 9.1rem);
+    font-size: min(clamp(4.9rem, 17vw, 9.1rem), calc((100vw - 32px) / 6.8));
     line-height: 0.92;
   }
 
@@ -1180,7 +1209,7 @@ onBeforeUnmount(() => {
   }
 
   .hero-line {
-    font-size: clamp(3.15rem, 14.5vw, 4.8rem);
+    font-size: min(clamp(3.15rem, 14.5vw, 4.8rem), calc((100vw - 24px) / 6.8));
     line-height: 0.94;
   }
 
