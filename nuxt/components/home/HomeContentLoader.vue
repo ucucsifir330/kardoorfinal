@@ -11,7 +11,17 @@ let renderFallbackTimer = 0;
 const refreshScrollTriggers = async () => {
   try {
     const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-    ScrollTrigger.refresh();
+    // HomeExperience LAZY mount edilir; içindeki EntranceDoorLab'ın pinli ScrollTrigger'ı
+    // bu noktadan birkaç frame sonra kurulur. Tek bir refresh, pin var olmadan çalışıp
+    // boşa gidebiliyor (pin sonra ScrollSmoother'ın güncel transform'una göre kurulup
+    // section'ı kaydırıyor → kenarda zemin şeridi). Birkaç frame boyunca yeniden ölç
+    // ki geç kurulan pin de temiz hizalansın. refresh() idempotent.
+    let frame = 0;
+    const tick = () => {
+      ScrollTrigger.refresh();
+      if (++frame < 8) requestAnimationFrame(tick);
+    };
+    tick();
   } catch {
     // The page still works without GSAP refresh; this only keeps scroll-linked reveals in sync.
   }

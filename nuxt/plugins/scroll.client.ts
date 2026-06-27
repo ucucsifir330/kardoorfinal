@@ -70,10 +70,25 @@ export default defineNuxtPlugin((nuxtApp) => {
   });
 
   // Page transitions (out-in): jump to top and recalc after the new page settles.
+  //
+  // Ana sayfanın hero'su (EntranceDoorLab) HomeContentLoader üzerinden LAZY mount
+  // edilir → bu hook çalıştığında pin trigger HENÜZ kurulmamış olabilir. Tek bir
+  // rAF-refresh, pin var olmadan çalışıp boşa gidiyor; pin sonradan ScrollSmoother'ın
+  // güncel transform state'ine göre kuruluyor ve section ~60px kayıp altta/üstte
+  // zemin şeridi bırakıyordu. Çözüm: birkaç frame boyunca refresh'i tekrarla — geç
+  // mount olan pin de yakalanıp temiz ölçülsün. refresh() idempotent (sadece ölçer).
   nuxtApp.hook("page:finish", () => {
     const smoother = ScrollSmoother.get();
     smoother?.scrollTo(0, false);
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+
+    let frame = 0;
+    const tick = () => {
+      ScrollTrigger.refresh();
+      if (++frame < 8) requestAnimationFrame(tick); // ~8 frame boyunca yeniden ölç
+    };
+    requestAnimationFrame(tick);
+    // Fontlar/görseller geç çözülürse son bir ölçüm daha.
+    document.fonts?.ready.then(() => requestAnimationFrame(() => ScrollTrigger.refresh()));
   });
 
   window.addEventListener("beforeunload", () => {
