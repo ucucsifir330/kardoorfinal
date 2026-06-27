@@ -60,7 +60,7 @@
             </svg>
           </a>
 
-          <a href="tel:+905377765300" class="social-btn phone-btn" aria-label="Telefon">
+          <a href="tel:+905377765300" class="social-btn phone-btn" :aria-label="footerCopy.phoneAria">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M8.45 5.35L10.15 9.15C10.38 9.68 10.25 10.28 9.82 10.65L8.65 11.68C9.55 13.52 11.02 15 12.88 15.92L13.92 14.72C14.28 14.3 14.88 14.17 15.4 14.4L19.2 16.1C19.82 16.38 20.15 17.05 19.98 17.72L19.58 19.28C19.4 19.98 18.78 20.45 18.05 20.42C10.08 20.05 3.95 13.92 3.58 5.95C3.55 5.22 4.02 4.6 4.72 4.42L6.78 4.02C7.45 3.85 8.18 4.72 8.45 5.35Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
@@ -71,44 +71,36 @@
 
         <div class="footer-panel">
           <h2 class="footer-heading">
-            Size en yakın showroomu seçin;<br>
-            projeniz için <em>görüşme talebi</em><br><span class="footer-heading__rest">bırakın.</span>
+            {{ footerCopy.heading.line1 }}<br>
+            {{ footerCopy.heading.line2Prefix }} <em>{{ footerCopy.heading.emphasis }}</em><br><span class="footer-heading__rest">{{ footerCopy.heading.line3 }}</span>
           </h2>
 
           <div class="location-group">
-            <p class="location-label">Şube seçimi:</p>
+            <p class="location-label">{{ footerCopy.locationLabel }}</p>
 
             <div class="location-options">
-              <label class="location-option">
-                <input type="radio" name="location" checked>
+              <label
+                v-for="(location, index) in footerCopy.locationOptions"
+                :key="location"
+                class="location-option"
+              >
+                <input type="radio" name="location" :checked="index === 0">
                 <span class="radio-ui"></span>
-                <span class="option-text flip-text-link" data-text="İzmir">İzmir</span>
-              </label>
-
-              <label class="location-option">
-                <input type="radio" name="location">
-                <span class="radio-ui"></span>
-                <span class="option-text flip-text-link" data-text="Kocaeli">Kocaeli</span>
-              </label>
-
-              <label class="location-option">
-                <input type="radio" name="location">
-                <span class="radio-ui"></span>
-                <span class="option-text flip-text-link" data-text="Manisa">Manisa</span>
+                <span class="option-text flip-text-link" :data-text="location">{{ location }}</span>
               </label>
             </div>
           </div>
 
           <form class="footer-form" @submit.prevent>
             <div class="form-row">
-              <input type="text" placeholder="Adınız ve soyadınız">
-              <input type="text" placeholder="Telefon numaranız">
+              <input type="text" :placeholder="footerCopy.form.name">
+              <input type="text" :placeholder="footerCopy.form.phone">
             </div>
 
             <div class="form-row form-row-message">
-              <input type="text" placeholder="Mesajınız">
-              <button type="submit" class="submit-btn" aria-label="Gönder">
-                <span class="submit-btn__label">Randevu Oluştur</span>
+              <input type="text" :placeholder="footerCopy.form.message">
+              <button type="submit" class="submit-btn" :aria-label="footerCopy.form.submitAria">
+                <span class="submit-btn__label">{{ footerCopy.form.submit }}</span>
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M8 5L15 12L8 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
@@ -121,59 +113,47 @@
       <div class="footer-info">
         <div class="footer-info-left">
           <div class="footer-column">
-            <span class="footer-kicker">Ürün Serileri</span>
-            <a href="#" class="flip-text-link no-line" data-text="Alüminyum Seri">Alüminyum Seri</a>
-            <a href="#" class="flip-text-link no-line" data-text="Thermowood Seri">Thermowood Seri</a>
-            <a href="#" class="flip-text-link no-line" data-text="Doğal Taş Seri">Doğal Taş Seri</a>
-            <a href="#" class="flip-text-link no-line" data-text="Cam Panel Seri">Cam Panel Seri</a>
-            <a href="#" class="flip-text-link no-line" data-text="Pivot Seri">Pivot Seri</a>
-            <a href="#" class="flip-text-link no-line" data-text="Laminoks Seri">Laminoks Seri</a>
+            <span class="footer-kicker">{{ footerCopy.productsTitle }}</span>
+            <a
+              v-for="item in footerCopy.productLinks"
+              :key="item"
+              href="#"
+              class="flip-text-link no-line"
+              :data-text="item"
+            >{{ item }}</a>
           </div>
 
           <div class="footer-column">
             <span class="footer-kicker">Kardoor</span>
-            <a href="#" class="flip-text-link no-line" data-text="Ana Sayfa">Ana Sayfa</a>
-            <a href="#" class="flip-text-link no-line" data-text="Hakkımızda">Hakkımızda</a>
-            <a href="#" class="flip-text-link no-line" data-text="Üretim">Üretim</a>
-            <a href="#" class="flip-text-link no-line" data-text="Katalog">Katalog</a>
-            <a href="#" class="flip-text-link no-line" data-text="Şubelerimiz">Şubelerimiz</a>
-            <a href="#" class="flip-text-link no-line" data-text="İletişim">İletişim</a>
+            <a
+              v-for="item in footerCopy.navLinks"
+              :key="item"
+              href="#"
+              class="flip-text-link no-line"
+              :data-text="item"
+            >{{ item }}</a>
           </div>
         </div>
 
         <div class="footer-locations">
-          <span class="footer-kicker">Şubelerimiz/Showroomlar</span>
+          <span class="footer-kicker">{{ footerCopy.showroomsTitle }}</span>
 
           <div class="location-cards">
-            <div class="location-card">
-              <h3><span class="flip-text-link" data-text="İzmir">İzmir</span></h3>
-              <p>Zafer Mahallesi Turgut Özal Caddesi<br>No:14/16 Buca / İzmir</p>
-              <span class="location-card__phone-label">İzmir Showroom</span>
-              <a href="tel:+905377765300" class="location-card__phone">+90 537 776 53 00</a>
+            <div
+              v-for="location in footerCopy.showrooms"
+              :key="location.name"
+              class="location-card"
+            >
+              <h3><span class="flip-text-link" :data-text="location.name">{{ location.name }}</span></h3>
+              <p>
+                <template v-for="(line, index) in location.addressLines" :key="line">
+                  {{ line }}<br v-if="index < location.addressLines.length - 1">
+                </template>
+              </p>
+              <span class="location-card__phone-label">{{ location.label }}</span>
+              <a :href="location.phoneHref" class="location-card__phone">{{ location.phone }}</a>
               <div class="hours">
-                <span>Pzt-Paz</span>
-                <span>08:00 - 18:30</span>
-              </div>
-            </div>
-
-            <div class="location-card">
-              <h3><span class="flip-text-link" data-text="Kocaeli">Kocaeli</span></h3>
-              <p>Mimar Sinan Mah. Bağlar Cad.<br>No:79/A Körfez / Kocaeli</p>
-              <span class="location-card__phone-label">Kocaeli Showroom</span>
-              <a href="tel:+905306143541" class="location-card__phone">+90 530 614 35 41</a>
-              <div class="hours">
-                <span>Pzt-Paz</span>
-                <span>08:00 - 18:30</span>
-              </div>
-            </div>
-
-            <div class="location-card">
-              <h3><span class="flip-text-link" data-text="Manisa">Manisa</span></h3>
-              <p>Caferbey Mah. Asfalt Altı Sk<br>No: 110</p>
-              <span class="location-card__phone-label">Manisa Showroom</span>
-              <a href="tel:+905339696236" class="location-card__phone">+90 533 969 62 36</a>
-              <div class="hours">
-                <span>Pzt-Paz</span>
+                <span>{{ footerCopy.hours.days }}</span>
                 <span>08:00 - 18:30</span>
               </div>
             </div>
@@ -197,18 +177,18 @@
 
       <div class="footer-bottom">
         <div>
-          <span>© 2026 Ege Kardoor Çelik Kapı.</span>
-          <strong>Tüm hakları saklıdır.</strong>
+          <span>{{ footerCopy.legal.copyright }}</span>
+          <strong>{{ footerCopy.legal.rights }}</strong>
         </div>
 
         <div>
-          <a href="#" class="flip-text-link no-line" data-text="Gizlilik Politikası">Gizlilik Politikası</a>·
-          <a href="#" class="flip-text-link no-line" data-text="KVKK Aydınlatma Metni">KVKK Aydınlatma Metni</a>·
-          <a href="#" class="flip-text-link no-line" data-text="Kullanım Koşulları">Kullanım Koşulları</a>
+          <template v-for="(link, index) in footerCopy.policyLinks" :key="link">
+            <a href="#" class="flip-text-link no-line" :data-text="link">{{ link }}</a><span v-if="index < footerCopy.policyLinks.length - 1">·</span>
+          </template>
         </div>
 
         <div>
-          <span>Üç Üç Sıfır ®</span>
+          <span>{{ footerCopy.legal.agency }}</span>
         </div>
       </div>
     </footer>
@@ -217,8 +197,138 @@
 
 <script setup lang="ts">
 // @ts-nocheck
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from "vue"
 import { gsap } from "gsap"
+import { useKardoorLocale } from "~/composables/useKardoorLocale"
+
+const { locale } = useKardoorLocale()
+
+const footerCopies = {
+  tr: {
+    phoneAria: "Telefon",
+    heading: {
+      line1: "Size en yakın showroomu seçin;",
+      line2Prefix: "projeniz için",
+      emphasis: "görüşme talebi",
+      line3: "bırakın."
+    },
+    locationLabel: "Şube seçimi:",
+    locationOptions: ["İzmir", "Kocaeli", "Manisa"],
+    form: {
+      name: "Adınız ve soyadınız",
+      phone: "Telefon numaranız",
+      message: "Mesajınız",
+      submit: "Randevu Oluştur",
+      submitAria: "Gönder"
+    },
+    productsTitle: "Ürün Serileri",
+    productLinks: [
+      "Alüminyum Seri",
+      "Thermowood Seri",
+      "Doğal Taş Seri",
+      "Cam Panel Seri",
+      "Pivot Seri",
+      "Laminoks Seri"
+    ],
+    navLinks: ["Ana Sayfa", "Hakkımızda", "Üretim", "Katalog", "Şubelerimiz", "İletişim"],
+    showroomsTitle: "Şubelerimiz/Showroomlar",
+    hours: {
+      days: "Pzt-Paz"
+    },
+    showrooms: [
+      {
+        name: "İzmir",
+        addressLines: ["Zafer Mahallesi Turgut Özal Caddesi", "No:14/16 Buca / İzmir"],
+        label: "İzmir Showroom",
+        phoneHref: "tel:+905377765300",
+        phone: "+90 537 776 53 00"
+      },
+      {
+        name: "Kocaeli",
+        addressLines: ["Mimar Sinan Mah. Bağlar Cad.", "No:79/A Körfez / Kocaeli"],
+        label: "Kocaeli Showroom",
+        phoneHref: "tel:+905306143541",
+        phone: "+90 530 614 35 41"
+      },
+      {
+        name: "Manisa",
+        addressLines: ["Caferbey Mah. Asfalt Altı Sk", "No: 110"],
+        label: "Manisa Showroom",
+        phoneHref: "tel:+905339696236",
+        phone: "+90 533 969 62 36"
+      }
+    ],
+    legal: {
+      copyright: "© 2026 Ege Kardoor Çelik Kapı.",
+      rights: "Tüm hakları saklıdır.",
+      agency: "Üç Üç Sıfır ®"
+    },
+    policyLinks: ["Gizlilik Politikası", "KVKK Aydınlatma Metni", "Kullanım Koşulları"]
+  },
+  en: {
+    phoneAria: "Phone",
+    heading: {
+      line1: "Choose the showroom nearest to you;",
+      line2Prefix: "leave a",
+      emphasis: "meeting request",
+      line3: "for your project."
+    },
+    locationLabel: "Branch selection:",
+    locationOptions: ["Izmir", "Kocaeli", "Manisa"],
+    form: {
+      name: "Your full name",
+      phone: "Your phone number",
+      message: "Your message",
+      submit: "Create Appointment",
+      submitAria: "Submit"
+    },
+    productsTitle: "Product Series",
+    productLinks: [
+      "Aluminium Series",
+      "Thermowood Series",
+      "Natural Stone Series",
+      "Glass Panel Series",
+      "Pivot Series",
+      "Laminox Series"
+    ],
+    navLinks: ["Home", "About Us", "Production", "Catalog", "Showrooms", "Contact"],
+    showroomsTitle: "Branches/Showrooms",
+    hours: {
+      days: "Mon-Sun"
+    },
+    showrooms: [
+      {
+        name: "Izmir",
+        addressLines: ["Zafer Mahallesi Turgut Ozal Caddesi", "No:14/16 Buca / Izmir"],
+        label: "Izmir Showroom",
+        phoneHref: "tel:+905377765300",
+        phone: "+90 537 776 53 00"
+      },
+      {
+        name: "Kocaeli",
+        addressLines: ["Mimar Sinan Mah. Baglar Cad.", "No:79/A Korfez / Kocaeli"],
+        label: "Kocaeli Showroom",
+        phoneHref: "tel:+905306143541",
+        phone: "+90 530 614 35 41"
+      },
+      {
+        name: "Manisa",
+        addressLines: ["Caferbey Mah. Asfalt Alti Sk", "No: 110"],
+        label: "Manisa Showroom",
+        phoneHref: "tel:+905339696236",
+        phone: "+90 533 969 62 36"
+      }
+    ],
+    legal: {
+      copyright: "© 2026 Ege Kardoor Steel Door.",
+      rights: "All rights reserved.",
+      agency: "Uc Uc Sifir ®"
+    },
+    policyLinks: ["Privacy Policy", "KVKK Disclosure Notice", "Terms of Use"]
+  }
+}
+
+const footerCopy = computed(() => footerCopies[locale.value] ?? footerCopies.tr)
 
 const footerWrapper = ref<HTMLElement | null>(null)
 const footerDome = ref<HTMLElement | null>(null)
@@ -231,7 +341,7 @@ const initFooterAnimation = () => {
 
   if (!footer || !wrapper) return
 
-  const isMobileFooter = () => window.matchMedia('(max-width: 760px)').matches
+  const isMobileFooter = () => window.matchMedia("(max-width: 760px)").matches
   const getFooterMotion = () => {
     if (isMobileFooter()) {
       return { y: 0, radius: 220, divisor: 1.18 }
@@ -244,7 +354,7 @@ const initFooterAnimation = () => {
 
   gsap.set(footer, {
     y: initialMotion.y,
-    '--dome-radius': `${initialMotion.radius}px`,
+    "--dome-radius": `${initialMotion.radius}px`,
     borderTopLeftRadius: `50% ${initialMotion.radius}px`,
     borderTopRightRadius: `50% ${initialMotion.radius}px`,
     force3D: true
@@ -260,18 +370,18 @@ const initFooterAnimation = () => {
     const motion = getFooterMotion()
     const rawProgress = (viewportHeight - rect.top) / (viewportHeight * motion.divisor)
     const progress = Math.min(1, Math.max(0, rawProgress))
-    const easedProgress = gsap.parseEase('sine.inOut')(progress)
+    const easedProgress = gsap.parseEase("sine.inOut")(progress)
     const y = Math.max(0, motion.y * (1 - easedProgress))
     const radius = Math.max(0, motion.radius * (1 - easedProgress))
     const radiusValue = `50% ${radius}px`
 
     gsap.to(footer, {
       y,
-      '--dome-radius': `${radius}px`,
+      "--dome-radius": `${radius}px`,
       borderTopLeftRadius: radiusValue,
       borderTopRightRadius: radiusValue,
       duration: 0.9,
-      ease: 'power2.out',
+      ease: "power2.out",
       overwrite: true,
       force3D: true
     })
@@ -285,12 +395,12 @@ const initFooterAnimation = () => {
   }
 
   updateFooterShape()
-  window.addEventListener('scroll', requestFooterUpdate, { passive: true })
-  window.addEventListener('resize', requestFooterUpdate)
+  window.addEventListener("scroll", requestFooterUpdate, { passive: true })
+  window.addEventListener("resize", requestFooterUpdate)
 
   cleanupFooter = () => {
-    window.removeEventListener('scroll', requestFooterUpdate)
-    window.removeEventListener('resize', requestFooterUpdate)
+    window.removeEventListener("scroll", requestFooterUpdate)
+    window.removeEventListener("resize", requestFooterUpdate)
   }
 }
 
