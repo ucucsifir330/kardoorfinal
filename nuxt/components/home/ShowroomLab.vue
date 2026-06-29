@@ -112,7 +112,9 @@ const ui = computed(() =>
 const backdropText = computed(() => {
   const d = activeDoor.value;
   if (!d) return "";
-  return `${d.nameDisplay.lead} ${d.nameDisplay.tail}`.toLocaleUpperCase("tr-TR").trim();
+  return `${d.nameDisplay.lead} ${d.nameDisplay.tail}`
+    .toLocaleUpperCase(locale.value === "tr" ? "tr-TR" : "en-US")
+    .trim();
 });
 </script>
 

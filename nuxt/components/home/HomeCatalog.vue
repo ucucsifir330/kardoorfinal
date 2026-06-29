@@ -35,11 +35,11 @@
         @scroll.passive="handleCatalogScroll"
       >
         <div class="catalog-sticky-title" :class="{ 'is-scrolled': isCatalogScrolled }">
-          <h1 ref="catalogTitleRef" class="catalog-title">Koleksiyonlar</h1>
+          <h1 ref="catalogTitleRef" class="catalog-title">{{ catalogCopy.title }}</h1>
         </div>
 
         <div
-          v-for="block in catalogBlocks"
+          v-for="block in localizedCatalogBlocks"
           :key="block.index"
           :ref="setRowRef"
           :data-row-index="block.index"
@@ -83,8 +83,8 @@
                   @mouseleave="handleCatalogMagnetLeave"
                 >
                   <span class="catalog-tag-part">
-                    <span class="catalog-tag-label catalog-tag-label--short">Tümü</span>
-                    <span class="catalog-tag-label catalog-tag-label--full">Tüm Modelleri Gör</span>
+                    <span class="catalog-tag-label catalog-tag-label--short">{{ catalogCopy.allShort }}</span>
+                    <span class="catalog-tag-label catalog-tag-label--full">{{ catalogCopy.allFull }}</span>
                     <span class="catalog-tag-line"></span>
                   </span>
                 </a>
@@ -108,9 +108,9 @@
             </div>
 
             <ul class="catalog-mobile-actions">
-              <li><NuxtLink to="/catalog">Tüm Seriyi İncele</NuxtLink></li>
-              <li>Seri Kataloğunu İndir</li>
-              <li>Koleksiyon Teklifi Al</li>
+              <li><NuxtLink to="/catalog">{{ catalogCopy.actions.viewSeries }}</NuxtLink></li>
+              <li>{{ catalogCopy.actions.downloadCatalog }}</li>
+              <li>{{ catalogCopy.actions.requestOffer }}</li>
             </ul>
 
             <transition-group
@@ -131,9 +131,9 @@
                 <div class="catalog-product-image-wrap">
                   <img
                     :src="thumb(item.image)"
-                    alt="Kapı Modeli"
+                    :alt="catalogCopy.productImageAlt"
                     class="catalog-product-image"
-                    loading="eager"
+                    loading="lazy"
                     decoding="async"
                     @error="handleCatalogImageError($event, item.localImage)"
                   >
@@ -146,7 +146,7 @@
                       type="button"
                       class="catalog-like"
                       :class="{ 'is-liked': item.liked }"
-                      :aria-label="item.liked ? 'Favorilerden çıkar' : 'Favorilere ekle'"
+                      :aria-label="item.liked ? catalogCopy.favorite.removeAria : catalogCopy.favorite.addAria"
                       @click.stop.prevent="handleWishlistClick(item.productIndex, `${block.index}-${item.id}`)"
                       @keydown.enter.stop.prevent="handleWishlistClick(item.productIndex, `${block.index}-${item.id}`)"
                       @keydown.space.stop.prevent="handleWishlistClick(item.productIndex, `${block.index}-${item.id}`)"
@@ -163,9 +163,9 @@
                       @mousedown.stop
                       @click.stop
                     >
-                      <button type="button" role="menuitem">{{ item.liked ? 'Favorilerden kaldır' : 'Favorilere ekle' }}</button>
-                      <button type="button" role="menuitem">Favori listelerim</button>
-                      <button type="button" role="menuitem">Yeni favori listesi</button>
+                      <button type="button" role="menuitem">{{ item.liked ? catalogCopy.favorite.remove : catalogCopy.favorite.add }}</button>
+                      <button type="button" role="menuitem">{{ catalogCopy.favorite.lists }}</button>
+                      <button type="button" role="menuitem">{{ catalogCopy.favorite.newList }}</button>
                     </div>
                   </div>
                 </div>
@@ -175,7 +175,7 @@
                     <p class="catalog-finish">{{ item.finish }}</p>
 
                     <div class="catalog-code-wrap">
-                      <p class="catalog-code">{{ item.seriesTitle }} / {{ item.code }}</p>
+                      <p class="catalog-code">{{ block.cardTitle }} / {{ item.code }}</p>
                       <div class="catalog-code-line"></div>
                     </div>
                   </div>
@@ -231,9 +231,9 @@
                 @click.stop
               >
                 <ul class="liquid-actions">
-                  <li><NuxtLink to="/catalog">Tüm Seriyi İncele</NuxtLink></li>
-                  <li>Seri Kataloğunu İndir</li>
-                  <li>Koleksiyon Teklifi Al</li>
+                  <li><NuxtLink to="/catalog">{{ catalogCopy.actions.viewSeries }}</NuxtLink></li>
+                  <li>{{ catalogCopy.actions.downloadCatalog }}</li>
+                  <li>{{ catalogCopy.actions.requestOffer }}</li>
                 </ul>
               </div>
             </div>
@@ -250,13 +250,13 @@
     class="product-modal"
     role="dialog"
     aria-modal="true"
-    :aria-label="`${activeProduct.code} ürün detayı`"
+    :aria-label="`${activeProduct.code} ${catalogCopy.modal.productDetail}`"
     @click.self="closeProductModal"
   >
     <button
       type="button"
       class="product-modal-close"
-      aria-label="Kapat"
+      :aria-label="catalogCopy.modal.close"
       @click="closeProductModal"
     >
       ×
@@ -265,7 +265,7 @@
     <button
       type="button"
       class="product-modal-nav product-modal-prev"
-      aria-label="Önceki ürün"
+      :aria-label="catalogCopy.modal.previous"
       @click="showPreviousProduct"
     >
       <svg viewBox="0 0 44 16" aria-hidden="true">
@@ -277,7 +277,7 @@
     <button
       type="button"
       class="product-modal-nav product-modal-next"
-      aria-label="Sonraki ürün"
+      :aria-label="catalogCopy.modal.next"
       @click="showNextProduct"
     >
       <svg viewBox="0 0 44 16" aria-hidden="true">
@@ -306,22 +306,20 @@
       <div class="product-modal-content">
         <div class="product-modal-heading">
           <p class="product-modal-kicker">
-            {{ activeProduct.series || 'Kardoor Architectural Doors' }}
+            {{ localizedActiveProductSeries || catalogCopy.modal.seriesFallback }}
           </p>
 
           <h2>{{ activeProduct.code }}</h2>
 
           <div class="product-modal-meta">
-            <span>{{ activeProduct.collection || 'Premium Series' }}</span>
-            <span>{{ activeProduct.category || 'Entrance Door System' }}</span>
+            <span>{{ localizedActiveProductCollection || catalogCopy.modal.collectionFallback }}</span>
+            <span>{{ localizedActiveProductCategory || catalogCopy.modal.categoryFallback }}</span>
             <span>{{ activeProduct.finish }}</span>
           </div>
         </div>
 
         <p class="product-modal-description">
-          Güçlendirilmiş gövde yapısı, rafine yüzey seçenekleri ve çağdaş cephe
-          estetiğiyle villa, rezidans ve özel mimari projeler için geliştirilen
-          premium giriş kapısı sistemi.
+          {{ catalogCopy.modal.description }}
         </p>
 
         <div class="product-modal-actions">
@@ -331,54 +329,54 @@
             @click.stop="toggleLike(activeProductIndex)"
           >
             <span aria-hidden="true">♥</span>
-            {{ activeProduct.liked ? 'Favorilerden kaldır' : 'Favorilere ekle' }}
+            {{ activeProduct.liked ? catalogCopy.favorite.remove : catalogCopy.favorite.add }}
           </button>
 
           <NuxtLink class="product-modal-quote" to="/request-quote">
-            Teklif al
+            {{ catalogCopy.modal.quote }}
           </NuxtLink>
         </div>
 
         <div class="product-modal-details">
           <div class="product-modal-info-block">
-            <h3>Ürün Bilgisi</h3>
+            <h3>{{ catalogCopy.modal.infoTitle }}</h3>
 
             <dl>
               <div>
-                <dt>Kod</dt>
+                <dt>{{ catalogCopy.modal.fields.code }}</dt>
                 <dd>{{ activeProduct.code }}</dd>
               </div>
 
               <div>
-                <dt>Seri</dt>
-                <dd>{{ activeProduct.series || 'Premium' }}</dd>
+                <dt>{{ catalogCopy.modal.fields.series }}</dt>
+                <dd>{{ localizedActiveProductSeries || catalogCopy.modal.collectionFallback }}</dd>
               </div>
 
               <div>
-                <dt>Yüzey</dt>
+                <dt>{{ catalogCopy.modal.fields.finish }}</dt>
                 <dd>{{ activeProduct.finish }}</dd>
               </div>
 
               <div>
-                <dt>Sistem</dt>
-                <dd>{{ activeProduct.system || 'Çelik / Alüminyum kapı sistemi' }}</dd>
+                <dt>{{ catalogCopy.modal.fields.system }}</dt>
+                <dd>{{ localizedActiveProductSystem || catalogCopy.modal.systemFallback }}</dd>
               </div>
 
               <div>
-                <dt>Kullanım</dt>
-                <dd>Villa, rezidans, proje ve özel mimari girişler</dd>
+                <dt>{{ catalogCopy.modal.fields.usage }}</dt>
+                <dd>{{ catalogCopy.modal.usage }}</dd>
               </div>
             </dl>
           </div>
 
           <div class="product-modal-info-block">
-            <h3>Dosyalar</h3>
+            <h3>{{ catalogCopy.modal.filesTitle }}</h3>
 
             <div class="product-modal-files">
-              <a href="#">Teknik föy</a>
-              <a href="#">Ürün görseli</a>
-              <a href="#">Teknik çizim</a>
-              <a href="#">Montaj detayı</a>
+              <a href="#">{{ catalogCopy.modal.files.specSheet }}</a>
+              <a href="#">{{ catalogCopy.modal.files.productImage }}</a>
+              <a href="#">{{ catalogCopy.modal.files.drawing }}</a>
+              <a href="#">{{ catalogCopy.modal.files.installation }}</a>
             </div>
           </div>
         </div>
@@ -386,27 +384,27 @@
         <div class="product-modal-specs">
           <div>
             <span>01</span>
-            <strong>Güçlendirilmiş gövde</strong>
+            <strong>{{ catalogCopy.modal.specs.body }}</strong>
           </div>
 
           <div>
             <span>02</span>
-            <strong>Projeye özel ölçü</strong>
+            <strong>{{ catalogCopy.modal.specs.customSize }}</strong>
           </div>
 
           <div>
             <span>03</span>
-            <strong>Mimari yüzey seçenekleri</strong>
+            <strong>{{ catalogCopy.modal.specs.finishes }}</strong>
           </div>
         </div>
 
-        <div class="product-modal-finishes" aria-label="Yüzey seçenekleri">
-          <button type="button" style="--finish: #111111" aria-label="Siyah yüzey"></button>
-          <button type="button" style="--finish: #2f3335" aria-label="Antrasit yüzey"></button>
-          <button type="button" style="--finish: #7a6f5f" aria-label="Bronz yüzey"></button>
-          <button type="button" style="--finish: #f3f0e9" aria-label="Açık yüzey"></button>
-          <button type="button" style="--finish: #c99354" aria-label="Pirinç yüzey"></button>
-          <button type="button" class="is-metal" aria-label="Metal yüzey"></button>
+        <div class="product-modal-finishes" :aria-label="catalogCopy.modal.finishesAria">
+          <button type="button" style="--finish: #111111" :aria-label="catalogCopy.modal.finishLabels.black"></button>
+          <button type="button" style="--finish: #2f3335" :aria-label="catalogCopy.modal.finishLabels.anthracite"></button>
+          <button type="button" style="--finish: #7a6f5f" :aria-label="catalogCopy.modal.finishLabels.bronze"></button>
+          <button type="button" style="--finish: #f3f0e9" :aria-label="catalogCopy.modal.finishLabels.light"></button>
+          <button type="button" style="--finish: #c99354" :aria-label="catalogCopy.modal.finishLabels.brass"></button>
+          <button type="button" class="is-metal" :aria-label="catalogCopy.modal.finishLabels.metal"></button>
         </div>
       </div>
     </section>
@@ -419,6 +417,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { ComponentPublicInstance } from "vue";
+import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 const {
   catalogBlocks,
@@ -436,6 +435,332 @@ const {
   handleProductModalKeydown,
   resetCatalogModalState
 } = useHomeCatalog();
+
+const { locale } = useKardoorLocale();
+
+const catalogCopies: Record<string, any> = {
+  tr: {
+    title: "Koleksiyonlar",
+    allShort: "Tümü",
+    allFull: "Tüm Modelleri Gör",
+    productImageAlt: "Kapı modeli",
+    actions: {
+      viewSeries: "Tüm Seriyi İncele",
+      downloadCatalog: "Seri Kataloğunu İndir",
+      requestOffer: "Koleksiyon Teklifi Al"
+    },
+    favorite: {
+      add: "Favorilere ekle",
+      remove: "Favorilerden kaldır",
+      addAria: "Favorilere ekle",
+      removeAria: "Favorilerden çıkar",
+      lists: "Favori listelerim",
+      newList: "Yeni favori listesi"
+    },
+    blocks: {
+      1: {
+        seriesLabel: "Seri 01",
+        shortName: "Alüminyum",
+        category: { short: "Dış İklim", full: "Dış İklim Modelleri" },
+        parts: [
+          { id: "frame", short: "Kasa Seri", full: "Alüminyum Kasa Seri" },
+          { id: "leaf", short: "Kanat Seri", full: "Alüminyum Kasa ve Kanat Seri" }
+        ],
+        cardTitle: "Alüminyum Sistemler",
+        description: "dış iklim uyumlu kapı sistemleri"
+      },
+      2: {
+        seriesLabel: "Seri 02",
+        shortName: "Doğal",
+        category: { short: "Dış İklim", full: "Dış İklim Modelleri" },
+        parts: [
+          { id: "wood", short: "Wood Seri", full: "Termo Wood Seri" },
+          { id: "stone", short: "Taş Seri", full: "Doğal Taş Seri" }
+        ],
+        cardTitle: "Doğal Yüzeyler",
+        description: "wood ve taş dokulu kapı yüzeyleri"
+      },
+      3: {
+        seriesLabel: "Seri 03",
+        shortName: "Cam",
+        category: { short: "Dış İklim", full: "Dış İklim Modelleri" },
+        parts: [
+          { id: "mixed-glass", short: "Karma", full: "Karma Cam Seri" },
+          { id: "tempered-glass", short: "Temperli", full: "Temperli Cam Seri" }
+        ],
+        cardTitle: "Camlı Modeller",
+        description: "cam detaylı dış kapı çözümleri"
+      },
+      4: {
+        seriesLabel: "Seri 04",
+        shortName: "Metal",
+        category: { short: "Dış İklim", full: "Dış İklim Modelleri" },
+        parts: [
+          { id: "composite", short: "Kompozit", full: "Kompozit Seri" },
+          { id: "sheet-metal", short: "Sac", full: "Komple Sac Metal Seri" }
+        ],
+        cardTitle: "Metal & Kompozit",
+        description: "dayanıklı metal ve kompozit modeller"
+      },
+      5: {
+        seriesLabel: "Seri 05",
+        shortName: "Laminoks",
+        category: { short: "Exclusive", full: "Exclusive Modeller" },
+        parts: [
+          { id: "lux-pvc", short: "PVC", full: "Lüks PVC Seri" },
+          { id: "elit-laminox", short: "Elit", full: "Elit Laminoks Seri" },
+          { id: "rustic-laminox", short: "Rustik", full: "Rustik Laminoks Seri" }
+        ],
+        cardTitle: "PVC & Laminoks",
+        description: "exclusive kaplama seçenekleri"
+      },
+      6: {
+        seriesLabel: "Seri 06",
+        shortName: "Mimari",
+        category: { short: "Exclusive", full: "Exclusive Modeller" },
+        parts: [
+          { id: "project-custom", short: "Özel", full: "Projeye Özel Seri" },
+          { id: "pivot", short: "Pivot", full: "Pivot Seri" }
+        ],
+        cardTitle: "Mimari Özel",
+        description: "projeye özel ve pivot çözümler"
+      },
+      7: {
+        seriesLabel: "Seri 07",
+        shortName: "Teknik",
+        category: { short: "Çözümler", full: "Teknik Çözümler" },
+        parts: [
+          { id: "villa-building-entry", short: "Giriş", full: "Villa ve Bina Giriş Seri" },
+          { id: "emergency-exit", short: "Acil", full: "Acil Çıkış Seri" },
+          { id: "shaft-cover", short: "Şaft", full: "Bina Şaft Kapakları Seri" }
+        ],
+        cardTitle: "Giriş & Teknik",
+        description: "giriş, acil çıkış ve şaft sistemleri"
+      }
+    },
+    modal: {
+      productDetail: "ürün detayı",
+      close: "Kapat",
+      previous: "Önceki ürün",
+      next: "Sonraki ürün",
+      seriesFallback: "Kardoor Mimari Kapılar",
+      collectionFallback: "Premium Seri",
+      categoryFallback: "Giriş Kapısı Sistemi",
+      description:
+        "Güçlendirilmiş gövde yapısı, rafine yüzey seçenekleri ve çağdaş cephe estetiğiyle villa, rezidans ve özel mimari projeler için geliştirilen premium giriş kapısı sistemi.",
+      quote: "Teklif al",
+      infoTitle: "Ürün Bilgisi",
+      fields: {
+        code: "Kod",
+        series: "Seri",
+        finish: "Yüzey",
+        system: "Sistem",
+        usage: "Kullanım"
+      },
+      systemFallback: "Çelik / Alüminyum kapı sistemi",
+      usage: "Villa, rezidans, proje ve özel mimari girişler",
+      filesTitle: "Dosyalar",
+      files: {
+        specSheet: "Teknik föy",
+        productImage: "Ürün görseli",
+        drawing: "Teknik çizim",
+        installation: "Montaj detayı"
+      },
+      specs: {
+        body: "Güçlendirilmiş gövde",
+        customSize: "Projeye özel ölçü",
+        finishes: "Mimari yüzey seçenekleri"
+      },
+      finishesAria: "Yüzey seçenekleri",
+      finishLabels: {
+        black: "Siyah yüzey",
+        anthracite: "Antrasit yüzey",
+        bronze: "Bronz yüzey",
+        light: "Açık yüzey",
+        brass: "Pirinç yüzey",
+        metal: "Metal yüzey"
+      }
+    }
+  },
+  en: {
+    title: "Collections",
+    allShort: "All",
+    allFull: "View All Models",
+    productImageAlt: "Door model",
+    actions: {
+      viewSeries: "Explore the Full Series",
+      downloadCatalog: "Download Series Catalogue",
+      requestOffer: "Request a Collection Proposal"
+    },
+    favorite: {
+      add: "Add to favourites",
+      remove: "Remove from favourites",
+      addAria: "Add to favourites",
+      removeAria: "Remove from favourites",
+      lists: "My favourite lists",
+      newList: "New favourite list"
+    },
+    blocks: {
+      1: {
+        seriesLabel: "Series 01",
+        shortName: "Aluminium",
+        category: { short: "Exterior", full: "Exterior Climate Models" },
+        parts: [
+          { id: "frame", short: "Frame Series", full: "Aluminium Frame Series" },
+          { id: "leaf", short: "Leaf Series", full: "Aluminium Frame and Leaf Series" }
+        ],
+        cardTitle: "Aluminium Systems",
+        description: "door systems engineered for exterior climates"
+      },
+      2: {
+        seriesLabel: "Series 02",
+        shortName: "Natural",
+        category: { short: "Exterior", full: "Exterior Climate Models" },
+        parts: [
+          { id: "wood", short: "Wood Series", full: "Thermo Wood Series" },
+          { id: "stone", short: "Stone Series", full: "Natural Stone Series" }
+        ],
+        cardTitle: "Natural Surfaces",
+        description: "wood and stone textured architectural door surfaces"
+      },
+      3: {
+        seriesLabel: "Series 03",
+        shortName: "Glass",
+        category: { short: "Exterior", full: "Exterior Climate Models" },
+        parts: [
+          { id: "mixed-glass", short: "Mixed", full: "Mixed Glass Series" },
+          { id: "tempered-glass", short: "Tempered", full: "Tempered Glass Series" }
+        ],
+        cardTitle: "Glazed Models",
+        description: "exterior door solutions refined with glass detailing"
+      },
+      4: {
+        seriesLabel: "Series 04",
+        shortName: "Metal",
+        category: { short: "Exterior", full: "Exterior Climate Models" },
+        parts: [
+          { id: "composite", short: "Composite", full: "Composite Series" },
+          { id: "sheet-metal", short: "Sheet Metal", full: "Full Sheet Metal Series" }
+        ],
+        cardTitle: "Metal & Composite",
+        description: "resilient metal and composite entrance models"
+      },
+      5: {
+        seriesLabel: "Series 05",
+        shortName: "Laminox",
+        category: { short: "Exclusive", full: "Exclusive Models" },
+        parts: [
+          { id: "lux-pvc", short: "PVC", full: "Luxury PVC Series" },
+          { id: "elit-laminox", short: "Elite", full: "Elite Laminox Series" },
+          { id: "rustic-laminox", short: "Rustic", full: "Rustic Laminox Series" }
+        ],
+        cardTitle: "PVC & Laminox",
+        description: "exclusive architectural cladding options"
+      },
+      6: {
+        seriesLabel: "Series 06",
+        shortName: "Architectural",
+        category: { short: "Exclusive", full: "Exclusive Models" },
+        parts: [
+          { id: "project-custom", short: "Bespoke", full: "Project-Specific Series" },
+          { id: "pivot", short: "Pivot", full: "Pivot Series" }
+        ],
+        cardTitle: "Architectural Bespoke",
+        description: "project-specific and pivot door solutions"
+      },
+      7: {
+        seriesLabel: "Series 07",
+        shortName: "Technical",
+        category: { short: "Solutions", full: "Technical Solutions" },
+        parts: [
+          { id: "villa-building-entry", short: "Entrance", full: "Villa and Building Entrance Series" },
+          { id: "emergency-exit", short: "Exit", full: "Emergency Exit Series" },
+          { id: "shaft-cover", short: "Shaft", full: "Building Shaft Cover Series" }
+        ],
+        cardTitle: "Entrance & Technical",
+        description: "entrance, emergency exit, and shaft systems"
+      }
+    },
+    modal: {
+      productDetail: "product detail",
+      close: "Close",
+      previous: "Previous product",
+      next: "Next product",
+      seriesFallback: "Kardoor Architectural Doors",
+      collectionFallback: "Premium Series",
+      categoryFallback: "Entrance Door System",
+      description:
+        "A premium entrance door system developed for villas, residences, and bespoke architectural projects with a reinforced body, refined surface options, and a contemporary facade presence.",
+      quote: "Request a quote",
+      infoTitle: "Product Information",
+      fields: {
+        code: "Code",
+        series: "Series",
+        finish: "Finish",
+        system: "System",
+        usage: "Use"
+      },
+      systemFallback: "Steel / aluminium door system",
+      usage: "Villas, residences, projects, and bespoke architectural entrances",
+      filesTitle: "Files",
+      files: {
+        specSheet: "Technical sheet",
+        productImage: "Product image",
+        drawing: "Technical drawing",
+        installation: "Installation detail"
+      },
+      specs: {
+        body: "Reinforced body",
+        customSize: "Project-specific sizing",
+        finishes: "Architectural finish options"
+      },
+      finishesAria: "Finish options",
+      finishLabels: {
+        black: "Black finish",
+        anthracite: "Anthracite finish",
+        bronze: "Bronze finish",
+        light: "Light finish",
+        brass: "Brass finish",
+        metal: "Metal finish"
+      }
+    }
+  }
+};
+
+const catalogCopy = computed(() => catalogCopies[locale.value] ?? catalogCopies.tr);
+const localizedCatalogBlocks = computed(() =>
+  catalogBlocks.map((block: any) => ({
+    ...block,
+    ...(catalogCopy.value.blocks[block.index] ?? {})
+  }))
+);
+
+const localizedActiveProductBlock = computed(() => {
+  const product = activeProduct.value;
+  if (!product?.code) return null;
+
+  return localizedCatalogBlocks.value.find((block: any) =>
+    product.code.startsWith(`${block.productPrefix}-`)
+  ) ?? null;
+});
+
+const localizedActiveProductSeries = computed(() =>
+  localizedActiveProductBlock.value?.cardTitle ?? activeProduct.value?.series ?? ""
+);
+
+const localizedActiveProductCollection = computed(() =>
+  localizedActiveProductBlock.value?.seriesLabel ?? activeProduct.value?.collection ?? ""
+);
+
+const localizedActiveProductCategory = computed(() =>
+  localizedActiveProductBlock.value?.description ?? activeProduct.value?.category ?? ""
+);
+
+const localizedActiveProductSystem = computed(() =>
+  localizedActiveProductBlock.value
+    ? `${localizedActiveProductBlock.value.cardTitle} / ${catalogCopy.value.modal.systemFallback}`
+    : activeProduct.value?.system ?? ""
+);
 
 const isMobile = ref(false);
 const mobileProductLimit = 4;

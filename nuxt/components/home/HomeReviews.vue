@@ -3,7 +3,7 @@
     <div class="title-area">
       <h2 class="title rotating-title">
         <div class="top-row" :style="{ gap: dynamicGap }">
-          <span :ref="setStaticTextRef" class="static-text">Son</span>
+          <span :ref="setStaticTextRef" class="static-text">{{ staticLabel }}</span>
 
           <div class="rotating-text-wrapper" :style="{ width: titleWidth + 'px' }">
             <span :ref="setHiddenSpanRef" class="hidden-measure"></span>
@@ -18,7 +18,7 @@
           </div>
         </div>
 
-        <div class="bottom-row">size bırakıyoruz.</div>
+        <div class="bottom-row">{{ bottomLabel }}</div>
       </h2>
 
       <div class="gradient-mask"></div>
@@ -119,6 +119,8 @@
 <script setup lang="ts">
 // @ts-nocheck
 defineProps<{
+  staticLabel: string;
+  bottomLabel: string;
   dynamicGap: string;
   titleWidth: number;
   row1: any[];
