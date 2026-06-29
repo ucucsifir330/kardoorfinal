@@ -18,14 +18,23 @@ const props = defineProps<{
   progress: number; // 0 → 1 (showroom faz ilerlemesi)
 }>();
 
+const emit = defineEmits<{
+  doorSelect: [index: number];
+}>();
+
 const { doors } = useShowroomDoors();
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const fadeOut = (t: number) => 1 - t * t * (3 - 2 * t);
 const degToRad = (d: number) => (d * Math.PI) / 180;
 
 // Orbit geometrisi — yatay elips. Kapı sayısından bağımsız (STEP buna göre).
-const ORBIT_RADIUS_X = 360;
+const getOrbitRadiusX = () => {
+  if (typeof window === "undefined") return 430;
+  if (window.innerWidth <= 900) return Math.min(230, window.innerWidth * 0.32);
+  return Math.min(520, Math.max(360, window.innerWidth * 0.22));
+};
 const ORBIT_RADIUS_Y = 50;
 const stepDeg = computed(() => 360 / Math.max(1, doors.value.length));
 
@@ -51,29 +60,27 @@ const applyOrbit = (p: number) => {
     const el = slotEls[i];
     if (!el) continue;
 
-    let offset = i - f;
-    if (offset > count / 2) offset -= count;
-    if (offset < -count / 2) offset += count;
-
+    const offset = i - f;
     const distance = Math.abs(offset);
     const rad = degToRad(offset * step);
-    const x = Math.sin(rad) * ORBIT_RADIUS_X;
+    const x = Math.sin(rad) * getOrbitRadiusX();
     const y = (1 - Math.cos(rad)) * ORBIT_RADIUS_Y;
     const nearActive = clamp(1 - distance, 0, 1);
 
+    const nonActive = 1 - nearActive;
+    const neighborFade = fadeOut(clamp((distance - 1) / 0.38, 0, 1));
     const scale =
       distance <= 1
-        ? lerp(0.64, 1.16, nearActive)
-        : Math.max(0.52, lerp(0.64, 0.52, clamp(distance - 1, 0, 1)));
-    const opacity =
-      distance <= 1
-        ? lerp(0.32, 1, nearActive)
-        : Math.max(0, lerp(0.32, 0, clamp(distance - 1, 0, 1)));
+        ? lerp(0.5, 1.34, nearActive)
+        : lerp(0.5, 0.46, 1 - neighborFade);
+    const opacity = distance <= 1
+      ? lerp(0.32, 1, nearActive)
+      : 0.32 * neighborFade;
 
     const s = el.style;
     s.setProperty("--slot-x", `${x}px`);
-    s.setProperty("--slot-y", `${y - nearActive * 8}px`);
-    s.setProperty("--slot-scale", `${scale}`);
+    s.setProperty("--slot-y", `${y + nearActive * 44 + nonActive * 96}px`);
+    s.setProperty("--slot-scale", `${opacity <= 0.001 ? 0.001 : scale}`);
     s.setProperty("--slot-opacity", `${opacity}`);
     s.zIndex = `${Math.round(40 - distance * 12)}`;
   }
@@ -100,6 +107,15 @@ const totalDoors = computed(() => String(doors.value.length).padStart(2, "0"));
 const counterProgress = computed(
   () => `${activeIndex.value / Math.max(1, doors.value.length - 1)}`
 );
+const doorRailProgress = computed(() => {
+  const count = doors.value.length;
+  const position = props.progress * Math.max(0, count - 1);
+
+  return doors.value.map((door, index) => ({
+    id: door.id,
+    fill: `${clamp(position - index + 1, 0, 1)}`
+  }));
+});
 
 const { locale } = useKardoorLocale();
 const ui = computed(() =>
@@ -112,9 +128,7 @@ const ui = computed(() =>
 const backdropText = computed(() => {
   const d = activeDoor.value;
   if (!d) return "";
-  return `${d.nameDisplay.lead} ${d.nameDisplay.tail}`
-    .toLocaleUpperCase(locale.value === "tr" ? "tr-TR" : "en-US")
-    .trim();
+  return `${d.nameDisplay.lead} ${d.nameDisplay.tail}`.toLocaleUpperCase("tr-TR").trim();
 });
 </script>
 
@@ -191,6 +205,22 @@ const backdropText = computed(() => {
           </div>
         </div>
       </Transition>
+
+      <div
+        class="showroom-lab__door-rail"
+        :style="{ '--door-rail-count': doorRailProgress.length }"
+        aria-hidden="true"
+      >
+        <button
+          v-for="(segment, index) in doorRailProgress"
+          :key="segment.id"
+          type="button"
+          class="showroom-lab__door-rail-segment"
+          :aria-label="`${index + 1}. kapıya git`"
+          :style="{ '--door-rail-fill': segment.fill }"
+          @click="emit('doorSelect', index)"
+        />
+      </div>
     </aside>
   </div>
 </template>

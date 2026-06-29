@@ -70,6 +70,23 @@
   width: 200vw;
   transform: translate3d(var(--page-x, 0%), 0, 0);
   will-change: transform;
+  /* TEK PARÇA ZEMİN: gradyan track'in tamamına (200vw) uygulanır ve track'le
+     birlikte kayar → showroom ve configure slide'ları tek sürekli zemin gibi
+     görünür, ortada dikiş olmaz. Slide'lar ve ShowroomLab şeffaf bırakılır.
+     showroom.css'teki "radial(80% 90% at 40% 38%)" (100vw'lik) ile birebir aynı
+     his: 200vw'de yatay yüzdeler yarıya iner (80→40, 40→20), dikey sabit. */
+  background: radial-gradient(40% 90% at 20% 38%, #131937 0%, #080B18 72%);
+}
+
+.entrance-lab[data-ambience="day"] .entrance-lab__slider {
+  background: radial-gradient(40% 90% at 20% 38%, #f3f1ea 0%, #d9d6cd 72%);
+}
+
+/* Slide'lar şeffaf → track'in tek zemini görünür. ShowroomLab kendi opak
+   zeminini taşımasın (yoksa track'i kapatır); --sl-* değişkenleri kalır,
+   vignette/info-panel teması bozulmaz. */
+.entrance-lab__slider .showroom-lab {
+  background: transparent;
 }
 
 .entrance-lab__slide {
@@ -87,13 +104,14 @@
   display: grid;
   place-items: center;
   padding: clamp(24px, 6vw, 120px);
-  background: radial-gradient(80% 90% at 40% 38%, #131937 0%, #080B18 72%);
+  /* Zemin YOK — track'in tek parça gradyanı bu slide'ın da arkasında.
+     Sadece metin rengi temaya göre. */
+  background: transparent;
   color: #F4F6FF;
   text-align: center;
 }
 
 .entrance-lab[data-ambience="day"] .entrance-lab__configure {
-  background: radial-gradient(80% 90% at 50% 40%, #f3f1ea 0%, #d9d6cd 72%);
   color: #14151d;
 }
 

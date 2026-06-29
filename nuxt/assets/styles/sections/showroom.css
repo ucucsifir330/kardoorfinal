@@ -138,7 +138,7 @@
   width: 1px;
   height: 1px;
   /* Orbit merkezi sahnenin biraz altına — kapılar dik dursun. */
-  transform: translateY(6%);
+  transform: translateY(3%);
 }
 
 .showroom-lab__slot {
@@ -148,7 +148,8 @@
   /* Sabit slot genişliği — orbit merkezi (1×1px carousel) etrafında
      translate(-50%) ile ortalanır. Genişlik olmadan slot içeriğe çöküp
      translate hesabı bozuluyordu (kapılar 1px görünmez kalıyordu). */
-  width: clamp(180px, 17vw, 300px);
+  width: clamp(210px, 22vw, 360px);
+  height: clamp(330px, 35vw, 560px);
   /* JS --slot-* yazar; germe yok, kapı kendi oranını korur. */
   transform:
     translate3d(-50%, -50%, 0)
@@ -163,7 +164,9 @@
 .showroom-lab__door-image {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
   filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.55));
   user-select: none;
 }
@@ -186,25 +189,51 @@
   position: relative;
   z-index: 2;
   grid-column: 2;
-  padding: clamp(24px, 3vw, 64px);
+  align-self: stretch;
+  justify-content: flex-start;
+  padding: clamp(108px, 15vh, 164px) clamp(24px, 3vw, 64px) clamp(42px, 6vh, 76px);
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 2vw, 28px);
+  gap: clamp(38px, 5vh, 66px);
+  isolation: isolate;
+  overflow: visible;
+}
+
+.showroom-lab__info::before {
+  content: "";
+  position: absolute;
+  inset: 0 -4px 0 0;
+  z-index: 0;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--sl-bg-1) 58%, var(--sl-bg-2));
+}
+
+.showroom-lab__counter,
+.showroom-lab__info-block {
+  position: relative;
+  z-index: 2;
+}
+
+.showroom-lab__info-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(14px, 1.8vw, 24px);
 }
 
 .showroom-lab__counter {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(10px, 1vw, 16px);
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
-  letter-spacing: 0.18em;
+  font-size: 12px;
+  letter-spacing: 0.14em;
   color: var(--sl-text-faint);
 }
 
 .showroom-lab__counter-current {
   display: inline-block;
-  font-size: 22px;
+  font-size: clamp(20px, 1.65vw, 28px);
   font-weight: 600;
   color: var(--sl-text);
 }
@@ -212,7 +241,7 @@
 /* Dolan çizgi — 01..05 arasında --counter-progress ile altın dolum. */
 .showroom-lab__counter-line {
   position: relative;
-  width: 40px;
+  width: clamp(42px, 3.8vw, 68px);
   height: 1px;
   background: var(--sl-line);
   overflow: hidden;
@@ -247,8 +276,8 @@
 .showroom-lab__name {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: clamp(30px, 3vw, 56px);
-  line-height: 1.05;
+  font-size: clamp(42px, 4.6vw, 82px);
+  line-height: 0.98;
   font-weight: 400;
   color: var(--sl-text);
 }
@@ -259,13 +288,15 @@
 
 .showroom-lab__name-tail {
   display: block;
+  margin-top: 0.08em;
   font-style: italic;
   color: #8EA2FF;
 }
 
 .showroom-lab__series {
   margin: 0;
-  font-size: clamp(13px, 1vw, 16px);
+  font-size: clamp(15px, 1.2vw, 18px);
+  line-height: 1.35;
   letter-spacing: 0.06em;
   color: var(--sl-text-soft);
 }
@@ -273,19 +304,23 @@
 .showroom-lab__divider {
   width: 56px;
   height: 1px;
+  margin: clamp(4px, 0.8vw, 12px) 0 clamp(8px, 1vw, 16px);
   background: var(--sl-line);
 }
 
 .showroom-lab__spec {
   margin: 0;
-  font-size: clamp(14px, 1.05vw, 18px);
-  line-height: 1.5;
+  max-width: 32ch;
+  font-size: clamp(15px, 1.18vw, 20px);
+  line-height: 1.58;
   color: var(--sl-text-soft);
 }
 
 .showroom-lab__meta {
   margin: 0;
-  font-size: clamp(12px, 0.85vw, 14px);
+  max-width: 36ch;
+  font-size: clamp(13px, 0.95vw, 15px);
+  line-height: 1.5;
   letter-spacing: 0.04em;
   color: var(--sl-text-faint);
 }
@@ -295,8 +330,59 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin-top: clamp(8px, 1vw, 16px);
+  gap: clamp(16px, 1.6vw, 24px);
+  margin-top: clamp(22px, 3vw, 42px);
+}
+
+.showroom-lab__door-rail {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--door-rail-count, 5), minmax(24px, 1fr));
+  gap: clamp(10px, 1vw, 16px);
+  width: min(100%, clamp(220px, 22vw, 360px));
+  margin-top: clamp(12px, 2.4vh, 28px);
+}
+
+.showroom-lab__door-rail-segment {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  overflow: visible;
+  appearance: none;
+}
+
+.showroom-lab__door-rail-segment::before,
+.showroom-lab__door-rail-segment::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.showroom-lab__door-rail-segment::before {
+  background: var(--sl-line);
+}
+
+.showroom-lab__door-rail-segment::after {
+  transform: translateY(-50%) scaleX(var(--door-rail-fill, 0));
+  transform-origin: left center;
+  background: #8EA2FF;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.showroom-lab__door-rail-segment:focus-visible {
+  outline: 2px solid #8EA2FF;
+  outline-offset: 8px;
 }
 
 /* NIGHT modda outline buton (Teklif Al) tema rengiyle görünür olsun —
@@ -335,10 +421,41 @@
     grid-column: 1;
     grid-row: 1;
   }
+  .showroom-lab__slot {
+    width: clamp(150px, 42vw, 250px);
+    height: clamp(240px, 64vw, 390px);
+  }
   .showroom-lab__info {
     grid-column: 1;
     grid-row: 2;
-    padding-bottom: clamp(32px, 8vh, 80px);
+    width: min(100%, 560px);
+    padding: clamp(42px, 10vw, 72px) clamp(42px, 10vw, 84px) clamp(40px, 9vh, 84px);
+    gap: clamp(30px, 7vw, 46px);
+  }
+  .showroom-lab__info-block {
+    gap: clamp(14px, 3.6vw, 22px);
+  }
+  .showroom-lab__counter-current {
+    font-size: clamp(22px, 7vw, 34px);
+  }
+  .showroom-lab__counter-line {
+    width: clamp(48px, 16vw, 78px);
+  }
+  .showroom-lab__name {
+    font-size: clamp(44px, 12vw, 68px);
+    line-height: 1;
+  }
+  .showroom-lab__series {
+    font-size: clamp(16px, 4.2vw, 20px);
+  }
+  .showroom-lab__actions {
+    gap: 16px;
+    margin-top: clamp(32px, 9vw, 52px);
+  }
+  .showroom-lab__door-rail {
+    width: min(100%, 300px);
+    gap: 10px;
+    margin-top: clamp(18px, 6vw, 32px);
   }
 }
 

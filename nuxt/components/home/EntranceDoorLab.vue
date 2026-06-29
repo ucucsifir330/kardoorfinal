@@ -136,6 +136,10 @@ const { $smoother } = useNuxtApp();
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
 let teardown: (() => void) | undefined;
+// Kapı-rayı tıklaması, wheel ile AYNI settle makinesini kullanmalı (ayrı bir
+// tween açarsa state — kilit/cooldown/isAutoSettling — güncellenmez, iki tween
+// çakışıp scroll'u geri atar). onMounted içinde atanır.
+let settleToDoorIndex: ((index: number) => void) | undefined;
 
 // Kapı kanadının hero deliğine BİREBİR oturduğu kalibrasyon (cover kutusuna
 // göre yüzde). Hero ŞEFFAF delik + render kanat içerik sınırlarından ölçüldü.
@@ -229,6 +233,12 @@ const updateMaster = (raw: number) => {
   }
 };
 
+const handleShowroomDoorSelect = (index: number) => {
+  // wheel ile aynı settle yolundan geç → kilit/cooldown/aktif-settle bayrakları
+  // tek elden yönetilir, tıklama sonrası scroll geri atmaz.
+  settleToDoorIndex?.(index);
+};
+
 onMounted(() => {
   const section = sectionRef.value;
   if (!section || !canvasRef.value) return;
@@ -241,8 +251,12 @@ onMounted(() => {
   let settleDirection = 0;
   let settleCooldownUntil = 0;
   let lockedDoorIndex: number | undefined;
+  // Tek itiş = tek kapı. Kilit, snap tween'i TAMAMLANINCA (settleToProgress
+  // onComplete) bırakılır — eskiden her wheel olayında resetlenen 180ms'lik
+  // "sessizlik" timer'ına bağlıydı; trackpad gibi sürekli olay üreten girdilerde
+  // timer hiç dolmaz, kilit hiç açılmaz, native scroll da preventDefault'lu
+  // olduğu için orbit bandında scroll tamamen donardı.
   let wheelGestureLocked = false;
-  let wheelQuietTimer = 0;
 
   const getSmoother = () => ($smoother as undefined | (() => any))?.();
   const getProgressY = (progress: number) => {
@@ -253,13 +267,6 @@ onMounted(() => {
     DOOR_SNAP_POINTS.reduce((nearest, point, index) =>
       Math.abs(point - progress) < Math.abs(DOOR_SNAP_POINTS[nearest]! - progress) ? index : nearest
     , 0);
-
-  const markWheelGesture = () => {
-    window.clearTimeout(wheelQuietTimer);
-    wheelQuietTimer = window.setTimeout(() => {
-      wheelGestureLocked = false;
-    }, 180);
-  };
 
   const settleToProgress = (
     targetProgress: number,
@@ -288,8 +295,24 @@ onMounted(() => {
         settleDirection = 0;
         scrollTween = undefined;
         settleCooldownUntil = performance.now() + 320;
+        // Snap bitti → bir sonraki itiş yeni kapıyı tetikleyebilsin. Kilidi
+        // burada bırakmak orbit bandındaki donmayı önler (cooldown yine de
+        // ardışık snap'ler arasına kısa bir boşluk koyar).
+        wheelGestureLocked = false;
       }
     });
+  };
+
+  // Kapı-rayı tıklaması: wheel-snap ile aynı settle yolunu kullanır → state
+  // (kilit/cooldown/aktif-settle) tek elden güncellenir; tıklama sonrası scroll
+  // geri atmaz. handleShowroomDoorSelect bunu çağırır.
+  settleToDoorIndex = (index: number) => {
+    const target = DOOR_SNAP_POINTS[index];
+    if (target === undefined || !trigger) return;
+    const direction = target >= trigger.progress ? 1 : -1;
+    lockedDoorIndex = index;
+    isPortalSettling = false;
+    settleToProgress(target, direction, 0.9, "power3.inOut");
   };
 
   const pullThroughPortal = (direction: 1 | -1) => {
@@ -316,7 +339,6 @@ onMounted(() => {
 
   const onWheel = (event: WheelEvent) => {
     if (!trigger || !getSmoother()) return;
-    markWheelGesture();
 
     if (isAutoSettling) {
       event.preventDefault();
@@ -408,7 +430,7 @@ onMounted(() => {
 
   teardown = () => {
     scrollTween?.kill();
-    window.clearTimeout(wheelQuietTimer);
+    settleToDoorIndex = undefined;
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("resize", onResize);
     window.removeEventListener("kardoor:home", goHome);
@@ -457,7 +479,7 @@ onBeforeUnmount(() => {
     >
       <div class="entrance-lab__slider">
         <div class="entrance-lab__slide">
-          <ShowroomLab :progress="showroomProgress" />
+          <ShowroomLab :progress="showroomProgress" @door-select="handleShowroomDoorSelect" />
         </div>
 
         <!-- KURGULAYIN paneli — yatay kayma ile gelir. -->
