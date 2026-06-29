@@ -1907,6 +1907,14 @@
   stroke-linecap: butt;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+  /* Hidden until the geometry settles (fonts loaded + first rows measured), so
+     the line is never painted against the pre-font layout and then snapped to
+     the final layout — that one-time jump is what looked like a "bounce". */
+  opacity: 0;
+}
+
+.catalog-structural-lines.is-line-ready .catalog-structural-line-path {
+  opacity: 1;
 }
 
 .catalog-shell {

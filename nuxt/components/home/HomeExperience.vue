@@ -190,7 +190,6 @@ let catalogHandoffObserver: ResizeObserver | null = null;
 let catalogHandoffFrame = 0;
 let catalogHandoffPinFrame = 0;
 let catalogHandoffTrigger: ScrollTrigger | null = null;
-let catalogHandoffFrameHeight = 0;
 let catalogCurtainTween: gsap.core.Tween | null = null;
 
 const setHiddenSpanRef = (el: Element | ComponentPublicInstance | null) => {
@@ -226,7 +225,6 @@ const updateCatalogHandoffHeight = () => {
   if (!hold || !frame) return;
 
   const frameHeight = frame.scrollHeight;
-  catalogHandoffFrameHeight = frameHeight;
   hold.style.setProperty('--catalog-handoff-height', `${frameHeight}px`);
 };
 

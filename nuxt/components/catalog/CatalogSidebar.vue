@@ -46,7 +46,7 @@ defineEmits<{
 
     <div class="catalog-sample">
       <p>Modelini yakından<br />incelemek ister misiniz?</p>
-      <NuxtLink class="catalog-sample__button" to="/request-quote">
+      <NuxtLink class="catalog-sample__button" to="/contact">
         Ücretsiz Numune İste
         <svg viewBox="0 0 32 10" aria-hidden="true">
           <line x1="0" y1="5" x2="31" y2="5" />

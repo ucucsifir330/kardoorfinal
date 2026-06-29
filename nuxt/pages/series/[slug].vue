@@ -53,7 +53,7 @@ useSeoMeta({
 
         <div class="hero-actions">
           <NuxtLink class="btn btn-primary" to="/doors">View Door Selector</NuxtLink>
-          <NuxtLink class="btn btn-secondary" to="/request-quote">Request Quote</NuxtLink>
+          <NuxtLink class="btn btn-secondary" to="/contact">Request Quote</NuxtLink>
         </div>
       </div>
     </div>

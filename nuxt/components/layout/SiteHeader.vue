@@ -69,10 +69,6 @@ const primaryNavLabel = computed(() =>
   locale.value === "tr" ? "Ana navigasyon" : "Primary navigation"
 );
 
-const utilitiesLabel = computed(() =>
-  locale.value === "tr" ? "Header araçları" : "Header utilities"
-);
-
 const languageLabel = computed(() =>
   locale.value === "tr" ? "Dil seçici" : "Language selector"
 );

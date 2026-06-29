@@ -332,7 +332,7 @@
             {{ activeProduct.liked ? catalogCopy.favorite.remove : catalogCopy.favorite.add }}
           </button>
 
-          <NuxtLink class="product-modal-quote" to="/request-quote">
+          <NuxtLink class="product-modal-quote" to="/contact">
             {{ catalogCopy.modal.quote }}
           </NuxtLink>
         </div>
@@ -795,6 +795,7 @@ let catalogLineST: ScrollTrigger | null = null;
 let catalogLinePathLength = 0;
 let catalogHeadingLineConnected = false;
 let catalogLineRefreshTimer = 0;
+let catalogLineRevealAllowed = false;
 
 // --- LIQUID MENU STATE & LOGIC ---
 const activeLiquidCard = ref<string | null>(null);
@@ -980,8 +981,6 @@ const handleLiquidLeave = (id: string) => {
   }
 };
 
-const expandLiquidMenu = (id: string) => { liquidMenuExpanded.value[id] = true; };
-const collapseLiquidMenu = (id: string) => { liquidMenuExpanded.value[id] = false; };
 const toggleLiquidMenu = (id: string) => {
   liquidMenuExpanded.value[id] = !liquidMenuExpanded.value[id];
 
@@ -1217,6 +1216,30 @@ const refreshCatalogLine = () => {
   }
 
   if (catalogLineST) drawCatalogLine(catalogLineST.progress);
+
+  // Reveal only after the line is allowed to show (fonts ready). Every reveal
+  // pass keeps it visible; because the path stays hidden until the first
+  // settled geometry, early reveal-driven geometry changes (rows mounting via
+  // v-if, which grow the container and shift startY/endY) are applied while the
+  // line is invisible — so no visible jump / bounce.
+  if (catalogLineRevealAllowed) {
+    catalogLineSvgRef.value?.classList.add("is-line-ready");
+  }
+};
+
+// Called once the layout is stable enough to start showing the line (fonts
+// loaded). We wait one more beat past any pending reveal-driven refresh
+// (scheduleCatalogLineRefresh uses a 180ms debounce) so the initial batch of
+// rows has mounted and grown the container before the path becomes visible.
+// Otherwise the line shows, then a trailing reveal-refresh shifts startY/endY
+// and it visibly jumps once.
+const allowCatalogLineReveal = () => {
+  window.setTimeout(() => {
+    catalogLineRevealAllowed = true;
+    nextTick(() => {
+      window.requestAnimationFrame(refreshCatalogLine);
+    });
+  }, 220);
 };
 
 const scheduleCatalogLineRefresh = () => {
@@ -1285,7 +1308,11 @@ onMounted(() => {
   });
 
   if (document.fonts?.ready) {
-    document.fonts.ready.then(refreshCatalogLine).catch(() => undefined);
+    document.fonts.ready.then(allowCatalogLineReveal).catch(allowCatalogLineReveal);
+  } else {
+    // Fonts API unavailable: allow reveal after the next frame so geometry still
+    // has a chance to settle.
+    requestAnimationFrame(allowCatalogLineReveal);
   }
 
   window.addEventListener("resize", refreshCatalogLine, { passive: true });

@@ -8,8 +8,8 @@ const { locale } = useKardoorLocale();
 
 const isOpen = ref(false);
 const hubRef = ref<HTMLElement | null>(null);
-// Hub yalnızca hero'lu sayfalarda görünür: ana sayfa + entrance-lab.
-const isHomeRoute = computed(() => route.path === "/" || route.path === "/entrance-lab");
+// Hub yalnızca hero'lu sayfalarda görünür: ana sayfa.
+const isHomeRoute = computed(() => route.path === "/");
 
 let syncFrame = 0;
 
