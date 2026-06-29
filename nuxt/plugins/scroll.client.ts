@@ -40,7 +40,11 @@ export default defineNuxtPlugin((nuxtApp) => {
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
       smooth: 1.2,
-      effects: true,
+      // effects: false — projede hic [data-speed]/[data-lag] elementi YOK, yani
+      // parallax effect hic kullanilmiyordu. effects:true iken ScrollSmoother her
+      // frame DOM'u tarayip effect adaylarini hesapliyor → bosuna CPU/jank.
+      // Kapatmak gorsel olarak sifir fark yaratir (kullanan eleman yok).
+      effects: false,
       smoothTouch: 0,
       ignoreMobileResize: true,
       normalizeScroll: false

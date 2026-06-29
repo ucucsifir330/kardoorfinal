@@ -90,14 +90,6 @@ const getThemeSwitchLabel = (nextTheme: "light" | "dark") =>
       ? "Switch to light theme"
       : "Switch to dark theme";
 
-// Tek ikon toggle: bir sonraki tema (dark'tayken light'a, light'tayken dark'a).
-const nextTheme = computed<"light" | "dark">(() => (isNight.value ? "light" : "dark"));
-const themeToggleLabel = computed(() => getThemeSwitchLabel(nextTheme.value));
-
-// Tek buton dil toggle: 2 dil olduğundan tıkla → diğerine geç.
-const otherLocale = computed(() => (locale.value === "tr" ? "en" : "tr"));
-const languageToggleLabel = computed(() => getLanguageSwitchLabel(otherLocale.value));
-
 const menuLabel = computed(() =>
   isMenuOpen.value
     ? locale.value === "tr"
@@ -317,52 +309,61 @@ watch(
             </NuxtLink>
           </template>
 
-          <!-- Tek ikon tema toggle (light↔dark, güneş/ay). -->
-        <button
-          class="site-header__icon-button site-header__theme-toggle"
-          type="button"
-          :aria-label="themeToggleLabel"
-          @click="switchThemeWithTransition(nextTheme, $event)"
-        >
-          <svg
-            v-if="isNight"
-            class="site-header__theme-icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <!-- Güneş (dark'tayken: aydınlığa geç) -->
-            <circle cx="12" cy="12" r="4.2" />
-            <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-              <line x1="12" y1="2.6" x2="12" y2="5" />
-              <line x1="12" y1="19" x2="12" y2="21.4" />
-              <line x1="2.6" y1="12" x2="5" y2="12" />
-              <line x1="19" y1="12" x2="21.4" y2="12" />
-              <line x1="5.2" y1="5.2" x2="6.9" y2="6.9" />
-              <line x1="17.1" y1="17.1" x2="18.8" y2="18.8" />
-              <line x1="5.2" y1="18.8" x2="6.9" y2="17.1" />
-              <line x1="17.1" y1="6.9" x2="18.8" y2="5.2" />
-            </g>
-          </svg>
-          <svg
-            v-else
-            class="site-header__theme-icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <!-- Ay (light'tayken: karanlığa geç) -->
-            <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
-          </svg>
-        </button>
+          <!-- Tema segmenti: GÜNEŞ + AY iki ayrı buton, aktif olan vurgulu. -->
+          <div class="site-header__segment site-header__segment--theme" role="group" :aria-label="themeLabel">
+            <button
+              class="site-header__segment-button"
+              :class="{ 'is-active': !isNight }"
+              type="button"
+              :aria-pressed="!isNight"
+              :aria-label="getThemeSwitchLabel('light')"
+              @click="switchThemeWithTransition('light', $event)"
+            >
+              <svg class="site-header__theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <!-- Güneş -->
+                <circle cx="12" cy="12" r="4.2" />
+                <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                  <line x1="12" y1="2.6" x2="12" y2="5" />
+                  <line x1="12" y1="19" x2="12" y2="21.4" />
+                  <line x1="2.6" y1="12" x2="5" y2="12" />
+                  <line x1="19" y1="12" x2="21.4" y2="12" />
+                  <line x1="5.2" y1="5.2" x2="6.9" y2="6.9" />
+                  <line x1="17.1" y1="17.1" x2="18.8" y2="18.8" />
+                  <line x1="5.2" y1="18.8" x2="6.9" y2="17.1" />
+                  <line x1="17.1" y1="6.9" x2="18.8" y2="5.2" />
+                </g>
+              </svg>
+            </button>
+            <button
+              class="site-header__segment-button"
+              :class="{ 'is-active': isNight }"
+              type="button"
+              :aria-pressed="isNight"
+              :aria-label="getThemeSwitchLabel('dark')"
+              @click="switchThemeWithTransition('dark', $event)"
+            >
+              <svg class="site-header__theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <!-- Ay -->
+                <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
+              </svg>
+            </button>
+          </div>
 
-        <!-- Tek buton dil toggle (TR↔EN). -->
-        <button
-          class="site-header__icon-button site-header__lang-toggle"
-          type="button"
-          :aria-label="languageToggleLabel"
-          @click="setLocale(otherLocale)"
-        >
-          {{ localeLabels[locale] }}
-        </button>
+          <!-- Dil segmenti: TR + EN iki ayrı buton, aktif olan vurgulu. -->
+          <div class="site-header__segment site-header__segment--lang" role="group" :aria-label="languageLabel">
+            <button
+              v-for="code in locales"
+              :key="code"
+              class="site-header__segment-button site-header__segment-button--text"
+              :class="{ 'is-active': locale === code }"
+              type="button"
+              :aria-pressed="locale === code"
+              :aria-label="getLanguageSwitchLabel(code)"
+              @click="setLocale(code)"
+            >
+              {{ localeLabels[code] }}
+            </button>
+          </div>
 
           <button
             ref="menuButtonRef"

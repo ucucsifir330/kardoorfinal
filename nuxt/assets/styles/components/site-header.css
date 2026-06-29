@@ -329,6 +329,9 @@
   display: inline-flex;
   align-items: center;
   gap: clamp(4px, 0.5vw, 10px);
+  /* Sol ve sağ grup AYNI taban + AYNI esneme → içerik dengesiz olsa bile iki
+     blok eşit genişlikte kalır, K her zaman bar'ın TAM ortasında durur. */
+  flex: 1 1 var(--header-group, 300px);
   min-width: var(--header-group, 300px);
 }
 
@@ -337,8 +340,108 @@
 }
 
 .site-header__group--right {
-  justify-content: flex-start; /* içerik K'ye yaslı */
+  justify-content: flex-start; /* İletişim K'ye yaslı */
   gap: clamp(6px, 0.6vw, 12px);
+}
+
+/* İletişim, K (sol uç) ile güneş segmenti (sağ uç) arasında TAM ORTADA dursun:
+   her iki yana eşit auto-marj → kalan boşluk eşit bölünür, Contact ortalanır. */
+.site-header__group--right .site-header__nav-link {
+  margin-inline: auto;
+}
+
+/* Tema + dil segmentleri sağ grubun DIŞ (sağ) kenarına yaslı kalır; Contact ise
+   margin-inline:auto ile K ↔ güneş arasında ortalanır. */
+
+/* ── Segmented control: GÜNEŞ|AY ve TR|EN — iki ayrı buton, aktif vurgulu ──
+   Pill camıyla bütünleşen ince bir yuva; içinde iki seçenek yan yana. */
+.site-header__segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--header-control-radius);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.03)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 1px rgba(18, 28, 36, 0.05);
+}
+
+.site-header__segment-button {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  place-items: center;
+  width: calc(var(--header-pill-height) - 16px);
+  min-height: calc(var(--header-pill-height) - 14px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--header-control-radius);
+  background: transparent;
+  color: var(--header-link);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 0.25s var(--ease-soft),
+    box-shadow 0.25s var(--ease-soft),
+    color 0.25s var(--ease-soft),
+    transform 0.2s var(--ease-soft);
+}
+
+.site-header__segment-button--text {
+  width: auto;
+  min-width: calc(var(--header-pill-height) - 14px);
+  padding: 0 10px;
+}
+
+.site-header__segment-button:hover {
+  color: var(--header-link-hover);
+  background: var(--header-control-hover);
+}
+
+.site-header__segment-button:active {
+  transform: scale(0.94);
+}
+
+.site-header__segment-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.site-header__segment-button.is-active {
+  color: var(--header-link-active);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.96),
+    rgba(255, 255, 255, 0.72) 44%,
+    rgba(232, 238, 244, 0.56) 100%
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.08),
+    0 6px 16px rgba(0, 0, 0, 0.14);
+}
+
+[data-theme="dark"] .site-header__segment-button.is-active {
+  color: #071019;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.94),
+    rgba(255, 255, 255, 0.68) 44%,
+    rgba(220, 228, 236, 0.54) 100%
+  );
+}
+
+.site-header__segment-button .site-header__theme-icon {
+  width: 18px;
+  height: 18px;
 }
 
 /* Sağ kontrol bloğu: tema + dil + (mobil) hamburger. */
@@ -666,32 +769,11 @@
   cursor: pointer;
 }
 
-/* Tema toggle ikonu (güneş/ay). */
+/* Tema ikonu (güneş/ay) — rengi buton durumundan (currentColor) alır. */
 .site-header__theme-icon {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
   fill: currentColor;
-  color: var(--header-link);
-  transition: color 0.25s var(--ease-soft);
-}
-
-.site-header__theme-toggle:hover .site-header__theme-icon {
-  color: var(--header-link-hover);
-}
-
-/* Dil toggle metni (TR/EN) — tema ikonuyla aynı kare oturma alanı, dengeli aralık. */
-.site-header__lang-toggle {
-  width: auto;
-  min-width: calc(var(--header-pill-height) - 8px);
-  padding: 0 8px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--header-link);
-}
-
-.site-header__lang-toggle:hover {
-  color: var(--header-link-hover);
 }
 
 .site-header__icon-button:hover,

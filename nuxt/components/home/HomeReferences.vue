@@ -5,7 +5,7 @@
         v-if="isDocumentaryStarted"
         class="home-references-flip__video"
         :src="documentaryYoutubeEmbedUrl"
-        title="Ege Kardoor kurumsal belgesel"
+        :title="referencesCopy.videoTitle"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen
       ></iframe>
@@ -14,7 +14,7 @@
         type="button"
         class="home-references-flip__play"
         :style="{ '--references-video-poster': `url(${documentaryYoutubePosterUrl})` }"
-        aria-label="Kurumsal belgeseli oynat"
+        :aria-label="referencesCopy.playAria"
         @click="startDocumentary"
       >
         <span class="home-references-flip__play-icon" aria-hidden="true">
@@ -22,33 +22,26 @@
             <path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor" />
           </svg>
         </span>
-        <span class="home-references-flip__play-text">Watch Intro</span>
+        <span class="home-references-flip__play-text">{{ referencesCopy.playLabel }}</span>
       </button>
     </div>
 
     <section class="home-references-flip__intro">
       <h2 id="home-references-title">
-        <span>Sınırların nasıl</span>
-        <span>çizildiğine</span>
-        <span>tanık olun.</span>
+        <span v-for="line in referencesCopy.titleLines" :key="line">{{ line }}</span>
       </h2>
-      <p>
-        Ege Kardoor’un üretim felsefesi. Ham çeliğin, yüksek mühendislik ve
-        tasarım vizyonuyla premium bir mimari elemente dönüşme serüveni.
-      </p>
+      <p>{{ referencesCopy.intro }}</p>
     </section>
 
     <section ref="initialRef" class="home-references-flip__panel home-references-flip__initial">
       <div class="home-references-flip__copy">
         <h3>
-          Mikro detaylardan,<br>
-          makro projelere.
+          <template v-for="(line, index) in referencesCopy.panelTitleLines" :key="line">
+            <br v-if="index">
+            {{ line }}
+          </template>
         </h3>
-        <p>
-          Sadece bir güvenlik önlemi değil, yapının karakterini belirleyen o
-          ilk temas noktası. Hassas kesimlerden kusursuz yüzey bitişlerine
-          kadar, fabrikamızdaki teknoloji ve zanaat entegrasyonunu keşfedin.
-        </p>
+        <p>{{ referencesCopy.panelBody }}</p>
         <span></span>
       </div>
 
@@ -65,6 +58,36 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { gsap as GsapNamespace } from "gsap";
+import { useKardoorLocale } from "~/composables/useKardoorLocale";
+
+const { locale } = useKardoorLocale();
+
+const referencesCopies: Record<string, any> = {
+  tr: {
+    videoTitle: "Ege Kardoor kurumsal belgesel",
+    playAria: "Kurumsal belgeseli oynat",
+    playLabel: "Tanıtımı İzle",
+    titleLines: ["Sınırların nasıl", "çizildiğine", "tanık olun."],
+    intro:
+      "Ege Kardoor’un üretim felsefesi. Ham çeliğin, yüksek mühendislik ve tasarım vizyonuyla premium bir mimari elemente dönüşme serüveni.",
+    panelTitleLines: ["Mikro detaylardan,", "makro projelere."],
+    panelBody:
+      "Sadece bir güvenlik önlemi değil, yapının karakterini belirleyen o ilk temas noktası. Hassas kesimlerden kusursuz yüzey bitişlerine kadar, fabrikamızdaki teknoloji ve zanaat entegrasyonunu keşfedin."
+  },
+  en: {
+    videoTitle: "Ege Kardoor corporate documentary",
+    playAria: "Play the corporate documentary",
+    playLabel: "Watch Intro",
+    titleLines: ["Witness how", "boundaries", "are drawn."],
+    intro:
+      "Ege Kardoor’s production philosophy: the journey of raw steel becoming a premium architectural element through advanced engineering and a refined design vision.",
+    panelTitleLines: ["From micro details,", "to macro projects."],
+    panelBody:
+      "More than a security measure, the entrance door is the first point of contact that defines a structure’s character. Explore the integration of technology and craft in our factory, from precision cuts to flawless surface finishes."
+  }
+};
+
+const referencesCopy = computed(() => referencesCopies[locale.value] ?? referencesCopies.tr);
 
 const sectionRef = ref<HTMLElement | null>(null);
 const initialRef = ref<HTMLElement | null>(null);

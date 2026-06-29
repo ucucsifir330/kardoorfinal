@@ -187,7 +187,9 @@ const ui = computed(() =>
 const backdropText = computed(() => {
   const d = activeDoor.value;
   if (!d) return "";
-  return `${d.nameDisplay.lead} ${d.nameDisplay.tail}`.toLocaleUpperCase("tr-TR").trim();
+  return `${d.nameDisplay.lead} ${d.nameDisplay.tail}`
+    .toLocaleUpperCase(locale.value === "tr" ? "tr-TR" : "en-US")
+    .trim();
 });
 </script>
 
@@ -222,7 +224,7 @@ const backdropText = computed(() => {
         >
           <img
             :src="door.image"
-            :alt="`${door.nameDisplay.lead} ${door.nameDisplay.tail}`"
+            :alt="`${door.nameDisplay.lead} ${door.nameDisplay.tail}`.trim()"
             class="showroom-lab__door-image"
             loading="lazy"
             decoding="async"
@@ -248,7 +250,7 @@ const backdropText = computed(() => {
       </div>
 
       <Transition name="sl-info" mode="out-in">
-        <div v-if="activeDoor" :key="activeDoor.id" class="showroom-lab__info-block">
+        <div v-if="activeDoor" :key="`${activeDoor.id}-${locale}`" class="showroom-lab__info-block">
           <h2 class="showroom-lab__name">
             <span class="showroom-lab__name-lead">{{ activeDoor.nameDisplay.lead }}</span>
             <em class="showroom-lab__name-tail">{{ activeDoor.nameDisplay.tail }}</em>

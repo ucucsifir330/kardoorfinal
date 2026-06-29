@@ -12,12 +12,15 @@
     <div class="home-catalog-reference-stack__references">
       <section class="ada-team-section">
         <HomeReferences />
-        <HomeManifesto />
+        <HomeManifesto :key="locale" />
       </section>
     </div>
   </section>
   <div ref="reviewsStageRef" class="home-reviews-runtime">
     <HomeReviews
+      :key="locale"
+      :static-label="reviewCopy.staticLabel"
+      :bottom-label="reviewCopy.bottomLabel"
       :dynamic-gap="dynamicGap"
       :title-width="titleWidth"
       :row1="row1"
@@ -35,10 +38,11 @@
   </div>
 </template><script setup lang="ts">
 // @ts-nocheck
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useKardoorLocale } from '~/composables/useKardoorLocale'
 
 interface Review {
   id: number;
@@ -67,7 +71,107 @@ const initialTitleWidth =
     ? Math.max(180, Math.min(320, window.innerWidth * 0.18))
     : 220;
 
-const titleWords = ref(['sözü', 'kararı', 'yorumu']);
+const { locale } = useKardoorLocale();
+
+const reviewCopies: Record<string, { staticLabel: string; bottomLabel: string; titleWords: string[]; reviews: Review[] }> = {
+  tr: {
+    staticLabel: 'Son',
+    bottomLabel: 'size bırakıyoruz.',
+    titleWords: ['sözü', 'kararı', 'yorumu'],
+    reviews: [
+      {
+        id: 1,
+        text: 'Kardoor Çelik Kapı ailesi sorunumu özenle dinledi ve çözdü. Güven bey ve montaj ekibi arkadaşlara teşekkür ediyorum. Titizlikle ilgilendiler.',
+        name: 'Nadire Ş.'
+      },
+      {
+        id: 2,
+        text: 'Kendi evime ve oğlumun evine kapı yaptırdık. Çok memnun kaldık. Personeller işi beklediğimden hızlı teslim ettiler.',
+        name: 'Ahmet M.'
+      },
+      {
+        id: 3,
+        text: 'Yaptıkları işlerde gerek kaliteleri olsun gerek hızları olsun 20 yıldır böyle bir firmayla hiç çalışmamıştım. Teşekkürler Kardoor Çelik Kapı.',
+        name: 'Mustafa K.'
+      },
+      {
+        id: 4,
+        text: "İzmir'de dış iklim kapısı ararken Kardoor'u bulduk. Güven Bey çok yardımcı oldu. Kapının yalıtımı ve malzeme kalitesi gerçekten muazzam.",
+        name: 'Elif T.'
+      },
+      {
+        id: 5,
+        text: 'Bina giriş kapımızı yeniledik. Cam kapı detayları ve işçilik çok başarılı. Tüm süreçte profesyonelce yaklaştılar, tavsiye ederim.',
+        name: 'Kemal S.'
+      },
+      {
+        id: 6,
+        text: 'Montaj ekibi söz verdikleri gün ve saatte gelip tertemiz çalıştı. Hem estetik hem de güven veren, sağlam bir yapısı var. Elinize sağlık.',
+        name: 'Ayşe Y.'
+      },
+      {
+        id: 7,
+        text: "Showroom'daki 3D sunum ile evimize uygulanacak kapıyı önceden görmek harikaydı. Sonuç beklediğimizden de şık oldu.",
+        name: 'Burak D.'
+      },
+      {
+        id: 8,
+        text: 'Hızlı, net ve profesyonel yaklaşım. İhtiyacımız olan çelik kapı çözümünü doğrudan aldık, fiyat ve performans çok iyi.',
+        name: 'Serkan A.'
+      }
+    ]
+  },
+  en: {
+    staticLabel: 'Your',
+    bottomLabel: 'is the final word.',
+    titleWords: ['verdict', 'review', 'impression'],
+    reviews: [
+      {
+        id: 1,
+        text: 'The Kardoor team listened carefully and resolved our concern with real attention. Mr. Güven and the installation crew were meticulous from start to finish.',
+        name: 'Nadire Ş.'
+      },
+      {
+        id: 2,
+        text: 'We commissioned doors for both my home and my son’s. The result was excellent, and the team delivered sooner than I expected.',
+        name: 'Ahmet M.'
+      },
+      {
+        id: 3,
+        text: 'Their quality, pace, and discipline are rare. In twenty years, I have not worked with a company this composed and capable.',
+        name: 'Mustafa K.'
+      },
+      {
+        id: 4,
+        text: "We discovered Kardoor while searching for an exterior-grade door in Izmir. Mr. Güven guided us beautifully; the insulation and material quality are outstanding.",
+        name: 'Elif T.'
+      },
+      {
+        id: 5,
+        text: 'We renewed the entrance door of our building. The glass detailing and workmanship are exceptional, and the entire process felt thoroughly professional.',
+        name: 'Kemal S.'
+      },
+      {
+        id: 6,
+        text: 'The installation team arrived exactly when promised and worked impeccably. The door feels elegant, reassuring, and truly solid.',
+        name: 'Ayşe Y.'
+      },
+      {
+        id: 7,
+        text: "Seeing the door in the showroom's 3D presentation before installation was remarkable. The finished result is even more refined than we imagined.",
+        name: 'Burak D.'
+      },
+      {
+        id: 8,
+        text: 'Fast, clear, and highly professional. They delivered the steel-door solution we needed with excellent value and performance.',
+        name: 'Serkan A.'
+      }
+    ]
+  }
+};
+
+const reviewCopy = computed(() => reviewCopies[locale.value] ?? reviewCopies.tr);
+const titleWords = computed(() => reviewCopy.value.titleWords);
 const titleIndex = ref(0);
 const titleWidth = ref(initialTitleWidth);
 const hiddenSpan = ref<HTMLElement | null>(null);
@@ -111,48 +215,7 @@ const setInner2Ref = (el: Element | ComponentPublicInstance | null) => {
   inner2.value = el as HTMLElement | null;
 };
 
-const googleReviews = ref([
-  {
-    id: 1,
-    text: 'Kardoor Çelik kapı ailesi sorunumu özenle dinledi ve çözdü. Güven bey ve montaj ekibi arkadaşlara teşekkür ediyorum. Titizlikle ilgilendiler.',
-    name: 'Nadire Ş.'
-  },
-  {
-    id: 2,
-    text: 'Kendi evime ve oğlumun evine kapı yaptırdık. Çok memnun kaldık. Personeller işi beklediğimden hızlı teslim ettiler.',
-    name: 'Ahmet M.'
-  },
-  {
-    id: 3,
-    text: 'Yaptıkları işlerde gerek kaliteleri olsun gerek hızları olsun 20 yıldır böyle bir firmayla hiç çalışmamıştım. Teşekkürler Kardoor Çelik Kapı.',
-    name: 'Mustafa K.'
-  },
-  {
-    id: 4,
-    text: "İzmir'de dış iklim kapısı ararken Kardoor'u bulduk. Güven Bey çok yardımcı oldu. Kapının yalıtımı ve malzeme kalitesi gerçekten muazzam.",
-    name: 'Elif T.'
-  },
-  {
-    id: 5,
-    text: 'Bina giriş kapımızı yeniledik. Cam kapı detayları ve işçilik çok başarılı. Tüm süreçte profesyonelce yaklaştılar, tavsiye ederim.',
-    name: 'Kemal S.'
-  },
-  {
-    id: 6,
-    text: 'Montaj ekibi söz verdikleri gün ve saatte gelip tertemiz çalıştı. Hem estetik hem de güven veren, sağlam bir yapısı var. Elinize sağlık.',
-    name: 'Ayşe Y.'
-  },
-  {
-    id: 7,
-    text: "Showroom'daki 3D sunum ile evimize uygulanacak kapıyı önceden görmek harikaydı. Sonuç beklediğimizden de şık oldu.",
-    name: 'Burak D.'
-  },
-  {
-    id: 8,
-    text: 'Hızlı, net ve profesyonel yaklaşım. İhtiyacımız olan çelik kapı çözümünü doğrudan aldık, fiyat ve performans çok iyi.',
-    name: 'Serkan A.'
-  }
-] as Review[]);
+const googleReviews = computed<Review[]>(() => reviewCopy.value.reviews);
 
 const updateCatalogHandoffHeight = () => {
   catalogHandoffFrame = 0;
@@ -165,7 +228,6 @@ const updateCatalogHandoffHeight = () => {
   const frameHeight = frame.scrollHeight;
   catalogHandoffFrameHeight = frameHeight;
   hold.style.setProperty('--catalog-handoff-height', `${frameHeight}px`);
-  requestCatalogHandoffPin();
 };
 
 const requestCatalogHandoffHeight = () => {
@@ -174,39 +236,10 @@ const requestCatalogHandoffHeight = () => {
   catalogHandoffFrame = window.requestAnimationFrame(updateCatalogHandoffHeight);
 };
 
-const updateCatalogHandoffPin = () => {
-  catalogHandoffPinFrame = 0;
-
-  if (window.innerWidth <= 760) {
-    const pin = catalogHandoffPinRef.value;
-    if (pin) pin.style.transform = '';
-    return;
-  }
-
-  const hold = catalogHandoffRef.value;
-  const pin = catalogHandoffPinRef.value;
-  const frame = catalogHandoffFrameRef.value;
-
-  if (!hold || !pin || !frame) return;
-
-  const holdRect = hold.getBoundingClientRect();
-  const frameHeight = catalogHandoffFrameHeight || frame.scrollHeight;
-  const viewportHeight = window.innerHeight || 1;
-  const naturalTop = holdRect.top;
-  const naturalBottom = naturalTop + frameHeight;
-  const lockTop = viewportHeight - frameHeight;
-  const lockOffset = lockTop - naturalTop;
-  const containOffset = holdRect.bottom - naturalBottom;
-  const offset = Math.max(0, Math.min(lockOffset, containOffset));
-
-  pin.style.transform = offset > 0 ? `translate3d(0, ${offset}px, 0)` : '';
-};
-
-const requestCatalogHandoffPin = () => {
-  if (catalogHandoffPinFrame) return;
-
-  catalogHandoffPinFrame = window.requestAnimationFrame(updateCatalogHandoffPin);
-};
+// Manuel pin (updateCatalogHandoffPin / requestCatalogHandoffPin) KALDIRILDI →
+// artik GSAP native pin'i kullaniliyor (asagidaki ScrollTrigger.create). Eskisi
+// her scroll frame'inde getBoundingClientRect+transform yapiyordu (FPS katili).
+const requestCatalogHandoffPin = () => {};
 
 const row1 = computed(() => googleReviews.value.slice(0, 4));
 const row2 = computed(() => googleReviews.value.slice(4, 8));
@@ -316,6 +349,27 @@ const buildTypewriter = () => {
       );
   });
 };
+
+watch(
+  locale,
+  async () => {
+    activeTitleWord = titleWords.value[0] ?? '';
+    titleIndex.value = 0;
+    typewriterTl?.kill();
+    typewriterTl = null;
+    cursorTween?.kill();
+    cursorTween = null;
+
+    if (typewriter.value) {
+      typewriter.value.textContent = '';
+    }
+
+    await nextTick();
+    updateTitleWidth();
+    buildTypewriter();
+  },
+  { flush: 'post' }
+);
 
 const dynamicGap = computed(() => {
   const gapValue = 34 + titleWidth.value * 0.04;
@@ -812,16 +866,26 @@ onMounted(() => {
       catalogHandoffObserver.observe(catalogHandoffFrameRef.value);
     }
 
-    // Pin update'ini ScrollSmoother ile AYNI tick'te çalıştır (native scroll event yerine).
-    // ScrollSmoother içerik transform'unu uyguladıktan sonra ScrollTrigger.update tetiklenir;
-    // rect bu noktada okunduğu için pinli katalogun frame'i titremez (handoff jitter fix).
-    if (catalogHandoffRef.value) {
+    // Catalog handoff pin'i artik GSAP'in NATIVE pin'i ile yapiliyor.
+    // Eskiden onUpdate her scroll frame'inde getBoundingClientRect okuyup
+    // translate3d yaziyordu (manuel pin emulasyonu) → surekli layout reflow,
+    // FPS dususunun ana kaynaklarindan. ScrollTrigger pin'i ScrollSmoother ile
+    // uyumlu calisir (skill onerisi) ve transform'u kendi yonetir; scroll'da
+    // bizim JS'imiz hic calismaz. frame viewport'tan kisa oldugu icin onu alt
+    // kenara yapistiriyoruz: pin baslangici "frame alti viewport altina deyince",
+    // bitisi "hold'un sonu". Masaustu (>760) disinda pin yok.
+    if (catalogHandoffFrameRef.value && window.innerWidth > 760) {
+      const frameH = catalogHandoffFrameHeight || catalogHandoffFrameRef.value.scrollHeight;
       catalogHandoffTrigger = ScrollTrigger.create({
-        trigger: catalogHandoffRef.value,
-        start: 'top bottom',
-        end: 'bottom top',
-        onUpdate: updateCatalogHandoffPin,
-        onRefresh: updateCatalogHandoffPin
+        trigger: catalogHandoffFrameRef.value,
+        // frame'in alti viewport altina deyince yapis (sticky bottom esdegeri)
+        start: () => `bottom bottom`,
+        // hold'un (catalog) alti, viewport altina gelince birak
+        endTrigger: catalogHandoffRef.value,
+        end: 'bottom bottom',
+        pin: catalogHandoffPinRef.value,
+        pinSpacing: false,
+        invalidateOnRefresh: true
       });
     }
 

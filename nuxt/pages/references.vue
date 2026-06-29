@@ -6,7 +6,7 @@
       <section ref="heroRef" class="hero">
       <div class="hero-inner">
         <div class="hero-title">
-          <div class="title-block">
+          <div class="title-block" :style="{ '--hero-line-divisor': heroLineDivisor }">
             <span
               v-for="(words, i) in titleLines"
               :key="i"
@@ -196,6 +196,12 @@ const pageCopies = {
 const pageCopy = computed(() => pageCopies[locale.value] ?? pageCopies.tr);
 const titleLines = computed(() => pageCopy.value.titleLines);
 const kickerWords = computed(() => pageCopy.value.kickerWords);
+
+// Başlık font-size üst sınırının böleni (büyük = daha küçük yazı). TR satırları
+// boşluklu olduğundan dar; mevcut /6.8 değeriyle sığıyor → DOKUNMA. EN'de en uzun
+// satır tek kelime ("ARCHITECTURAL", 13 wide-cap glif) ve /6.8'de taşıyor, o yüzden
+// SADECE İngilizce için bölen büyütülüp yazı küçültülür (TR layout aynı kalır).
+const heroLineDivisor = computed(() => (locale.value === "en" ? 7.45 : 6.8));
 const wordRefs = ref([]);
 const setWordRef = (el) => {
   if (el && !wordRefs.value.includes(el)) wordRefs.value.push(el);
@@ -619,7 +625,12 @@ onBeforeUnmount(() => {
 
 .hero-line {
   font-family: "Barlow Condensed", "Montserrat", sans-serif;
-  font-size: min(clamp(5.85rem, 10.1vw, 14.15rem), calc((100vw - 40px) / 6.8));
+  /* Üst sınır böleni dile göre değişir (--hero-line-divisor): TR 6.8 (mevcut),
+     EN 7.45 → uzun "ARCHITECTURAL" satırı sığsın. Var yoksa 6.8'e düşer. */
+  font-size: min(
+    clamp(5.85rem, 10.1vw, 14.15rem),
+    calc((100vw - 40px) / var(--hero-line-divisor, 6.8))
+  );
   font-weight: 800;
   color: var(--ref-ink);
   line-height: 0.9;
@@ -1130,7 +1141,10 @@ onBeforeUnmount(() => {
   }
 
   .hero-line {
-    font-size: min(clamp(4.9rem, 17vw, 9.1rem), calc((100vw - 32px) / 6.8));
+    font-size: min(
+      clamp(4.9rem, 17vw, 9.1rem),
+      calc((100vw - 32px) / var(--hero-line-divisor, 6.8))
+    );
     line-height: 0.92;
   }
 
@@ -1155,7 +1169,10 @@ onBeforeUnmount(() => {
   }
 
   .hero-line {
-    font-size: min(clamp(3.15rem, 14.5vw, 4.8rem), calc((100vw - 24px) / 6.8));
+    font-size: min(
+      clamp(3.15rem, 14.5vw, 4.8rem),
+      calc((100vw - 24px) / var(--hero-line-divisor, 6.8))
+    );
     line-height: 0.94;
   }
 

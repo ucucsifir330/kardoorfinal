@@ -9,11 +9,11 @@
         data-gsap-quote="true"
         @click="playQuoteExit"
       >
-        Bir kapının değeri yalnızca görünüşüyle değil; yıllara meydan okuyan dayanımı ve taşıdığı güvenle ölçülür. Tavizsiz işçilik ve doğru mühendislikle, sadece bir kapı değil güven üretiyoruz.
-        <small>Ege Kardoor</small>
+        {{ manifestoCopy.quote }}
+        <small>{{ manifestoCopy.brand }}</small>
       </h3>
-      <a href="/company" class="ada-manifesto-cta" aria-label="Hakkımızda sayfasına git">
-        <span class="ada-manifesto-cta-text" data-text="Hikâyemizi Keşfet">Hikâyemizi Keşfet</span>
+      <a href="/company" class="ada-manifesto-cta" :aria-label="manifestoCopy.ctaAria">
+        <span class="ada-manifesto-cta-text" :data-text="manifestoCopy.cta">{{ manifestoCopy.cta }}</span>
         <span class="ada-manifesto-cta-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
@@ -28,7 +28,7 @@
 
   <div class="ada-title-container">
     <h4 class="ada-giant-title">
-      Birlikte çalıştığımız markalar
+      {{ manifestoCopy.brandsTitle }}
     </h4>
   </div>
 
@@ -59,10 +59,34 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { gsap } from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useKardoorLocale } from "~/composables/useKardoorLocale";
+
+const { locale } = useKardoorLocale();
+
+const manifestoCopies: Record<string, any> = {
+  tr: {
+    quote:
+      "Bir kapının değeri yalnızca görünüşüyle değil; yıllara meydan okuyan dayanımı ve taşıdığı güvenle ölçülür. Tavizsiz işçilik ve doğru mühendislikle, sadece bir kapı değil güven üretiyoruz.",
+    brand: "Ege Kardoor",
+    cta: "Hikayemizi Keşfet",
+    ctaAria: "Hakkımızda sayfasına git",
+    brandsTitle: "Birlikte çalıştığımız markalar"
+  },
+  en: {
+    quote:
+      "The value of a door is measured not only by its appearance, but by the resilience it carries through the years and the confidence it gives every threshold. With uncompromising craft and precise engineering, we create more than doors; we create trust.",
+    brand: "Ege Kardoor",
+    cta: "Discover Our Story",
+    ctaAria: "Go to the about us page",
+    brandsTitle: "Brands We Have Worked With"
+  }
+};
+
+const manifestoCopy = computed(() => manifestoCopies[locale.value] ?? manifestoCopies.tr);
 
 const ctaLineStageRef = ref<HTMLElement | null>(null);
 const ctaSpacerRef = ref<HTMLElement | null>(null);

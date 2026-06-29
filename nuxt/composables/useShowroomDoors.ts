@@ -1,5 +1,6 @@
 import { computed } from "vue";
 import { products, type DoorProduct } from "~/data/products";
+import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 /**
  * useShowroomDoors — turntable'ın gösterdiği kapı listesini GERÇEK katalog
@@ -24,6 +25,82 @@ export type ShowroomDoor = {
   /** Alt meta — materyaller. */
   meta: string;
   accentColor: string;
+};
+
+const showroomCopies: Record<string, {
+  tr: { title: string; series: string; spec: string; meta: string };
+  en: { title: string; series: string; spec: string; meta: string };
+}> = {
+  "aluminyum-sistemler": {
+    tr: {
+      title: "Alüminyum Sistemler",
+      series: "Dış İklim Koleksiyonu",
+      spec: "Dış iklim dayanımı · Alüminyum kasa ve kanat · Projeye özel ölçü",
+      meta: "Alüminyum sistem · Isı yalıtımı · Çelik gövde"
+    },
+    en: {
+      title: "Aluminium Systems",
+      series: "Exterior Climate Collection",
+      spec: "Exterior-grade performance · Aluminium frame and leaf · Project-specific sizing",
+      meta: "Aluminium system · Thermal insulation · Steel body"
+    }
+  },
+  "dogal-yuzeyler": {
+    tr: {
+      title: "Doğal Yüzeyler",
+      series: "Dış İklim Koleksiyonu",
+      spec: "Wood ve taş dokusu · Mimari yüzey etkisi · Dış iklim kullanımı",
+      meta: "Doğal yüzey · Ahşap/taş doku · Çelik gövde"
+    },
+    en: {
+      title: "Natural Surfaces",
+      series: "Exterior Climate Collection",
+      spec: "Wood and stone textures · Architectural surface presence · Exterior use",
+      meta: "Natural finish · Wood/stone texture · Steel body"
+    }
+  },
+  "camli-modeller": {
+    tr: {
+      title: "Camlı Modeller",
+      series: "Dış İklim Koleksiyonu",
+      spec: "Cam detay · Cephe uyumu · Güçlendirilmiş giriş sistemi",
+      meta: "Temperli cam · Metal detay · Çelik gövde"
+    },
+    en: {
+      title: "Glazed Models",
+      series: "Exterior Climate Collection",
+      spec: "Glass detailing · Facade integration · Reinforced entrance system",
+      meta: "Tempered glass · Metal detail · Steel body"
+    }
+  },
+  "pvc-laminoks": {
+    tr: {
+      title: "PVC & Laminoks",
+      series: "Exclusive Koleksiyonu",
+      spec: "Exclusive kaplama · Klasik panel dili · Renkli yüzey seçeneği",
+      meta: "PVC yüzey · Laminoks panel · Çelik gövde"
+    },
+    en: {
+      title: "PVC & Laminox",
+      series: "Exclusive Collection",
+      spec: "Exclusive cladding · Classic panel language · Coloured finish option",
+      meta: "PVC surface · Laminox panel · Steel body"
+    }
+  },
+  "mimari-ozel": {
+    tr: {
+      title: "Mimari Özel",
+      series: "Mimari Özel",
+      spec: "Mimari giriş etkisi · Projeye özel kurgu · Pivot veya vitrin kullanımı",
+      meta: "Mimari yüzey · Pivot sistem · Cam/metal detay"
+    },
+    en: {
+      title: "Architectural Bespoke",
+      series: "Architectural Bespoke",
+      spec: "Architectural entrance presence · Project-specific composition · Pivot or showcase use",
+      meta: "Architectural finish · Pivot system · Glass/metal detail"
+    }
+  }
 };
 
 // Turntable'da dönecek aileler (seriesSlug) — vitrine en uygun, en görsel 5'li.
@@ -54,19 +131,26 @@ const splitName = (name: string): { lead: string; tail: string } => {
   return { lead: trimmed.slice(0, space), tail: trimmed.slice(space + 1) };
 };
 
-const toShowroomDoor = (product: DoorProduct): ShowroomDoor => ({
-  id: product.slug,
-  code: product.code,
-  // Turntable başlığı seri adını kullanır (ürün adları "Avero" gibi kısa kodlar).
-  nameDisplay: splitName(product.category),
-  series: product.seriesTitle || product.category,
-  image: product.image,
-  spec: product.specs.slice(0, 3).join(" · "),
-  meta: product.materials.slice(0, 3).join(" · "),
-  accentColor: product.accentColor
-});
-
 export function useShowroomDoors() {
+  const { locale } = useKardoorLocale();
+
+  const toShowroomDoor = (product: DoorProduct): ShowroomDoor => {
+    const copy = showroomCopies[product.seriesSlug]?.[locale.value];
+    const title = copy?.title ?? product.category;
+
+    return {
+      id: product.slug,
+      code: product.code,
+      // Turntable başlığı seri adını kullanır (ürün adları "Avero" gibi kısa kodlar).
+      nameDisplay: splitName(title),
+      series: copy?.series ?? product.seriesTitle ?? product.category,
+      image: product.image,
+      spec: copy?.spec ?? product.specs.slice(0, 3).join(" · "),
+      meta: copy?.meta ?? product.materials.slice(0, 3).join(" · "),
+      accentColor: product.accentColor
+    };
+  };
+
   const doors = computed<ShowroomDoor[]>(() =>
     SHOWROOM_SERIES.map(pickRepresentative)
       .filter((p): p is DoorProduct => Boolean(p))

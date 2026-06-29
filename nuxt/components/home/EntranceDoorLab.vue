@@ -91,6 +91,32 @@ const copy = computed(() =>
       }
 );
 
+const configureCopy = computed(() =>
+  locale.value === "tr"
+    ? {
+        titleLines: ["Kapınızı yalnızca seçmeyin.", "Kurgulayın."],
+        body:
+          "Ege Kardoor kapı konfigüratörüyle seri, yüzey, renk, cam, kol ve detay seçeneklerini kendi projenize göre deneyimleyin. Beğendiğiniz tasarımı bizimle paylaşın, showroom veya proje ekibimiz sizin için netleştirsin.",
+        actionsLabel: "Konfigüratör ve koleksiyon bağlantıları",
+        configuratorAria: "Konfigüratörü deneyin — çok yakında",
+        configurator: "Konfigüratörü Deneyin",
+        soon: "Çok Yakında!",
+        collectionAria: "Koleksiyonu keşfet",
+        collection: "Koleksiyonu Keşfet"
+      }
+    : {
+        titleLines: ["Do not simply choose your door.", "Compose it."],
+        body:
+          "Experience each series, finish, colour, glass, handle, and architectural detail through the Ege Kardoor door configurator. Share the composition you prefer, and our showroom or project team will refine it for your space.",
+        actionsLabel: "Configurator and collection links",
+        configuratorAria: "Try the configurator — coming soon",
+        configurator: "Try the Configurator",
+        soon: "Coming Soon!",
+        collectionAria: "Explore the collection",
+        collection: "Explore the Collection"
+      }
+);
+
 const sectionRef = ref<HTMLElement | null>(null);
 const zoomRef = ref<HTMLElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
@@ -303,17 +329,14 @@ onBeforeUnmount(() => {
         <div class="entrance-lab__slide entrance-lab__configure">
           <div class="entrance-lab__configure-inner">
             <h2 class="entrance-lab__configure-heading">
-              <span>Kapınızı yalnızca seçmeyin.</span>
-              <span>Kurgulayın.</span>
+              <span v-for="line in configureCopy.titleLines" :key="line">{{ line }}</span>
             </h2>
             <p class="entrance-lab__configure-copy">
-              Ege Kardoor kapı konfigüratörüyle seri, yüzey, renk, cam, kol ve detay
-              seçeneklerini kendi projenize göre deneyimleyin. Beğendiğiniz tasarımı
-              bizimle paylaşın, showroom veya proje ekibimiz sizin için netleştirsin.
+              {{ configureCopy.body }}
             </p>
-            <div class="entrance-lab__configure-actions">
-              <button type="button" class="ada-manifesto-cta entrance-lab__soon-cta" aria-disabled="true" aria-label="Konfigüratörü deneyin — çok yakında">
-                <span class="ada-manifesto-cta-text" data-text="Konfigüratörü Deneyin" data-hover="Çok Yakında!">Konfigüratörü Deneyin</span>
+            <div class="entrance-lab__configure-actions" :aria-label="configureCopy.actionsLabel">
+              <button type="button" class="ada-manifesto-cta entrance-lab__soon-cta" aria-disabled="true" :aria-label="configureCopy.configuratorAria">
+                <span class="ada-manifesto-cta-text" :data-text="configureCopy.configurator" :data-hover="configureCopy.soon">{{ configureCopy.configurator }}</span>
                 <span class="ada-manifesto-cta-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
@@ -321,14 +344,14 @@ onBeforeUnmount(() => {
                   </svg>
                 </span>
               </button>
-              <a href="/catalog" class="ada-manifesto-cta entrance-lab__cta--icon-left" aria-label="Koleksiyonu keşfet">
+              <a href="/catalog" class="ada-manifesto-cta entrance-lab__cta--icon-left" :aria-label="configureCopy.collectionAria">
                 <span class="ada-manifesto-cta-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
                     <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
                   </svg>
                 </span>
-                <span class="ada-manifesto-cta-text" data-text="Koleksiyonu Keşfet">Koleksiyonu Keşfet</span>
+                <span class="ada-manifesto-cta-text" :data-text="configureCopy.collection">{{ configureCopy.collection }}</span>
               </a>
             </div>
           </div>

@@ -1,3 +1,13 @@
+/* Sol bilgi sutunu (blok no/kategori) reveal'inde yumusak fade. Kartlar ayrica
+   ScrollTrigger.batch ile alttan kayarak gelir (Formani tarzi staggered giris). */
+.catalog-info-fade-enter-active {
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.catalog-info-fade-enter-from {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
 /* Homepage catalog and product modal base rules extracted from light/dark themes. */
 .catalog-wishlist-panel {
   position: absolute;
@@ -1846,6 +1856,20 @@
   min-height: 0 !important;
   margin-bottom: clamp(52px, 7vh, 96px) !important;
   align-items: start !important;
+  /* Viewport DISINDAKI satirlari (reveal olsun olmasin) render'dan atla:
+     tarayici layout+paint+composite'i sadece ekrandaki ~1-2 satira yapar.
+     60 kartin hepsini her scroll frame'inde composite etmek FPS'i dusuruyordu.
+     contain-intrinsic-size yer tutar → scrollbar/CLS bozulmaz. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto clamp(640px, 72vh, 920px);
+}
+/* Reveal edilmemis satir icin YER REZERVE et. Eskiden bos satir ~0px durup
+   reveal aninda 10 kart birden mount olunca yukseklik 0'dan ~satir boyuna
+   firliyordu → buyuk layout shift (CLS 0.29) + her reveal'da tum sayfanin
+   reflow'u/ScrollTrigger refresh'i = scroll jank. Icerigin gelecegi alani
+   bastan tutuyoruz; reveal artik asagiyi itmiyor. Iki sira kart ~ bu yukseklik. */
+.catalog-row.is-pending {
+  min-height: clamp(640px, 72vh, 920px) !important;
 }
 .catalog-row:last-of-type {
   margin-bottom: clamp(64px, 8vh, 120px) !important;
