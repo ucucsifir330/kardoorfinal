@@ -67,12 +67,12 @@
 }
 
 [data-theme="dark"] {
-  --header-brand-text: #F4F6FF;
+  --header-brand-text: rgba(255, 255, 255, 0.96);
   --header-brand-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
 
-  --header-link: rgba(244, 246, 255, 0.72);
-  --header-link-hover: #F4F6FF;
-  --header-link-active: #050714;
+  --header-link: rgba(255, 255, 255, 0.72);
+  --header-link-hover: rgba(255, 255, 255, 0.98);
+  --header-link-active: rgba(5, 12, 18, 0.96);
 
   --header-glass-tint: rgba(255, 255, 255, 0.16);
   --header-glass-edge: rgba(255, 255, 255, 0.72);
@@ -82,8 +82,7 @@
   --header-glass-spark: rgba(255, 255, 255, 0.38);
   --header-glass-rim: rgba(0, 0, 0, 0.32);
 
-  --header-control-hover: rgba(142, 162, 255, 0.14);
-  --header-control-active: linear-gradient(135deg, #F4F6FF 0%, #C3CCFF 100%);
+  --header-control-hover: rgba(255, 255, 255, 0.12);
 }
 
 @property --header-glass-angle {
@@ -110,13 +109,22 @@
 }
 
 .site-header__inner {
-  display: grid;
-  grid-template-columns: minmax(210px, 300px) minmax(0, 1fr) max-content;
+  position: relative;
+  display: flex;
   align-items: center;
+  justify-content: center; /* bar ekranın ortasında */
   gap: clamp(16px, 2vw, 30px);
   width: min(100%, var(--header-max-width));
   margin: 0 auto;
-  pointer-events: auto;
+  pointer-events: none; /* boşluklar tıklanmasın; bar + brand kendi auto'larını alır */
+}
+
+/* Brand sola sabit (akıştan çıkar) → ortadaki bar'ı kaydırmaz. */
+.site-header__brand--ghost {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .site-header__glass-filters {
@@ -135,25 +143,6 @@
   color: var(--header-brand-text);
   text-decoration: none;
   filter: none;
-  transform: translateX(
-    calc(-1 * max(0px, (100vw - 2 * var(--header-offset-x) - var(--header-max-width)) / 2))
-  );
-}
-
-.site-header__brand .brand-symbol {
-  display: none !important;
-}
-
-.site-header__brand .brand-mark {
-  gap: 0 !important;
-  font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif !important;
-}
-
-.site-header__brand .brand-title {
-  gap: 0.38rem;
-  font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.015em;
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -234,8 +223,7 @@
   filter: drop-shadow(var(--header-brand-shadow));
 }
 
-.site-header__nav,
-.site-header__utility {
+.site-header__bar {
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -244,40 +232,57 @@
   box-shadow:
     0 12px 30px var(--header-glass-shadow),
     0 1px 1px rgba(255, 255, 255, 0.34);
+  /* Katmanı kendi compositing katmanına sabitle → scroll'da arka plan blur'unun
+     kenar "seam/tearing" (her frame yeniden örnekleme) artefaktını bastırır. */
   transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  contain: paint;
+  /* TEK BAR: [sol grup] K [sağ grup]. Sol/sağ gruba EŞİT min-genişlik (--header-group)
+     → K iki eşit blok arasında TAM ORTADA. İçerik K'ye yaslı; bar sayfada ortalı. */
+  --header-group: clamp(220px, 22vw, 320px);
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(10px, 1.2vw, 22px);
+  width: fit-content;
+  max-width: 100%;
+  min-height: var(--header-pill-height);
+  padding: 4px clamp(10px, 0.9vw, 16px);
+  border-radius: var(--header-pill-radius);
+  pointer-events: auto;
+  will-change: transform, opacity;
   transition:
     box-shadow var(--header-hover-time) var(--header-hover-ease),
-    transform var(--header-hover-time) var(--header-hover-ease);
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.site-header__nav::before,
-.site-header__utility::before {
+.site-header__bar::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   border-radius: inherit;
+  /* GERÇEK CAM: arkayı GÖSTEREN katman. Opak beyaz boya yok — sadece çok ince
+     bir üst-kenar parlaması (cam refraksiyonu) + temaya bağlı hafif tint.
+     Asıl "cam" hissi backdrop-filter'dan gelir (blur + saturate, arka renk geçer). */
   background:
     linear-gradient(
-      115deg,
-      rgba(255, 255, 255, 0.64) 0%,
-      rgba(255, 255, 255, 0.18) 24%,
-      rgba(255, 255, 255, 0.08) 54%,
-      rgba(255, 255, 255, 0.34) 100%
+      180deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.02) 30%,
+      rgba(255, 255, 255, 0) 70%
     ),
-    radial-gradient(115% 190% at 14% 0%, var(--header-glass-spark), transparent 42%),
     linear-gradient(180deg, var(--header-glass-tint), var(--header-glass-bottom));
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.86),
-    inset 0 -1px 1px rgba(20, 28, 34, 0.1),
-    inset 10px 0 24px rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(22px) saturate(1.28) brightness(1.04);
-  -webkit-backdrop-filter: blur(22px) saturate(1.28) brightness(1.04);
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 1px rgba(20, 28, 34, 0.08);
+  backdrop-filter: blur(16px) saturate(1.7);
+  -webkit-backdrop-filter: blur(16px) saturate(1.7);
 }
 
-.site-header__nav::after,
-.site-header__utility::after {
+.site-header__bar::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -305,44 +310,171 @@
     opacity var(--header-hover-time) var(--header-hover-ease);
 }
 
-.site-header__nav > *,
-.site-header__utility > * {
+.site-header__bar > * {
   position: relative;
   z-index: 3;
 }
 
-.site-header__nav:hover,
-.site-header__utility:hover {
+.site-header__bar:hover {
   --header-glass-angle: -125deg;
   box-shadow:
     0 10px 24px var(--header-glass-shadow),
     0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
-.site-header__nav {
-  justify-self: center;
+/* Sol/sağ grup — İKİSİ DE eşit min-genişlik (--header-group) alır → K iki eşit
+   blok arasında TAM ORTADA. İçerik K'ye yaslı; içerik dar kalırsa boşluk DIŞ
+   kenarda olur (K tarafında değil), bar yine kompakt. */
+.site-header__group {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  min-height: var(--header-pill-height);
-  padding: 4px;
-  border-radius: var(--header-pill-radius);
-  pointer-events: auto;
-  will-change: transform, opacity;
-  transition:
-    box-shadow var(--header-hover-time) var(--header-hover-ease),
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  gap: clamp(4px, 0.5vw, 10px);
+  /* Sol ve sağ grup AYNI taban + AYNI esneme → içerik dengesiz olsa bile iki
+     blok eşit genişlikte kalır, K her zaman bar'ın TAM ortasında durur. */
+  flex: 1 1 var(--header-group, 300px);
+  min-width: var(--header-group, 300px);
 }
 
-.site-header--hidden .site-header__nav {
+.site-header__group--left {
+  justify-content: flex-end; /* içerik K'ye yaslı */
+}
+
+.site-header__group--right {
+  justify-content: flex-start; /* İletişim K'ye yaslı */
+  gap: clamp(6px, 0.6vw, 12px);
+}
+
+/* İletişim, K (sol uç) ile güneş segmenti (sağ uç) arasında TAM ORTADA dursun:
+   her iki yana eşit auto-marj → kalan boşluk eşit bölünür, Contact ortalanır. */
+.site-header__group--right .site-header__nav-link {
+  margin-inline: auto;
+}
+
+/* Tema + dil segmentleri sağ grubun DIŞ (sağ) kenarına yaslı kalır; Contact ise
+   margin-inline:auto ile K ↔ güneş arasında ortalanır. */
+
+/* ── Segmented control: GÜNEŞ|AY ve TR|EN — iki ayrı buton, aktif vurgulu ──
+   Pill camıyla bütünleşen ince bir yuva; içinde iki seçenek yan yana. */
+.site-header__segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--header-control-radius);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.03)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 1px rgba(18, 28, 36, 0.05);
+}
+
+.site-header__segment-button {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  place-items: center;
+  width: calc(var(--header-pill-height) - 16px);
+  min-height: calc(var(--header-pill-height) - 14px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--header-control-radius);
+  background: transparent;
+  color: var(--header-link);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 0.25s var(--ease-soft),
+    box-shadow 0.25s var(--ease-soft),
+    color 0.25s var(--ease-soft),
+    transform 0.2s var(--ease-soft);
+}
+
+.site-header__segment-button--text {
+  width: auto;
+  min-width: calc(var(--header-pill-height) - 14px);
+  padding: 0 10px;
+}
+
+.site-header__segment-button:hover {
+  color: var(--header-link-hover);
+  background: var(--header-control-hover);
+}
+
+.site-header__segment-button:active {
+  transform: scale(0.94);
+}
+
+.site-header__segment-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.site-header__segment-button.is-active {
+  color: var(--header-link-active);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.96),
+    rgba(255, 255, 255, 0.72) 44%,
+    rgba(232, 238, 244, 0.56) 100%
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.08),
+    0 6px 16px rgba(0, 0, 0, 0.14);
+}
+
+[data-theme="dark"] .site-header__segment-button.is-active {
+  color: #071019;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.94),
+    rgba(255, 255, 255, 0.68) 44%,
+    rgba(220, 228, 236, 0.54) 100%
+  );
+}
+
+.site-header__segment-button .site-header__theme-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Sağ kontrol bloğu: tema + dil + (mobil) hamburger. */
+.site-header__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+/* Nav ile kontroller arası ince cam ayraç — iki yanı eşit nefes alsın. */
+.site-header__bar-divider {
+  width: 1px;
+  align-self: stretch;
+  margin-block: 8px;
+  margin-inline: clamp(2px, 0.3vw, 6px);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--header-glass-rim) 22%,
+    var(--header-glass-rim) 78%,
+    transparent
+  );
+}
+
+.site-header--hidden .site-header__bar {
   opacity: 0;
   pointer-events: none;
   transform: translateY(calc(-100% - var(--header-offset-y) - 16px));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-header__nav {
+  .site-header__bar {
     transition: none;
   }
 }
@@ -375,7 +507,9 @@
 }
 
 .site-header__nav-mark {
-  position: relative;
+  /* Orta grid kolonu → iki yan (1fr) eşit olduğundan K bar'ın merkezinde. */
+  grid-column: 2;
+  justify-self: center;
   isolation: isolate;
   display: inline-grid;
   place-items: center;
@@ -391,16 +525,37 @@
 }
 
 .site-header__nav-mark span {
-  width: 18px;
-  height: 22px;
+  width: 20px;
+  height: 24px;
   background: currentColor;
   mask: url("/images/brand/kardoor-footer-mark-tight.png") center / contain no-repeat;
   -webkit-mask: url("/images/brand/kardoor-footer-mark-tight.png") center / contain no-repeat;
 }
 
+/* K = Home. Bar camıyla bütünleşen İNCE HALKA — dolu daire değil. Zemin neredeyse
+   şeffaf, sadece hafif bir çember K'yi merkez öğe olarak işaretler. */
+.site-header__nav-mark {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.site-header__nav-mark.is-active,
 .site-header__nav-mark:hover {
   color: var(--header-link-hover);
-  background: var(--header-control-hover);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+[data-theme="light"] .site-header__nav-mark {
+  color: var(--header-link-active);
+  box-shadow: inset 0 0 0 1px rgba(20, 28, 36, 0.16);
+}
+
+[data-theme="light"] .site-header__nav-mark.is-active,
+[data-theme="light"] .site-header__nav-mark:hover {
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(20, 28, 36, 0.22);
+  color: var(--header-link-active);
 }
 
 .site-header__nav-link--disabled,
@@ -440,7 +595,6 @@
 }
 
 .site-header__nav-link:active,
-.site-header__nav-mark:active,
 .site-header__icon-button:active,
 .site-header__theme-button:active,
 .site-header__language-button:active,
@@ -449,6 +603,11 @@
   --header-glass-angle: -75deg;
   --header-shine-angle: -15deg;
   transform: scale(0.975);
+}
+
+.site-header__nav-mark:active {
+  --header-glass-angle: -75deg;
+  transform: scale(0.96);
 }
 
 .site-header__nav-link--disabled:active,
@@ -610,6 +769,13 @@
   cursor: pointer;
 }
 
+/* Tema ikonu (güneş/ay) — rengi buton durumundan (currentColor) alır. */
+.site-header__theme-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
 .site-header__icon-button:hover,
 .site-header__theme-button:hover,
 .site-header__language-button:hover,
@@ -732,22 +898,20 @@
 
 .site-header__mobile-panel::before {
   z-index: 0;
+  /* Pill ile aynı gerçek-cam reçetesi (opak beyaz boya yerine arkayı gösteren tint). */
   background:
     linear-gradient(
-      115deg,
-      rgba(255, 255, 255, 0.64) 0%,
-      rgba(255, 255, 255, 0.18) 24%,
-      rgba(255, 255, 255, 0.08) 54%,
-      rgba(255, 255, 255, 0.34) 100%
+      180deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.02) 30%,
+      rgba(255, 255, 255, 0) 70%
     ),
-    radial-gradient(115% 190% at 14% 0%, var(--header-glass-spark), transparent 42%),
     linear-gradient(180deg, var(--header-glass-tint), var(--header-glass-bottom));
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.86),
-    inset 0 -1px 1px rgba(20, 28, 34, 0.1),
-    inset 10px 0 24px rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(22px) saturate(1.28) brightness(1.04);
-  -webkit-backdrop-filter: blur(22px) saturate(1.28) brightness(1.04);
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 1px rgba(20, 28, 34, 0.08);
+  backdrop-filter: blur(16px) saturate(1.7);
+  -webkit-backdrop-filter: blur(16px) saturate(1.7);
 }
 
 .site-header__mobile-panel::after {
@@ -835,39 +999,26 @@
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .site-header__nav,
-  .site-header__utility {
+  .site-header__bar {
     background: rgba(38, 43, 49, 0.88);
   }
 
-  [data-theme="light"] .site-header__nav,
-  [data-theme="light"] .site-header__utility {
+  [data-theme="light"] .site-header__bar {
     background: rgba(236, 240, 242, 0.92);
   }
 }
 
 @media (max-width: 1320px) {
-  .site-header__inner {
-    grid-template-columns: minmax(190px, 250px) minmax(0, 1fr) max-content;
-    gap: 14px;
-  }
-
   .site-header__nav-link {
     padding-inline: 12px;
     font-size: 13px;
   }
-
-  .site-header__utility-link {
-    padding-inline: 14px;
-  }
 }
 
 @media (max-width: 1120px) {
-  .site-header__inner {
-    grid-template-columns: minmax(190px, 1fr) max-content;
-  }
-
-  .site-header__nav {
+  /* Tek barda nav + ayraç gizlenir; bar yalnız kontrolleri (hamburger dahil) tutar. */
+  .site-header__nav,
+  .site-header__bar-divider {
     display: none;
   }
 
@@ -888,33 +1039,13 @@
     padding: max(8px, env(safe-area-inset-top)) 14px 8px;
   }
 
-  .site-header__inner {
-    grid-template-columns: 1fr max-content;
-    gap: 12px;
-  }
-
-  .site-header__utility {
-    min-height: 44px;
-    padding: 3px;
-    gap: 4px;
-  }
-
-  .site-header__icon-button,
-  .site-header__utility-link,
-  .site-header__theme,
-  .site-header__language {
-    min-height: 38px;
-  }
-
   .site-header__icon-button {
+    min-height: 38px;
     width: 38px;
   }
 
-  .site-header__language,
-  .site-header__theme,
-  .site-header__theme-button,
-  .site-header__language-button {
-    min-height: 38px;
+  .site-header__lang-toggle {
+    width: auto;
   }
 
   .site-header__mobile-panel {
@@ -934,25 +1065,21 @@
   }
 
   .site-header__inner {
-    grid-template-columns: minmax(0, 1fr) max-content;
     gap: 6px;
   }
 
-  .site-header__utility {
+  .site-header__controls {
     gap: 2px;
-    min-height: 40px;
-    padding: 3px;
-  }
-
-  .site-header__icon-button,
-  .site-header__utility-link,
-  .site-header__theme,
-  .site-header__language {
-    min-height: 34px;
   }
 
   .site-header__icon-button {
+    min-height: 34px;
     width: 34px;
+  }
+
+  .site-header__lang-toggle {
+    width: auto;
+    padding-inline: 9px;
   }
 
   .site-header__brand .brand-mark {
@@ -979,20 +1106,6 @@
 
   .site-header__brand .brand-title {
     font-size: 0.74rem;
-  }
-
-  .site-header__theme,
-  .site-header__language {
-    min-height: 34px;
-    padding: 2px;
-  }
-
-  .site-header__theme-button,
-  .site-header__language-button {
-    min-width: 30px;
-    min-height: 30px;
-    padding-inline: 7px;
-    font-size: 12px;
   }
 
   .site-header__mobile-panel {
@@ -1033,19 +1146,19 @@
     );
 }
 
-/* Utility language track: remove dark blob feeling */
+/* Utility language track: ince cam yuvası — arkadaki pill camını boğmasın
+   (eski parlak beyaz gradient "ikinci bir plastik katman" gibi duruyordu). */
 .site-header__theme,
 .site-header__language {
   background:
     linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.28),
-      rgba(255, 255, 255, 0.12) 52%,
-      rgba(255, 255, 255, 0.18)
+      180deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.03)
     );
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.58),
-    inset 0 -1px 1px rgba(18, 28, 36, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 1px rgba(18, 28, 36, 0.05);
 }
 
 /* Light mode logo contrast fix */

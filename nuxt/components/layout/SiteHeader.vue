@@ -39,6 +39,16 @@ const navItems = computed(() => {
   ];
 });
 
+// Tek bar düzeni: SOL [Products · References] — ORTA [K=Home] — SAĞ [About · Contact].
+// Home (K) ortadaki marka işareti olduğundan masaüstü nav linklerinden ayrılır;
+// mobil menüde tüm öğeler (Home dahil) navItems'tan gelir.
+const navLeft = computed(() =>
+  navItems.value.filter(
+    (i) => i.to === "/doors" || i.to === "/references" || i.to === "/company"
+  )
+);
+const navRight = computed(() => navItems.value.filter((i) => i.to === "/contact"));
+
 const isActive = (to: string) => {
   if (to === "/") return route.path === "/";
 
@@ -113,6 +123,16 @@ const closeMenu = () => {
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
+};
+
+// K (Home) tıklaması: zaten anasayfadaysak yönlendirme yerine sayfanın en başına
+// hızlı/smooth scroll yap. Başka sayfadaysak normal link davranışı (/'e gider).
+const onBrandHome = (event: MouseEvent) => {
+  if (route.path !== "/") return; // farklı sayfa → NuxtLink normal çalışsın
+
+  event.preventDefault();
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
 };
 
 const switchThemeWithTransition = (nextTheme: "light" | "dark", event: MouseEvent) => {
@@ -227,111 +247,139 @@ watch(
         <BrandMark />
       </NuxtLink>
 
+      <!-- TEK BAR — grid [1fr | K | 1fr]. Sol grup ve sağ grup eşit (1fr) pay alır,
+           her biri KENDİ İÇİNDE sıkı; K iki grup arasında TAM ORTADA. -->
       <nav
         id="site-primary-nav"
-        class="site-header__nav"
+        class="site-header__bar"
         :aria-label="primaryNavLabel"
       >
-        <template v-for="item in navItems.slice(0, 2)" :key="item.to">
-          <span
-            v-if="item.disabled"
-            class="site-header__nav-link site-header__nav-link--disabled"
-            aria-disabled="true"
-          >
-            {{ item.label }}
-          </span>
-          <NuxtLink
-            v-else
-            class="site-header__nav-link"
-            :class="{ 'is-active': isActive(item.to) }"
-            :to="item.to"
-            :aria-current="isActive(item.to) ? 'page' : undefined"
-          >
-            {{ item.label }}
-          </NuxtLink>
-        </template>
+        <!-- SOL GRUP: Ürünler · Referanslar · Hakkımızda (sıkı, K'ye yaslı) -->
+        <div class="site-header__group site-header__group--left">
+          <template v-for="item in navLeft" :key="item.to">
+            <span
+              v-if="item.disabled"
+              class="site-header__nav-link site-header__nav-link--disabled"
+              aria-disabled="true"
+            >
+              {{ item.label }}
+            </span>
+            <NuxtLink
+              v-else
+              class="site-header__nav-link"
+              :class="{ 'is-active': isActive(item.to) }"
+              :to="item.to"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </template>
+        </div>
 
+        <!-- ORTA: K = Home -->
         <NuxtLink
           class="site-header__nav-mark"
           to="/"
+          :class="{ 'is-active': isActive('/') }"
           :aria-label="brandLabel"
+          :aria-current="isActive('/') ? 'page' : undefined"
+          @click="onBrandHome"
         >
           <span aria-hidden="true" />
         </NuxtLink>
 
-        <template v-for="item in navItems.slice(2)" :key="item.to">
-          <span
-            v-if="item.disabled"
-            class="site-header__nav-link site-header__nav-link--disabled"
-            aria-disabled="true"
+        <!-- SAĞ GRUP: İletişim · tema · dil · (mobil) menü (sıkı, K'ye yaslı) -->
+        <div class="site-header__group site-header__group--right">
+          <template v-for="item in navRight" :key="item.to">
+            <span
+              v-if="item.disabled"
+              class="site-header__nav-link site-header__nav-link--disabled"
+              aria-disabled="true"
+            >
+              {{ item.label }}
+            </span>
+            <NuxtLink
+              v-else
+              class="site-header__nav-link"
+              :class="{ 'is-active': isActive(item.to) }"
+              :to="item.to"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </template>
+
+          <!-- Tema segmenti: GÜNEŞ + AY iki ayrı buton, aktif olan vurgulu. -->
+          <div class="site-header__segment site-header__segment--theme" role="group" :aria-label="themeLabel">
+            <button
+              class="site-header__segment-button"
+              :class="{ 'is-active': !isNight }"
+              type="button"
+              :aria-pressed="!isNight"
+              :aria-label="getThemeSwitchLabel('light')"
+              @click="switchThemeWithTransition('light', $event)"
+            >
+              <svg class="site-header__theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <!-- Güneş -->
+                <circle cx="12" cy="12" r="4.2" />
+                <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                  <line x1="12" y1="2.6" x2="12" y2="5" />
+                  <line x1="12" y1="19" x2="12" y2="21.4" />
+                  <line x1="2.6" y1="12" x2="5" y2="12" />
+                  <line x1="19" y1="12" x2="21.4" y2="12" />
+                  <line x1="5.2" y1="5.2" x2="6.9" y2="6.9" />
+                  <line x1="17.1" y1="17.1" x2="18.8" y2="18.8" />
+                  <line x1="5.2" y1="18.8" x2="6.9" y2="17.1" />
+                  <line x1="17.1" y1="6.9" x2="18.8" y2="5.2" />
+                </g>
+              </svg>
+            </button>
+            <button
+              class="site-header__segment-button"
+              :class="{ 'is-active': isNight }"
+              type="button"
+              :aria-pressed="isNight"
+              :aria-label="getThemeSwitchLabel('dark')"
+              @click="switchThemeWithTransition('dark', $event)"
+            >
+              <svg class="site-header__theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <!-- Ay -->
+                <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Dil segmenti: TR + EN iki ayrı buton, aktif olan vurgulu. -->
+          <div class="site-header__segment site-header__segment--lang" role="group" :aria-label="languageLabel">
+            <button
+              v-for="code in locales"
+              :key="code"
+              class="site-header__segment-button site-header__segment-button--text"
+              :class="{ 'is-active': locale === code }"
+              type="button"
+              :aria-pressed="locale === code"
+              :aria-label="getLanguageSwitchLabel(code)"
+              @click="setLocale(code)"
+            >
+              {{ localeLabels[code] }}
+            </button>
+          </div>
+
+          <button
+            ref="menuButtonRef"
+            class="site-header__icon-button site-header__menu"
+            type="button"
+            :aria-label="menuLabel"
+            :aria-expanded="isMenuOpen"
+            aria-controls="site-mobile-menu"
+            @click="toggleMenu"
           >
-            {{ item.label }}
-          </span>
-          <NuxtLink
-            v-else
-            class="site-header__nav-link"
-            :class="{ 'is-active': isActive(item.to) }"
-            :to="item.to"
-            :aria-current="isActive(item.to) ? 'page' : undefined"
-          >
-            {{ item.label }}
-          </NuxtLink>
-        </template>
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
       </nav>
-
-      <div class="site-header__utility" :aria-label="utilitiesLabel">
-        <div class="site-header__theme" :aria-label="themeLabel">
-          <button
-            class="site-header__theme-button"
-            :class="{ 'is-active': theme === 'light' }"
-            type="button"
-            :aria-label="getThemeSwitchLabel('light')"
-            :aria-pressed="theme === 'light'"
-            @click="switchThemeWithTransition('light', $event)"
-          >
-            Light
-          </button>
-          <button
-            class="site-header__theme-button"
-            :class="{ 'is-active': theme === 'dark' }"
-            type="button"
-            :aria-label="getThemeSwitchLabel('dark')"
-            :aria-pressed="theme === 'dark'"
-            @click="switchThemeWithTransition('dark', $event)"
-          >
-            Dark
-          </button>
-        </div>
-
-        <div class="site-header__language" :aria-label="languageLabel">
-          <button
-            v-for="availableLocale in locales"
-            :key="availableLocale"
-            class="site-header__language-button"
-            :class="{ 'is-active': locale === availableLocale }"
-            type="button"
-            :aria-label="getLanguageSwitchLabel(availableLocale)"
-            :aria-pressed="locale === availableLocale"
-            @click="setLocale(availableLocale)"
-          >
-            {{ localeLabels[availableLocale] }}
-          </button>
-        </div>
-
-        <button
-          ref="menuButtonRef"
-          class="site-header__icon-button site-header__menu"
-          type="button"
-          :aria-label="menuLabel"
-          :aria-expanded="isMenuOpen"
-          aria-controls="site-mobile-menu"
-          @click="toggleMenu"
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
     </div>
 
     <div
