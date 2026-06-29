@@ -392,11 +392,26 @@ onMounted(() => {
   };
   window.addEventListener("resize", onResize);
 
+  // K (Home) → "kardoor:home" olayı: hero'yu progress 0'a (kapı TAM kapalı) getir.
+  // settleToProgress isAutoSettling=true yapar → maybePullThroughPortal bastırılır;
+  // aksi halde yukarı çıkış HOLD_END'e (kapı yarı açık) park ediyordu. Smoother'ın
+  // kendi scroll'unu kullandığı için scroll pozisyonuyla progress senkron kalır.
+  const goHome = () => {
+    if (!trigger || !getSmoother()) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    scrollTween?.kill();
+    isPortalSettling = false;
+    lockedDoorIndex = undefined;
+    settleToProgress(0, -1, prefersReduced ? 0.01 : 1.2, "power3.inOut");
+  };
+  window.addEventListener("kardoor:home", goHome);
+
   teardown = () => {
     scrollTween?.kill();
     window.clearTimeout(wheelQuietTimer);
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("resize", onResize);
+    window.removeEventListener("kardoor:home", goHome);
     trigger?.kill(true);
   };
 });

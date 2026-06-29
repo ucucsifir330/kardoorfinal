@@ -126,13 +126,31 @@ const toggleMenu = () => {
 };
 
 // K (Home) tıklaması: zaten anasayfadaysak yönlendirme yerine sayfanın en başına
-// hızlı/smooth scroll yap. Başka sayfadaysak normal link davranışı (/'e gider).
+// scroll yap. Başka sayfadaysak normal link davranışı (/'e gider).
+const { $smoother } = useNuxtApp();
+
 const onBrandHome = (event: MouseEvent) => {
   if (route.path !== "/") return; // farklı sayfa → NuxtLink normal çalışsın
 
   event.preventDefault();
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+
+  // Hero (EntranceDoorLab) tek-pinli scrub + portal auto-settle ile çalışıyor.
+  // Düz scrollTo yukarı çıkarken portal-pull tarafından HOLD'a (kapı yarı açık)
+  // kaçırılıyordu. Hero varsa ona olay gönder; o kendi settle'ıyla (pull bastırılı)
+  // progress'i 0'a (kapı tam kapalı) götürür.
+  if (document.querySelector(".entrance-lab")) {
+    window.dispatchEvent(new CustomEvent("kardoor:home"));
+    return;
+  }
+
+  // Hero yoksa (ör. henüz mount olmadıysa) düz smoother/native scroll.
+  const smoother = ($smoother as undefined | (() => any))?.();
+  if (smoother) {
+    smoother.scrollTo(0, !prefersReducedMotion);
+  } else {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+  }
 };
 
 const switchThemeWithTransition = (nextTheme: "light" | "dark", event: MouseEvent) => {
