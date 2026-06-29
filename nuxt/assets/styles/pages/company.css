@@ -2,7 +2,7 @@
   --company-left-width: clamp(38rem, 48vw, 57.5rem);
   --company-center-width: clamp(6.5rem, 8vw, 10rem);
   --company-right-offset: clamp(1.25rem, 2.6vw, 3rem);
-  --company-page-bg: #111115;
+  --company-page-bg: #080B18;
 
   width: 100vw;
   margin: 0;
@@ -105,7 +105,7 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
 }
 
 .company-timeline__years li {
@@ -273,7 +273,7 @@
 body:has(.company-timeline),
 body:has(.company-timeline) .app-shell,
 body:has(.company-timeline) main {
-  background: #111115;
+  background: #080B18;
 }
 
 html[data-theme="light"]:has(.company-timeline),
@@ -294,7 +294,7 @@ body:has(.app-shell--day .company-timeline) main {
 .app-shell:has(.company-timeline) .footer-wrapper {
   margin-top: -2px;
   padding-top: clamp(8rem, 13svh, 11rem);
-  background: #111115 !important;
+  background: #080B18 !important;
 }
 
 .app-shell:has(.company-timeline) .footer-wrapper::before {
@@ -304,7 +304,7 @@ body:has(.app-shell--day .company-timeline) main {
   height: 4px;
   z-index: 1;
   pointer-events: none;
-  background: #111115;
+  background: #080B18;
 }
 
 .app-shell:has(.company-timeline) .footer-dome {

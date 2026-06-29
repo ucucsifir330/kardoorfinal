@@ -689,9 +689,12 @@
     0 34px 80px -48px rgba(0, 0, 0, 0.42);
 }
 
-.app-shell--references,
+.app-shell--references {
+  background: #07000D !important;
+}
+
 .app-shell--references .footer-wrapper {
-  background: #111111 !important;
+  background: #0E0716 !important;
 }
 
 .app-shell--day.app-shell--references,
@@ -700,9 +703,9 @@
 }
 
 .app-shell--references .footer-dome {
-  background-color: #2a2a30 !important;
-  box-shadow: inset 0 0 0 2px #2a2a30, 0 0 0 2px #2a2a30 !important;
-  outline: 1px solid #2a2a30;
+  background-color: #16101F !important;
+  box-shadow: inset 0 0 0 2px #16101F, 0 0 0 2px #16101F !important;
+  outline: 1px solid #16101F;
   outline-offset: -1px;
 }
 
@@ -1084,6 +1087,10 @@
 .footer-socials > .mail-btn,
 .footer-socials > .phone-btn {
   display: inline-flex !important;
+}
+
+.footer-socials > .social-btn {
+  bottom: calc(clamp(300px, 11.8vw, 390px) + 32px) !important;
 }
 
 @media (max-width: 760px) {

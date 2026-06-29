@@ -9,22 +9,13 @@ type TimelineItem = {
   image: string;
 };
 
-type LenisControls = {
-  scrollTo?: (
-    target: number,
-    options?: {
-      duration?: number;
-      easing?: (t: number) => number;
-      force?: boolean;
-      lock?: boolean;
-      immediate?: boolean;
-      onComplete?: () => void;
-    }
-  ) => void;
-};
+type Smoother = {
+  scrollTop?: () => number;
+  scrollTo?: (target: number | string | Element, smooth?: boolean) => void;
+} | null;
 
 const { locale } = useKardoorLocale();
-const { $lenis } = useNuxtApp();
+const { $smoother } = useNuxtApp();
 
 const copy = computed(() => {
   if (locale.value === "tr") {
@@ -145,6 +136,7 @@ useSeoMeta({
 
 const sectionRef = ref<HTMLElement | null>(null);
 const activeIndex = ref(0);
+const timelineFloat = ref(0);
 const cardStyles = ref<Record<string, string | number>[]>([]);
 const timelineData = computed(() => copy.value.timeline);
 
@@ -169,19 +161,24 @@ const initScrollTimeline = async () => {
     import("gsap/ScrollTrigger"),
     import("gsap/ScrollToPlugin")
   ]);
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
   const context = gsap.context(() => {
     const maxIndex = timelineData.value.length - 1;
     const stepDistance = Math.max(window.innerHeight * 1.05, 940);
     const scrollDistance = maxIndex * stepDistance;
     const clampProgress = gsap.utils.clamp(0, 1);
-    const lenis = $lenis as LenisControls | null | undefined;
+    const getSmoother = () => ($smoother?.() as Smoother) ?? null;
     let isStepping = false;
     let isTimelineActive = false;
+    let scrollTween: ReturnType<typeof gsap.to> | null = null;
+    let wheelLocked = false;
+    let wheelQuietTimer = 0;
 
     const applyTimelineProgress = (progress: number) => {
       const currentFloat = clampProgress(progress) * maxIndex;
 
+      timelineFloat.value = currentFloat;
       activeIndex.value = Math.round(currentFloat);
       cardStyles.value = timelineData.value.map((_, index) => {
         const delta = currentFloat - index;
@@ -202,115 +199,124 @@ const initScrollTimeline = async () => {
       });
     };
 
+    // Pure scrub: ScrollTrigger maps native scroll position (which ScrollSmoother
+    // drives via #smooth-content transform) straight onto the card progress. No
+    // manual wheel hijacking, no competing scrollTo tweens — the smoother owns
+    // momentum, this only reads progress.
     const trigger = ScrollTrigger.create({
       trigger: sectionRef.value,
       start: "top top",
       end: `+=${scrollDistance}`,
       pin: true,
-      scrub: 0.35,
+      scrub: 0.5,
       anticipatePin: 1,
       invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        if (isStepping) return;
-        applyTimelineProgress(self.progress);
-      },
+      onUpdate: (self) => applyTimelineProgress(self.progress),
       onToggle: (self) => {
         isTimelineActive = self.isActive;
-        if (!self.isActive) isStepping = false;
+        if (!self.isActive) {
+          isStepping = false;
+          wheelLocked = false;
+        }
       },
-      onRefresh: (self) => {
-        applyTimelineProgress(self.progress);
-      }
+      onRefresh: (self) => applyTimelineProgress(self.progress)
     });
 
-    const settleToIndex = (targetIndex: number, allowExit = false) => {
-      if (isStepping) return;
+    const unlockWheelAfterQuiet = () => {
+      window.clearTimeout(wheelQuietTimer);
+      wheelQuietTimer = window.setTimeout(() => {
+        wheelLocked = false;
+      }, 260);
+    };
 
-      if (targetIndex < 0 || targetIndex > maxIndex) {
-        if (!allowExit) return;
+    const scrollToY = (targetY: number, duration: number, ease: string, onComplete?: () => void) => {
+      const smoother = getSmoother();
+      scrollTween?.kill();
 
-        isStepping = true;
-        const exitY = targetIndex < 0 ? Math.max(0, trigger.start - 2) : trigger.end + 2;
-        lenis?.scrollTo?.(exitY, {
-          duration: 0.75,
-          force: true,
-          lock: true,
-          easing: (t) => 1 - Math.pow(1 - t, 3),
+      if (smoother?.scrollTo && smoother.scrollTop) {
+        const proxy = { y: smoother.scrollTop() };
+        smoother.scrollTo(proxy.y, false);
+        scrollTween = gsap.to(proxy, {
+          y: targetY,
+          duration,
+          ease,
+          overwrite: true,
+          onUpdate: () => smoother.scrollTo?.(proxy.y, false),
           onComplete: () => {
-            isStepping = false;
+            scrollTween = null;
+            onComplete?.();
           }
         });
         return;
       }
 
-      const settledIndex = Math.min(maxIndex, Math.max(0, targetIndex));
-      const targetProgress = settledIndex / maxIndex;
-      const targetY = trigger.start + stepDistance * settledIndex;
-
-      const currentProgress = clampProgress((window.scrollY - trigger.start) / scrollDistance);
-      const progressProxy = { value: currentProgress };
-
-      isStepping = true;
-      gsap.killTweensOf(progressProxy);
-      gsap.to(progressProxy, {
-        value: targetProgress,
-        duration: 0.64,
-        ease: "power2.inOut",
+      scrollTween = gsap.to(window, {
+        duration,
+        ease,
         overwrite: true,
-        onUpdate: () => {
-          applyTimelineProgress(progressProxy.value);
+        scrollTo: {
+          y: targetY,
+          autoKill: false
         },
         onComplete: () => {
-          applyTimelineProgress(targetProgress);
-          isStepping = false;
+          scrollTween = null;
+          onComplete?.();
         }
       });
+    };
 
-      if (lenis?.scrollTo) {
-        lenis.scrollTo(targetY, {
-          duration: 0.64,
-          force: true,
-          lock: true,
-          easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
-        });
-      } else {
-        gsap.to(window, {
-          duration: 0.64,
-          ease: "power2.inOut",
-          overwrite: true,
-          scrollTo: {
-            y: targetY,
-            autoKill: false
-          }
-        });
-      }
+    const goToIndex = (targetIndex: number) => {
+      const settled = Math.min(maxIndex, Math.max(0, targetIndex));
+      const targetY = trigger.start + stepDistance * settled;
+
+      isStepping = true;
+      scrollToY(targetY, 1.08, "power3.out", () => {
+        isStepping = false;
+      });
     };
 
     const stepTimeline = (direction: 1 | -1) => {
-      if (!isTimelineActive) return;
-      settleToIndex(activeIndex.value + direction, true);
+      const targetIndex = activeIndex.value + direction;
+
+      if (targetIndex < 0 || targetIndex > maxIndex) {
+        const exitOffset = Math.max(80, window.innerHeight * 0.08);
+        const exitY = targetIndex < 0
+          ? Math.max(0, trigger.start - exitOffset)
+          : trigger.end + exitOffset;
+
+        isStepping = true;
+        scrollToY(exitY, 0.95, "power3.out", () => {
+          isStepping = false;
+          isTimelineActive = false;
+        });
+        return;
+      }
+
+      goToIndex(targetIndex);
     };
 
     const handleTimelineWheel = (event: WheelEvent) => {
+      if (!isTimelineActive) return;
       const delta = event.deltaY;
       if (Math.abs(delta) < 8) return;
 
-      if (!isTimelineActive) return;
-
       event.preventDefault();
       event.stopImmediatePropagation();
-      if (isStepping) return;
+      unlockWheelAfterQuiet();
 
+      if (isStepping || wheelLocked) return;
+
+      wheelLocked = true;
       stepTimeline(delta > 0 ? 1 : -1);
     };
 
     isTimelineActive = window.scrollY >= trigger.start && window.scrollY <= trigger.end;
     window.addEventListener("wheel", handleTimelineWheel, { passive: false, capture: true });
-
-    goToTimelineIndex = settleToIndex;
+    goToTimelineIndex = goToIndex;
 
     cleanupGsap = () => {
-      gsap.killTweensOf(window);
+      scrollTween?.kill();
+      window.clearTimeout(wheelQuietTimer);
       window.removeEventListener("wheel", handleTimelineWheel, { capture: true });
       context.revert();
       cleanupGsap = null;
@@ -330,6 +336,7 @@ onMounted(async () => {
 watch(timelineData, async () => {
   cleanupGsap?.();
   activeIndex.value = 0;
+  timelineFloat.value = 0;
   resetCardStyles();
   await nextTick();
   await initScrollTimeline();
@@ -386,7 +393,7 @@ const handleYearClick = (index: number) => {
       <div class="company-timeline__track">
         <ul
           class="company-timeline__years"
-          :style="{ transform: `translateY(${-activeIndex * 60}px)` }"
+          :style="{ transform: `translateY(${-timelineFloat * 60}px)` }"
         >
           <li
             v-for="(item, index) in timelineData"

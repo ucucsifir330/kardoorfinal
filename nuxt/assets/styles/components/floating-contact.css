@@ -40,12 +40,13 @@ body.entrance-lab-showroom-on .floating-contact {
 }
 
 .app-shell--night .floating-contact {
-  --contact-glass: rgba(14, 18, 22, 0.62);
-  --contact-glass-strong: rgba(21, 26, 32, 0.78);
-  --contact-ink: rgba(247, 247, 242, 0.96);
-  --contact-muted: rgba(247, 247, 242, 0.62);
-  --contact-line: rgba(255, 255, 255, 0.2);
+  --contact-glass: rgba(19, 25, 55, 0.72);
+  --contact-glass-strong: rgba(23, 29, 61, 0.86);
+  --contact-ink: #F4F6FF;
+  --contact-muted: #B9C0D8;
+  --contact-line: rgba(244, 246, 255, 0.2);
   --contact-shadow: rgba(0, 0, 0, 0.34);
+  --contact-blue: #8EA2FF;
 }
 
 .floating-contact::before {

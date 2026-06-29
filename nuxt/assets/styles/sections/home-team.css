@@ -114,6 +114,7 @@
 
 .ada-split-quote {
   cursor: pointer;
+  perspective: 900px;
 }
 
 .ada-split-quote .ts-line {
@@ -125,6 +126,13 @@
 
 .ada-split-quote .ada-manifesto-word {
   display: inline-block;
+  will-change: transform, opacity;
+}
+
+.ada-split-quote .ada-manifesto-char {
+  display: inline-block;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
   will-change: transform, opacity;
 }
 

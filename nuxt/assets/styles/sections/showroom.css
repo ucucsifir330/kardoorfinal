@@ -20,15 +20,15 @@
   overflow: hidden;
 
   /* Tema değişkenleri — varsayılan NIGHT (koyu). [data-ambience="day"] override. */
-  --sl-bg-1: #14151b;
-  --sl-bg-2: #0b0b0d;
-  --sl-vignette-a: rgba(60, 62, 78, 0.35);
-  --sl-vignette-b: rgba(0, 0, 0, 0.55);
-  --sl-text: #f7f7f2;
-  --sl-text-soft: rgba(247, 247, 242, 0.66);
-  --sl-text-faint: rgba(247, 247, 242, 0.5);
-  --sl-line: rgba(247, 247, 242, 0.24);
-  --sl-backdrop: rgba(247, 247, 242, 0.05);
+  --sl-bg-1: #131937;
+  --sl-bg-2: #080B18;
+  --sl-vignette-a: rgba(142, 162, 255, 0.16);
+  --sl-vignette-b: rgba(5, 7, 20, 0.34);
+  --sl-text: #F4F6FF;
+  --sl-text-soft: #B9C0D8;
+  --sl-text-faint: #9FA7BD;
+  --sl-line: rgba(244, 246, 255, 0.22);
+  --sl-backdrop: rgba(195, 204, 255, 0.07);
 
   background:
     radial-gradient(80% 90% at 40% 38%, var(--sl-bg-1) 0%, var(--sl-bg-2) 72%);
@@ -224,7 +224,7 @@
   inset: 0;
   transform-origin: left center;
   transform: scaleX(var(--counter-progress, 0));
-  background: #c9a978;
+  background: #8EA2FF;
   transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -260,7 +260,7 @@
 .showroom-lab__name-tail {
   display: block;
   font-style: italic;
-  color: #c9a978;
+  color: #8EA2FF;
 }
 
 .showroom-lab__series {
@@ -303,12 +303,12 @@
    varsayılan koyu metin koyu zeminde kaybolur. Custom property'ler scoped
    bileşene miras yoluyla geçer. */
 .entrance-lab[data-ambience="night"] .showroom-lab__actions .ada-cta-button--outline {
-  --ada-cta-fg: #f7f7f2;
-  --ada-cta-border: rgba(247, 247, 242, 0.4);
-  --ada-cta-hover-fg: #14151d;
-  --ada-cta-hover-bg: #f7f7f2;
-  --ada-cta-hover-border: #f7f7f2;
-  --ada-cta-fill-surface: #f7f7f2;
+  --ada-cta-fg: #F4F6FF;
+  --ada-cta-border: rgba(244, 246, 255, 0.4);
+  --ada-cta-hover-fg: #050714;
+  --ada-cta-hover-bg: #C3CCFF;
+  --ada-cta-hover-border: #C3CCFF;
+  --ada-cta-fill-surface: #C3CCFF;
 }
 
 /* Info swap geçişi. */

@@ -87,8 +87,8 @@
   display: grid;
   place-items: center;
   padding: clamp(24px, 6vw, 120px);
-  background: radial-gradient(80% 90% at 50% 40%, #14151b 0%, #0b0b0d 72%);
-  color: #f7f7f2;
+  background: radial-gradient(80% 90% at 40% 38%, #131937 0%, #080B18 72%);
+  color: #F4F6FF;
   text-align: center;
 }
 
@@ -130,7 +130,11 @@
   line-height: 1.32;
   letter-spacing: 0;
   color: inherit;
-  opacity: 0.78;
+  opacity: 1;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__configure-copy {
+  color: #B9C0D8;
 }
 
 .entrance-lab__configure-actions {
@@ -148,6 +152,17 @@
 .entrance-lab__configure-actions .ada-manifesto-cta {
   position: relative;
   margin-top: 0;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__configure-actions .ada-manifesto-cta {
+  border: 1px solid rgba(244, 246, 255, 0.12);
+  background: #171D3D;
+  color: #F4F6FF;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__configure-actions .ada-manifesto-cta:hover {
+  border-color: rgba(142, 162, 255, 0.28);
+  background: #1D244A;
 }
 
 /* İkon solda varyant — sağ padding'i de aç (simetri). */
@@ -171,8 +186,8 @@
 /* Hover'da ikon dönmesin (mesaj net kalsın); buton zemini "yakında" hissi için
    hafif altın tona kaysın. */
 .entrance-lab__soon-cta:hover {
-  background: #c9a978;
-  color: #14151d;
+  background: #8EA2FF;
+  color: #050714;
 }
 
 .entrance-lab__soon-cta:hover .ada-manifesto-cta-icon {
@@ -427,7 +442,7 @@
      Configure paneliyle aynı zemin (tema-bazlı). svh: katalog overlap'i
      (home-references.css --catalog-entrance-overlap) bununla eşleşmeli. */
   min-height: 50svh;
-  background: radial-gradient(80% 90% at 50% 40%, #14151b 0%, #0b0b0d 72%);
+  background: radial-gradient(80% 90% at 40% 38%, #131937 0%, #080B18 72%);
 }
 
 .entrance-lab__next[data-ambience="day"] {

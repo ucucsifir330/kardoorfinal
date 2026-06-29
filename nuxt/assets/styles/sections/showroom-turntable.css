@@ -15,20 +15,23 @@
   --st-door-width: clamp(215px, 23vw, 345px);
   --st-stage-x: clamp(22%, 31vw, 39%);
   --st-stage-y: 96%;
+  --st-backdrop-layer-left: -31vw;
+  --st-backdrop-layer-top: -96vh;
+  --st-backdrop-drop: 5vh;
 
   /* ── Dark theme (default) ── */
-  --st-bg-deep: #0a0b0d;
-  --st-bg-mid: #111316;
-  --st-bg-soft: rgba(255, 255, 255, 0.03);
-  --st-spotlight: rgba(255, 255, 255, 0.07);
-  --st-floor-line: rgba(255, 255, 255, 0.08);
-  --st-floor-glow: rgba(212, 194, 160, 0.16);
-  --st-text: #f7f7f2;
-  --st-text-muted: rgba(247, 247, 242, 0.62);
-  --st-text-soft: rgba(247, 247, 242, 0.36);
-  --st-line: rgba(247, 247, 242, 0.18);
-  --st-accent: #d4c2a0;
-  --st-backdrop-color: rgba(255, 255, 255, 0.045);
+  --st-bg-deep: #080B18;
+  --st-bg-mid: #131937;
+  --st-bg-soft: rgba(244, 246, 255, 0.04);
+  --st-spotlight: rgba(142, 162, 255, 0.11);
+  --st-floor-line: rgba(244, 246, 255, 0.09);
+  --st-floor-glow: rgba(142, 162, 255, 0.18);
+  --st-text: #F4F6FF;
+  --st-text-muted: #B9C0D8;
+  --st-text-soft: #8A93AD;
+  --st-line: rgba(244, 246, 255, 0.18);
+  --st-accent: #8EA2FF;
+  --st-backdrop-color: rgba(195, 204, 255, 0.07);
   --st-door-shadow: 0 40px 80px rgba(0, 0, 0, 0.55);
   --st-grain-opacity: 0.07;
 
@@ -78,7 +81,7 @@
       ellipse 60% 80% at 30% 50%,
       transparent 0%,
       transparent 50%,
-      rgba(0, 0, 0, 0.32) 100%
+      rgba(5, 7, 20, 0.38) 100%
     );
   pointer-events: none;
 }
@@ -116,11 +119,14 @@
 /* Backdrop typography — kapının arkasında dev isim */
 .showroom-turntable__backdrop {
   position: absolute;
-  inset: 0;
+  left: var(--st-backdrop-layer-left);
+  top: var(--st-backdrop-layer-top);
+  width: 100vw;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
+  z-index: 34;
   pointer-events: none;
   overflow: hidden;
 }
@@ -148,9 +154,10 @@
   );
   opacity: var(--backdrop-opacity, var(--showroom-backdrop-opacity, 1));
   overflow: visible;
+  display: grid;
   transform: translate3d(
     calc(var(--showroom-text-x, 0px) + var(--backdrop-x, 0px)),
-    calc(var(--backdrop-y, -4vh) - var(--backdrop-accent-bleed) / 2),
+    calc(var(--backdrop-y, -4vh) + var(--st-backdrop-drop, 0vh) - var(--backdrop-accent-bleed) / 2),
     0
   );
   user-select: none;
@@ -158,6 +165,7 @@
 }
 
 .showroom-turntable__backdrop-marquee {
+  grid-area: 1 / 1;
   display: flex;
   width: max-content;
   white-space: nowrap;
@@ -167,6 +175,16 @@
 
 .entrance-door--backdrop-running .showroom-turntable__backdrop-marquee {
   animation: showroom-backdrop-marquee 160s linear infinite;
+}
+
+.st-band-enter-active,
+.st-band-leave-active {
+  transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.st-band-enter-from,
+.st-band-leave-to {
+  opacity: 0;
 }
 
 .showroom-turntable__backdrop-marquee-group {
@@ -321,7 +339,8 @@
   justify-content: center;
   gap: clamp(16px, 1.45vw, 48px);
   padding: clamp(48px, 8vh, 180px) clamp(36px, 4.16vw, 140px) clamp(48px, 8vh, 180px) clamp(0px, 1.45vw, 60px);
-  z-index: 4;
+  z-index: 40;
+  background: var(--st-bg-deep);
 }
 
 .showroom-turntable__info-block {
@@ -769,7 +788,13 @@
   }
 
   .showroom-turntable__backdrop-text {
-    display: none !important;
+    display: block;
+    font-size: clamp(180px, 54vw, 280px);
+    opacity: var(--backdrop-opacity, var(--showroom-backdrop-opacity, 1));
+  }
+
+  .showroom-turntable__backdrop-marquee {
+    transform: translate3d(0, 0, 0);
   }
 
   .showroom-turntable__slot {
@@ -865,7 +890,14 @@
 
 @media (min-width: 1920px) {
   .showroom-turntable {
-    grid-template-columns: 1fr clamp(540px, 28vw, 760px);
+    --st-door-height: clamp(620px, 68vh, 760px);
+    --st-door-width: clamp(290px, 17.5vw, 380px);
+    --st-stage-x: clamp(900px, 39vw, 1000px);
+    --st-stage-y: 97%;
+    --st-backdrop-layer-left: calc(-1 * clamp(900px, 39vw, 1000px));
+    --st-backdrop-layer-top: -97vh;
+    --st-backdrop-drop: 7vh;
+    grid-template-columns: 1fr clamp(500px, 22vw, 620px);
   }
 
   .showroom-turntable__info-block {
@@ -894,5 +926,19 @@
 
   .showroom-turntable__meta {
     font-size: clamp(10px, 0.57vw, 13px);
+  }
+}
+
+/* Ultrawide showroom safeguard: the scroll-driven custom properties can stay
+   at their initial hidden values after a viewport/DPR change. Once the
+   showroom itself is active, keep its architectural wordmark visible. */
+@media (min-width: 2200px) and (min-aspect-ratio: 21 / 10) {
+  .entrance-door--showroom-active .showroom-turntable__backdrop-text {
+    opacity: 1;
+    clip-path: none;
+  }
+
+  .entrance-door--showroom-active .showroom-turntable__backdrop-marquee {
+    transform: translate3d(6vw, 0, 0);
   }
 }

@@ -73,7 +73,7 @@
                   <img :src="project.image" :alt="project.title">
                 </div>
                 <div class="card-body">
-                  <p class="card-title"><span>→</span> {{ project.title }}</p>
+                  <p class="card-title">{{ project.title }}</p>
                   <p class="card-location">{{ project.location }}</p>
                 </div>
               </div>
@@ -472,12 +472,12 @@ onBeforeUnmount(() => {
 
 :global(html:has(.app-shell--references):not(:has(.app-shell--day))),
 :global(body:has(.app-shell--references):not(:has(.app-shell--day))) {
-  background: #111111 !important;
+  background: #080B18 !important;
 }
 
 :global(.app-shell),
 :global(.footer-wrapper) {
-  background: var(--ref-surface, #111111);
+  background: var(--ref-surface, #080B18);
 }
 
 :global(.site-header) {
@@ -497,24 +497,25 @@ onBeforeUnmount(() => {
   --ref-hero-h: 92svh;
 
   /* Same dark palette as /contact. */
-  --ref-surface: #111111;
-  --ref-page-bg: linear-gradient(180deg, #111111 0%, #111111 100%);
-  --ref-panel-bg: #111111;
-  --ref-ink: #f5f3ef;
-  --ref-ink-soft: rgba(245, 243, 239, 0.72);
-  --ref-title-ink: #f5f3ef;
-  --ref-card-bg: rgba(255, 255, 255, 0.04);
-  --ref-card-border: rgba(245, 243, 239, 0.24);
-  --ref-card-title: #f5f3ef;
-  --ref-card-loc: rgba(245, 243, 239, 0.48);
-  --ref-accent: #2ce3ff;
-  --ref-logo-filter: invert(1) brightness(1.7);
-  --ref-modal-bg: #111111;
-  --ref-modal-ink: #f5f3ef;
-  --ref-modal-sub: rgba(245, 243, 239, 0.72);
+  --ref-surface: #080B18;
+  --ref-page-bg: linear-gradient(180deg, #050714 0%, #080B18 100%);
+  --ref-panel-bg: #080B18;
+  --ref-cards-panel-bg: #131937;
+  --ref-ink: #F4F6FF;
+  --ref-ink-soft: #B9C0D8;
+  --ref-title-ink: #F4F6FF;
+  --ref-card-bg: #171D3D;
+  --ref-card-border: rgba(244, 246, 255, 0.12);
+  --ref-card-title: #F4F6FF;
+  --ref-card-loc: #9FA7BD;
+  --ref-accent: #8EA2FF;
+  --ref-logo-filter: brightness(0) saturate(100%) invert(94%) sepia(7%) saturate(216%) hue-rotate(222deg) brightness(103%) contrast(94%);
+  --ref-modal-bg: #050714;
+  --ref-modal-ink: #F4F6FF;
+  --ref-modal-sub: #B9C0D8;
   --ref-modal-shadow: 0 50px 120px rgba(0, 0, 0, 0.55);
-  --ref-close-chip: #f5f3ef;
-  --ref-close-ink: #111111;
+  --ref-close-chip: #C3CCFF;
+  --ref-close-ink: #050714;
 
   width: 100%;
   position: relative;
@@ -529,6 +530,7 @@ onBeforeUnmount(() => {
     radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.76), transparent 26rem),
     linear-gradient(180deg, #faf7ef 0%, var(--ref-surface) 58%, #eee8db 100%);
   --ref-panel-bg: #f6f2e9;
+  --ref-cards-panel-bg: #f6f2e9;
   --ref-ink: #111417;
   --ref-ink-soft: rgba(17, 20, 23, 0.68);
   --ref-title-ink: #111417;
@@ -547,7 +549,7 @@ onBeforeUnmount(() => {
 }
 
 :global(html[data-theme="dark"]) :global(body) {
-  background: #111111;
+  background: #080B18;
 }
 
 /* Scroll handoff (CSS sticky, smooth): the hero sticks to the top so the card
@@ -815,7 +817,7 @@ onBeforeUnmount(() => {
 }
 
 .cards-section {
-  background: var(--ref-panel-bg);
+  background: var(--ref-cards-panel-bg);
   min-height: 100svh;
   box-sizing: border-box;
   width: 100%;
@@ -915,7 +917,11 @@ onBeforeUnmount(() => {
 .card:hover {
   transform: translateY(-12px);
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 102, 169, 0.08);
+  border-color: rgba(142, 162, 255, 0.28);
+}
+
+:global(.app-shell--references:not(.app-shell--day)) .card:hover {
+  background: #1D244A;
 }
 
 .card-image img {
@@ -938,11 +944,6 @@ onBeforeUnmount(() => {
   font-weight: 800;
   color: var(--ref-card-title);
   margin-bottom: 8px;
-}
-
-.card-title span {
-  color: var(--ref-accent);
-  margin-right: 6px;
 }
 
 .card-location {
@@ -1063,10 +1064,14 @@ onBeforeUnmount(() => {
   }
 }
 
-:global(.app-shell--references),
-:global(.app-shell--references .footer-wrapper) {
-  background: #111111 !important;
-  background-color: #111111 !important;
+:global(.app-shell--references) {
+  background: #080B18 !important;
+  background-color: #080B18 !important;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-wrapper) {
+  background: #131937 !important;
+  background-color: #131937 !important;
 }
 
 :global(.app-shell--day.app-shell--references),
@@ -1084,6 +1089,43 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 1px #2a2a30;
 }
 
+:global(.app-shell--references:not(.app-shell--day) .footer-dome) {
+  background: linear-gradient(180deg, #0D122B 0%, #131937 100%) !important;
+  background-color: #131937 !important;
+  box-shadow: 0 0 0 1px #131937 !important;
+  outline-color: #131937 !important;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .site-header) {
+  --header-control-active: linear-gradient(135deg, #F4F6FF 0%, #C3CCFF 100%) !important;
+  --header-link-active: #050714;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .site-header__nav-link.is-active),
+:global(.app-shell--references:not(.app-shell--day) .site-header__mobile-link.is-active) {
+  background: linear-gradient(135deg, #F4F6FF 0%, #C3CCFF 100%) !important;
+  color: #050714 !important;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-form .form-row input) {
+  border-color: rgba(244, 246, 255, 0.22);
+  color: #F4F6FF;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-form .form-row input:focus),
+:global(.app-shell--references:not(.app-shell--day) .footer-form .form-row input:focus-visible) {
+  border-color: #8EA2FF;
+}
+
+@media (min-width: 761px) {
+  :global(.app-shell--references:not(.app-shell--day) .submit-btn),
+  :global(.app-shell--references:not(.app-shell--day) .submit-btn__label),
+  :global(.app-shell--references:not(.app-shell--day) .submit-btn svg) {
+    color: #F4F6FF !important;
+    stroke: #F4F6FF !important;
+  }
+}
+
 /* No visible chip ring around the footer social buttons on references. */
 :global(.app-shell--references .social-btn) {
   background-color: transparent;
@@ -1091,6 +1133,18 @@ onBeforeUnmount(() => {
 
 :global(.app-shell--references .social-btn:hover) {
   background-color: #e6e7eb;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-socials > .social-btn) {
+  background-color: #171D3D !important;
+  color: #F4F6FF !important;
+  border: 1px solid rgba(244, 246, 255, 0.12) !important;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-socials > .social-btn:hover) {
+  background-color: #C3CCFF !important;
+  color: #050714 !important;
+  border-color: rgba(142, 162, 255, 0.28) !important;
 }
 
 @media (max-width: 900px) {

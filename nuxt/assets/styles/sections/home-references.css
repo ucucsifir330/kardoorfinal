@@ -1,6 +1,7 @@
 
 .home-catalog-reference-stack {
   --catalog-reference-handoff: 100svh;
+  --catalog-top-radius: clamp(2.75rem, 5.8vw, 6.75rem);
   /* PERDE (parallax): katalog, scroll'dan daha hızlı yukarı gelerek "Kurgulayın"
      panelinin/CTA'ların üzerine biner. Hareket JS'ten (HomeExperience parallax
      ScrollTrigger) --catalog-curtain-y ile sürülür. Negatif margin = başlangıç
@@ -32,6 +33,14 @@
 
 .home-catalog-reference-stack__catalog-frame {
   position: relative;
+  border-top-left-radius: var(--catalog-top-radius);
+  border-top-right-radius: var(--catalog-top-radius);
+  overflow: clip;
+}
+
+.home-catalog-reference-stack__catalog-frame > .catalog-section {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
 }
 
 .home-catalog-reference-stack__references {
@@ -57,6 +66,23 @@
   /* ScrollSmoother kesirli transform'u radius köşelerde 1px sub-pixel tel bırakıyordu;
      arka plan rengini köşe eğrisini takip ederek 1px taşırıp dikişi mühürlüyoruz. */
   box-shadow: 0 0 0 1px var(--references-bg);
+}
+
+.app-shell--night .home-references-flip {
+  --references-bg: #131937;
+  --references-ink: #F4F6FF;
+  --references-muted: #B9C0D8;
+  --references-soft: rgba(244, 246, 255, 0.12);
+  --references-line: rgba(244, 246, 255, 0.22);
+  --references-accent: #8EA2FF;
+}
+
+.app-shell--night .home-references-flip__scroll-hint {
+  color: #8A93AD;
+}
+
+.app-shell--night .home-references-flip__video {
+  background: #050714;
 }
 
 .home-references-flip__intro,

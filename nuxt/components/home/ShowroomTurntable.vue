@@ -175,6 +175,8 @@ const TOTAL_ROTATION = 360;
 const STEP = TOTAL_ROTATION / doors.length;
 const ORBIT_RADIUS_X = 360;
 const ORBIT_RADIUS_Y = 50;
+const DESKTOP_ORBIT_MAX_RADIUS_X = 760;
+const DESKTOP_ORBIT_RATIO = 0.29;
 const MOBILE_ORBIT_MEDIA = "(max-width: 640px)";
 const MOBILE_ORBIT_RADIUS_X = 220;
 const MOBILE_ORBIT_RATIO = 0.3;
@@ -187,7 +189,10 @@ const updateOrbitRadius = () => {
 
   orbitRadiusX.value = window.matchMedia(MOBILE_ORBIT_MEDIA).matches
     ? Math.min(MOBILE_ORBIT_RADIUS_X, window.innerWidth * MOBILE_ORBIT_RATIO)
-    : ORBIT_RADIUS_X;
+    : Math.min(
+        DESKTOP_ORBIT_MAX_RADIUS_X,
+        Math.max(ORBIT_RADIUS_X, window.innerWidth * DESKTOP_ORBIT_RATIO)
+      );
 
   // Re-apply the orbit imperatively after a radius change (resize / breakpoint).
   applyOrbit(props.progress);
@@ -253,8 +258,8 @@ const applyOrbit = (progress: number) => {
 
     const baseScale =
       distance <= 1
-        ? lerp(0.62, 1.22, nearActive)
-        : Math.max(0.5, lerp(0.62, 0.5, clamp(distance - 1, 0, 1)));
+        ? lerp(0.78, 1.26, nearActive)
+        : Math.max(0.62, lerp(0.78, 0.62, clamp(distance - 1, 0, 1)));
     const scale = baseScale * (1 + ((door.visual?.activeScale ?? 1) - 1) * nearActive);
 
     const baseOpacity =
@@ -302,9 +307,9 @@ const nameFitScale = computed(() =>
   `${clamp(8.9 / activeDoor.value.nameDisplay.lead.length, 0.82, 1)}`
 );
 const backdropStyle = computed(() => ({
-  "--backdrop-scale": `${activeDoor.value.visual.backdropScale}`,
-  "--backdrop-x": activeDoor.value.visual.backdropX,
-  "--backdrop-y": activeDoor.value.visual.backdropY,
+  "--backdrop-scale": "1",
+  "--backdrop-x": "0px",
+  "--backdrop-y": "-4vh",
   "--backdrop-opacity": `calc(var(--showroom-backdrop-opacity, 1) * ${activeDoor.value.visual.backdropOpacity})`
 }));
 const doorNumber = computed(() => String(activeIndex.value + 1).padStart(2, "0"));
@@ -343,32 +348,34 @@ const ui = computed(() =>
 
     <!-- LEFT: STAGE -->
     <div class="showroom-turntable__stage">
-      <!-- Backdrop typography (kapının arkasında dev isim) -->
-      <div class="showroom-turntable__backdrop" aria-hidden="true">
-        <Transition name="st-backdrop" mode="out-in">
-          <span
-            :key="activeDoor.id"
-            class="showroom-turntable__backdrop-text"
-            :style="backdropStyle"
-          >
-            <span class="showroom-turntable__backdrop-marquee">
-              <span class="showroom-turntable__backdrop-marquee-group">
-                <span v-for="i in 6" :key="`a-${i}`">{{ backdropMarqueeText }}</span>
-              </span>
-              <span class="showroom-turntable__backdrop-marquee-group" aria-hidden="true">
-                <span v-for="i in 6" :key="`b-${i}`">{{ backdropMarqueeText }}</span>
-              </span>
-            </span>
-          </span>
-        </Transition>
-      </div>
-
       <!-- Spotlight cone -->
       <div class="showroom-turntable__spotlight" aria-hidden="true" />
 
       <!-- Orbit Carousel -->
       <div class="showroom-turntable__scene">
         <div class="showroom-turntable__carousel">
+          <!-- Backdrop typography (arka kapıların üstünden, aktif kapının arkasından akar) -->
+          <div class="showroom-turntable__backdrop" aria-hidden="true">
+            <span
+              class="showroom-turntable__backdrop-text"
+              :style="backdropStyle"
+            >
+              <Transition name="st-band">
+                <span
+                  :key="activeDoor.id"
+                  class="showroom-turntable__backdrop-marquee"
+                >
+                  <span class="showroom-turntable__backdrop-marquee-group">
+                    <span v-for="i in 6" :key="`a-${i}`">{{ backdropMarqueeText }}</span>
+                  </span>
+                  <span class="showroom-turntable__backdrop-marquee-group" aria-hidden="true">
+                    <span v-for="i in 6" :key="`b-${i}`">{{ backdropMarqueeText }}</span>
+                  </span>
+                </span>
+              </Transition>
+            </span>
+          </div>
+
           <div
             v-for="(door, i) in doors"
             :key="door.id"

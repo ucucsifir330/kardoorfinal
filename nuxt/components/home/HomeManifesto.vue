@@ -167,14 +167,16 @@ onMounted(async () => {
   const quoteElement = manifestoQuoteRef.value;
 
   if (quoteElement) {
+    const note = quoteElement.querySelector<HTMLElement>("small");
+
     quoteSplit = SplitText.create(quoteElement, {
-      type: "lines,words",
-      linesClass: "ts-line",
-      wordsClass: "ada-manifesto-word"
+      type: "chars",
+      charsClass: "ada-manifesto-char",
+      ignore: note || undefined,
+      smartWrap: true
     });
 
-    const words = quoteSplit.words as HTMLElement[];
-    const note = quoteElement.querySelector<HTMLElement>("small");
+    const chars = quoteSplit.chars as HTMLElement[];
 
     quoteTimeline = gsap.timeline({
       delay: 0.2,
@@ -183,25 +185,16 @@ onMounted(async () => {
 
     quoteTimeline
       .addLabel("enter")
-      .fromTo(
-        words,
-        { yPercent: 100 },
+      .from(
+        chars,
         {
-          yPercent: 0,
-          duration: 0.6,
-          ease: "circ.out",
-          stagger: 0.2
-        },
-        "enter"
-      )
-      .fromTo(
-        words,
-        { autoAlpha: 0 },
-        {
-          autoAlpha: 1,
-          duration: 0.6,
-          ease: "power1.out",
-          stagger: 0.2
+          rotationY: -90,
+          rotationX: 45,
+          transformOrigin: "left center",
+          opacity: 0,
+          stagger: 0.05,
+          duration: 0.8,
+          ease: "power3.out"
         },
         "enter"
       )
@@ -210,22 +203,15 @@ onMounted(async () => {
       .addLabel("exit")
       .to(note, { autoAlpha: 0, duration: 0.5, ease: "none" }, "exit")
       .to(
-        words,
+        chars,
         {
-          yPercent: -200,
+          rotationY: 90,
+          rotationX: -35,
+          transformOrigin: "right center",
+          opacity: 0,
           duration: 0.4,
-          ease: "circ.in",
-          stagger: 0.1
-        },
-        "exit"
-      )
-      .to(
-        words,
-        {
-          autoAlpha: 0,
-          duration: 0.4,
-          ease: "power1.in",
-          stagger: 0.1
+          ease: "power2.in",
+          stagger: 0.015
         },
         "exit"
       );
