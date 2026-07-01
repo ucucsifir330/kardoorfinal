@@ -6,6 +6,10 @@ export type ContactDetails = {
   message: string;
   newsletter: boolean;
   locale: string;
+  /** Footer formundan seçilen şube (İzmir/Kocaeli/Manisa). Opsiyonel. */
+  branch?: string;
+  /** Başvurunun geldiği yer (ör. "Footer formu"). Boşsa varsayılan kullanılır. */
+  source?: string;
 };
 
 export type ContactEmail = {
@@ -35,6 +39,7 @@ type Copy = {
   customer: string;
   email: string;
   phone: string;
+  branch: string;
   message: string;
   newsletter: string;
   source: string;
@@ -54,6 +59,7 @@ const copy: Record<"tr" | "en", Copy> = {
     customer: "Müşteri",
     email: "E-posta",
     phone: "Telefon",
+    branch: "Şube",
     message: "Mesaj",
     newsletter: "Bülten",
     source: "Kaynak",
@@ -71,6 +77,7 @@ const copy: Record<"tr" | "en", Copy> = {
     customer: "Client",
     email: "Email",
     phone: "Phone",
+    branch: "Branch",
     message: "Message",
     newsletter: "Newsletter",
     source: "Source",
@@ -122,26 +129,31 @@ export function buildContactEmail(details: ContactDetails): ContactEmail {
   const fullName = [details.firstName, details.lastName].filter(Boolean).join(" ");
   const newsletter = details.newsletter ? t.yes : t.no;
   const subject = t.subject(fullName);
-  const source = "kardoor.com/contact";
+  const source = details.source || "kardoor.com/contact";
 
-  const text = [
+  const textLines = [
     t.heading,
     "",
     `${t.customer}: ${fullName}`,
-    `${t.email}: ${details.email}`,
-    `${t.phone}: ${details.phone || "-"}`,
+    `${t.email}: ${details.email || "-"}`,
+    `${t.phone}: ${details.phone || "-"}`
+  ];
+  if (details.branch) textLines.push(`${t.branch}: ${details.branch}`);
+  textLines.push(
     `${t.newsletter}: ${newsletter}`,
     `Locale: ${details.locale.toUpperCase()}`,
     `${t.source}: ${source}`,
     "",
     `${t.message}:`,
-    details.message
-  ].join("\n");
+    details.message || "-"
+  );
+  const text = textLines.join("\n");
 
   const safeName = escapeHtml(fullName);
-  const safeEmail = escapeHtml(details.email);
+  const safeEmail = escapeHtml(details.email || "-");
   const safePhone = escapeHtml(details.phone || "-");
-  const safeMessage = escapeHtml(details.message).replaceAll("\n", "<br>");
+  const safeBranch = escapeHtml(details.branch || "");
+  const safeMessage = escapeHtml(details.message || "-").replaceAll("\n", "<br>");
   const safeNewsletter = escapeHtml(newsletter);
   const safeLocale = escapeHtml(details.locale.toUpperCase());
   const safeSource = escapeHtml(source);
@@ -150,6 +162,14 @@ export function buildContactEmail(details: ContactDetails): ContactEmail {
   );
   const normalizedPhone = normalizePhoneHref(details.phone);
   const phoneHref = normalizedPhone ? `tel:${normalizedPhone}` : "";
+
+  // E-posta verildiyse tıklanabilir mailto; yoksa düz "-".
+  const emailValueHtml = details.email
+    ? `<a href="mailto:${safeEmail}" style="color:${theme.ink};text-decoration:none;">${safeEmail}</a>`
+    : "-";
+  const phoneValueHtml = phoneHref
+    ? `<a href="${escapeHtml(phoneHref)}" style="color:${theme.ink};text-decoration:none;">${safePhone}</a>`
+    : safePhone;
 
   const html = `<!doctype html>
 <html lang="${lang}">
@@ -185,17 +205,9 @@ export function buildContactEmail(details: ContactDetails): ContactEmail {
                       <div style="margin-top:6px;font-size:24px;line-height:1.2;color:${theme.ink};font-weight:800;">${safeName}</div>
                     </td>
                   </tr>
-                  ${field(
-                    escapeHtml(t.email),
-                    `<a href="mailto:${safeEmail}" style="color:${theme.ink};text-decoration:none;">${safeEmail}</a>`
-                  )}
-                  ${field(
-                    escapeHtml(t.phone),
-                    phoneHref
-                      ? `<a href="${escapeHtml(phoneHref)}" style="color:${theme.ink};text-decoration:none;">${safePhone}</a>`
-                      : safePhone,
-                    true
-                  )}
+                  ${field(escapeHtml(t.email), emailValueHtml)}
+                  ${field(escapeHtml(t.phone), phoneValueHtml, !details.branch)}
+                  ${details.branch ? field(escapeHtml(t.branch), safeBranch, true) : ""}
                   <tr>
                     <td style="padding:18px 0 0;">
                       <div style="font-size:11px;color:${theme.muted};letter-spacing:0.14em;text-transform:uppercase;font-weight:800;">${escapeHtml(t.message)}</div>
@@ -219,7 +231,11 @@ export function buildContactEmail(details: ContactDetails): ContactEmail {
                     </td>
                   </tr>
                 </table>
-                <a href="${mailtoHref}" style="display:inline-block;margin-top:20px;padding:12px 18px;background:${theme.headerBg};color:${theme.headerInk};border-radius:9px;text-decoration:none;font-size:14px;font-weight:800;">${escapeHtml(t.reply)}</a>
+                ${
+                  details.email
+                    ? `<a href="${mailtoHref}" style="display:inline-block;margin-top:20px;padding:12px 18px;background:${theme.headerBg};color:${theme.headerInk};border-radius:9px;text-decoration:none;font-size:14px;font-weight:800;">${escapeHtml(t.reply)}</a>`
+                    : ""
+                }
                 ${
                   phoneHref
                     ? `<a href="${escapeHtml(phoneHref)}" style="display:inline-block;margin-top:20px;margin-left:8px;padding:11px 17px;border:1px solid ${theme.headerBg};color:${theme.ink};border-radius:9px;text-decoration:none;font-size:14px;font-weight:800;">${escapeHtml(t.call)}</a>`

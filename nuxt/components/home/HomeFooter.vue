@@ -84,28 +84,52 @@
                 :key="location"
                 class="location-option"
               >
-                <input type="radio" name="location" :checked="index === 0">
+                <input
+                  v-model.number="selectedBranchIndex"
+                  type="radio"
+                  name="location"
+                  :value="index"
+                >
                 <span class="radio-ui"></span>
                 <span class="option-text flip-text-link" :data-text="location">{{ location }}</span>
               </label>
             </div>
           </div>
 
-          <form class="footer-form" @submit.prevent>
+          <form class="footer-form" @submit.prevent="handleFooterSubmit">
+            <label class="footer-form__trap" aria-hidden="true">
+              <span>Company</span>
+              <input v-model="footerForm.company" type="text" name="company" tabindex="-1" autocomplete="off">
+            </label>
+
             <div class="form-row">
-              <input type="text" :placeholder="footerCopy.form.name">
-              <input type="text" :placeholder="footerCopy.form.phone">
+              <input v-model="footerForm.name" type="text" name="name" autocomplete="name" :placeholder="footerCopy.form.name">
+              <input v-model="footerForm.phone" type="tel" name="phone" autocomplete="tel" :placeholder="footerCopy.form.phone">
             </div>
 
             <div class="form-row form-row-message">
-              <input type="text" :placeholder="footerCopy.form.message">
-              <button type="submit" class="submit-btn" :aria-label="footerCopy.form.submitAria">
+              <input v-model="footerForm.message" type="text" name="message" :placeholder="footerCopy.form.message">
+              <button
+                type="submit"
+                class="submit-btn"
+                :disabled="footerFormState === 'submitting'"
+                :aria-label="footerCopy.form.submitAria"
+              >
                 <span class="submit-btn__label">{{ footerCopy.form.submit }}</span>
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M8 5L15 12L8 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
               </button>
             </div>
+
+            <p
+              v-if="footerFormState === 'success' || footerFormState === 'error'"
+              class="footer-form__status"
+              :data-state="footerFormState"
+              :role="footerFormState === 'error' ? 'alert' : 'status'"
+            >
+              {{ footerFormState === 'success' ? footerCopy.form.success : (footerErrorDetail || footerCopy.form.error) }}
+            </p>
           </form>
         </div>
       </div>
@@ -197,7 +221,7 @@
 
 <script setup lang="ts">
 // @ts-nocheck
-import { computed, onBeforeUnmount, onMounted, ref } from "vue"
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue"
 import { gsap } from "gsap"
 import { useKardoorLocale } from "~/composables/useKardoorLocale"
 
@@ -219,7 +243,11 @@ const footerCopies = {
       phone: "Telefon numaranız",
       message: "Mesajınız",
       submit: "Randevu Oluştur",
-      submitAria: "Gönder"
+      submitAria: "Gönder",
+      success: "Talebiniz alındı. En kısa sürede sizi arayacağız.",
+      error: "Gönderilemedi. Lütfen tekrar deneyin.",
+      nameRequired: "Lütfen adınızı ve soyadınızı girin.",
+      phoneRequired: "Lütfen telefon numaranızı girin (zorunlu)."
     },
     productsTitle: "Ürün Serileri",
     productLinks: [
@@ -280,7 +308,11 @@ const footerCopies = {
       phone: "Your phone number",
       message: "Your message",
       submit: "Create Appointment",
-      submitAria: "Submit"
+      submitAria: "Submit",
+      success: "We received your request. We'll call you back shortly.",
+      error: "Could not send. Please try again.",
+      nameRequired: "Please enter your full name.",
+      phoneRequired: "Please enter your phone number (required)."
     },
     productsTitle: "Product Series",
     productLinks: [
@@ -329,6 +361,64 @@ const footerCopies = {
 }
 
 const footerCopy = computed(() => footerCopies[locale.value] ?? footerCopies.tr)
+
+// ── İLETİŞİM FORMU — contact.vue ile AYNI altyapı (/api/contact → Brevo). ──
+type FooterFormState = "idle" | "submitting" | "success" | "error"
+const footerFormState = ref<FooterFormState>("idle")
+// Sunucunun döndürdüğü gerçek hata sebebi (teşhis için ekranda gösterilir).
+const footerErrorDetail = ref("")
+// Seçili şube index'i (0 = İzmir). Etiket footerCopy.locationOptions'tan gelir.
+const selectedBranchIndex = ref(0)
+const footerForm = reactive({ name: "", phone: "", message: "", company: "" })
+
+const handleFooterSubmit = async () => {
+  if (footerFormState.value === "submitting") return
+
+  const name = footerForm.name.trim()
+  const phone = footerForm.phone.trim()
+
+  // Footer'da e-posta yok; ad + telefon zorunlu (backend de bunu kabul ediyor).
+  if (name.length < 2) {
+    footerErrorDetail.value = footerCopy.value.form.nameRequired
+    footerFormState.value = "error"
+    return
+  }
+  if (phone.length < 4) {
+    footerErrorDetail.value = footerCopy.value.form.phoneRequired
+    footerFormState.value = "error"
+    return
+  }
+
+  footerFormState.value = "submitting"
+  footerErrorDetail.value = ""
+
+  try {
+    await $fetch("/api/contact", {
+      method: "POST",
+      body: {
+        firstName: name,
+        phone,
+        message: footerForm.message.trim(),
+        company: footerForm.company, // honeypot
+        branch: footerCopy.value.locationOptions[selectedBranchIndex.value],
+        source: "Footer formu",
+        locale: locale.value
+      }
+    })
+    footerFormState.value = "success"
+    footerForm.name = ""
+    footerForm.phone = ""
+    footerForm.message = ""
+  } catch (err) {
+    // Sunucunun gerçek sebebini yakala (statusMessage) — teşhis için göster + logla.
+    const e = err as { statusCode?: number; statusMessage?: string; data?: { statusMessage?: string; message?: string } }
+    const reason = e?.data?.statusMessage || e?.statusMessage || e?.data?.message || ""
+    const code = e?.statusCode ? `[${e.statusCode}] ` : ""
+    console.error("Footer contact submit failed:", err)
+    footerErrorDetail.value = `${code}${reason}`.trim()
+    footerFormState.value = "error"
+  }
+}
 
 const footerWrapper = ref<HTMLElement | null>(null)
 const footerDome = ref<HTMLElement | null>(null)

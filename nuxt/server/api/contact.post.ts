@@ -34,24 +34,29 @@ export default defineEventHandler(async (event) => {
     phone: cap(asCleanString(body.phone), limits.phone),
     message: cap(asCleanString(body.message), limits.message),
     newsletter: body.newsletter === true,
-    locale: asCleanString(body.locale) || "tr"
+    locale: asCleanString(body.locale) || "tr",
+    branch: cap(asCleanString(body.branch), limits.name) || undefined,
+    source: cap(asCleanString(body.source), limits.email) || undefined
   };
 
-  if (!details.firstName || !details.email || !details.message) {
+  // Ad zorunlu; iletişim için e-posta VEYA telefon yeterli. Footer formunda
+  // e-posta yok (telefon var); contact.vue'da e-posta var — ikisi de geçerli.
+  if (!details.firstName || (!details.email && !details.phone)) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Name, email and message are required."
+      statusMessage: "Name and an email or phone number are required."
     });
   }
 
-  if (details.firstName.length < 2 || details.message.length < 3) {
+  if (details.firstName.length < 2) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Please enter a valid name and message."
+      statusMessage: "Please enter a valid name."
     });
   }
 
-  if (!emailPattern.test(details.email)) {
+  // E-posta verildiyse formatı geçerli olmalı (footer'da boş gelebilir).
+  if (details.email && !emailPattern.test(details.email)) {
     throw createError({
       statusCode: 400,
       statusMessage: "A valid email address is required."
@@ -68,6 +73,26 @@ export default defineEventHandler(async (event) => {
   const mail = buildContactEmail(details);
   const replyToName = [details.firstName, details.lastName].filter(Boolean).join(" ");
 
+  const mailPayload: Record<string, unknown> = {
+    sender: {
+      name: String(config.contactFromName || "Kardoor Website"),
+      email: String(config.contactFromEmail)
+    },
+    to: [
+      {
+        email: String(config.contactToEmail)
+      }
+    ],
+    subject: mail.subject,
+    textContent: mail.text,
+    htmlContent: mail.html
+  };
+
+  // replyTo yalnızca geçerli e-posta varsa — Brevo boş replyTo'yu reddeder.
+  if (details.email) {
+    mailPayload.replyTo = { email: details.email, name: replyToName };
+  }
+
   let response: Response;
   try {
     response = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -76,24 +101,7 @@ export default defineEventHandler(async (event) => {
         "api-key": String(config.brevoApiKey),
         "content-type": "application/json"
       },
-      body: JSON.stringify({
-        sender: {
-          name: String(config.contactFromName || "Kardoor Website"),
-          email: String(config.contactFromEmail)
-        },
-        to: [
-          {
-            email: String(config.contactToEmail)
-          }
-        ],
-        replyTo: {
-          email: details.email,
-          name: replyToName
-        },
-        subject: mail.subject,
-        textContent: mail.text,
-        htmlContent: mail.html
-      }),
+      body: JSON.stringify(mailPayload),
       signal: AbortSignal.timeout(10_000)
     });
   } catch (error) {
