@@ -218,7 +218,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: clamp(14px, 1.8vw, 24px);
+  gap: clamp(12px, 1.45vw, 20px);
 }
 
 .showroom-lab__counter {
@@ -233,7 +233,7 @@
 
 .showroom-lab__counter-current {
   display: inline-block;
-  font-size: clamp(20px, 1.65vw, 28px);
+  font-size: clamp(16px, 1.22vw, 22px);
   font-weight: 600;
   color: var(--sl-text);
 }
@@ -304,7 +304,7 @@
 .showroom-lab__divider {
   width: 56px;
   height: 1px;
-  margin: clamp(4px, 0.8vw, 12px) 0 clamp(8px, 1vw, 16px);
+  margin: clamp(0px, 0.28vw, 4px) 0 clamp(8px, 1vw, 16px);
   background: var(--sl-line);
 }
 
@@ -332,6 +332,35 @@
   align-items: center;
   gap: clamp(16px, 1.6vw, 24px);
   margin-top: clamp(22px, 3vw, 42px);
+}
+
+.entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {
+  --ada-cta-bg: var(--accent);
+  --ada-cta-fg: #050714;
+  --ada-cta-border: var(--accent);
+  --ada-cta-hover-bg: var(--accent-soft);
+  --ada-cta-hover-fg: #050714;
+  --ada-cta-hover-border: var(--accent-soft);
+  --ada-cta-fill-surface: var(--accent-soft);
+}
+
+.entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button--outline {
+  --ada-cta-fg: var(--accent);
+  --ada-cta-border: var(--accent);
+  --ada-cta-hover-fg: #050714;
+  --ada-cta-hover-bg: transparent;
+  --ada-cta-hover-border: var(--accent);
+  --ada-cta-fill-surface: var(--accent);
+}
+
+.entrance-lab[data-ambience="night"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {
+  --ada-cta-bg: #F4F6FF;
+  --ada-cta-fg: #050714;
+  --ada-cta-border: #F4F6FF;
+  --ada-cta-hover-bg: #C3CCFF;
+  --ada-cta-hover-fg: #050714;
+  --ada-cta-hover-border: #C3CCFF;
+  --ada-cta-fill-surface: #C3CCFF;
 }
 
 .showroom-lab__door-rail {
@@ -392,9 +421,9 @@
   --ada-cta-fg: #F4F6FF;
   --ada-cta-border: rgba(244, 246, 255, 0.4);
   --ada-cta-hover-fg: #050714;
-  --ada-cta-hover-bg: #C3CCFF;
-  --ada-cta-hover-border: #C3CCFF;
-  --ada-cta-fill-surface: #C3CCFF;
+  --ada-cta-hover-bg: var(--accent);
+  --ada-cta-hover-border: var(--accent);
+  --ada-cta-fill-surface: var(--accent);
 }
 
 /* Info swap geçişi. */
@@ -433,10 +462,10 @@
     gap: clamp(30px, 7vw, 46px);
   }
   .showroom-lab__info-block {
-    gap: clamp(14px, 3.6vw, 22px);
+    gap: clamp(12px, 3vw, 18px);
   }
   .showroom-lab__counter-current {
-    font-size: clamp(22px, 7vw, 34px);
+    font-size: clamp(18px, 5.2vw, 26px);
   }
   .showroom-lab__counter-line {
     width: clamp(48px, 16vw, 78px);

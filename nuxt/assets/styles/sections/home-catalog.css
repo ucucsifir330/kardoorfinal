@@ -4069,7 +4069,8 @@ html[data-theme="dark"] .app-shell--night .home-page .catalog-card-title span,
 html[data-theme="dark"] .app-shell--night .home-page .catalog-card-subtitle,
 html[data-theme="dark"] .app-shell--night .home-page .catalog-designer,
 html[data-theme="dark"] .app-shell--night .home-page .catalog-finish,
-html[data-theme="dark"] .app-shell--night .home-page .catalog-code {
+html[data-theme="dark"] .app-shell--night .home-page .catalog-code,
+html[data-theme="dark"] .app-shell--night .home-page .catalog-all-models {
   color: #9FA7BD !important;
 }
 
@@ -4079,13 +4080,13 @@ html[data-theme="dark"] .app-shell--night .home-page .catalog-product-image-wrap
 }
 
 html[data-theme="dark"] .app-shell--night .home-page .catalog-like {
-  width: 34px !important;
-  height: 34px !important;
-  background: linear-gradient(145deg, #242D5C 0%, #171D3D 100%) !important;
-  color: #EF4444 !important;
+  width: 30px !important;
+  height: 30px !important;
+  background: #2B376E !important;
+  color: #050714 !important;
   box-shadow:
-    inset 0 0 0 1px rgba(195, 204, 255, 0.22),
-    0 8px 20px rgba(5, 7, 20, 0.26) !important;
+    inset 0 0 0 1px rgba(195, 204, 255, 0.2),
+    0 6px 16px rgba(5, 7, 20, 0.22) !important;
   transition:
     transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
     background-color 200ms ease,
@@ -4095,25 +4096,26 @@ html[data-theme="dark"] .app-shell--night .home-page .catalog-like {
 html[data-theme="dark"] .app-shell--night .home-page .catalog-like-wrap {
   top: 8px !important;
   right: 8px !important;
-  width: 34px !important;
-  height: 34px !important;
+  width: 30px !important;
+  height: 30px !important;
 }
 
 html[data-theme="dark"] .app-shell--night .home-page .catalog-heart {
-  width: 15px !important;
-  height: 15px !important;
-  color: #EF4444 !important;
-  fill: transparent !important;
-  stroke: #EF4444 !important;
+  width: 13px !important;
+  height: 13px !important;
+  color: #050714 !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
   stroke-width: 2.2 !important;
   transition: fill 180ms ease, transform 180ms cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
 
 html[data-theme="dark"] .app-shell--night .home-page .catalog-like.is-liked {
-  background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), #171D3D 82%) !important;
+  background: #2B376E !important;
+  color: #EF4444 !important;
   box-shadow:
-    inset 0 0 0 1px rgba(239, 68, 68, 0.34),
-    0 8px 20px rgba(5, 7, 20, 0.28) !important;
+    inset 0 0 0 1px rgba(239, 68, 68, 0.28),
+    0 6px 16px rgba(5, 7, 20, 0.24) !important;
 }
 
 html[data-theme="dark"] .app-shell--night .home-page .catalog-like.is-liked .catalog-heart {
@@ -4132,10 +4134,10 @@ html[data-theme="dark"] .app-shell--night .home-page .catalog-wishlist-panel {
 
 @media (hover: hover) and (pointer: fine) {
   html[data-theme="dark"] .app-shell--night .home-page .catalog-like:hover {
-    background: linear-gradient(145deg, #2B376E 0%, #1D244A 100%) !important;
+    background: #34427F !important;
     box-shadow:
-      inset 0 0 0 1px rgba(195, 204, 255, 0.34),
-      0 10px 24px rgba(5, 7, 20, 0.32) !important;
+      inset 0 0 0 1px rgba(142, 162, 255, 0.32),
+      0 8px 20px rgba(5, 7, 20, 0.28) !important;
     transform: translateY(-1px) scale(1.03) !important;
   }
 

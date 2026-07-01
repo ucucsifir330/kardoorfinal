@@ -92,6 +92,8 @@
 }
 
 .home-references-flip__intro {
+  --references-pointer-x: 0;
+  --references-pointer-y: 0;
   min-height: 92vh;
   display: flex;
   flex-direction: column;
@@ -100,6 +102,124 @@
   gap: 16px;
   padding: 88px 24px 64px;
   text-align: center;
+  isolation: isolate;
+}
+
+.home-references-flip__specimens {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.home-references-flip__specimen {
+  position: absolute;
+  margin: 0;
+  pointer-events: auto;
+  translate: 0 0;
+  transform: translate3d(0, 0, 0);
+  transition:
+    translate 720ms var(--ease-out),
+    transform 720ms var(--ease-out),
+    opacity 720ms var(--ease-out);
+  will-change: transform;
+}
+
+.home-references-flip__specimen--stair {
+  width: clamp(250px, 26vw, 510px);
+  top: clamp(122px, 17vh, 190px);
+  left: max(24px, calc(50% - 650px));
+  opacity: 0.78;
+  animation: home-references-specimen-float-down 7.2s var(--ease-soft) infinite;
+  transform:
+    translate3d(
+      calc(var(--references-pointer-x) * -18px),
+      calc(var(--references-pointer-y) * -10px),
+      0
+    )
+    rotate(calc(-10deg + (var(--references-pointer-x) * 2.4deg)));
+}
+
+.home-references-flip__specimen--cube {
+  width: clamp(210px, 20vw, 410px);
+  right: max(-56px, calc(50% - 760px));
+  bottom: clamp(44px, 7vh, 96px);
+  opacity: 0.72;
+  animation: home-references-specimen-float-up 7.4s var(--ease-soft) -2.6s infinite;
+  transform:
+    translate3d(
+      calc(var(--references-pointer-x) * 16px),
+      calc(var(--references-pointer-y) * 10px),
+      0
+    )
+    rotate(calc(8deg + (var(--references-pointer-x) * -2.2deg)));
+}
+
+.home-references-flip__specimen-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  mix-blend-mode: screen;
+  user-select: none;
+}
+
+.home-references-flip__specimen-image--hover {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 720ms var(--ease-out);
+}
+
+.home-references-flip__specimen:hover .home-references-flip__specimen-image--hover {
+  opacity: 1;
+}
+
+.home-references-flip__specimen--stair:hover {
+  opacity: 0.96;
+  translate: 0 10px;
+  transform:
+    translate3d(
+      calc(var(--references-pointer-x) * -20px),
+      calc(var(--references-pointer-y) * -12px),
+      0
+    )
+    rotate(calc(-7deg + (var(--references-pointer-x) * 2.6deg)))
+    scale(1.035);
+}
+
+.home-references-flip__specimen--cube:hover {
+  opacity: 0.94;
+  translate: 0 -10px;
+  transform:
+    translate3d(
+      calc(var(--references-pointer-x) * 18px),
+      calc(var(--references-pointer-y) * 12px),
+      0
+    )
+    rotate(calc(5deg + (var(--references-pointer-x) * -2.4deg)))
+    scale(1.045);
+}
+
+@keyframes home-references-specimen-float-down {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 30px;
+  }
+}
+
+@keyframes home-references-specimen-float-up {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -30px;
+  }
 }
 
 .home-references-flip__copy span,
@@ -116,6 +236,8 @@
 }
 
 .home-references-flip__intro h2 {
+  position: relative;
+  z-index: 1;
   max-width: min(94vw, 1180px);
   display: flex;
   flex-direction: column;
@@ -133,6 +255,8 @@
 }
 
 .home-references-flip__intro p {
+  position: relative;
+  z-index: 1;
   max-width: clamp(760px, 58vw, 1040px);
   color: var(--references-muted);
   font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
@@ -349,6 +473,22 @@
     text-align: left;
   }
 
+  .home-references-flip__specimen--stair {
+    width: clamp(174px, 48vw, 286px);
+    top: 68px;
+    left: auto;
+    right: -54px;
+    opacity: 0.42;
+  }
+
+  .home-references-flip__specimen--cube {
+    width: clamp(150px, 40vw, 238px);
+    right: auto;
+    bottom: 38px;
+    left: -48px;
+    opacity: 0.34;
+  }
+
   .home-references-flip__intro h2 {
     align-items: flex-start;
     max-width: 100%;
@@ -374,6 +514,28 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-references-flip__specimen,
+  .home-references-flip__specimen-image--hover {
+    animation: none;
+    transition: none;
+  }
+
+  .home-references-flip__specimen--stair:hover,
+  .home-references-flip__specimen--cube:hover {
+    opacity: 0.78;
+  }
+
+  .home-references-flip__specimen--stair:hover {
+    translate: 0 0;
+    transform: translate3d(0, 0, 0) rotate(-10deg);
+  }
+
+  .home-references-flip__specimen--cube:hover {
+    opacity: 0.72;
+    translate: 0 0;
+    transform: translate3d(0, 0, 0) rotate(8deg);
+  }
+
   .home-references-flip__scroll-hint span:last-child {
     animation: none;
   }

@@ -71,10 +71,7 @@
   transform: translate3d(var(--page-x, 0%), 0, 0);
   will-change: transform;
   /* TEK PARÇA ZEMİN: gradyan track'in tamamına (200vw) uygulanır ve track'le
-     birlikte kayar → showroom ve configure slide'ları tek sürekli zemin gibi
-     görünür, ortada dikiş olmaz. Slide'lar ve ShowroomLab şeffaf bırakılır.
-     showroom.css'teki "radial(80% 90% at 40% 38%)" (100vw'lik) ile birebir aynı
-     his: 200vw'de yatay yüzdeler yarıya iner (80→40, 40→20), dikey sabit. */
+     birlikte kayar. Slide'lar ve ShowroomLab şeffaf bırakılır. */
   background: radial-gradient(40% 90% at 20% 38%, #131937 0%, #080B18 72%);
 }
 
@@ -104,14 +101,14 @@
   display: grid;
   place-items: center;
   padding: clamp(24px, 6vw, 120px);
-  /* Zemin YOK — track'in tek parça gradyanı bu slide'ın da arkasında.
-     Sadece metin rengi temaya göre. */
-  background: transparent;
+  /* Sol Mimari Özel info panelinin zeminiyle aynı karışım. */
+  background: color-mix(in srgb, #131937 58%, #080B18);
   color: #F4F6FF;
   text-align: center;
 }
 
 .entrance-lab[data-ambience="day"] .entrance-lab__configure {
+  background: color-mix(in srgb, #f3f1ea 58%, #d9d6cd);
   color: #14151d;
 }
 
@@ -179,8 +176,11 @@
 }
 
 .entrance-lab[data-ambience="night"] .entrance-lab__configure-actions .ada-manifesto-cta:hover {
+  --ada-cta-text-color: #F4F6FF;
+
   border-color: rgba(142, 162, 255, 0.28);
   background: #1D244A;
+  color: #F4F6FF;
 }
 
 /* İkon solda varyant — sağ padding'i de aç (simetri). */
@@ -206,6 +206,13 @@
 .entrance-lab__soon-cta:hover {
   background: #8EA2FF;
   color: #050714;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__soon-cta:hover {
+  --ada-cta-text-color: #F4F6FF;
+
+  background: #1D244A;
+  color: #F4F6FF;
 }
 
 .entrance-lab__soon-cta:hover .ada-manifesto-cta-icon {
@@ -324,7 +331,7 @@
   font-style: italic;
   font-size: 0.86em;
   letter-spacing: 0;
-  color: #8b6a3f;
+  color: var(--accent);
 }
 
 .entrance-lab__heading em {
@@ -353,11 +360,7 @@
 
 .entrance-lab__subtitle em {
   font-style: normal;
-  color: #8b6a3f;
-}
-
-.entrance-lab[data-ambience="night"] .entrance-lab__subtitle em {
-  color: #d4c2a0;
+  color: inherit;
 }
 
 .entrance-lab__cta-row {

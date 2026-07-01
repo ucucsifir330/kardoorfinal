@@ -26,7 +26,44 @@
       </button>
     </div>
 
-    <section class="home-references-flip__intro">
+    <section
+      ref="introRef"
+      class="home-references-flip__intro"
+      @pointermove="handleSpecimenPointerMove"
+      @pointerleave="resetSpecimenPointer"
+    >
+      <div class="home-references-flip__specimens" aria-hidden="true">
+        <figure class="home-references-flip__specimen home-references-flip__specimen--stair">
+          <img
+            class="home-references-flip__specimen-image home-references-flip__specimen-image--base"
+            src="/images/brand/prism-illustrations/geometric-stair-prism-dark.webp"
+            alt=""
+            decoding="async"
+          >
+          <img
+            class="home-references-flip__specimen-image home-references-flip__specimen-image--hover"
+            src="/images/brand/prism-illustrations/geometric-stair-prism-light.webp"
+            alt=""
+            decoding="async"
+          >
+        </figure>
+
+        <figure class="home-references-flip__specimen home-references-flip__specimen--cube">
+          <img
+            class="home-references-flip__specimen-image home-references-flip__specimen-image--base"
+            src="/images/brand/prism-illustrations/prism-cube-dark.webp"
+            alt=""
+            decoding="async"
+          >
+          <img
+            class="home-references-flip__specimen-image home-references-flip__specimen-image--hover"
+            src="/images/brand/prism-illustrations/prism-cube-light.webp"
+            alt=""
+            decoding="async"
+          >
+        </figure>
+      </div>
+
       <h2 id="home-references-title">
         <span v-for="line in referencesCopy.titleLines" :key="line">{{ line }}</span>
       </h2>
@@ -95,6 +132,7 @@ const finalRef = ref<HTMLElement | null>(null);
 const startMarkerRef = ref<HTMLElement | null>(null);
 const finalMarkerRef = ref<HTMLElement | null>(null);
 const mediaRef = ref<HTMLElement | null>(null);
+const introRef = ref<HTMLElement | null>(null);
 const isDocumentaryStarted = ref(false);
 const documentaryYoutubeId = "yiZm36w4qiQ";
 const documentaryYoutubePosterUrl = `https://i.ytimg.com/vi/${documentaryYoutubeId}/maxresdefault.jpg`;
@@ -142,6 +180,31 @@ const scheduleFlipTriggerRefresh = () => {
 const stopDocumentary = () => {
   isDocumentaryStarted.value = false;
   documentaryStartScrollY = 0;
+};
+
+const setSpecimenPointer = (x: number, y: number) => {
+  const intro = introRef.value;
+  if (!intro) return;
+
+  intro.style.setProperty("--references-pointer-x", x.toFixed(3));
+  intro.style.setProperty("--references-pointer-y", y.toFixed(3));
+};
+
+const resetSpecimenPointer = () => {
+  setSpecimenPointer(0, 0);
+};
+
+const handleSpecimenPointerMove = (event: PointerEvent) => {
+  if (event.pointerType === "touch") return;
+
+  const intro = introRef.value;
+  if (!intro) return;
+
+  const rect = intro.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+  const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+
+  setSpecimenPointer(Math.max(-1, Math.min(1, x)), Math.max(-1, Math.min(1, y)));
 };
 
 const startDocumentary = () => {
