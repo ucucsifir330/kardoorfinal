@@ -469,29 +469,6 @@
   height: 18px;
 }
 
-/* Sağ kontrol bloğu: tema + dil + (mobil) hamburger. */
-.site-header__controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  pointer-events: auto;
-}
-
-/* Nav ile kontroller arası ince cam ayraç — iki yanı eşit nefes alsın. */
-.site-header__bar-divider {
-  width: 1px;
-  align-self: stretch;
-  margin-block: 8px;
-  margin-inline: clamp(2px, 0.3vw, 6px);
-  background: linear-gradient(
-    180deg,
-    transparent,
-    var(--header-glass-rim) 22%,
-    var(--header-glass-rim) 78%,
-    transparent
-  );
-}
-
 .site-header--hidden .site-header__bar {
   opacity: 0;
   pointer-events: none;
@@ -606,24 +583,17 @@
 }
 
 .site-header__nav-link.is-active::before,
-.site-header__theme-button.is-active::before,
-.site-header__language-button.is-active::before,
 .site-header__mobile-link.is-active::before {
   opacity: 0.72;
 }
 
 .site-header__nav-link.is-active::after,
-.site-header__theme-button.is-active::after,
-.site-header__language-button.is-active::after,
 .site-header__mobile-link.is-active::after {
   opacity: 1;
 }
 
 .site-header__nav-link:active,
 .site-header__icon-button:active,
-.site-header__theme-button:active,
-.site-header__language-button:active,
-.site-header__utility-link:active,
 .site-header__mobile-link:active {
   --header-glass-angle: -75deg;
   --header-shine-angle: -15deg;
@@ -642,35 +612,15 @@
 
 .site-header__nav-link:active::before,
 .site-header__icon-button:active::before,
-.site-header__theme-button:active::before,
-.site-header__language-button:active::before,
-.site-header__utility-link:active::before,
 .site-header__mobile-link:active::before {
   background-position: 50% 15%, center;
 }
 
-.site-header__utility {
-  justify-self: end;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: var(--header-pill-height);
-  padding: 4px;
-  border-radius: var(--header-pill-radius);
-  white-space: nowrap;
-}
-
-.site-header__icon-button,
-.site-header__utility-link,
-.site-header__theme,
-.site-header__language {
+.site-header__icon-button {
   flex: 0 0 auto;
 }
 
-.site-header__icon-button,
-.site-header__theme-button,
-.site-header__language-button,
-.site-header__utility-link {
+.site-header__icon-button {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -695,12 +645,6 @@
 .site-header__nav-link::after,
 .site-header__icon-button::before,
 .site-header__icon-button::after,
-.site-header__theme-button::before,
-.site-header__theme-button::after,
-.site-header__language-button::before,
-.site-header__language-button::after,
-.site-header__utility-link::before,
-.site-header__utility-link::after,
 .site-header__mobile-link::before,
 .site-header__mobile-link::after {
   content: "";
@@ -718,9 +662,6 @@
 
 .site-header__nav-link::before,
 .site-header__icon-button::before,
-.site-header__theme-button::before,
-.site-header__language-button::before,
-.site-header__utility-link::before,
 .site-header__mobile-link::before {
   z-index: -1;
   background:
@@ -743,9 +684,6 @@
 
 .site-header__nav-link::after,
 .site-header__icon-button::after,
-.site-header__theme-button::after,
-.site-header__language-button::after,
-.site-header__utility-link::after,
 .site-header__mobile-link::after {
   z-index: 0;
   padding: 1px;
@@ -767,9 +705,6 @@
 
 .site-header__nav-link:hover::before,
 .site-header__icon-button:hover::before,
-.site-header__theme-button:hover::before,
-.site-header__language-button:hover::before,
-.site-header__utility-link:hover::before,
 .site-header__mobile-link:hover::before {
   opacity: 0.62;
   background-position: 25% 50%, center;
@@ -777,9 +712,6 @@
 
 .site-header__nav-link:hover::after,
 .site-header__icon-button:hover::after,
-.site-header__theme-button:hover::after,
-.site-header__language-button:hover::after,
-.site-header__utility-link:hover::after,
 .site-header__mobile-link:hover::after {
   --header-glass-angle: -125deg;
   opacity: 0.75;
@@ -801,61 +733,16 @@
   fill: currentColor;
 }
 
-.site-header__icon-button:hover,
-.site-header__theme-button:hover,
-.site-header__language-button:hover,
-.site-header__utility-link:hover {
+.site-header__icon-button:hover {
   color: var(--header-link-hover);
   background: var(--header-control-hover);
 }
 
 .site-header__icon-button:focus-visible,
-.site-header__theme-button:focus-visible,
-.site-header__language-button:focus-visible,
-.site-header__utility-link:focus-visible,
 .site-header__nav-mark:focus-visible,
 .site-header__nav-link:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-}
-
-.site-header__theme,
-.site-header__language {
-  display: inline-flex;
-  align-items: center;
-  min-height: calc(var(--header-pill-height) - 8px);
-  padding: 2px;
-  border-radius: var(--header-control-radius);
-  background: var(--header-language-track);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
-}
-
-.site-header__theme-button,
-.site-header__language-button {
-  min-width: 36px;
-  min-height: calc(var(--header-pill-height) - 12px);
-  padding: 0 9px;
-  background: transparent;
-  cursor: pointer;
-}
-
-.site-header__theme-button.is-active,
-.site-header__language-button.is-active {
-  color: var(--header-link-active);
-  font-weight: 600;
-  background: var(--header-control-active);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 10px 26px rgba(0, 0, 0, 0.14);
-}
-
-.site-header__utility-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 15px;
 }
 
 .site-header__menu {
@@ -1012,8 +899,7 @@
     0 10px 26px rgba(0, 0, 0, 0.14);
 }
 
-[data-theme="dark"] .site-header__nav-link.is-active,
-[data-theme="dark"] .site-header__language-button.is-active {
+[data-theme="dark"] .site-header__nav-link.is-active {
   color: #071019;
   background:
     linear-gradient(
@@ -1041,12 +927,6 @@
 }
 
 @media (max-width: 1120px) {
-  /* Tek barda nav + ayraç gizlenir; bar yalnız kontrolleri (hamburger dahil) tutar. */
-  .site-header__nav,
-  .site-header__bar-divider {
-    display: none;
-  }
-
   .site-header__menu {
     display: inline-flex;
   }
@@ -1069,10 +949,6 @@
     width: 38px;
   }
 
-  .site-header__lang-toggle {
-    width: auto;
-  }
-
   .site-header__mobile-panel {
     top: calc(100% - 4px);
     right: 16px;
@@ -1093,18 +969,9 @@
     gap: 6px;
   }
 
-  .site-header__controls {
-    gap: 2px;
-  }
-
   .site-header__icon-button {
     min-height: 34px;
     width: 34px;
-  }
-
-  .site-header__lang-toggle {
-    width: auto;
-    padding-inline: 9px;
   }
 
   .site-header__brand .brand-mark {
@@ -1115,18 +982,6 @@
   .site-header__brand .brand-symbol {
     width: 26px !important;
     height: 32px !important;
-  }
-
-  .site-header__brand .brand-symbol__left,
-  .site-header__brand .brand-symbol__right {
-    width: 13px !important;
-    height: 26px !important;
-  }
-
-  .site-header__brand .brand-symbol__core {
-    left: 11px !important;
-    width: 8px !important;
-    height: 22px !important;
   }
 
   .site-header__brand .brand-title {
@@ -1141,9 +996,7 @@
   }
 }
 /* Active capsules: smaller, cleaner, less plastic */
-.site-header__nav-link.is-active,
-.site-header__theme-button.is-active,
-.site-header__language-button.is-active {
+.site-header__nav-link.is-active {
   background:
     linear-gradient(
       145deg,
@@ -1159,9 +1012,7 @@
     0 8px 22px rgba(0, 0, 0, 0.16);
 }
 
-[data-theme="dark"] .site-header__nav-link.is-active,
-[data-theme="dark"] .site-header__theme-button.is-active,
-[data-theme="dark"] .site-header__language-button.is-active {
+[data-theme="dark"] .site-header__nav-link.is-active {
   background:
     linear-gradient(
       145deg,
@@ -1169,21 +1020,6 @@
       rgba(255, 255, 255, 0.68) 44%,
       rgba(220, 228, 236, 0.54) 100%
     );
-}
-
-/* Utility language track: ince cam yuvası — arkadaki pill camını boğmasın
-   (eski parlak beyaz gradient "ikinci bir plastik katman" gibi duruyordu). */
-.site-header__theme,
-.site-header__language {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.1),
-      rgba(255, 255, 255, 0.03)
-    );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    inset 0 -1px 1px rgba(18, 28, 36, 0.05);
 }
 
 /* Light mode logo contrast fix */

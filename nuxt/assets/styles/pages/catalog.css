@@ -18,10 +18,6 @@ body:has(.catalog-page) main:has(.catalog-page) {
   overflow: visible;
 }
 
-body:has(.catalog-page) .kardoor-footer {
-  display: none;
-}
-
 .catalog-page {
   min-height: 100dvh;
   min-height: 0;
@@ -568,11 +564,6 @@ body:has(.catalog-page) .kardoor-footer {
   stroke-width: 2;
 }
 
-.catalog-product__like--active {
-  color: #ef4444;
-  background: #fff1f2;
-}
-
 .catalog-product__body {
   display: flex;
   align-items: flex-end;
@@ -661,12 +652,6 @@ body:has(.catalog-page) .kardoor-footer {
 }
 
 @media (max-width: 980px) {
-  .app-shell--catalog,
-  .app-main--catalog {
-    height: auto;
-    overflow: visible;
-  }
-
   .catalog-page {
     display: block;
     height: auto;

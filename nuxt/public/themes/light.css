@@ -284,43 +284,8 @@ body {
 }
 .close-icon svg { width: 18px; height: 18px; stroke: #13141c; }
 
-.services-title {
-  display: block; font-family: 'Gotham', sans-serif; font-size: clamp(12px, 0.82vw, 14px);
-  font-weight: 800; line-height: 1.1;
-  color: #5b5c61;
-  margin: 0 0 12px 0;
-}
-
-.services-list { list-style: none; width: 100%; margin: 0; }
-.services-list li {
-  width: 100%; min-height: 38px; padding: 10px 0; border-bottom: 1px solid rgba(234, 232, 232, 0.2);
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 18px;
-  color: #ebe8e8;
-  font-family: 'Gotham', sans-serif; font-size: clamp(12px, 0.86vw, 14px);
-  line-height: 1.05;
-  font-weight: 400;
-  letter-spacing: -0.045em; opacity: 1;
-}
-.services-list li:first-child { border-top: 1px solid rgba(234, 232, 232, 0.2); }
-.services-list li::after { display: none; }
-.exp-line-1 {
-  display: flex; align-items: baseline; gap: 6px; justify-content: flex-end;
-}
-.exp-line-1 strong {
-  font-size: clamp(24px, 1.6vw, 32px); font-weight: 900; color: #F1F1F1; line-height: 1; letter-spacing: -0.02em;
-}
-.exp-line-1 span {
-  font-size: clamp(18px, 1.2vw, 22px); font-weight: 900; color: #F1F1F1; line-height: 1;
-}
-.exp-line-2 {
-  font-size: clamp(18px, 1.2vw, 22px); font-weight: 900;
-  color: #5b5c61;
-  line-height: 1; margin-top: 4px;
-}
-
 @media (max-width: 1024px) {
   .close-icon { width: 54px; height: 54px; }
-  .exp-line-1 { justify-content: flex-start; }
 }
 
 .reveal-char {
@@ -717,8 +682,7 @@ body {
     border-radius: 16px !important;
   }
 
-  .hidden-measure,
-  .word-slide-item {
+  .hidden-measure {
     font-size: clamp(36px, 10.8vw, 48px) !important;
     letter-spacing: 0 !important;
     padding: 0 14px !important;
