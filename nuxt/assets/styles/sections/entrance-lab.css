@@ -84,6 +84,18 @@
    vignette/info-panel teması bozulmaz. */
 .entrance-lab__slider .showroom-lab {
   background: transparent;
+  /* TÜM SAHNEYİ ORANTILI SIĞDIR (tarayıcı zoom gibi). Sahne ~860px tasarım
+     yüksekliğine göre yapıldı (MacBook Air). Daha kısa viewport'larda komple
+     küçült → kapı + sağ panel birlikte sığar, hiçbir öğeye tek tek dokunmadan.
+     1'i geçmez (büyük ekranda tasarım boyutunu korur). origin top: üstten
+     başlar, kalan boşluk altta toplanır. width/height telafisi: scale'den
+     dolayı oluşan boşluğu kapatıp inset:0 alanını yine doldurur. */
+  --sl-fit: min(1, calc(100vh / 860px));
+  inset: 0 auto auto 0;
+  transform: scale(var(--sl-fit));
+  transform-origin: top left;
+  width: calc(100% / var(--sl-fit));
+  height: calc(100% / var(--sl-fit));
 }
 
 .entrance-lab__slide {

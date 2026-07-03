@@ -8,8 +8,7 @@
  *  • Zoom kapı boşluğuna girer → arkadaki ShowroomLab turntable belirir.
  *  • Son fazda "Kurgulayın" paneli yatay kayarak gelir.
  *
- * Bu bileşen hem `/` (HomeExperience) hem `/entrance-lab` sayfası tarafından kullanılır
- * → tek kaynak. Sayfaya özel meta/SEO çağıran sayfalar bu bileşeni sarmalar.
+ * Bu bileşen `/` ana sayfasında (HomeExperience) kullanılır.
  *
  * Mimari:
  *  • Hero ve kapı, object-fit:cover'a göre JS ile hesaplanan ortak bir

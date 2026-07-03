@@ -79,7 +79,7 @@ const applyOrbit = (p: number) => {
 
     const s = el.style;
     s.setProperty("--slot-x", `${x}px`);
-    s.setProperty("--slot-y", `${y + nearActive * 44 + nonActive * 96}px`);
+    s.setProperty("--slot-y", `${y + nonActive * 96}px`);
     s.setProperty("--slot-scale", `${opacity <= 0.001 ? 0.001 : scale}`);
     s.setProperty("--slot-opacity", `${opacity}`);
     s.zIndex = `${Math.round(40 - distance * 12)}`;
