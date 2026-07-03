@@ -318,66 +318,19 @@ body,
   border-right-color: rgba(244, 246, 255, 0.1) !important;
 }
 
-.catalog-logo-kardoor,
-.catalog-logo-r,
 .catalog-label,
-.catalog-filter-text,
 .catalog-title,
 .catalog-product-family,
-.catalog-sample-text,
 .catalog-card-title {
   color: #F4F6FF !important;
 }
 
-.catalog-logo-r-wrap {
-  border-color: #F4F6FF !important;
-}
-
-.catalog-search-wrapper,
-.catalog-filter-item {
-  background: linear-gradient(to right, #171D3D, #1D244A) !important;
-}
-
-.catalog-search-wrapper::before,
-.catalog-filter-item::before {
-  background: linear-gradient(to right, #1D244A, #1D244A) !important;
-}
-
-.catalog-search-wrapper.is-focused {
-  background: #1D244A !important;
-  border-color: rgba(244, 246, 255, 0.18) !important;
-}
-
-.catalog-search-icon,
-.catalog-search-input {
-  color: #F4F6FF !important;
-}
-
-.catalog-search-input::placeholder {
-  color: rgba(244, 246, 255, 0.4) !important;
-}
-
-.catalog-arrow,
 .catalog-product-arrow {
   color: rgba(244, 246, 255, 0.42) !important;
 }
 
-.catalog-filter-item:hover .catalog-arrow,
 .catalog-product:hover .catalog-product-arrow {
   color: #F4F6FF !important;
-}
-
-.catalog-sample-btn {
-  background-color: #F4F6FF !important;
-  color: #080B18 !important;
-}
-
-.catalog-sample-btn:hover {
-  background-color: #FFFFFF !important;
-}
-
-.catalog-sample-arrow {
-  color: #080B18 !important;
 }
 
 .catalog-card {
@@ -612,11 +565,6 @@ body,
   overflow: hidden !important;
 }
 
-.catalog-search-wrapper,
-.catalog-filter-item {
-  background: #1D244A !important;
-}
-
 .catalog-main {
   width: 100% !important;
   height: 100% !important;
@@ -694,98 +642,6 @@ body,
     grid-template-columns: 1fr !important;
     row-gap: 14px !important;
     text-align: left !important;
-  }
-}
-
-/* Final catalog polish guards */
-
-@media (max-width: 760px) {
-
-  .catalog-mobile-filter-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    min-height: 34px;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 999px;
-    background: #F4F6FF;
-    color: #080B18;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
-  .catalog-search-wrapper {
-    width: 100% !important;
-    border-radius: 999px !important;
-    background: rgba(244, 246, 255, 0.08) !important;
-  }
-
-  .catalog-filter-item {
-    width: auto !important;
-    min-width: max-content;
-    padding: 10px 14px !important;
-    border-radius: 999px !important;
-    background: rgba(244, 246, 255, 0.08) !important;
-  }
-
-  .catalog-mobile-filter-sheet {
-    position: fixed;
-    inset: 0;
-    z-index: 2500;
-    display: flex !important;
-    align-items: flex-end;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.58);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.24s ease, visibility 0s linear 0.24s;
-  }
-
-  .catalog-mobile-filter-panel {
-    width: 100%;
-    max-height: 78vh;
-    padding: 18px 18px 26px;
-    border-radius: 24px 24px 0 0;
-    background: #1D244A;
-    transform: translateY(100%);
-    transition: transform 0.28s ease;
-  }
-
-  .catalog-mobile-filter-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-    font-weight: 700;
-    color: #FFFFFF;
-  }
-
-  .catalog-mobile-filter-head button {
-    width: 34px;
-    height: 34px;
-    border: 0;
-    border-radius: 50%;
-    background: #F4F6FF;
-    color: #080B18;
-    font-size: 24px;
-    line-height: 1;
-  }
-
-  .catalog-mobile-filter-option {
-    width: 100%;
-    min-height: 48px;
-    border: 0;
-    border-bottom: 1px solid rgba(244, 246, 255, 0.12);
-    background: transparent;
-    color: #F4F6FF;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font: inherit;
-    font-size: 15px;
   }
 }
 
@@ -1420,8 +1276,6 @@ body,
   border-right-color: rgba(244, 246, 255, 0.1) !important;
 }
 
-.catalog-search-wrapper,
-.catalog-filter-item,
 .catalog-card,
 .catalog-product-image-wrap,
 .review-card {
