@@ -565,8 +565,10 @@ onBeforeUnmount(() => {
 
     <!-- KAYDIR ipucu — scroll başlayınca kaybolur (--hero-cue-opacity). -->
     <div class="entrance-lab__cue" aria-hidden="true">
-      <span>{{ copy.scrollCue }}</span>
-      <i />
+      <span class="entrance-lab__cue-label">{{ copy.scrollCue }}</span>
+      <span class="entrance-lab__scroll-device">
+        <span class="entrance-lab__scroll-motion" />
+      </span>
     </div>
   </section>
 

@@ -633,7 +633,7 @@
   color: #242929;
   display: flex;
   overflow: hidden;
-  font-family: 'Gotham', 'Montserrat', sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
 }
 .catalog-sidebar {
   width: clamp(380px, 21.875vw, 420px);
@@ -878,6 +878,7 @@
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07);
 }
 .catalog-title {
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(92px, 7vw, 134.4px);
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -1088,6 +1089,7 @@
   cursor: pointer;
 }
 .catalog-finish {
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: 15.5px;
   color: #6b7280;
   margin: 0 0 4px 0;
@@ -1103,6 +1105,7 @@
   margin-top: 4px;
 }
 .catalog-code {
+  font-family: Inter, system-ui, sans-serif;
   font-size: 12px;
   color: #9ca3af;
   text-transform: uppercase;
@@ -2092,11 +2095,14 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-title {
   margin: 0 0 0 var(--catalog-info-column-width, 188px) !important;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif !important;
   color: var(--text-primary, #111417) !important;
-  font-size: clamp(92px, 7vw, 134px) !important;
+  font-size: clamp(72px, 5.95vw, 104px) !important;
   font-weight: 500 !important;
   line-height: 0.85 !important;
   letter-spacing: 0 !important;
+  width: max-content !important;
+  max-width: min(802px, calc(100% - var(--catalog-info-column-width, 188px))) !important;
 }
 
 .home-page .catalog-row {
@@ -2120,11 +2126,18 @@ html[data-theme="dark"] .home-page .catalog-section {
   align-self: stretch !important;
   width: 188px !important;
   min-width: 0 !important;
-  padding: 24px 20px 20px 24px !important;
+  padding: 14px 20px 20px 24px !important;
   color: var(--text-primary, #111417) !important;
   background: var(--catalog-stage-main-bg, #f4f1ea) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+}
+
+.home-page .catalog-row-info > div {
+  display: flex !important;
+  min-height: 100% !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
 }
 
 .home-page .catalog-product-family {
@@ -2136,7 +2149,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 }
 
 .home-page .catalog-designer {
-  margin: 8px 0 40px !important;
+  margin: 8px 0 58px !important;
   color: rgba(17, 20, 23, 0.66) !important;
   font-size: 15.5px !important;
   line-height: 1.25 !important;
@@ -2211,7 +2224,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-all-models {
   display: inline-flex !important;
-  margin-top: 22px !important;
+  margin-top: auto !important;
   margin-left: -24px !important;
   padding: 24px !important;
   border-radius: 999px !important;
@@ -2565,6 +2578,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-finish {
   margin: 0 0 4px !important;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif !important;
   color: var(--text-secondary, #6b7280) !important;
   font-size: 15.5px !important;
   line-height: 1.22 !important;
@@ -2584,6 +2598,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-code {
   margin: 0 !important;
+  font-family: Inter, system-ui, sans-serif !important;
   color: #9ca3af !important;
   font-size: 12px !important;
   line-height: 1 !important;

@@ -275,10 +275,10 @@
 
 .showroom-lab__name {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(42px, 4.6vw, 82px);
   line-height: 0.98;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--sl-text);
 }
 
@@ -289,12 +289,13 @@
 .showroom-lab__name-tail {
   display: block;
   margin-top: 0.08em;
-  font-style: italic;
+  font-style: normal;
   color: #8EA2FF;
 }
 
 .showroom-lab__series {
   margin: 0;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(15px, 1.2vw, 18px);
   line-height: 1.35;
   letter-spacing: 0.06em;
@@ -332,6 +333,11 @@
   align-items: center;
   gap: clamp(16px, 1.6vw, 24px);
   margin-top: clamp(22px, 3vw, 42px);
+}
+
+.showroom-lab__actions .ada-cta-button {
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+  font-weight: 600;
 }
 
 .entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {

@@ -153,9 +153,9 @@ const resetHoverDirection = (event: PointerEvent) => {
   padding: 0 clamp(16px, 1.1vw, 22px);
   background: var(--ada-cta-bg);
   color: var(--ada-cta-fg);
-  font-family: Gotham, "Gotham SSm", Montserrat, Inter, system-ui, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(13px, 0.78vw, 15px);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: 0;
   text-decoration: none;

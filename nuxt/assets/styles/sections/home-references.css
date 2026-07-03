@@ -56,13 +56,16 @@
   --references-line: rgba(248, 243, 223, 0.28);
   --references-accent: #3a83ff;
   --references-top-radius: clamp(2.75rem, 5.8vw, 6.75rem);
+  --references-bottom-bleed: clamp(180px, 24svh, 320px);
   position: relative;
   z-index: 20;
   background: var(--references-bg);
   border-top-left-radius: var(--references-top-radius);
   border-top-right-radius: var(--references-top-radius);
+  margin-bottom: calc(-1 * var(--references-bottom-bleed));
   color: var(--references-ink);
   overflow: hidden;
+  padding-bottom: var(--references-bottom-bleed);
   /* ScrollSmoother kesirli transform'u radius köşelerde 1px sub-pixel tel bırakıyordu;
      arka plan rengini köşe eğrisini takip ederek 1px taşırıp dikişi mühürlüyoruz. */
   box-shadow: 0 0 0 1px var(--references-bg);
@@ -117,35 +120,38 @@
   margin: 0;
   pointer-events: auto;
   translate: 0 0;
+  rotate: 0deg;
   transform: translate3d(0, 0, 0);
   transition:
     translate 720ms var(--ease-out),
+    rotate 720ms var(--ease-out),
     transform 720ms var(--ease-out),
     opacity 720ms var(--ease-out);
+  transform-origin: 50% 50%;
   will-change: transform;
 }
 
-.home-references-flip__specimen--stair {
-  width: clamp(250px, 26vw, 510px);
-  top: clamp(122px, 17vh, 190px);
-  left: max(24px, calc(50% - 650px));
-  opacity: 0.78;
-  animation: home-references-specimen-float-down 7.2s var(--ease-soft) infinite;
+.home-references-flip__specimen--marble {
+  width: clamp(270px, 28vw, 540px);
+  top: clamp(126px, 18vh, 206px);
+  left: max(18px, calc(50% - 690px));
+  opacity: 0.82;
+  animation: home-references-specimen-drift-marble 18s var(--ease-soft) infinite;
   transform:
     translate3d(
       calc(var(--references-pointer-x) * -18px),
       calc(var(--references-pointer-y) * -10px),
       0
     )
-    rotate(calc(-10deg + (var(--references-pointer-x) * 2.4deg)));
+    rotate(calc(-8deg + (var(--references-pointer-x) * 2.4deg)));
 }
 
-.home-references-flip__specimen--cube {
-  width: clamp(210px, 20vw, 410px);
-  right: max(-56px, calc(50% - 760px));
-  bottom: clamp(44px, 7vh, 96px);
-  opacity: 0.72;
-  animation: home-references-specimen-float-up 7.4s var(--ease-soft) -2.6s infinite;
+.home-references-flip__specimen--torus {
+  width: clamp(220px, 22vw, 430px);
+  right: max(-64px, calc(50% - 780px));
+  bottom: clamp(112px, 12vh, 152px);
+  opacity: 0.76;
+  animation: home-references-specimen-drift-torus 20s var(--ease-soft) -5s infinite;
   transform:
     translate3d(
       calc(var(--references-pointer-x) * 16px),
@@ -159,24 +165,13 @@
   display: block;
   width: 100%;
   height: auto;
-  mix-blend-mode: screen;
   user-select: none;
 }
 
-.home-references-flip__specimen-image--hover {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 720ms var(--ease-out);
-}
-
-.home-references-flip__specimen:hover .home-references-flip__specimen-image--hover {
-  opacity: 1;
-}
-
-.home-references-flip__specimen--stair:hover {
+.home-references-flip__specimen--marble:hover {
   opacity: 0.96;
-  translate: 0 10px;
+  translate: -4px 8px;
+  rotate: 3.5deg;
   transform:
     translate3d(
       calc(var(--references-pointer-x) * -20px),
@@ -187,9 +182,10 @@
     scale(1.035);
 }
 
-.home-references-flip__specimen--cube:hover {
+.home-references-flip__specimen--torus:hover {
   opacity: 0.94;
-  translate: 0 -10px;
+  translate: 6px -8px;
+  rotate: -4deg;
   transform:
     translate3d(
       calc(var(--references-pointer-x) * 18px),
@@ -200,31 +196,63 @@
     scale(1.045);
 }
 
-@keyframes home-references-specimen-float-down {
-  0%,
-  100% {
+@keyframes home-references-specimen-drift-marble {
+  0% {
     translate: 0 0;
+    rotate: -3deg;
   }
 
-  50% {
-    translate: 0 30px;
+  28% {
+    translate: 8px 13px;
+    rotate: 3.8deg;
+  }
+
+  58% {
+    translate: -5px 23px;
+    rotate: 6deg;
+  }
+
+  82% {
+    translate: -10px 7px;
+    rotate: -1.8deg;
+  }
+
+  100% {
+    translate: 0 0;
+    rotate: -3deg;
   }
 }
 
-@keyframes home-references-specimen-float-up {
-  0%,
-  100% {
+@keyframes home-references-specimen-drift-torus {
+  0% {
     translate: 0 0;
+    rotate: 4deg;
   }
 
-  50% {
-    translate: 0 -30px;
+  24% {
+    translate: -9px -11px;
+    rotate: -4.5deg;
+  }
+
+  52% {
+    translate: 6px -21px;
+    rotate: -7deg;
+  }
+
+  78% {
+    translate: 12px -6px;
+    rotate: 2.5deg;
+  }
+
+  100% {
+    translate: 0 0;
+    rotate: 4deg;
   }
 }
 
 .home-references-flip__copy span,
 .home-references-flip__scroll-hint {
-  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -242,10 +270,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(2.6rem, 6.6vw, 6.8rem);
   line-height: 0.98;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -259,7 +287,7 @@
   z-index: 1;
   max-width: clamp(760px, 58vw, 1040px);
   color: var(--references-muted);
-  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(1.08rem, 1.76vw, 1.5rem);
   font-weight: 400;
   line-height: 1.56;
@@ -325,16 +353,16 @@
 .home-references-flip__copy h3 {
   margin-top: 12px;
   margin-bottom: 28px;
-  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(1.8rem, 3.6vw, 4rem);
   line-height: 1;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0;
 }
 
 .home-references-flip__copy p {
   color: var(--references-muted);
-  font-family: Gotham, "Gotham SSm", "General Sans", Montserrat, Inter, system-ui, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: 0.98rem;
   line-height: 1.75;
   margin-bottom: 18px;
@@ -383,6 +411,13 @@
   background: #050607;
 }
 
+@container (min-width: 70vw) {
+  .home-references-flip__play,
+  .home-references-flip__video {
+    min-height: 100svh;
+  }
+}
+
 .home-references-flip__play {
   position: absolute;
   inset: 0;
@@ -420,9 +455,10 @@
 }
 
 .home-references-flip__play-text {
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   color: #ffe8c9;
-  font-size: clamp(0.78rem, 4.6cqw, 3rem);
-  font-weight: 800;
+  font-size: clamp(0.78rem, 3.05cqw, 2.44rem);
+  font-weight: 600;
   letter-spacing: 0;
   line-height: 1;
   text-shadow: 0 12px 34px rgba(0, 0, 0, 0.34);
@@ -434,7 +470,7 @@
 }
 
 .home-references-flip__final {
-  min-height: 100vh;
+  min-height: 100svh;
   align-items: stretch;
   justify-content: stretch;
   padding: 0;
@@ -442,7 +478,7 @@
 
 .home-references-flip__marker--final {
   width: 100%;
-  height: 100vh;
+  height: 100svh;
   aspect-ratio: auto;
 }
 
@@ -473,20 +509,20 @@
     text-align: left;
   }
 
-  .home-references-flip__specimen--stair {
-    width: clamp(174px, 48vw, 286px);
+  .home-references-flip__specimen--marble {
+    width: clamp(188px, 52vw, 306px);
     top: 68px;
     left: auto;
-    right: -54px;
-    opacity: 0.42;
+    right: -64px;
+    opacity: 0.38;
   }
 
-  .home-references-flip__specimen--cube {
-    width: clamp(150px, 40vw, 238px);
+  .home-references-flip__specimen--torus {
+    width: clamp(158px, 42vw, 250px);
     right: auto;
-    bottom: 38px;
-    left: -48px;
-    opacity: 0.34;
+    bottom: 72px;
+    left: -54px;
+    opacity: 0.36;
   }
 
   .home-references-flip__intro h2 {
@@ -514,25 +550,22 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-references-flip__specimen,
-  .home-references-flip__specimen-image--hover {
+  .home-references-flip__specimen {
     animation: none;
     transition: none;
   }
 
-  .home-references-flip__specimen--stair:hover,
-  .home-references-flip__specimen--cube:hover {
-    opacity: 0.78;
+  .home-references-flip__specimen--marble:hover {
+    opacity: 0.82;
+    translate: 0 0;
+    rotate: 0deg;
+    transform: translate3d(0, 0, 0) rotate(-8deg);
   }
 
-  .home-references-flip__specimen--stair:hover {
+  .home-references-flip__specimen--torus:hover {
+    opacity: 0.76;
     translate: 0 0;
-    transform: translate3d(0, 0, 0) rotate(-10deg);
-  }
-
-  .home-references-flip__specimen--cube:hover {
-    opacity: 0.72;
-    translate: 0 0;
+    rotate: 0deg;
     transform: translate3d(0, 0, 0) rotate(8deg);
   }
 

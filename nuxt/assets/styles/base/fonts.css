@@ -17,3 +17,139 @@
   font-style: normal;
   font-weight: 500 800;
 }
+
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/pp-mori/PPMori-Extralight.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/pp-mori/PPMori-ExtralightItalic.otf") format("opentype");
+  font-display: swap;
+  font-style: italic;
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/pp-mori/PPMori-Regular.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/pp-mori/PPMori-Italic.otf") format("opentype");
+  font-display: swap;
+  font-style: italic;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/pp-mori/PPMori-Semibold.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/pp-mori/PPMori-SemiboldItalic.otf") format("opentype");
+  font-display: swap;
+  font-style: italic;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/pp-mori/PPMori-Black.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/pp-mori/PPMori-BlackItalic.otf") format("opentype");
+  font-display: swap;
+  font-style: italic;
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: "PP Telegraf";
+  src: url("/fonts/pp-telegraf/PPTelegraf-Ultralight.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: "PP Telegraf";
+  src: url("/fonts/pp-telegraf/PPTelegraf-UltralightOblique.otf") format("opentype");
+  font-display: swap;
+  font-style: oblique;
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: "PP Telegraf";
+  src: url("/fonts/pp-telegraf/PPTelegraf-Regular.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 500;
+}
+
+@font-face {
+  font-family: "PP Telegraf";
+  src: url("/fonts/pp-telegraf/PPTelegraf-RegularOblique.otf") format("opentype");
+  font-display: swap;
+  font-style: oblique;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "PP Telegraf";
+  src: url("/fonts/pp-telegraf/PPTelegraf-Ultrabold.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 800;
+}
+
+@font-face {
+  font-family: "PP Telegraf";
+  src: url("/fonts/pp-telegraf/PPTelegraf-UltraboldOblique.otf") format("opentype");
+  font-display: swap;
+  font-style: oblique;
+  font-weight: 800;
+}
+
+@font-face {
+  font-family: "PP Telegraf Slanted";
+  src: url("/fonts/pp-telegraf/PPTelegraf-UltralightSlanted.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: "PP Telegraf Slanted";
+  src: url("/fonts/pp-telegraf/PPTelegraf-RegularSlanted.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "PP Telegraf Slanted";
+  src: url("/fonts/pp-telegraf/PPTelegraf-UltraboldSlanted.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 800;
+}

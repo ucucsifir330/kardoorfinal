@@ -118,17 +118,17 @@
   align-items: center;
   gap: clamp(20px, 2.5vw, 40px);
   /* Copy'nin 2 satıra sığması için genişletildi (eski: 900px). */
-  max-width: min(1180px, 92%);
+  max-width: min(1320px, 92%);
 }
 
-/* Başlık — EntranceDoor "Kurgulayın" paneliyle BİREBİR (Gotham/sans, boyut). */
+/* Başlık — EntranceDoor "Kurgulayın" paneliyle BİREBİR (boyut/ritim). */
 .entrance-lab__configure-heading {
   margin: 0;
-  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
-  font-size: clamp(56px, 4.55vw, 88px);
-  line-height: 1.03;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(68px, 7.26vw, 126px);
+  line-height: 1.1;
   letter-spacing: 0;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .entrance-lab__configure-heading span {
@@ -136,12 +136,16 @@
   white-space: nowrap;
 }
 
+.entrance-lab__configure-heading span + span {
+  font-size: 0.914em;
+}
+
 .entrance-lab__configure-copy {
   margin: 0;
   /* 2 satıra sığsın diye geniş tutuldu (60ch'te 3 satır sarıyordu). */
   max-width: 80ch;
-  font-family: Gotham, "Gotham SSm", "Montserrat", Inter, system-ui, sans-serif;
-  font-size: clamp(20px, 1.35vw, 26px);
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(23px, 1.6vw, 30px);
   line-height: 1.32;
   letter-spacing: 0;
   color: inherit;
@@ -300,11 +304,11 @@
 
 .entrance-lab__heading {
   margin: 0;
-  font-family: "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(44px, 4.89vw, 160px);
   line-height: 1.04;
   letter-spacing: 0;
-  font-weight: 400;
+  font-weight: 500;
   color: #071018;
 }
 
@@ -318,7 +322,7 @@
 }
 
 .entrance-lab__heading-line:not(.entrance-lab__heading-line--accent) {
-  font-family: var(--font-serif);
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-style: normal;
 }
 
@@ -327,8 +331,8 @@
 }
 
 .entrance-lab__heading-line--accent {
-  font-family: var(--font-serif);
-  font-style: italic;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-style: normal;
   font-size: 0.86em;
   letter-spacing: 0;
   color: var(--accent);
@@ -345,7 +349,7 @@
 .entrance-lab__subtitle {
   width: min(100%, clamp(232px, 18.59vw, 600px));
   margin: clamp(14px, 1.35vw, 40px) 0 0;
-  font-family: "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(18px, 1.35vw, 42px);
   line-height: 1.3;
   letter-spacing: 0;
@@ -415,42 +419,156 @@
 }
 
 /* ──────────────────────────────────────────────────────────────
-   KAYDIR ipucu — sol alt. --hero-cue-opacity JS'ten (scroll'la kaybolur).
+   KAYDIR ipucu — alt merkez. --hero-cue-opacity JS'ten (scroll'la kaybolur).
    ────────────────────────────────────────────────────────────── */
 
 .entrance-lab__cue {
   position: absolute;
-  left: clamp(24px, 5vw, 96px);
-  bottom: clamp(24px, 4vh, 56px);
+  left: 50%;
+  bottom: clamp(18px, 3.8vh, 48px);
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
   opacity: var(--hero-cue-opacity, 1);
   pointer-events: none;
   font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: rgba(247, 247, 242, 0.62);
+  color: rgba(247, 247, 242, 0.74);
+  transform: translateX(-50%);
+  transition: opacity 360ms var(--ease-soft);
 }
 
 .entrance-lab[data-ambience="day"] .entrance-lab__cue {
-  color: rgba(7, 16, 24, 0.5);
+  color: rgba(7, 16, 24, 0.62);
 }
 
-.entrance-lab__cue i {
+.entrance-lab__cue-label {
+  position: absolute;
   width: 1px;
-  height: 36px;
-  background: linear-gradient(currentColor, transparent);
-  animation: entrance-lab-cue 1800ms ease-in-out infinite;
-  transform-origin: top;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-@keyframes entrance-lab-cue {
-  0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
-  50% { transform: scaleY(1); opacity: 1; }
+.entrance-lab__scroll-device {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 40px;
+  height: 60px;
+  border: 2px solid currentColor;
+  border-radius: var(--radius-md);
+  opacity: 0.92;
+  transition:
+    width 450ms var(--ease-soft),
+    height 450ms var(--ease-soft),
+    border-radius 450ms var(--ease-soft),
+    color 450ms var(--ease-soft);
+}
+
+.entrance-lab__scroll-device::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  display: block;
+  width: 40%;
+  height: 2px;
+  max-height: 2px;
+  border-bottom-right-radius: var(--radius-full);
+  border-bottom-left-radius: var(--radius-full);
+  background: currentColor;
+  transition: max-height 450ms var(--ease-soft);
+}
+
+.entrance-lab__scroll-device::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  display: block;
+  width: 55%;
+  height: 2px;
+  max-height: 2px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  opacity: 0.14;
+  transition:
+    max-height 450ms var(--ease-soft),
+    opacity 450ms var(--ease-soft);
+}
+
+.entrance-lab__scroll-motion {
+  display: block;
+  width: 7px;
+  height: 28px;
+  margin-top: 65%;
+  border-radius: var(--radius-full) var(--radius-full) var(--radius-xs) var(--radius-xs);
+  background: currentColor;
+  transform: translateX(5px) rotate(-45deg);
+  transform-origin: top;
+  animation: entrance-lab-scroll-touch 2250ms var(--ease-soft) infinite;
+  transition:
+    width 450ms var(--ease-soft),
+    height 450ms var(--ease-soft),
+    margin-top 450ms var(--ease-soft),
+    border-radius 450ms var(--ease-soft),
+    transform 450ms var(--ease-soft);
+}
+
+@media (min-width: 821px) and (hover: hover) and (pointer: fine) {
+  .entrance-lab__scroll-device {
+    width: 42px;
+    height: 63px;
+    border-radius: 21px;
+  }
+
+  .entrance-lab__scroll-device::before,
+  .entrance-lab__scroll-device::after {
+    max-height: 0;
+  }
+
+  .entrance-lab__scroll-motion {
+    width: 7px;
+    height: 7px;
+    margin-top: 25%;
+    border-radius: var(--radius-full);
+    transform: translateX(0) rotate(0deg);
+    animation-name: entrance-lab-scroll-pointer;
+  }
+}
+
+@keyframes entrance-lab-scroll-pointer {
+  0% {
+    margin-top: 25%;
+    opacity: 0;
+  }
+
+  33% {
+    margin-top: 36.55%;
+    opacity: 1;
+  }
+
+  100% {
+    margin-top: 60%;
+    opacity: 0;
+  }
+}
+
+@keyframes entrance-lab-scroll-touch {
+  0% {
+    margin-top: 75%;
+    opacity: 0;
+  }
+
+  33% {
+    margin-top: 58.5%;
+    opacity: 1;
+  }
+
+  100% {
+    margin-top: 25%;
+    opacity: 0;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────
@@ -491,5 +609,18 @@
 @media (prefers-reduced-motion: reduce) {
   .entrance-lab__bg {
     transition: none;
+  }
+
+  .entrance-lab__cue,
+  .entrance-lab__scroll-device,
+  .entrance-lab__scroll-device::before,
+  .entrance-lab__scroll-device::after,
+  .entrance-lab__scroll-motion {
+    transition: none;
+  }
+
+  .entrance-lab__scroll-motion {
+    animation: none;
+    opacity: 0.86;
   }
 }

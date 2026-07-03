@@ -33,31 +33,19 @@
       @pointerleave="resetSpecimenPointer"
     >
       <div class="home-references-flip__specimens" aria-hidden="true">
-        <figure class="home-references-flip__specimen home-references-flip__specimen--stair">
+        <figure class="home-references-flip__specimen home-references-flip__specimen--marble">
           <img
-            class="home-references-flip__specimen-image home-references-flip__specimen-image--base"
-            src="/images/brand/prism-illustrations/geometric-stair-prism-dark.webp"
-            alt=""
-            decoding="async"
-          >
-          <img
-            class="home-references-flip__specimen-image home-references-flip__specimen-image--hover"
-            src="/images/brand/prism-illustrations/geometric-stair-prism-light.webp"
+            class="home-references-flip__specimen-image"
+            src="/images/brand/prism-illustrations/cracked-black-marble-cube.webp"
             alt=""
             decoding="async"
           >
         </figure>
 
-        <figure class="home-references-flip__specimen home-references-flip__specimen--cube">
+        <figure class="home-references-flip__specimen home-references-flip__specimen--torus">
           <img
-            class="home-references-flip__specimen-image home-references-flip__specimen-image--base"
-            src="/images/brand/prism-illustrations/prism-cube-dark.webp"
-            alt=""
-            decoding="async"
-          >
-          <img
-            class="home-references-flip__specimen-image home-references-flip__specimen-image--hover"
-            src="/images/brand/prism-illustrations/prism-cube-light.webp"
+            class="home-references-flip__specimen-image"
+            src="/images/brand/prism-illustrations/metallic-inflated-torus-sculpture.webp"
             alt=""
             decoding="async"
           >

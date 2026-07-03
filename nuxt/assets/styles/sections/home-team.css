@@ -172,7 +172,7 @@
   padding: 0 clamp(18px, 1.45vw, 26px) 0 clamp(22px, 1.8vw, 34px);
   background: #14151d;
   color: #eae8e8;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(0.88rem, 0.95vw, 1rem);
   font-weight: 600;
   line-height: 1;
@@ -611,9 +611,9 @@ span.ada-brand-logo {
   padding: 0;
   overflow: visible;
   color: #eae8e8;
-  font-family: "Instrument Serif", Georgia, serif;
-  font-size: clamp(56px, 8vw, 168px);
-  font-weight: 400;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(52px, 6vw, 124px);
+  font-weight: 500;
   line-height: 1;
   letter-spacing: 0;
   text-align: center;

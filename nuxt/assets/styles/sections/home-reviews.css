@@ -26,10 +26,11 @@
 }
 
 .rotating-title {
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(4rem, 5.45vw, 6.1rem);
   line-height: 1.05;
   color: #424346;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0;
   position: relative;
   z-index: 2;
@@ -72,8 +73,9 @@
 .hidden-measure {
   position: absolute;
   visibility: hidden;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(4rem, 5.45vw, 6.1rem);
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0;
   white-space: nowrap;
   padding: 0 2vw;
@@ -98,9 +100,10 @@
 .typewriter-text,
 .typewriter-cursor {
   color: #EAE8E8;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   white-space: nowrap;
   font-size: clamp(4rem, 5.45vw, 6.1rem);
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0;
   line-height: 1;
   transform: translateY(-0.03em);
@@ -210,6 +213,7 @@
 }
 
 .quote {
+  font-family: Inter, system-ui, sans-serif;
   font-size: clamp(1.02rem, 1.08vw, 1.16rem);
   line-height: 1.58;
   color: var(--text-primary);
@@ -230,7 +234,8 @@
   gap: 0.3rem;
 }
 
-.name {
+.review-card .name {
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-weight: 600;
   color: var(--text-primary);
   font-size: clamp(0.98rem, 0.95vw, 1.05rem);
@@ -357,7 +362,7 @@
     padding-top: 1rem;
   }
 
-  .name {
+  .review-card .name {
     font-size: 0.95rem;
   }
 

@@ -33,7 +33,7 @@ const showroomCopies: Record<string, {
 }> = {
   "aluminyum-sistemler": {
     tr: {
-      title: "Alüminyum Sistemler",
+      title: "Çelik Kapı Sistemleri",
       series: "Dış İklim Koleksiyonu",
       spec: "Dış iklim dayanımı · Alüminyum kasa ve kanat · Projeye özel ölçü",
       meta: "Alüminyum sistem · Isı yalıtımı · Çelik gövde"
@@ -47,7 +47,7 @@ const showroomCopies: Record<string, {
   },
   "dogal-yuzeyler": {
     tr: {
-      title: "Doğal Yüzeyler",
+      title: "Dış İklim Kapı Sistemleri",
       series: "Dış İklim Koleksiyonu",
       spec: "Wood ve taş dokusu · Mimari yüzey etkisi · Dış iklim kullanımı",
       meta: "Doğal yüzey · Ahşap/taş doku · Çelik gövde"
@@ -61,7 +61,7 @@ const showroomCopies: Record<string, {
   },
   "camli-modeller": {
     tr: {
-      title: "Camlı Modeller",
+      title: "Ekonomik Kapı Sistemleri",
       series: "Dış İklim Koleksiyonu",
       spec: "Cam detay · Cephe uyumu · Güçlendirilmiş giriş sistemi",
       meta: "Temperli cam · Metal detay · Çelik gövde"
@@ -75,7 +75,7 @@ const showroomCopies: Record<string, {
   },
   "pvc-laminoks": {
     tr: {
-      title: "PVC & Laminoks",
+      title: "Bina Giriş Sistemleri",
       series: "Exclusive Koleksiyonu",
       spec: "Exclusive kaplama · Klasik panel dili · Renkli yüzey seçeneği",
       meta: "PVC yüzey · Laminoks panel · Çelik gövde"
@@ -89,7 +89,7 @@ const showroomCopies: Record<string, {
   },
   "mimari-ozel": {
     tr: {
-      title: "Mimari Özel",
+      title: "Özel Proje Sistemleri",
       series: "Mimari Özel",
       spec: "Mimari giriş etkisi · Projeye özel kurgu · Pivot veya vitrin kullanımı",
       meta: "Mimari yüzey · Pivot sistem · Cam/metal detay"
@@ -123,9 +123,18 @@ const pickRepresentative = (seriesSlug: string): DoorProduct | undefined => {
   return inSeries.find((p) => SHOWCASE_ROLES.has(p.visualRole)) ?? inSeries[0];
 };
 
-// "Alüminyum Sistemler" → { lead: "Alüminyum", tail: "Sistemler" }
+// "Çelik Kapı Sistemleri" → { lead: "Çelik Kapı", tail: "Sistemleri" }
 const splitName = (name: string): { lead: string; tail: string } => {
   const trimmed = name.trim();
+  const systemSuffix = " Sistemleri";
+
+  if (trimmed.endsWith(systemSuffix)) {
+    return {
+      lead: trimmed.slice(0, -systemSuffix.length),
+      tail: systemSuffix.trim()
+    };
+  }
+
   const space = trimmed.indexOf(" ");
   if (space === -1) return { lead: trimmed, tail: "" };
   return { lead: trimmed.slice(0, space), tail: trimmed.slice(space + 1) };
