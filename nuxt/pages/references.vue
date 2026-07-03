@@ -1,7 +1,5 @@
 <template>
   <div class="viewport-wrapper">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300&family=Instrument+Serif&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
-
     <div ref="refStackRef" class="ref-stack">
       <section ref="heroRef" class="hero">
       <div class="hero-inner">
