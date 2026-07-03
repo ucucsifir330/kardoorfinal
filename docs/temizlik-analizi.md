@@ -1,12 +1,13 @@
 # Kardoor — Kaynak Kod Temizlik Analizi
 
-> **DURUM (3 Tem 2026):** Tamamlananlar: §2a home-team.css (1685→487), §2c site-header.css (1208→1044),
-> §2d transitions.css, §2e references.css, §2g catalog.css, §2h main.css ölüleri, tema karşılıkları
-> (services/exp/word-slide-item) + HomeManifesto/HomeExperience ölü JS'i (~270 satır).
-> **Yeni bulgular:** `pages/catalog/aluminium.css` ve `subpage.css` HİÇ import edilmiyor (komple bağlantısız
-> — sil ya da bağla, karar bekliyor); katalog sayfasında footer gizleme kuralı yanlış sınıfı hedefliyordu
-> (`.kardoor-footer` yok, gerçek sınıf `.footer-wrapper`) — gizleme isteniyorsa yeniden yazılmalı.
-> **Bekleyenler:** §1a-1c (doors zinciri — kullanıcı erteledi, content-pages.css buna bağlı), §2b home-catalog.css, §2f, §4, §5.
+> **DURUM (4 Tem 2026, `cleanup2` branch):** Tamamlananlar: §1c Render klasörleri, §2a home-team.css (1685→487),
+> §2b ölü sınıflar (home-catalog.css 3745→3345 + light/dark.css karşılıkları, −742 satır, commit `55570ff`),
+> §2c site-header.css, §2d transitions.css, §2e references.css, §2g catalog.css, §2h main.css ölüleri,
+> tema karşılıkları + HomeManifesto/HomeExperience ölü JS'i.
+> §4 kısmen: main.css render-blocking @import silindi, references.vue'daki üçüncü font linki kaldırıldı,
+> tüm Google aileleri tek config linkinde (commit `2ba0ead`). Kalan: aile sayısını azaltma (tasarım kararı).
+> **Çözülen bulgu:** aluminium.css/subpage.css artık `pages/catalog.css` üzerinden import ediliyor — bağlantısız değil.
+> **Bekleyenler:** §1a+1b (doors zinciri — kullanıcı erteledi), §2b yapısal birleştirme, §4 aile azaltma + hero görselleri, §5 responsive.
 
 > Üretim tarihi: 3 Temmuz 2026 · Analiz: Claude · Uygulama: Alp (manuel)
 > Satır numaraları bu tarihteki commit'e göredir; sildikçe kayacaktır — selector adına göre ara.
