@@ -99,7 +99,6 @@ html[data-theme="dark"] #app,
 .app-shell--night .entrance-lab,
 .app-shell--night .entrance-lab__next,
 .app-shell--night .door-selector,
-.app-shell--night .content-page,
 .app-shell--night .listing-page,
 .app-shell--night .detail-page {
   background-color: #050714 !important;
@@ -126,8 +125,6 @@ html[data-theme="dark"] #app,
   border-color: rgba(244, 246, 255, 0.12) !important;
 }
 
-.app-shell--night .catalog-search-wrapper,
-.app-shell--night .catalog-filter-item,
 .app-shell--night .catalog-card,
 .app-shell--night .catalog-product-image-wrap,
 .app-shell--night .review-card {
@@ -135,8 +132,6 @@ html[data-theme="dark"] #app,
   border-color: rgba(244, 246, 255, 0.12) !important;
 }
 
-.app-shell--night .catalog-search-wrapper:hover,
-.app-shell--night .catalog-filter-item:hover,
 .app-shell--night .catalog-card:hover,
 .app-shell--night .review-card:hover {
   background: #1D244A !important;

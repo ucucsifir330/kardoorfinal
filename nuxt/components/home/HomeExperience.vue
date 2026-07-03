@@ -583,9 +583,6 @@ const initManifestoAnimations = () => {
   manifestoCleanupTasks = [];
 
   manifestoGsapContext = gsap.context(() => {
-    const scrollLineFill = document.querySelector<HTMLElement>('.ada-scroll-line-fill');
-    const manifestoContainer = document.querySelector<HTMLElement>('.ada-manifesto-container');
-    const catalogSection = document.querySelector<HTMLElement>('.catalog-section');
     const revealElement = document.querySelector<HTMLElement>('#manifesto-text');
     const titleElement = document.querySelector<HTMLElement>('.ada-giant-title');
     const titleContainer = document.querySelector<HTMLElement>('.ada-title-container');
@@ -593,81 +590,6 @@ const initManifestoAnimations = () => {
     const loopContainer = document.querySelector<HTMLElement>('.ada-subtitle-container');
     const loopTrackReverse = document.querySelector<HTMLElement>('.ada-loop-track-reverse');
     const loopContainerReverse = document.querySelector<HTMLElement>('.ada-subtitle-container-reverse');
-    const structuralPaths = Array.from(document.querySelectorAll<SVGPathElement>('.ada-structural-line-path--bottom'));
-    const spacerLineHost = document.querySelector<HTMLElement>('.ada-manifesto-line-stage');
-
-    const getStructuralPathLength = (path: SVGPathElement) => {
-      const length = path.getTotalLength();
-      path.style.strokeDasharray = `${length}`;
-      return length;
-    };
-
-    if (spacerLineHost && structuralPaths.length) {
-      let structuralFrame = 0;
-      let structuralLengths = structuralPaths.map(getStructuralPathLength);
-
-      const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
-      const getDocumentTop = (element: HTMLElement) => window.scrollY + element.getBoundingClientRect().top;
-
-      const updateStructuralLines = () => {
-        structuralFrame = 0;
-
-        const viewportHeight = window.innerHeight || 1;
-        const stageTop = getDocumentTop(spacerLineHost);
-        const stageBottom = stageTop + spacerLineHost.getBoundingClientRect().height;
-        const range = {
-          start: stageTop - viewportHeight * 0.82,
-          end: stageBottom - viewportHeight * 0.48
-        };
-
-        structuralPaths.forEach((path, index) => {
-          const length = structuralLengths[index] || getStructuralPathLength(path);
-          const rawProgress = clampProgress((window.scrollY - range.start) / Math.max(range.end - range.start, 1));
-          const progress = rawProgress;
-
-          path.style.strokeDasharray = `${length}`;
-          path.style.strokeDashoffset = `${length * (1 - progress)}`;
-        });
-      };
-
-      const requestStructuralUpdate = () => {
-        if (structuralFrame) return;
-        structuralFrame = window.requestAnimationFrame(updateStructuralLines);
-      };
-
-      const refreshStructuralLines = () => {
-        structuralLengths = structuralPaths.map(getStructuralPathLength);
-        requestStructuralUpdate();
-        ScrollTrigger.refresh();
-      };
-
-      updateStructuralLines();
-      window.addEventListener('scroll', requestStructuralUpdate, { passive: true });
-      window.addEventListener('resize', refreshStructuralLines, { passive: true });
-      window.addEventListener('kardoor:structural-lines-updated', refreshStructuralLines);
-      addManifestoCleanup(() => {
-        if (structuralFrame) window.cancelAnimationFrame(structuralFrame);
-        window.removeEventListener('scroll', requestStructuralUpdate);
-        window.removeEventListener('resize', refreshStructuralLines);
-        window.removeEventListener('kardoor:structural-lines-updated', refreshStructuralLines);
-      });
-    }
-
-    if (scrollLineFill && manifestoContainer) {
-      gsap.set(scrollLineFill, { scaleY: 0 });
-      gsap.to(scrollLineFill, {
-        scaleY: 1,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: catalogSection || manifestoContainer,
-          start: catalogSection ? 'bottom 94%' : 'top 82%',
-          endTrigger: manifestoContainer,
-          end: 'bottom 24%',
-          scrub: smoothScrollScrub,
-          invalidateOnRefresh: true
-        }
-      });
-    }
 
     if (revealElement && revealElement.dataset.gsapQuote !== 'true') {
       splitTextToRevealChars(revealElement);
