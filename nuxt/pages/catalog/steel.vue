@@ -3,6 +3,11 @@ import { products } from "~/data/products";
 
 definePageMeta({ pageTransition: false });
 
+useCatalogSubpageSeo(
+  { title: "Metal & Kompozit Kapılar", description: "Metal & kompozit serisindeki çelik kapı modelleri: kod, yüzey ve seri bilgileriyle Ege Kardoor kataloğu." },
+  { title: "Metal & Composite Doors", description: "Steel door models from the metal & composite series with codes, finishes and series details in the Ege Kardoor catalog." }
+);
+
 const seriesProducts = products.filter((product) => product.seriesSlug === "metal-kompozit");
 </script>
 

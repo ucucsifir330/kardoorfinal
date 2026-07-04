@@ -3,6 +3,11 @@ import { products } from "~/data/products";
 
 definePageMeta({ pageTransition: false });
 
+useCatalogSubpageSeo(
+  { title: "Mimari Özel Tasarımlar", description: "Mimari özel seri kapı modelleri: kod, yüzey ve seri bilgileriyle Ege Kardoor kataloğu." },
+  { title: "Architectural Special", description: "Architectural special series door models with codes, finishes and series details in the Ege Kardoor catalog." }
+);
+
 const seriesProducts = products.filter((product) => product.seriesSlug === "mimari-ozel");
 </script>
 

@@ -160,6 +160,25 @@ import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 const { locale } = useKardoorLocale();
 
+const seoCopy = computed(() =>
+  locale.value === "tr"
+    ? {
+        title: "Referanslar",
+        description:
+          "Ege Kardoor referansları: konut, ticari ve mimari projelerde uygulanan kapı çözümleri ve iş birliği yapılan markalar."
+      }
+    : {
+        title: "References",
+        description:
+          "Ege Kardoor references: door solutions delivered for residential, commercial and architectural projects, and partner brands."
+      }
+);
+
+useSeoMeta({
+  title: () => seoCopy.value.title,
+  description: () => seoCopy.value.description
+});
+
 const pageCopies = {
   tr: {
     titleLines: [["KAPIDAN", "ÖTE"], ["MİMARİ", "BİR"], ["İMZA", "ÜRETİYORUZ"]],

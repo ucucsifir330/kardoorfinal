@@ -3,6 +3,11 @@ import { products } from "~/data/products";
 
 definePageMeta({ pageTransition: false });
 
+useCatalogSubpageSeo(
+  { title: "Alüminyum Sistemler", description: "Alüminyum sistemler serisindeki kapı modelleri: kod, yüzey ve seri bilgileriyle Ege Kardoor kataloğu." },
+  { title: "Aluminium Systems", description: "Door models from the aluminium systems series with codes, finishes and series details in the Ege Kardoor catalog." }
+);
+
 const seriesProducts = products.filter((product) => product.seriesSlug === "aluminyum-sistemler");
 </script>
 

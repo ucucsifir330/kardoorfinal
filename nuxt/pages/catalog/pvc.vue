@@ -3,6 +3,11 @@ import { products } from "~/data/products";
 
 definePageMeta({ pageTransition: false });
 
+useCatalogSubpageSeo(
+  { title: "PVC & Laminoks", description: "PVC & laminoks serisindeki kapı modelleri: kod, yüzey ve seri bilgileriyle Ege Kardoor kataloğu." },
+  { title: "PVC & Laminox", description: "Door models from the PVC & Laminox series with codes, finishes and series details in the Ege Kardoor catalog." }
+);
+
 const seriesProducts = products.filter((product) => product.seriesSlug === "pvc-laminoks");
 </script>
 

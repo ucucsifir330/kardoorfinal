@@ -3,6 +3,11 @@ import { products } from "~/data/products";
 
 definePageMeta({ pageTransition: false });
 
+useCatalogSubpageSeo(
+  { title: "Doğal Ahşap Yüzeyler", description: "Doğal ahşap yüzeyli kapı modelleri: kod, yüzey ve seri bilgileriyle Ege Kardoor kataloğu." },
+  { title: "Wood Surfaces", description: "Natural wood surface door models with codes, finishes and series details in the Ege Kardoor catalog." }
+);
+
 const seriesProducts = products.filter((product) => product.seriesSlug === "dogal-yuzeyler");
 </script>
 
