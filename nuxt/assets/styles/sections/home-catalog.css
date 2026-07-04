@@ -92,7 +92,6 @@
   .catalog-sticky-title {
     position: relative !important;
     top: auto !important;
-    margin: 0 !important;
     padding: 0 0 22px !important;
     border-radius: 0 !important;
     box-shadow: none !important;
@@ -104,8 +103,6 @@
     display: block !important;
     max-width: none !important;
     width: 100% !important;
-    min-height: 0 !important;
-    margin: 0 0 34px !important;
   }
 
   .catalog-tags {
@@ -114,33 +111,24 @@
 
   .catalog-card,
   .catalog-row:last-of-type .catalog-card {
-    padding: 20px 14px 24px !important;
-    border-radius: 8px 8px 34px 8px !important;
     box-shadow: none !important;
     overflow: visible !important;
   }
 
   .catalog-product {
-    height: auto !important;
     min-height: 0 !important;
-    padding: 0 !important;
   }
 
   .catalog-product-image-wrap {
     aspect-ratio: 1 / 1 !important;
-    height: auto !important;
-    margin-bottom: 10px !important;
-    border-radius: 4px 4px 22px 4px !important;
   }
 
   .catalog-code {
-    font-size: 10px !important;
     line-height: 1.2 !important;
   }
 
   .catalog-section::before {
     content: none !important;
-    display: none !important;
     animation: none !important;
   }
 
@@ -159,36 +147,23 @@
   .catalog-sticky-title {
     display: block !important;
     padding: 0 0 16px !important;
-    margin: 0 0 12px !important;
   }
 
   .catalog-title {
     display: block !important;
-    font-size: clamp(56px, 14vw, 88px) !important;
-    line-height: 0.9 !important;
     margin: 0 !important;
   }
 
   .catalog-row {
-    grid-template-columns: 1fr !important;
     margin-left: 0 !important;
-    min-height: auto !important;
   }
 
   .catalog-product-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 14px !important;
-    overflow: visible !important;
     padding-bottom: 0 !important;
   }
 
   .catalog-product-grid > .catalog-product {
-    flex: none !important;
-    min-width: 0 !important;
     width: 100% !important;
-    height: auto !important;
-    padding: 0 !important;
   }
 
 
