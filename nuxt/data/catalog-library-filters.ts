@@ -1,11 +1,12 @@
 import type { LocationQuery } from "vue-router";
 import type { DoorProduct } from "~/data/products";
 import { products, slugifyProductPart } from "~/data/products";
+import { getProductTaxonomy } from "~/data/catalog-taxonomy";
 
 // Katalog filtreleri URL query'sinden okunur (paylaşılabilir/deep-link).
 // Facet değerleri ürün verisinden türetilir — elle liste tutulmaz.
 
-export const CATALOG_FACET_KEYS = ["seri", "renk", "kullanim"] as const;
+export const CATALOG_FACET_KEYS = ["anaKategori", "kasaTipi", "yuzey", "renk", "kullanimAlani"] as const;
 export type CatalogFacetKey = (typeof CATALOG_FACET_KEYS)[number];
 
 export type CatalogFilterState = Record<CatalogFacetKey, string[]>;
@@ -22,20 +23,31 @@ export interface CatalogFacetGroup {
   options: CatalogFacetOption[];
 }
 
-const capitalizeTr = (value: string) =>
-  value.charAt(0).toLocaleUpperCase("tr-TR") + value.slice(1);
-
 // Ürün başına facet değerleri: [urlSlug, görünen etiket] çiftleri.
 const facetValues: Record<CatalogFacetKey, (product: DoorProduct) => Array<[string, string]>> = {
-  seri: (product) => [[product.seriesSlug, product.seriesTitle]],
-  renk: (product) => product.colors.map((color) => [slugifyProductPart(color), capitalizeTr(color)]),
-  kullanim: (product) => product.useCases.map((useCase) => [slugifyProductPart(useCase), useCase])
+  anaKategori: (product) => {
+    const { anaKategori } = getProductTaxonomy(product);
+    return [[slugifyProductPart(anaKategori), anaKategori]];
+  },
+  kasaTipi: (product) => {
+    const { kasaTipi } = getProductTaxonomy(product);
+    return [[slugifyProductPart(kasaTipi), kasaTipi]];
+  },
+  yuzey: (product) => {
+    const { yuzey } = getProductTaxonomy(product);
+    return [[slugifyProductPart(yuzey), yuzey]];
+  },
+  renk: (product) => getProductTaxonomy(product).renk.map((value) => [slugifyProductPart(value), value]),
+  kullanimAlani: (product) =>
+    getProductTaxonomy(product).kullanimAlani.map((value) => [slugifyProductPart(value), value])
 };
 
 const facetTitles: Record<CatalogFacetKey, { tr: string; en: string }> = {
-  seri: { tr: "Seri", en: "Series" },
+  anaKategori: { tr: "Ana Kategori", en: "Main Category" },
+  kasaTipi: { tr: "Kasa Tipi", en: "Frame Type" },
+  yuzey: { tr: "Yüzey", en: "Surface" },
   renk: { tr: "Renk", en: "Color" },
-  kullanim: { tr: "Kullanım Alanı", en: "Use Case" }
+  kullanimAlani: { tr: "Kullanım Alanı", en: "Use Case" }
 };
 
 const buildFacetGroups = (): CatalogFacetGroup[] =>

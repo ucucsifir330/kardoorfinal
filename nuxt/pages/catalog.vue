@@ -41,7 +41,14 @@ const loadMore = async () => {
 
 const clearFilters = () => {
   router.replace({
-    query: { ...route.query, seri: undefined, renk: undefined, kullanim: undefined }
+    query: {
+      ...route.query,
+      anaKategori: undefined,
+      kasaTipi: undefined,
+      yuzey: undefined,
+      renk: undefined,
+      kullanimAlani: undefined
+    }
   });
 };
 
