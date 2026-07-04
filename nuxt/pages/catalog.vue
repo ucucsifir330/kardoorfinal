@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
+import { products } from "~/data/products";
 
 definePageMeta({
   pageTransition: false
@@ -26,18 +27,41 @@ useSeoMeta({
   title: () => seo.value.title,
   description: () => seo.value.description
 });
-
-const { filters, searchQuery, isScrolled, visibleRows, filteredRows, setRowRef } = useCatalogPage();
 </script>
 
 <template>
-  <section class="catalog-page">
-    <CatalogSidebar v-model:search-query="searchQuery" :filters="filters" />
-    <CatalogMain
-      :rows="filteredRows"
-      :visible-rows="visibleRows"
-      :is-scrolled="isScrolled"
-      :set-row-ref="setRowRef"
-    />
+  <section id="main-content" class="catalog-lib">
+    <h1 class="catalog-lib__heading">{{ seo.title }}</h1>
+
+    <ul class="catalog-lib__grid">
+      <li
+        v-for="(product, index) in products"
+        :key="product.slug"
+        class="catalog-lib__item"
+      >
+        <NuxtLink
+          class="catalog-lib__card"
+          :to="`/doors/${product.slug}`"
+          :aria-label="`${product.name}, ${product.code}`"
+        >
+          <span class="catalog-lib__visual">
+            <img
+              :src="product.localImage"
+              :alt="`${product.name} ${product.code}`"
+              width="320"
+              height="426"
+              :loading="index < 6 ? 'eager' : 'lazy'"
+              :fetchpriority="index < 2 ? 'high' : 'auto'"
+            />
+            <span class="catalog-lib__add" aria-hidden="true">+</span>
+          </span>
+
+          <span class="catalog-lib__meta">
+            <strong>{{ product.name }}</strong>
+            <span>{{ product.code }}</span>
+          </span>
+        </NuxtLink>
+      </li>
+    </ul>
   </section>
 </template>
