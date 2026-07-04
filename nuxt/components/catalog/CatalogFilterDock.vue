@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { gsap } from "gsap";
 import { useRoute, useRouter } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import {
@@ -21,19 +22,59 @@ const router = useRouter();
 const { locale } = useKardoorLocale();
 
 const dialogRef = ref<HTMLDialogElement | null>(null);
+const dockRef = ref<HTMLElement | null>(null);
 const open = ref(false);
 const openGroups = ref<Set<CatalogFacetKey>>(new Set([catalogFacetGroups[0]?.key]));
 
 const isGroupOpen = (key: CatalogFacetKey) => openGroups.value.has(key);
 
-const toggleGroup = (key: CatalogFacetKey) => {
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Dock trigger'ı hariç: o buton translateX(-50%) ile ortalanıyor ve GSAP'ın
+// scale tween'i transform'u tamamen yeniden yazar (badge sayısı değişince
+// -50% ölçümü bayatlar). Onun press feedback'i CSS :active'te.
+const PRESSABLE_SELECTOR =
+  ".catalog-lib-filter__summary, .catalog-lib-filter__option, .catalog-lib-filter__apply, .catalog-lib-filter__clear, .catalog-lib-filter__close";
+
+const onPointerDown = (event: PointerEvent) => {
+  if (prefersReducedMotion()) return;
+  const target = (event.target as HTMLElement)?.closest<HTMLElement>(PRESSABLE_SELECTOR);
+  if (!target) return;
+  gsap.to(target, { scale: 0.97, duration: 0.12, ease: "power2.out", overwrite: "auto" });
+};
+
+const onPointerUp = (event: PointerEvent) => {
+  const target = (event.target as HTMLElement)?.closest<HTMLElement>(PRESSABLE_SELECTOR);
+  if (!target) return;
+  gsap.to(target, { scale: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+};
+
+const toggleGroup = (key: CatalogFacetKey, event: MouseEvent) => {
+  const willOpen = !openGroups.value.has(key);
   const next = new Set(openGroups.value);
-  if (next.has(key)) {
-    next.delete(key);
-  } else {
+  if (willOpen) {
     next.add(key);
+  } else {
+    next.delete(key);
   }
   openGroups.value = next;
+
+  if (!willOpen || prefersReducedMotion()) return;
+
+  const trigger = event.currentTarget as HTMLElement;
+  const options = trigger.nextElementSibling?.querySelectorAll<HTMLElement>(
+    ".catalog-lib-filter__option"
+  );
+  if (!options?.length) return;
+
+  gsap.from(options, {
+    autoAlpha: 0,
+    y: 6,
+    duration: 0.28,
+    stagger: 0.03,
+    ease: "power2.out"
+  });
 };
 
 const filters = computed(() => parseCatalogFilterQuery(route.query));
@@ -97,13 +138,22 @@ const clearAll = () => {
   });
 };
 
+onMounted(() => {
+  dockRef.value?.addEventListener("pointerdown", onPointerDown);
+  dockRef.value?.addEventListener("pointerup", onPointerUp);
+  dockRef.value?.addEventListener("pointercancel", onPointerUp);
+});
+
 onBeforeUnmount(() => {
+  dockRef.value?.removeEventListener("pointerdown", onPointerDown);
+  dockRef.value?.removeEventListener("pointerup", onPointerUp);
+  dockRef.value?.removeEventListener("pointercancel", onPointerUp);
   dialogRef.value?.close();
 });
 </script>
 
 <template>
-  <div class="catalog-lib-dock">
+  <div ref="dockRef" class="catalog-lib-dock">
     <button
       type="button"
       class="catalog-lib-dock__trigger"
@@ -141,7 +191,7 @@ onBeforeUnmount(() => {
               class="catalog-lib-filter__summary"
               :aria-expanded="isGroupOpen(group.key)"
               :aria-controls="`catalog-lib-filter-panel-${group.key}`"
-              @click="toggleGroup(group.key)"
+              @click="toggleGroup(group.key, $event)"
             >
               <span>{{ group.title[locale] }}</span>
               <span class="catalog-lib-filter__chevron" aria-hidden="true"></span>

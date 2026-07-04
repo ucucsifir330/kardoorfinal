@@ -3,6 +3,7 @@
     v-show="isEnabled"
     ref="cursorRef"
     class="smooth-cursor"
+    popover="manual"
     :class="{
       'smooth-cursor--visible': isVisible,
       'smooth-cursor--active': isInteractive
@@ -45,6 +46,29 @@ const current: CursorPoint = { x: 0, y: 0 };
 let rafId = 0;
 let mediaQuery: MediaQueryList | null = null;
 let hasPosition = false;
+let topLayerObserver: MutationObserver | null = null;
+
+// <dialog>'un showModal() ile girdiği native "top layer" hiçbir z-index'le
+// aşılamaz; imleç de aynı top layer'a Popover API üzerinden girip, her yeni
+// dialog açıldığında en öne (yeniden gösterilerek) bindirilir. Aksi halde
+// filtre paneli gibi modal'lar açıkken imleç tamamen kayboluyordu.
+const bumpAboveTopLayer = () => {
+  const el = cursorRef.value as
+    | (HTMLElement & { showPopover?: () => void; hidePopover?: () => void })
+    | null;
+  if (!el?.showPopover) return;
+
+  try {
+    el.hidePopover?.();
+  } catch {
+    // zaten kapalıydı
+  }
+  try {
+    el.showPopover();
+  } catch {
+    // desteklenmiyor ya da zaten açık
+  }
+};
 
 const isTrackablePointer = (pointerType: string) => pointerType !== "touch";
 
@@ -134,10 +158,26 @@ onMounted(() => {
   mediaQuery = window.matchMedia(desktopPointerQuery);
   updateEnabled();
   mediaQuery.addEventListener("change", updateEnabled);
+
+  bumpAboveTopLayer();
+  topLayerObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.target instanceof HTMLDialogElement && mutation.target.open) {
+        bumpAboveTopLayer();
+        return;
+      }
+    }
+  });
+  topLayerObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ["open"],
+    subtree: true
+  });
 });
 
 onBeforeUnmount(() => {
   mediaQuery?.removeEventListener("change", updateEnabled);
+  topLayerObserver?.disconnect();
   disableCursor();
 });
 </script>
@@ -145,11 +185,15 @@ onBeforeUnmount(() => {
 <style scoped>
 .smooth-cursor {
   position: fixed;
+  inset: auto;
   top: 0;
   left: 0;
   z-index: 10000;
   width: 18px;
   height: 18px;
+  margin: 0;
+  border: 0;
+  padding: 0;
   border-radius: 999px;
   pointer-events: none;
   background: #fff;

@@ -307,11 +307,27 @@
   cursor: pointer;
   transform: translateX(-50%);
   box-shadow: 0 14px 28px rgba(45, 45, 45, 0.18);
-  transition: box-shadow var(--clg-motion) ease;
+  transition:
+    box-shadow var(--clg-motion) ease,
+    transform 160ms ease-out;
 }
 
 .catalog-lib-dock__trigger:hover {
   box-shadow: 0 18px 34px rgba(45, 45, 45, 0.24);
+}
+
+.catalog-lib-dock__trigger:active {
+  transform: translateX(-50%) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-lib-dock__trigger {
+    transition: box-shadow var(--clg-motion) ease;
+  }
+
+  .catalog-lib-dock__trigger:active {
+    transform: translateX(-50%);
+  }
 }
 
 .catalog-lib-dock__trigger:focus-visible {
