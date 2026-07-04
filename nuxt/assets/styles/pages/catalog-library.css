@@ -447,18 +447,67 @@ body:has(.catalog-lib-filter[open]) {
 }
 
 .catalog-lib-filter__group {
-  margin: 0;
-  padding: 0;
-  border: 0;
+  border-bottom: 1px solid var(--clg-hairline);
 }
 
-.catalog-lib-filter__group legend {
-  padding: 0;
-  margin-bottom: 12px;
-  color: var(--clg-text-muted);
+.catalog-lib-filter__group:first-child {
+  border-top: 1px solid var(--clg-hairline);
+}
+
+.catalog-lib-filter__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 2px;
+  border: 0;
+  background: none;
+  color: var(--clg-text);
+  font-family: inherit;
   font-size: 12px;
   letter-spacing: 0.08em;
+  text-align: left;
   text-transform: uppercase;
+  cursor: pointer;
+}
+
+.catalog-lib-filter__summary:hover {
+  color: var(--clg-text-muted);
+}
+
+.catalog-lib-filter__summary:focus-visible {
+  outline: var(--clg-focus);
+  outline-offset: 2px;
+}
+
+.catalog-lib-filter__chevron {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform var(--clg-motion) ease;
+}
+
+.catalog-lib-filter__summary[aria-expanded="true"] .catalog-lib-filter__chevron {
+  transform: rotate(-135deg);
+}
+
+.catalog-lib-filter__options {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--clg-motion) ease;
+}
+
+.catalog-lib-filter__options--open {
+  grid-template-rows: 1fr;
+}
+
+.catalog-lib-filter__options-inner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .catalog-lib-filter__option {
@@ -466,8 +515,13 @@ body:has(.catalog-lib-filter[open]) {
   align-items: center;
   gap: 12px;
   min-height: 34px;
+  padding-bottom: 12px;
   font-size: 15px;
   cursor: pointer;
+}
+
+.catalog-lib-filter__option:first-child {
+  margin-top: 2px;
 }
 
 .catalog-lib-filter__option input {
@@ -506,7 +560,9 @@ body:has(.catalog-lib-filter[open]) {
 
 @media (prefers-reduced-motion: reduce) {
   .catalog-lib-filter,
-  .catalog-lib-filter::backdrop {
+  .catalog-lib-filter::backdrop,
+  .catalog-lib-filter__chevron,
+  .catalog-lib-filter__options {
     transition-duration: 0ms;
   }
 }

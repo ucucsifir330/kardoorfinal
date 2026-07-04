@@ -22,6 +22,19 @@ const { locale } = useKardoorLocale();
 
 const dialogRef = ref<HTMLDialogElement | null>(null);
 const open = ref(false);
+const openGroups = ref<Set<CatalogFacetKey>>(new Set([catalogFacetGroups[0]?.key]));
+
+const isGroupOpen = (key: CatalogFacetKey) => openGroups.value.has(key);
+
+const toggleGroup = (key: CatalogFacetKey) => {
+  const next = new Set(openGroups.value);
+  if (next.has(key)) {
+    next.delete(key);
+  } else {
+    next.add(key);
+  }
+  openGroups.value = next;
+};
 
 const filters = computed(() => parseCatalogFilterQuery(route.query));
 const activeCount = computed(() => countActiveCatalogFilters(filters.value));
@@ -110,26 +123,46 @@ onBeforeUnmount(() => {
         </header>
 
         <div class="catalog-lib-filter__body">
-          <fieldset
+          <div
             v-for="group in catalogFacetGroups"
             :key="group.key"
             class="catalog-lib-filter__group"
           >
-            <legend>{{ group.title[locale] }}</legend>
-            <label
-              v-for="option in group.options"
-              :key="option.value"
-              class="catalog-lib-filter__option"
+            <button
+              :id="`catalog-lib-filter-summary-${group.key}`"
+              type="button"
+              class="catalog-lib-filter__summary"
+              :aria-expanded="isGroupOpen(group.key)"
+              :aria-controls="`catalog-lib-filter-panel-${group.key}`"
+              @click="toggleGroup(group.key)"
             >
-              <input
-                type="checkbox"
-                :checked="filters[group.key].includes(option.value)"
-                @change="toggleValue(group.key, option.value)"
-              />
-              <span class="catalog-lib-filter__option-label">{{ option.label }}</span>
-              <span class="catalog-lib-filter__option-count">{{ option.count }}</span>
-            </label>
-          </fieldset>
+              <span>{{ group.title[locale] }}</span>
+              <span class="catalog-lib-filter__chevron" aria-hidden="true"></span>
+            </button>
+            <div
+              :id="`catalog-lib-filter-panel-${group.key}`"
+              class="catalog-lib-filter__options"
+              :class="{ 'catalog-lib-filter__options--open': isGroupOpen(group.key) }"
+              role="group"
+              :aria-labelledby="`catalog-lib-filter-summary-${group.key}`"
+            >
+              <div class="catalog-lib-filter__options-inner">
+                <label
+                  v-for="option in group.options"
+                  :key="option.value"
+                  class="catalog-lib-filter__option"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="filters[group.key].includes(option.value)"
+                    @change="toggleValue(group.key, option.value)"
+                  />
+                  <span class="catalog-lib-filter__option-label">{{ option.label }}</span>
+                  <span class="catalog-lib-filter__option-count">{{ option.count }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
 
           <p class="catalog-lib-filter__status" aria-live="polite">{{ t.status }}</p>
         </div>
