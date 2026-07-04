@@ -77,6 +77,31 @@ const buildFacetGroups = (): CatalogFacetGroup[] =>
 // Ürün verisi statik olduğundan gruplar modül yüklenirken bir kez hesaplanır.
 export const catalogFacetGroups = buildFacetGroups();
 
+// Bağımlı facet sayaçları (ICG tarzı): bir grubun sayıları, DİĞER gruplardaki
+// aktif seçimlerle daraltılmış ürün kümesinden hesaplanır — üstte seçilen
+// kategori alttaki grupların sayılarına yansır. Grup kendi seçimini daraltmaz
+// (yoksa aynı gruptaki diğer VEYA seçenekleri işaretlenemez hale gelir).
+// Seçenek listesi sabit kalır; kümede kalmayanlar 0 sayacıyla döner.
+export const getCatalogFacetGroups = (state: CatalogFilterState): CatalogFacetGroup[] =>
+  catalogFacetGroups.map((group) => {
+    const subset = filterCatalogProducts(products, { ...state, [group.key]: [] });
+    const counts = new Map<string, number>();
+
+    for (const product of subset) {
+      for (const [value] of facetValues[group.key](product)) {
+        counts.set(value, (counts.get(value) ?? 0) + 1);
+      }
+    }
+
+    return {
+      ...group,
+      options: group.options.map((option) => ({
+        ...option,
+        count: counts.get(option.value) ?? 0
+      }))
+    };
+  });
+
 const knownValues = new Map<CatalogFacetKey, Set<string>>(
   catalogFacetGroups.map((group) => [group.key, new Set(group.options.map((o) => o.value))])
 );

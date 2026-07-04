@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref } from "vue";
 import { gsap } from "gsap";
 import { useRoute, useRouter } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
@@ -7,6 +7,7 @@ import {
   catalogFacetGroups,
   countActiveCatalogFilters,
   filterCatalogProducts,
+  getCatalogFacetGroups,
   parseCatalogFilterQuery,
   serializeCatalogFilterState,
   type CatalogFacetKey
@@ -22,36 +23,36 @@ const router = useRouter();
 const { locale } = useKardoorLocale();
 
 const dialogRef = ref<HTMLDialogElement | null>(null);
-const dockRef = ref<HTMLElement | null>(null);
+const panelRef = ref<HTMLElement | null>(null);
+const scrimRef = ref<HTMLElement | null>(null);
+const triggerRef = ref<HTMLButtonElement | null>(null);
+const closeDockRef = ref<HTMLButtonElement | null>(null);
 const open = ref(false);
+const closing = ref(false);
 const openGroups = ref<Set<CatalogFacetKey>>(new Set([catalogFacetGroups[0]?.key]));
+let panelTimeline: ReturnType<typeof gsap.timeline> | null = null;
 
 const isGroupOpen = (key: CatalogFacetKey) => openGroups.value.has(key);
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// Dock trigger'ı hariç: o buton translateX(-50%) ile ortalanıyor ve GSAP'ın
-// scale tween'i transform'u tamamen yeniden yazar (badge sayısı değişince
-// -50% ölçümü bayatlar). Onun press feedback'i CSS :active'te.
-const PRESSABLE_SELECTOR =
-  ".catalog-lib-filter__summary, .catalog-lib-filter__option, .catalog-lib-filter__apply, .catalog-lib-filter__clear, .catalog-lib-filter__close";
-
-const onPointerDown = (event: PointerEvent) => {
-  if (prefersReducedMotion()) return;
-  const target = (event.target as HTMLElement)?.closest<HTMLElement>(PRESSABLE_SELECTOR);
-  if (!target) return;
-  gsap.to(target, { scale: 0.97, duration: 0.12, ease: "power2.out", overwrite: "auto" });
-};
-
-const onPointerUp = (event: PointerEvent) => {
-  const target = (event.target as HTMLElement)?.closest<HTMLElement>(PRESSABLE_SELECTOR);
-  if (!target) return;
-  gsap.to(target, { scale: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-};
-
-const toggleGroup = (key: CatalogFacetKey, event: MouseEvent) => {
+const toggleGroup = async (key: CatalogFacetKey) => {
   const willOpen = !openGroups.value.has(key);
+  const options = dialogRef.value?.querySelector<HTMLElement>(
+    `#catalog-lib-filter-panel-${key}`
+  );
+  const chevron = dialogRef.value?.querySelector<HTMLElement>(
+    `#catalog-lib-filter-summary-${key} .catalog-lib-filter__chevron`
+  );
+  const startHeight = options?.getBoundingClientRect().height ?? 0;
+
+  if (options) {
+    gsap.killTweensOf(options);
+    gsap.set(options, { height: startHeight });
+  }
+  if (chevron) gsap.killTweensOf(chevron);
+
   const next = new Set(openGroups.value);
   if (willOpen) {
     next.add(key);
@@ -60,25 +61,41 @@ const toggleGroup = (key: CatalogFacetKey, event: MouseEvent) => {
   }
   openGroups.value = next;
 
-  if (!willOpen || prefersReducedMotion()) return;
+  await nextTick();
 
-  const trigger = event.currentTarget as HTMLElement;
-  const options = trigger.nextElementSibling?.querySelectorAll<HTMLElement>(
-    ".catalog-lib-filter__option"
-  );
-  if (!options?.length) return;
+  if (prefersReducedMotion()) {
+    if (options) gsap.set(options, { clearProps: "height" });
+    if (chevron) gsap.set(chevron, { clearProps: "transform" });
+    return;
+  }
 
-  gsap.from(options, {
-    autoAlpha: 0,
-    y: 16,
-    scale: 0.97,
-    duration: 0.6,
-    stagger: 0.06,
-    ease: "power3.out"
-  });
+  if (options) {
+    gsap.to(options, {
+      height: willOpen ? options.scrollHeight : 0,
+      duration: willOpen ? 0.72 : 0.56,
+      ease: willOpen ? "power3.out" : "power2.inOut",
+      overwrite: "auto",
+      onComplete: () => gsap.set(options, { clearProps: "height" })
+    });
+  }
+
+  if (chevron) {
+    gsap.fromTo(
+      chevron,
+      { rotation: willOpen ? 45 : -135 },
+      {
+        rotation: willOpen ? -135 : 45,
+        duration: 0.58,
+        ease: "power2.inOut",
+        overwrite: "auto",
+        onComplete: () => gsap.set(chevron, { clearProps: "transform" })
+      }
+    );
+  }
 };
 
 const filters = computed(() => parseCatalogFilterQuery(route.query));
+const facetGroups = computed(() => getCatalogFacetGroups(filters.value));
 const activeCount = computed(() => countActiveCatalogFilters(filters.value));
 const resultCount = computed(() => filterCatalogProducts(products, filters.value).length);
 
@@ -88,6 +105,7 @@ const t = computed(() =>
         trigger: "Filtreler",
         panelLabel: "Katalog filtreleri",
         close: "Filtreleri kapat",
+        closeDock: "Kapat",
         clear: "Temizle",
         show: `${resultCount.value} modeli göster`,
         status: `${resultCount.value} model bulundu`
@@ -96,6 +114,7 @@ const t = computed(() =>
         trigger: "Filters",
         panelLabel: "Catalog filters",
         close: "Close filters",
+        closeDock: "Close",
         clear: "Clear",
         show: `Show ${resultCount.value} models`,
         status: `${resultCount.value} models found`
@@ -103,12 +122,101 @@ const t = computed(() =>
 );
 
 const openPanel = () => {
-  dialogRef.value?.showModal();
+  const dialog = dialogRef.value;
+  const panel = panelRef.value;
+  const scrim = scrimRef.value;
+  const closeDock = closeDockRef.value;
+  if (!dialog || !panel || !scrim || !closeDock) return;
+
+  panelTimeline?.kill();
+  gsap.set(panel, { xPercent: -100 });
+  gsap.set(scrim, { opacity: 0 });
+  gsap.set(closeDock, { autoAlpha: 0, y: 22, scale: 0.94 });
+  dialog.showModal();
   open.value = true;
+  closing.value = false;
+
+  if (prefersReducedMotion()) {
+    gsap.set(panel, { xPercent: 0 });
+    gsap.set(scrim, { opacity: 1 });
+    gsap.set(closeDock, { autoAlpha: 1, y: 0, scale: 1 });
+    return;
+  }
+
+  panelTimeline = gsap
+    .timeline({ defaults: { overwrite: "auto" } })
+    .to(scrim, { opacity: 1, duration: 0.65, ease: "power1.out" }, 0)
+    .to(panel, { xPercent: 0, duration: 1.05, ease: "power3.out" }, 0)
+    .to(
+      closeDock,
+      {
+        autoAlpha: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.7,
+        ease: "power3.out",
+        clearProps: "visibility"
+      },
+      0.25
+    );
 };
 
-const onBackdropClick = (event: MouseEvent) => {
-  if (event.target === dialogRef.value) dialogRef.value?.close();
+const closePanel = () => {
+  const dialog = dialogRef.value;
+  const panel = panelRef.value;
+  const scrim = scrimRef.value;
+  const closeDock = closeDockRef.value;
+  if (!dialog?.open || !panel || !scrim || !closeDock || closing.value) return;
+
+  panelTimeline?.kill();
+
+  if (prefersReducedMotion()) {
+    dialog.close();
+    return;
+  }
+
+  closing.value = true;
+  panelTimeline = gsap
+    .timeline({
+      defaults: { overwrite: "auto" },
+      onComplete: () => dialog.close()
+    })
+    .to(panel, { xPercent: -100, duration: 0.72, ease: "power2.inOut" }, 0)
+    .to(scrim, { opacity: 0, duration: 0.55, ease: "power1.inOut" }, 0.08)
+    .to(
+      closeDock,
+      { autoAlpha: 0, y: 18, scale: 0.96, duration: 0.4, ease: "power2.in" },
+      0
+    );
+};
+
+const onDialogClosed = () => {
+  open.value = false;
+  closing.value = false;
+  panelTimeline?.kill();
+  panelTimeline = null;
+  if (panelRef.value) gsap.set(panelRef.value, { clearProps: "transform" });
+  if (scrimRef.value) gsap.set(scrimRef.value, { clearProps: "opacity" });
+  if (closeDockRef.value) {
+    gsap.set(closeDockRef.value, { clearProps: "opacity,visibility,transform" });
+  }
+
+  void nextTick(() => {
+    const trigger = triggerRef.value;
+    if (!trigger || prefersReducedMotion()) return;
+    gsap.fromTo(
+      trigger,
+      { autoAlpha: 0, y: 16, scale: 0.96 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.52,
+        ease: "power3.out",
+        clearProps: "opacity,visibility,transform"
+      }
+    );
+  });
 };
 
 const toggleValue = (key: CatalogFacetKey, value: string) => {
@@ -139,23 +247,17 @@ const clearAll = () => {
   });
 };
 
-onMounted(() => {
-  dockRef.value?.addEventListener("pointerdown", onPointerDown);
-  dockRef.value?.addEventListener("pointerup", onPointerUp);
-  dockRef.value?.addEventListener("pointercancel", onPointerUp);
-});
-
 onBeforeUnmount(() => {
-  dockRef.value?.removeEventListener("pointerdown", onPointerDown);
-  dockRef.value?.removeEventListener("pointerup", onPointerUp);
-  dockRef.value?.removeEventListener("pointercancel", onPointerUp);
+  panelTimeline?.kill();
   dialogRef.value?.close();
 });
 </script>
 
 <template>
-  <div ref="dockRef" class="catalog-lib-dock">
+  <div class="catalog-lib-dock">
     <button
+      v-show="!open"
+      ref="triggerRef"
       type="button"
       class="catalog-lib-dock__trigger"
       :aria-expanded="open"
@@ -171,18 +273,20 @@ onBeforeUnmount(() => {
       ref="dialogRef"
       class="catalog-lib-filter"
       :aria-label="t.panelLabel"
-      @close="open = false"
-      @click="onBackdropClick"
+      @cancel.prevent="closePanel"
+      @close="onDialogClosed"
     >
-      <form method="dialog" class="catalog-lib-filter__inner">
+      <div ref="scrimRef" class="catalog-lib-filter__scrim" aria-hidden="true" @click="closePanel"></div>
+
+      <form ref="panelRef" method="dialog" class="catalog-lib-filter__panel">
         <header class="catalog-lib-filter__head">
           <h2>{{ t.trigger }}</h2>
-          <button class="catalog-lib-filter__close" :aria-label="t.close">×</button>
+          <button type="button" class="catalog-lib-filter__close" :aria-label="t.close" @click="closePanel">×</button>
         </header>
 
         <div class="catalog-lib-filter__body">
           <div
-            v-for="group in catalogFacetGroups"
+            v-for="group in facetGroups"
             :key="group.key"
             class="catalog-lib-filter__group"
           >
@@ -192,7 +296,7 @@ onBeforeUnmount(() => {
               class="catalog-lib-filter__summary"
               :aria-expanded="isGroupOpen(group.key)"
               :aria-controls="`catalog-lib-filter-panel-${group.key}`"
-              @click="toggleGroup(group.key, $event)"
+              @click="toggleGroup(group.key)"
             >
               <span>{{ group.title[locale] }}</span>
               <span class="catalog-lib-filter__chevron" aria-hidden="true"></span>
@@ -209,10 +313,12 @@ onBeforeUnmount(() => {
                   v-for="option in group.options"
                   :key="option.value"
                   class="catalog-lib-filter__option"
+                  :class="{ 'catalog-lib-filter__option--unavailable': option.count === 0 && !filters[group.key].includes(option.value) }"
                 >
                   <input
                     type="checkbox"
                     :checked="filters[group.key].includes(option.value)"
+                    :disabled="option.count === 0 && !filters[group.key].includes(option.value)"
                     @change="toggleValue(group.key, option.value)"
                   />
                   <span class="catalog-lib-filter__option-label">{{ option.label }}</span>
@@ -226,7 +332,7 @@ onBeforeUnmount(() => {
         </div>
 
         <footer class="catalog-lib-filter__foot">
-          <button class="catalog-lib-filter__apply">{{ t.show }}</button>
+          <button type="button" class="catalog-lib-filter__apply" @click="closePanel">{{ t.show }}</button>
           <button
             v-if="activeCount"
             type="button"
@@ -237,6 +343,17 @@ onBeforeUnmount(() => {
           </button>
         </footer>
       </form>
+
+      <button
+        ref="closeDockRef"
+        type="button"
+        class="catalog-lib-dock__trigger catalog-lib-dock__trigger--close"
+        :aria-label="t.close"
+        @click="closePanel"
+      >
+        <span class="catalog-lib-dock__close-icon" aria-hidden="true">×</span>
+        {{ t.closeDock }}
+      </button>
     </dialog>
   </div>
 </template>
