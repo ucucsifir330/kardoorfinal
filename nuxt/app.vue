@@ -96,6 +96,9 @@ onBeforeUnmount(() => {
     <SiteHeader />
     <FloatingContactHub v-if="!isReferencesRoute" />
     <SmoothCursor v-if="!isReferencesRoute" />
+    <!-- Katalog filtre dock'u da fixed: smooth-content dışında durmalı.
+         v-if ile route değişince unmount olur, panel DOM'da asılı kalmaz. -->
+    <CatalogFilterDock v-if="normalizeTransitionPath(route.path) === '/catalog'" />
 
     <!-- ScrollSmoother containers. Fixed overlays above stay OUTSIDE so the
          #smooth-content transform doesn't break their positioning. -->
