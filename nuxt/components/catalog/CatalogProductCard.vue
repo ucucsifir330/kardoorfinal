@@ -9,10 +9,10 @@ defineProps<{
 
 <template>
   <!--
-    TEMPORARY: product detail route (/doors/:slug) is disabled in nuxt.config
+    TEMPORARY: product detail route (/doors/:code) is disabled in nuxt.config
     (pages:extend), so linking here would 404. Rendered as a non-navigating
     element until the detail flow is decided. To re-enable, restore <NuxtLink>
-    with :to="`/doors/${item.slug}`".
+    with :to="`/doors/${item.code}`".
   -->
   <div
     class="catalog-product"

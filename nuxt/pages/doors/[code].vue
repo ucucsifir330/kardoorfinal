@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { getProductBySlug } from "~/data/catalog";
+import { getProductByCode } from "~/data/catalog";
 import { products } from "~/data/products";
 
 const route = useRoute();
-const product = getProductBySlug(String(route.params.slug));
+const product = getProductByCode(String(route.params.code));
 const { assetUrl } = useKardoorAsset();
 
 const useLocalImageFallback = (event: Event) => {
@@ -20,7 +20,7 @@ if (!product) {
 }
 
 const similar = products
-  .filter((item) => item.slug !== product.slug && item.seriesSlug === product.seriesSlug)
+  .filter((item) => item.code !== product.code && item.seriesSlug === product.seriesSlug)
   .slice(0, 3);
 
 useSeoMeta({
@@ -78,7 +78,7 @@ useSeoMeta({
     </div>
 
     <div v-if="similar.length" class="related-row">
-      <NuxtLink v-for="item in similar" :key="item.slug" :to="`/doors/${item.slug}`">
+      <NuxtLink v-for="item in similar" :key="item.code" :to="`/doors/${item.code}`">
         <span>{{ item.code }}</span>
         <strong>{{ item.name }}</strong>
       </NuxtLink>

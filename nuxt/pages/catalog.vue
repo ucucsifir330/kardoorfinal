@@ -102,7 +102,7 @@ useSeoMeta({
       >
         <NuxtLink
           class="catalog-lib__card"
-          :to="`/doors/${product.slug}`"
+          :to="`/doors/${product.code}`"
           :aria-label="`${product.name}, ${product.code}`"
         >
           <span class="catalog-lib__visual">

@@ -167,7 +167,7 @@ onMounted(async () => {
 
     <aside class="spec-card spec-card--detail">
       <p>{{ activeProduct.seriesTitle }}</p>
-      <NuxtLink :to="`/doors/${activeProduct.slug}`">{{ copy.productDetails }}</NuxtLink>
+      <NuxtLink :to="`/doors/${activeProduct.code}`">{{ copy.productDetails }}</NuxtLink>
     </aside>
 
     <div class="door-selector__copy">

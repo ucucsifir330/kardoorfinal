@@ -15,7 +15,7 @@ const seriesProducts = products.filter((product) => product.seriesSlug === "mima
   <main class="catalog-subpage catalog-subpage--architectural">
     <h1>Architectural Special</h1>
     <div class="catalog-subpage__grid">
-      <NuxtLink v-for="product in seriesProducts" :key="product.slug" :to="`/doors/${product.slug}`">
+      <NuxtLink v-for="product in seriesProducts" :key="product.code" :to="`/doors/${product.code}`">
         <img :src="product.image" :alt="`${product.name} ${product.code}`" />
         <strong>{{ product.name }}</strong>
         <span>{{ product.code }}</span>

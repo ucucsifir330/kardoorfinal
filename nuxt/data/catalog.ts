@@ -11,8 +11,9 @@ export function getProductsByCollectionSlug(seriesSlug: string) {
   return products.filter((product) => product.seriesSlug === seriesSlug);
 }
 
-export function getProductBySlug(slug: string) {
-  return products.find((product) => product.slug === slug);
+export function getProductByCode(code: string) {
+  const normalized = code.toLocaleUpperCase("tr-TR");
+  return products.find((product) => product.code.toLocaleUpperCase("tr-TR") === normalized);
 }
 
 export function getFeaturedProducts() {

@@ -59,7 +59,7 @@ useSeoMeta({
     </div>
 
     <div class="related-row">
-      <NuxtLink v-for="product in products" :key="product.slug" :to="`/doors/${product.slug}`">
+      <NuxtLink v-for="product in products" :key="product.code" :to="`/doors/${product.code}`">
         <span>{{ product.code }}</span>
         <strong>{{ product.name }}</strong>
       </NuxtLink>
