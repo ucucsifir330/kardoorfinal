@@ -70,10 +70,11 @@ const toggleGroup = (key: CatalogFacetKey, event: MouseEvent) => {
 
   gsap.from(options, {
     autoAlpha: 0,
-    y: 6,
-    duration: 0.28,
-    stagger: 0.03,
-    ease: "power2.out"
+    y: 16,
+    scale: 0.97,
+    duration: 0.6,
+    stagger: 0.06,
+    ease: "power3.out"
   });
 };
 
