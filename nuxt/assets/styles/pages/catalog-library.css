@@ -332,23 +332,62 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ICG tarzı soldan drawer. Çıkış hızlı (240ms), giriş yumuşak (420ms, iOS
+   drawer eğrisi); display/overlay allow-discrete ile kapanış animasyonlu. */
 .catalog-lib-filter {
-  width: min(440px, calc(100vw - 32px));
-  max-height: min(680px, calc(100dvh - 96px));
-  margin: auto;
+  --clg-drawer-ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  inset: 0 auto 0 0;
+  width: min(380px, calc(100vw - 48px));
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
   padding: 0;
-  border: 1px solid var(--clg-hairline);
+  border: 0;
+  border-right: 1px solid var(--clg-hairline);
   background: var(--clg-surface);
   color: var(--clg-text);
-  box-shadow: 0 32px 64px rgba(45, 45, 45, 0.28);
+  box-shadow: 24px 0 60px rgba(45, 45, 45, 0.2);
+  transform: translateX(-100%);
+  transition:
+    transform 240ms var(--clg-drawer-ease),
+    display 240ms allow-discrete,
+    overlay 240ms allow-discrete;
 }
 
 .catalog-lib-filter[open] {
-  animation: clg-filter-in var(--clg-motion) ease;
+  transform: translateX(0);
+  transition:
+    transform 420ms var(--clg-drawer-ease),
+    display 420ms allow-discrete,
+    overlay 420ms allow-discrete;
 }
 
 .catalog-lib-filter::backdrop {
   background: rgba(45, 45, 45, 0.32);
+  opacity: 0;
+  transition:
+    opacity 240ms ease,
+    display 240ms allow-discrete,
+    overlay 240ms allow-discrete;
+}
+
+.catalog-lib-filter[open]::backdrop {
+  opacity: 1;
+  transition:
+    opacity 420ms ease,
+    display 420ms allow-discrete,
+    overlay 420ms allow-discrete;
+}
+
+@starting-style {
+  .catalog-lib-filter[open] {
+    transform: translateX(-100%);
+  }
+
+  .catalog-lib-filter[open]::backdrop {
+    opacity: 0;
+  }
 }
 
 /* Modal açıkken arka sayfa kaymasın. */
@@ -356,26 +395,30 @@ body:has(.catalog-lib-filter[open]) {
   overflow: hidden;
 }
 
-@keyframes clg-filter-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-}
-
 .catalog-lib-filter__inner {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  max-height: inherit;
-  padding: 24px;
-  overflow-y: auto;
+  height: 100%;
 }
 
 .catalog-lib-filter__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--clg-hairline);
+}
+
+.catalog-lib-filter__body {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  flex: 1;
+  min-height: 0;
+  padding: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .catalog-lib-filter__head h2 {
@@ -454,7 +497,18 @@ body:has(.catalog-lib-filter[open]) {
 
 .catalog-lib-filter__foot {
   display: flex;
+  flex-direction: column;
   gap: 12px;
+  flex-shrink: 0;
+  padding: 18px 24px calc(18px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--clg-hairline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-lib-filter,
+  .catalog-lib-filter::backdrop {
+    transition-duration: 0ms;
+  }
 }
 
 .catalog-lib-filter__clear,
@@ -469,7 +523,6 @@ body:has(.catalog-lib-filter[open]) {
 }
 
 .catalog-lib-filter__apply {
-  flex: 1;
   border-color: var(--clg-text);
   background: var(--clg-text);
   color: var(--clg-surface-strong);

@@ -109,30 +109,33 @@ onBeforeUnmount(() => {
           <button class="catalog-lib-filter__close" :aria-label="t.close">×</button>
         </header>
 
-        <fieldset
-          v-for="group in catalogFacetGroups"
-          :key="group.key"
-          class="catalog-lib-filter__group"
-        >
-          <legend>{{ group.title[locale] }}</legend>
-          <label
-            v-for="option in group.options"
-            :key="option.value"
-            class="catalog-lib-filter__option"
+        <div class="catalog-lib-filter__body">
+          <fieldset
+            v-for="group in catalogFacetGroups"
+            :key="group.key"
+            class="catalog-lib-filter__group"
           >
-            <input
-              type="checkbox"
-              :checked="filters[group.key].includes(option.value)"
-              @change="toggleValue(group.key, option.value)"
-            />
-            <span class="catalog-lib-filter__option-label">{{ option.label }}</span>
-            <span class="catalog-lib-filter__option-count">{{ option.count }}</span>
-          </label>
-        </fieldset>
+            <legend>{{ group.title[locale] }}</legend>
+            <label
+              v-for="option in group.options"
+              :key="option.value"
+              class="catalog-lib-filter__option"
+            >
+              <input
+                type="checkbox"
+                :checked="filters[group.key].includes(option.value)"
+                @change="toggleValue(group.key, option.value)"
+              />
+              <span class="catalog-lib-filter__option-label">{{ option.label }}</span>
+              <span class="catalog-lib-filter__option-count">{{ option.count }}</span>
+            </label>
+          </fieldset>
 
-        <p class="catalog-lib-filter__status" aria-live="polite">{{ t.status }}</p>
+          <p class="catalog-lib-filter__status" aria-live="polite">{{ t.status }}</p>
+        </div>
 
         <footer class="catalog-lib-filter__foot">
+          <button class="catalog-lib-filter__apply">{{ t.show }}</button>
           <button
             v-if="activeCount"
             type="button"
@@ -141,7 +144,6 @@ onBeforeUnmount(() => {
           >
             {{ t.clear }}
           </button>
-          <button class="catalog-lib-filter__apply">{{ t.show }}</button>
         </footer>
       </form>
     </dialog>

@@ -1,13 +1,49 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
+import { useNuxtApp, useRoute, useRouter } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
+import {
+  countActiveCatalogFilters,
+  filterCatalogProducts,
+  parseCatalogFilterQuery
+} from "~/data/catalog-library-filters";
 import { products } from "~/data/products";
 
 definePageMeta({
   pageTransition: false
 });
 
+const PAGE_SIZE = 24;
+
+const route = useRoute();
+const router = useRouter();
 const { locale } = useKardoorLocale();
+const { $smoother } = useNuxtApp();
+
+const filters = computed(() => parseCatalogFilterQuery(route.query));
+const filteredProducts = computed(() => filterCatalogProducts(products, filters.value));
+const hasActiveFilters = computed(() => countActiveCatalogFilters(filters.value) > 0);
+
+const visibleCount = ref(PAGE_SIZE);
+watch(filters, () => {
+  visibleCount.value = PAGE_SIZE;
+});
+
+const visibleProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value));
+const remainingCount = computed(() => filteredProducts.value.length - visibleProducts.value.length);
+
+const loadMore = async () => {
+  visibleCount.value += PAGE_SIZE;
+  await nextTick();
+  // Sayfa boyu değişti; ScrollSmoother'ın ölçümü tazelensin.
+  ($smoother?.() as { refresh?: () => void } | null)?.refresh?.();
+};
+
+const clearFilters = () => {
+  router.replace({
+    query: { ...route.query, seri: undefined, renk: undefined, kullanim: undefined }
+  });
+};
 
 const seo = computed(() =>
   locale.value === "tr"
@@ -23,6 +59,22 @@ const seo = computed(() =>
       }
 );
 
+const t = computed(() =>
+  locale.value === "tr"
+    ? {
+        status: `${filteredProducts.value.length} modelden ${visibleProducts.value.length} tanesi gösteriliyor`,
+        loadMore: "Daha fazla göster",
+        empty: "Filtrenize uyan model yok.",
+        clearFilters: "Filtreleri temizle"
+      }
+    : {
+        status: `Showing ${visibleProducts.value.length} of ${filteredProducts.value.length} models`,
+        loadMore: "Load more items",
+        empty: "No doors match your filters.",
+        clearFilters: "Clear filters"
+      }
+);
+
 useSeoMeta({
   title: () => seo.value.title,
   description: () => seo.value.description
@@ -33,9 +85,11 @@ useSeoMeta({
   <section id="main-content" class="catalog-lib">
     <h1 class="catalog-lib__heading">{{ seo.title }}</h1>
 
-    <ul class="catalog-lib__grid">
+    <p class="catalog-lib__status" aria-live="polite">{{ t.status }}</p>
+
+    <ul v-if="visibleProducts.length" class="catalog-lib__grid">
       <li
-        v-for="(product, index) in products"
+        v-for="(product, index) in visibleProducts"
         :key="product.slug"
         class="catalog-lib__item"
       >
@@ -63,5 +117,16 @@ useSeoMeta({
         </NuxtLink>
       </li>
     </ul>
+
+    <div v-else class="catalog-lib__empty">
+      <p>{{ t.empty }}</p>
+      <button v-if="hasActiveFilters" type="button" @click="clearFilters">
+        {{ t.clearFilters }}
+      </button>
+    </div>
+
+    <div v-if="remainingCount > 0" class="catalog-lib__more">
+      <button type="button" @click="loadMore">{{ t.loadMore }}</button>
+    </div>
   </section>
 </template>
