@@ -253,7 +253,7 @@ const families: ProductFamily[] = [
   }
 ];
 
-const slugifyProductPart = (value: string) =>
+export const slugifyProductPart = (value: string) =>
   value
     .toLocaleLowerCase("tr-TR")
     .normalize("NFD")
