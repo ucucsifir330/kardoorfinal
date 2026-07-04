@@ -51,8 +51,8 @@ const ZOOM_MAX = 14; // boşluğa girerkenki en yüksek ölçek (tunable)
 
 // Tek master hero görseli — tema ile değişen yegâne kaynak.
 const HERO = {
-  day: "/L-21X9.png", //  3134×1344  (~21:9, light)
-  night: "/N-21X9.png" //  3830×1642  (night)
+  day: "/L-21X9.webp", //  3134×1344  (~21:9, light)
+  night: "/N-21X9.webp" //  3830×1642  (night)
 } as const;
 
 // Paketlenmiş kapı sprite'ları (scripts/pack-door-sprite.cjs çıktısı).
@@ -551,8 +551,8 @@ onBeforeUnmount(() => {
           {{ copy.subtitleLead }}{{ copy.subtitleAccent ? " " : "" }}<em v-if="copy.subtitleAccent">{{ copy.subtitleAccent }}</em>
         </p>
         <div class="entrance-lab__cta-row">
-          <AdaCtaButton :label="copy.ctaLabel" href="#" variant="filled" icon-position="none" />
-          <a class="entrance-lab__cta-arrow" href="#" :aria-label="copy.ctaLabel">
+          <AdaCtaButton :label="copy.ctaLabel" href="/catalog" variant="filled" icon-position="none" />
+          <a class="entrance-lab__cta-arrow" href="/catalog" :aria-label="copy.ctaLabel">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 12H19" />
               <path d="M14 7L19 12L14 17" />
