@@ -129,6 +129,13 @@ export const serializeCatalogFilterState = (state: CatalogFilterState) => {
   return query;
 };
 
+// Mevcut query ile birleştirilerek tüm facet anahtarlarını URL'den düşürür.
+export const clearedCatalogFilterQuery = (): Record<CatalogFacetKey, undefined> =>
+  Object.fromEntries(CATALOG_FACET_KEYS.map((key) => [key, undefined])) as Record<
+    CatalogFacetKey,
+    undefined
+  >;
+
 export const countActiveCatalogFilters = (state: CatalogFilterState) =>
   CATALOG_FACET_KEYS.reduce((total, key) => total + state[key].length, 0);
 

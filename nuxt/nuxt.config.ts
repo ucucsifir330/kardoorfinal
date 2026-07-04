@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   hooks: {
     "pages:extend"(pages) {
-      const disabledRoutes = new Set(["/doors", "/doors/:code"]);
+      const disabledRoutes = new Set(["/doors/:code"]);
 
       const removeDisabledRoutes = (routes: typeof pages) => {
         for (let index = routes.length - 1; index >= 0; index -= 1) {

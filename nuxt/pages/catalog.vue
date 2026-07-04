@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import { useNuxtApp, useRoute, useRouter } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import {
+  clearedCatalogFilterQuery,
   countActiveCatalogFilters,
   filterCatalogProducts,
   parseCatalogFilterQuery
@@ -41,14 +42,7 @@ const loadMore = async () => {
 
 const clearFilters = () => {
   router.replace({
-    query: {
-      ...route.query,
-      anaKategori: undefined,
-      kasaTipi: undefined,
-      yuzey: undefined,
-      renk: undefined,
-      kullanimAlani: undefined
-    }
+    query: { ...route.query, ...clearedCatalogFilterQuery() }
   });
 };
 

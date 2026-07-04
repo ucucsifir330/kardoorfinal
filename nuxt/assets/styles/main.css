@@ -10,14 +10,20 @@
 @import "./components/floating-contact.css";
 
 /* Page / section styles */
-@import "./sections/door-selector.css";
 @import "./sections/content-pages.css";
 @import "./sections/home-catalog.css";
 @import "./sections/home-team.css";
 @import "./sections/home-references.css";
 @import "./sections/home-reviews.css";
 @import "./sections/home-footer.css";
-@import "./pages/catalog.css";
+@import "./pages/catalog/subpage.css";
+@import "./pages/catalog/aluminium.css";
+@import "./pages/catalog/wood.css";
+@import "./pages/catalog/glass.css";
+@import "./pages/catalog/steel.css";
+@import "./pages/catalog/pvc.css";
+@import "./pages/catalog/architectural.css";
+@import "./pages/catalog/technical.css";
 @import "./pages/catalog-library.css";
 @import "./pages/company.css";
 @import "./pages/contact.css";
@@ -97,7 +103,6 @@ html[data-theme="dark"] #app,
 
 .app-shell--night .entrance-lab,
 .app-shell--night .entrance-lab__next,
-.app-shell--night .door-selector,
 .app-shell--night .listing-page,
 .app-shell--night .detail-page {
   background-color: #050714 !important;

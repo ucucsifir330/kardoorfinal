@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import {
   catalogFacetGroups,
+  clearedCatalogFilterQuery,
   countActiveCatalogFilters,
   filterCatalogProducts,
   getCatalogFacetGroups,
@@ -236,14 +237,7 @@ const toggleValue = (key: CatalogFacetKey, value: string) => {
 
 const clearAll = () => {
   router.replace({
-    query: {
-      ...route.query,
-      anaKategori: undefined,
-      kasaTipi: undefined,
-      yuzey: undefined,
-      renk: undefined,
-      kullanimAlani: undefined
-    }
+    query: { ...route.query, ...clearedCatalogFilterQuery() }
   });
 };
 
