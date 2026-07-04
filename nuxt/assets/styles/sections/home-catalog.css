@@ -46,6 +46,9 @@
     height: auto !important;
     min-height: 0 !important;
     overflow: visible !important;
+    margin-bottom: 96px !important;
+    --kardoor-line-left: 18px !important;
+    padding-top: clamp(96px, 18vw, 140px) !important;
   }
 
   .catalog-shell {
@@ -54,6 +57,9 @@
     overflow: visible !important;
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
   }
 
   .catalog-main {
@@ -62,29 +68,7 @@
     min-height: 0 !important;
     overflow: visible !important;
     border-top-right-radius: 0 !important;
-  }
-  .catalog-section {
-    height: auto !important;
-    min-height: 0 !important;
-    margin-bottom: 96px !important;
-    overflow: visible !important;
-  }
-
-  .catalog-shell {
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-    border-radius: 0 !important;
-  }
-
-  .catalog-main {
-    width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
     padding: 0 18px 0 !important;
-    overflow: visible !important;
     border-radius: 0 !important;
     display: block !important;
   }
@@ -92,17 +76,19 @@
   .catalog-sticky-title {
     position: relative !important;
     top: auto !important;
-    padding: 0 0 22px !important;
+    padding: 0 0 16px !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     background: transparent !important;
     z-index: 1 !important;
+    display: block !important;
   }
 
   .catalog-row {
     display: block !important;
     max-width: none !important;
     width: 100% !important;
+    margin-left: 0 !important;
   }
 
   .catalog-tags {
@@ -137,25 +123,10 @@
     transform: scaleY(var(--catalog-line-progress)) !important;
     transform-origin: top !important;
   }
-  .catalog-section {
-    --kardoor-line-left: 18px !important;
-  }
-  .catalog-section {
-    padding-top: clamp(96px, 18vw, 140px) !important;
-  }
-
-  .catalog-sticky-title {
-    display: block !important;
-    padding: 0 0 16px !important;
-  }
 
   .catalog-title {
     display: block !important;
     margin: 0 !important;
-  }
-
-  .catalog-row {
-    margin-left: 0 !important;
   }
 
   .catalog-product-grid {
