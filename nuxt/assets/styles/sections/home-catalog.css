@@ -145,13 +145,6 @@
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
 }
 .catalog-sticky-title {
-  background-color: var(--bg-color);
-  margin-left: calc(-1 * clamp(42px, 2.5vw, 48px));
-  margin-right: calc(-1 * clamp(56px, 4.8vw, 92px));
-  padding-left: clamp(42px, 2.5vw, 48px);
-  padding-right: clamp(56px, 4.8vw, 92px);
-  padding-top: clamp(54px, 6.94vh, 75px);
-  padding-bottom: 25px;
   transition: box-shadow 0.3s ease;
 }
 .catalog-row-info {
@@ -665,22 +658,9 @@
 }
 
 .catalog-shell > .catalog-main {
-  width: 100% !important;
   flex: 1 1 100% !important;
-  height: auto !important;
-  min-height: 0 !important;
-  overflow: visible !important;
   padding-left: var(--catalog-content-left) !important;
   padding-right: var(--catalog-content-right) !important;
-  background: var(--catalog-stage-main-bg, var(--bg-color)) !important;
-}
-
-.catalog-shell > .catalog-main .catalog-sticky-title {
-  margin-left: calc(-1 * var(--catalog-content-left)) !important;
-  margin-right: calc(-1 * var(--catalog-content-right)) !important;
-  padding-left: var(--catalog-content-left) !important;
-  padding-right: var(--catalog-content-right) !important;
-  background: var(--catalog-stage-sticky-bg, var(--bg-color)) !important;
 }
 
 .catalog-product-grid {
