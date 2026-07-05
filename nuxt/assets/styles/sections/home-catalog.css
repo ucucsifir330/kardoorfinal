@@ -659,8 +659,6 @@
 
 .catalog-shell > .catalog-main {
   flex: 1 1 100% !important;
-  padding-left: var(--catalog-content-left) !important;
-  padding-right: var(--catalog-content-right) !important;
 }
 
 .catalog-product-grid {
@@ -705,11 +703,6 @@
 }
 
 @media (max-width: 760px) {
-  .catalog-shell > .catalog-main {
-    padding-left: var(--catalog-content-left) !important;
-    padding-right: var(--catalog-content-right) !important;
-  }
-
   .catalog-section::after {
     left: var(--catalog-content-left) !important;
   }
