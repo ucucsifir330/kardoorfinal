@@ -45,7 +45,7 @@
         <figure class="home-references-flip__specimen home-references-flip__specimen--torus">
           <img
             class="home-references-flip__specimen-image"
-            src="/images/brand/prism-illustrations/metallic-inflated-torus-sculpture.webp"
+            :src="torusSpecimenSrc"
             alt=""
             decoding="async"
           >
@@ -113,6 +113,7 @@ const referencesCopies: Record<string, any> = {
 };
 
 const referencesCopy = computed(() => referencesCopies[locale.value] ?? referencesCopies.tr);
+const torusSpecimenSrc = "/images/brand/prism-illustrations/metallic-inflated-torus-sculpture.webp";
 
 const sectionRef = ref<HTMLElement | null>(null);
 const initialRef = ref<HTMLElement | null>(null);
@@ -138,10 +139,6 @@ const documentaryYoutubeEmbedUrl = computed(() => {
 
   return `https://www.youtube.com/embed/${documentaryYoutubeId}?${params.toString()}`;
 });
-
-// Flip ilerlemesinin bu oranını geçip scroll bırakılınca video sona tamamlanır;
-// altındaysa başa döner. Hissi canlıda ayarlamak için tek düğme (0–1).
-const FLIP_SNAP_THRESHOLD = 0.25;
 
 let flipContext: ReturnType<typeof GsapNamespace.context> | null = null;
 let resizeHandler: (() => void) | null = null;
@@ -265,18 +262,7 @@ const setupFlip = async () => {
             // ScrollSmoother already eases the page; keep this card locked to
             // that smoothed playhead instead of adding a second one-second lag.
             scrub: true,
-            invalidateOnRefresh: true,
-            // Take over once the user passes the threshold and releases scroll:
-            // GSAP completes the flip to the full-bleed end (or rolls it back if
-            // still below the threshold). Runs on the smoother's own tick, so no
-            // manual scrollTo fight / desync. FLIP_SNAP_THRESHOLD is the live knob.
-            snap: {
-              snapTo: (value: number) => (value < FLIP_SNAP_THRESHOLD ? 0 : 1),
-              duration: { min: 0.25, max: 0.6 },
-              delay: 0.03,
-              inertia: false,
-              ease: "power2.inOut"
-            }
+            invalidateOnRefresh: true
           }
         }
       );

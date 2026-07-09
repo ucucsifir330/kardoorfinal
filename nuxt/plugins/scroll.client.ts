@@ -15,7 +15,13 @@ export default defineNuxtPlugin((nuxtApp) => {
   registerGsap();
 
   const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const userAgent = navigator.userAgent;
+  const isSafari =
+    /Safari/i.test(userAgent) &&
+    !/(Chrome|Chromium|CriOS|FxiOS|Edg|OPR|Android)/i.test(userAgent);
+
   document.documentElement.classList.toggle("is-touch-device", isCoarsePointer);
+  document.documentElement.classList.toggle("is-safari", isSafari);
 
   // Disable ScrollSmoother (and with it all the GSAP auto-settle) ONLY on genuine
   // touch-primary small screens — real phones/tablets. Chrome DevTools device
@@ -39,7 +45,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     return ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
-      smooth: 1.2,
+      // Safari struggles more with long full-page transform smoothing over the
+      // dense homepage catalog. Keep the cinematic feel, but shorten WebKit's
+      // compositing window.
+      smooth: isSafari ? 0.72 : 1.2,
       // effects: false — projede hiç [data-speed]/[data-lag] elementi YOK, yani
       // parallax effect hiç kullanılmıyordu. effects:true iken ScrollSmoother her
       // frame DOM'u tarayıp effect adaylarını hesaplıyor → boşuna CPU/jank.
@@ -67,7 +76,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       window.clearTimeout(scrollIdleTimer);
       scrollIdleTimer = window.setTimeout(() => {
         root.classList.remove("is-scrolling");
-      }, 120);
+      }, isSafari ? 320 : 120);
     };
     window.addEventListener("scroll", markScrolling, { passive: true });
     window.addEventListener("wheel", markScrolling, { passive: true });

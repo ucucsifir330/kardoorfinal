@@ -129,6 +129,18 @@
   line-height: 1.1;
   letter-spacing: 0;
   font-weight: 500;
+  opacity: 0;
+  filter: blur(20px);
+  transform: scale(0.9);
+  transform-origin: center;
+  will-change: filter, opacity, transform;
+}
+
+.entrance-lab__configure-heading.is-intro-visible {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  will-change: auto;
 }
 
 .entrance-lab__configure-heading span {
@@ -150,6 +162,26 @@
   letter-spacing: 0;
   color: inherit;
   opacity: 1;
+  clip-path: inset(0 100% 0 0);
+  will-change: clip-path;
+}
+
+.entrance-lab__configure-copy.is-intro-visible {
+  clip-path: inset(0 0 0 0);
+  will-change: auto;
+}
+
+.entrance-lab__configure-copy-last-word {
+  display: inline-block;
+  clip-path: inset(0 100% 0 0);
+  opacity: 0;
+  will-change: clip-path, opacity;
+}
+
+.entrance-lab__configure-copy-last-word.is-intro-visible {
+  clip-path: inset(0 0 0 0);
+  opacity: 1;
+  will-change: auto;
 }
 
 .entrance-lab[data-ambience="night"] .entrance-lab__configure-copy {

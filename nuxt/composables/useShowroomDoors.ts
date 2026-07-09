@@ -20,6 +20,7 @@ export type ShowroomDoor = {
   nameDisplay: { lead: string; tail: string };
   series: string; // kategori / seri adı (ör. "Alüminyum Sistemler")
   image: string;
+  fitScale: number;
   /** Kısa teknik satır — specs'ten birleştirilir. */
   spec: string;
   /** Alt meta — materyaller. */
@@ -113,6 +114,26 @@ const SHOWROOM_SERIES = [
   "mimari-ozel"
 ] as const;
 
+type ShowroomSeriesSlug = (typeof SHOWROOM_SERIES)[number];
+
+type ShowroomRepresentative = {
+  image: number;
+  fitScale: number;
+};
+
+const showroomImagePath = (imageNumber: number) =>
+  `/images/katalogwebp/Image${String(imageNumber).padStart(2, "0")}.webp`;
+
+// Showroom orbitinde canvas/ürün ölçeği birbirine yakın duran 5 kapı.
+// Otomatik showcase seçimi Image04 gibi geniş bina-giriş kadrajlarını çekiyordu.
+const SHOWROOM_REPRESENTATIVES: Record<ShowroomSeriesSlug, ShowroomRepresentative> = {
+  "aluminyum-sistemler": { image: 41, fitScale: 1.06 },
+  "dogal-yuzeyler": { image: 57, fitScale: 1 },
+  "camli-modeller": { image: 17, fitScale: 1.07 },
+  "pvc-laminoks": { image: 117, fitScale: 1.07 },
+  "mimari-ozel": { image: 142, fitScale: 1.07 }
+};
+
 // Bir family içinde temsilci kapı seçimi: vitrin/showcase rolü olan görseller
 // turntable'da daha iyi durur (açık kapı, lifestyle, reflektif). Yoksa ilk ürün.
 const SHOWCASE_ROLES = new Set(["showcase", "product-showcase"]);
@@ -120,6 +141,13 @@ const SHOWCASE_ROLES = new Set(["showcase", "product-showcase"]);
 const pickRepresentative = (seriesSlug: string): DoorProduct | undefined => {
   const inSeries = products.filter((p) => p.seriesSlug === seriesSlug);
   if (!inSeries.length) return undefined;
+
+  const representative = SHOWROOM_REPRESENTATIVES[seriesSlug as ShowroomSeriesSlug];
+  const preferredProduct = representative
+    ? inSeries.find((p) => p.localImage === showroomImagePath(representative.image))
+    : undefined;
+  if (preferredProduct) return preferredProduct;
+
   return inSeries.find((p) => SHOWCASE_ROLES.has(p.visualRole)) ?? inSeries[0];
 };
 
@@ -153,7 +181,8 @@ export function useShowroomDoors() {
       // Turntable başlığı seri adını kullanır (ürün adları "Avero" gibi kısa kodlar).
       nameDisplay: splitName(title),
       series: copy?.series ?? product.seriesTitle ?? product.category,
-      image: product.image,
+      image: product.localImage,
+      fitScale: SHOWROOM_REPRESENTATIVES[product.seriesSlug as ShowroomSeriesSlug]?.fitScale ?? 1,
       spec: copy?.spec ?? product.specs.slice(0, 3).join(" · "),
       meta: copy?.meta ?? product.materials.slice(0, 3).join(" · "),
       accentColor: product.accentColor

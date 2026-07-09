@@ -26,6 +26,13 @@
   position: relative;
 }
 
+.app-shell--day .footer-dome {
+  background: #16101F !important;
+  background-color: #16101F !important;
+  box-shadow: inset 0 0 0 2px #16101F, 0 0 0 2px #16101F !important;
+  outline-color: #16101F !important;
+}
+
 .footer-brand {
   position: absolute;
   top: -208px;
@@ -239,38 +246,49 @@
 
 .footer-panel {
   width: 100%;
-  max-width: 860px;
+  max-width: 620px;
   margin-left: auto;
   margin-top: -840px;
 }
 
 .footer-heading {
-  margin: 0 0 78px;
+  margin: 0 0 42px;
   color: #E6E7EB;
-  font-family: 'Instrument Serif', serif;
-  font-size: 82px;
-  line-height: 0.92;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(46px, 3.65vw, 56px);
+  line-height: 0.94;
   font-weight: 400;
-  letter-spacing: 0.005em;
+  letter-spacing: -0.02em;
 }
 
-.footer-heading em {
+.footer-heading__line {
+  display: block;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+}
+
+.footer-heading em,
+.footer-heading__emphasis {
+  display: block;
+  margin: 0.09em 0 0.14em;
+  font-family: 'Instrument Serif', var(--font-serif);
   font-style: italic;
   font-weight: 400;
+  line-height: 0.84;
+  letter-spacing: 0.005em;
   white-space: nowrap;
 }
 
 .footer-heading__rest {
-  display: inline-block;
-  transform: translateY(0.08em);
+  display: block;
+  transform: none;
 }
 
 .location-group {
-  margin-bottom: 42px;
+  margin-bottom: 24px;
 }
 
 .location-label {
-  margin: 0 0 22px;
+  margin: 0 0 18px;
   color: rgba(230, 231, 235, 0.58);
   font-size: 17px;
   line-height: 1.2;
@@ -280,18 +298,18 @@
 .location-options {
   display: flex;
   align-items: center;
-  gap: 38px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
 .location-option {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   cursor: pointer;
   position: relative;
   color: #E6E7EB;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1;
   font-family: 'Gotham', 'Helvetica Neue', Arial, sans-serif;
 }
@@ -343,13 +361,13 @@
 
 .form-row {
   display: flex;
-  gap: 36px;
-  margin-bottom: 36px;
+  gap: 24px;
+  margin-bottom: 24px;
 }
 
 .form-row input {
   width: 100%;
-  height: 2.4rem;
+  height: 2.15rem;
   border: 0;
   border-bottom: 1px solid rgba(230, 231, 235, 0.76);
   border-radius: 0;
@@ -358,7 +376,7 @@
   padding: 0 0 0.6rem;
   outline: none;
   box-sizing: border-box;
-  font-size: 22px;
+  font-size: 16px;
   line-height: 1;
   font-family: Inter, system-ui, sans-serif;
   letter-spacing: -0.01em;
@@ -377,7 +395,7 @@
 
 .form-row-message {
   align-items: flex-end;
-  gap: 28px;
+  gap: 24px;
 }
 
 .form-row-message input {
@@ -385,9 +403,10 @@
 }
 
 .submit-btn {
-  flex: 0 0 148px;
-  width: 148px;
-  height: 92px;
+  position: relative;
+  flex: 0 0 104px;
+  width: 104px;
+  height: 64px;
   border-radius: 999px;
   border: 2px solid currentColor;
   background: transparent;
@@ -395,27 +414,40 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   cursor: pointer;
   box-shadow: none;
   transition:
-    transform 220ms var(--expo-out),
-    background 220ms ease,
-    color 220ms ease;
+    color 450ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.submit-btn__fill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: #E6E7EB;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-103%, 0, 0);
+  will-change: transform;
 }
 
 .submit-btn svg {
-  width: 28px;
-  height: 28px;
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
 }
 
 .submit-btn__label {
+  position: relative;
+  z-index: 1;
   display: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .submit-btn:hover {
-    transform: translateX(7px);
-    background: #E6E7EB;
     color: #2C2C31;
   }
 }
@@ -629,7 +661,7 @@
   grid-template-columns: minmax(260px, 1fr) minmax(620px, auto) minmax(260px, 1fr);
   align-items: center;
   color: #2C2C31;
-  font-family: 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.4;
   z-index: 4;
@@ -656,11 +688,31 @@
   white-space: nowrap;
 }
 
-.footer-bottom > div:last-child {
+.footer-agency {
+  display: inline-flex;
+  align-items: baseline;
+  justify-self: end;
+  gap: 7px;
   text-align: right;
   white-space: nowrap;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  color: #2C2C31;
+  text-decoration: none;
+}
+
+.footer-agency__lead {
+  color: rgba(44, 44, 49, 0.52);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.footer-agency__brand {
+  color: #2C2C31;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .footer-bottom a {
@@ -668,7 +720,7 @@
   text-decoration: none;
 }
 
-.footer-bottom > div:last-child span {
+.footer-agency span {
   display: inline-block;
   white-space: nowrap;
   transform: none;
@@ -700,6 +752,7 @@
 .app-shell--day.app-shell--references,
 .app-shell--day.app-shell--references .footer-wrapper {
   background: #f6f2e9 !important;
+  background-color: #f6f2e9 !important;
 }
 
 .app-shell--references .footer-dome {
@@ -751,6 +804,18 @@
 
 .footer-bottom .flip-text-link::before,
 .footer-bottom .flip-text-link::after {
+  color: #2C2C31 !important;
+}
+
+.footer-bottom .footer-agency {
+  color: #2C2C31 !important;
+}
+
+.footer-bottom .footer-agency__lead {
+  color: rgba(44, 44, 49, 0.52) !important;
+}
+
+.footer-bottom .footer-agency__brand {
   color: #2C2C31 !important;
 }
 
@@ -1104,18 +1169,18 @@
   }
 }
 
-/* Top footer adjustment: lower the CTA composition and enlarge the K mark. */
+/* Top footer adjustment: keep the CTA composition low without overscaling the K mark. */
 .footer-main {
-  padding-top: clamp(190px, 15vw, 260px) !important;
+  padding-top: clamp(150px, 11vw, 205px) !important;
 }
 
 .footer-brand {
-  height: clamp(560px, 36vw, 700px) !important;
-  margin-top: clamp(18px, 2vw, 40px) !important;
+  height: clamp(390px, 27vw, 540px) !important;
+  margin-top: clamp(6px, 1vw, 20px) !important;
 }
 
 .footer-logo {
-  width: clamp(560px, 36vw, 720px) !important;
+  width: clamp(410px, 27vw, 560px) !important;
 }
 
 @media (max-width: 1180px) {
@@ -1147,19 +1212,19 @@
   }
 }
 
-/* Overscale the visible K mark so it spans from the heading top to the message row. */
+/* Keep the visible K mark present without letting it dominate the form area. */
 .footer-brand {
   overflow: visible !important;
 }
 
 .footer-logo {
-  transform: translate(-10%, -4.5%) scale(1.32) !important;
+  transform: translate(-3%, -1%) scale(1.04) !important;
   transform-origin: center center !important;
 }
 
 @media (max-width: 1180px) {
   .footer-logo {
-    transform: scale(1.2) !important;
+    transform: scale(1.04) !important;
   }
 }
 
@@ -1270,6 +1335,10 @@
     display: none !important;
   }
 
+  .submit-btn__fill {
+    display: none !important;
+  }
+
   .submit-btn__label {
     display: inline-block !important;
     line-height: 1 !important;
@@ -1353,7 +1422,7 @@
 
   .footer-info-left {
     display: flex !important;
-    flex-direction: column-reverse !important;
+    flex-direction: column !important;
     gap: 42px !important;
   }
 
@@ -1505,15 +1574,27 @@
   .footer-bottom > div,
   .footer-bottom > div:first-child,
   .footer-bottom > div:nth-child(2),
-  .footer-bottom > div:last-child {
+  .footer-bottom > div:last-child,
+  .footer-agency {
     width: 100% !important;
     display: flex !important;
-    flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
     text-align: center !important;
     white-space: normal !important;
+  }
+
+  .footer-bottom > div,
+  .footer-bottom > div:first-child,
+  .footer-bottom > div:nth-child(2),
+  .footer-bottom > div:last-child {
+    flex-direction: column !important;
+  }
+
+  .footer-agency {
+    flex-direction: row !important;
+    gap: 7px !important;
   }
 
   .footer-bottom span,
@@ -1525,6 +1606,14 @@
   div#__nuxt .footer-wrapper .footer-bottom > div,
   div#__nuxt .footer-wrapper .footer-bottom > div:last-child {
     color: inherit !important;
+  }
+
+  div#__nuxt .footer-wrapper .footer-bottom .footer-agency__lead {
+    color: rgba(230, 231, 235, 0.58) !important;
+  }
+
+  div#__nuxt .footer-wrapper .footer-bottom .footer-agency__brand {
+    color: #E6E7EB !important;
   }
 
   .footer-bottom > div:first-child strong {

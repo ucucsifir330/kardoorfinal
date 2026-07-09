@@ -56,7 +56,7 @@ const removeRouteAfterHook = import.meta.client
 const handleStartupComplete = async () => {
   if (!shouldMountStartupScreens.value) return;
 
-  await transitionOverlay.value?.cover();
+  await transitionOverlay.value?.primeCovered();
   shouldMountStartupScreens.value = false;
   await nextTick();
   await transitionOverlay.value?.reveal();

@@ -745,14 +745,14 @@ const initManifestoAnimations = () => {
           opacity: 1,
           scale: 1,
           filter: 'blur(0px)',
-          duration: 1.75,
+          duration: 1.05,
           ease: 'power4.out',
-          stagger: { amount: 0.72, from: 'center', ease: silkEase },
+          stagger: { amount: 0.38, from: 'center', ease: silkEase },
           scrollTrigger: {
             trigger: titleElement,
             start: 'top 92%',
-            end: 'bottom 34%',
-            scrub: 1.4
+            toggleActions: 'play none none none',
+            once: true
           }
         }
       );

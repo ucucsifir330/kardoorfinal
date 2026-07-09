@@ -72,6 +72,11 @@
   pointer-events: none;
 }
 
+html.is-safari .showroom-lab__backdrop {
+  contain: layout paint style;
+  transform: translateZ(0);
+}
+
 .showroom-lab__backdrop-text {
   display: block;
   font-family: var(--font-display, var(--font-serif));
@@ -82,6 +87,11 @@
   white-space: nowrap;
   color: var(--sl-backdrop);
   user-select: none;
+}
+
+html.is-safari .showroom-lab__backdrop-text {
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .showroom-lab__backdrop-marquee {
@@ -161,13 +171,45 @@
   pointer-events: none;
 }
 
+html.is-safari .showroom-lab__slot {
+  will-change: transform;
+}
+
+.showroom-lab__door-shell {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  width: 100%;
+  height: 100%;
+  transform-origin: center bottom;
+}
+
+.showroom-lab__door-shell::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 0;
+  width: 72%;
+  height: 18%;
+  transform: translate3d(-50%, 18%, 0);
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0.32) 0%, transparent 72%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
 .showroom-lab__door-image {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
   object-position: center bottom;
-  filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.55));
+  transform: scale(var(--door-normalize, 1));
+  transform-origin: center bottom;
+  filter: none;
   user-select: none;
 }
 
@@ -319,10 +361,11 @@
 
 .showroom-lab__meta {
   margin: 0;
-  max-width: 36ch;
-  font-size: clamp(13px, 0.95vw, 15px);
+  max-width: none;
+  white-space: nowrap;
+  font-size: clamp(12px, 0.86vw, 14px);
   line-height: 1.5;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: var(--sl-text-faint);
 }
 
@@ -341,22 +384,23 @@
 }
 
 .entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {
-  --ada-cta-bg: var(--accent);
-  --ada-cta-fg: #050714;
-  --ada-cta-border: var(--accent);
-  --ada-cta-hover-bg: var(--accent-soft);
-  --ada-cta-hover-fg: #050714;
-  --ada-cta-hover-border: var(--accent-soft);
-  --ada-cta-fill-surface: var(--accent-soft);
+  --ada-cta-bg: #16101F;
+  --ada-cta-fg: #F4F6FF;
+  --ada-cta-border: #16101F;
+  --ada-cta-hover-bg: #21172D;
+  --ada-cta-hover-fg: #F4F6FF;
+  --ada-cta-hover-border: #21172D;
+  --ada-cta-fill-surface: #21172D;
 }
 
 .entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button--outline {
-  --ada-cta-fg: var(--accent);
-  --ada-cta-border: var(--accent);
-  --ada-cta-hover-fg: #050714;
+  --ada-cta-bg: transparent;
+  --ada-cta-fg: #16101F;
+  --ada-cta-border: #16101F;
+  --ada-cta-hover-fg: #F4F6FF;
   --ada-cta-hover-bg: transparent;
-  --ada-cta-hover-border: var(--accent);
-  --ada-cta-fill-surface: var(--accent);
+  --ada-cta-hover-border: #16101F;
+  --ada-cta-fill-surface: #16101F;
 }
 
 .entrance-lab[data-ambience="night"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {
@@ -450,47 +494,107 @@
 @media (max-width: 900px) {
   .showroom-lab {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: clamp(330px, 48svh, 460px) minmax(0, 1fr);
+    align-items: stretch;
   }
   .showroom-lab__stage {
     grid-column: 1;
     grid-row: 1;
+    align-self: stretch;
   }
   .showroom-lab__slot {
-    width: clamp(150px, 42vw, 250px);
-    height: clamp(240px, 64vw, 390px);
+    width: clamp(150px, 42vw, 220px);
+    height: clamp(240px, 64vw, 310px);
+  }
+  .showroom-lab__carousel {
+    transform: translateY(-2%);
+  }
+  .showroom-lab__platform {
+    top: min(64%, 360px);
+    width: clamp(300px, 78vw, 560px);
+    height: clamp(64px, 15vw, 118px);
   }
   .showroom-lab__info {
     grid-column: 1;
     grid-row: 2;
     width: min(100%, 560px);
-    padding: clamp(42px, 10vw, 72px) clamp(42px, 10vw, 84px) clamp(40px, 9vh, 84px);
-    gap: clamp(30px, 7vw, 46px);
+    min-height: 0;
+    padding:
+      clamp(22px, 5.6vw, 42px)
+      clamp(24px, 8vw, 52px)
+      max(22px, env(safe-area-inset-bottom));
+    gap: clamp(16px, 4vw, 28px);
+  }
+  .showroom-lab__info::before {
+    inset: 0;
   }
   .showroom-lab__info-block {
-    gap: clamp(12px, 3vw, 18px);
+    gap: clamp(8px, 2.5vw, 14px);
   }
   .showroom-lab__counter-current {
-    font-size: clamp(18px, 5.2vw, 26px);
+    font-size: clamp(16px, 4.6vw, 22px);
   }
   .showroom-lab__counter-line {
-    width: clamp(48px, 16vw, 78px);
+    width: clamp(46px, 15vw, 72px);
   }
   .showroom-lab__name {
-    font-size: clamp(44px, 12vw, 68px);
-    line-height: 1;
+    font-size: clamp(34px, 9.4vw, 56px);
+    line-height: 0.98;
   }
   .showroom-lab__series {
-    font-size: clamp(16px, 4.2vw, 20px);
+    font-size: clamp(14px, 3.8vw, 17px);
+  }
+  .showroom-lab__divider {
+    margin: 0 0 clamp(4px, 1.5vw, 10px);
+  }
+  .showroom-lab__spec {
+    max-width: 34ch;
+    font-size: clamp(13px, 3.55vw, 16px);
+    line-height: 1.45;
+  }
+  .showroom-lab__meta {
+    max-width: 36ch;
+    white-space: normal;
+    font-size: clamp(10px, 2.75vw, 12px);
+    letter-spacing: 0.01em;
   }
   .showroom-lab__actions {
-    gap: 16px;
-    margin-top: clamp(32px, 9vw, 52px);
+    gap: 12px;
+    margin-top: clamp(12px, 3vw, 22px);
   }
   .showroom-lab__door-rail {
-    width: min(100%, 300px);
+    width: min(100%, 280px);
     gap: 10px;
-    margin-top: clamp(18px, 6vw, 32px);
+    margin-top: clamp(10px, 3vw, 18px);
+  }
+  .showroom-lab__door-rail-segment {
+    height: 28px;
+  }
+}
+
+@media (max-width: 520px) {
+  .showroom-lab {
+    grid-template-rows: clamp(360px, 51svh, 430px) minmax(0, 1fr);
+  }
+  .showroom-lab__info {
+    width: 100%;
+  }
+  .showroom-lab__actions .ada-cta-button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 380px) {
+  .showroom-lab {
+    grid-template-rows: clamp(292px, 43svh, 340px) minmax(0, 1fr);
+  }
+  .showroom-lab__slot {
+    width: clamp(138px, 40vw, 160px);
+    height: clamp(220px, 61vw, 250px);
+  }
+  .showroom-lab__info {
+    padding-inline: 22px;
+    gap: 14px;
   }
 }
 
