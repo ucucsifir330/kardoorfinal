@@ -32,10 +32,10 @@ const degToRad = (d: number) => (d * Math.PI) / 180;
 // Orbit geometrisi — yatay elips. Kapı sayısından bağımsız (STEP buna göre).
 const getOrbitRadiusX = () => {
   if (typeof window === "undefined") return 430;
-  if (window.innerWidth <= 900) return Math.min(230, window.innerWidth * 0.32);
-  return Math.min(520, Math.max(360, window.innerWidth * 0.22));
+  if (window.innerWidth <= 900) return Math.min(250, window.innerWidth * 0.42);
+  return Math.min(620, Math.max(430, window.innerWidth * 0.3));
 };
-const ORBIT_RADIUS_Y = 50;
+const ORBIT_RADIUS_Y = 22;
 const stepDeg = computed(() => 360 / Math.max(1, doors.value.length));
 
 // progress → sürekli (float) kapı index'i.
@@ -64,22 +64,22 @@ const applyOrbit = (p: number) => {
     const distance = Math.abs(offset);
     const rad = degToRad(offset * step);
     const x = Math.sin(rad) * getOrbitRadiusX();
-    const y = (1 - Math.cos(rad)) * ORBIT_RADIUS_Y;
+    const orbitY = (1 - Math.cos(rad)) * ORBIT_RADIUS_Y;
     const nearActive = clamp(1 - distance, 0, 1);
 
-    const nonActive = 1 - nearActive;
     const neighborFade = fadeOut(clamp((distance - 1) / 0.38, 0, 1));
     const scale =
       distance <= 1
-        ? lerp(0.5, 1.34, nearActive)
-        : lerp(0.5, 0.46, 1 - neighborFade);
+        ? lerp(0.72, 1.34, nearActive)
+        : lerp(0.72, 0.62, 1 - neighborFade);
     const opacity = distance <= 1
-      ? lerp(0.32, 1, nearActive)
-      : 0.32 * neighborFade;
+      ? lerp(0.22, 1, nearActive)
+      : 0.2 * neighborFade;
+    const slotY = orbitY + nearActive * 116 + (1 - nearActive) * 128;
 
     const s = el.style;
     s.setProperty("--slot-x", `${x}px`);
-    s.setProperty("--slot-y", `${y + nonActive * 96}px`);
+    s.setProperty("--slot-y", `${slotY}px`);
     s.setProperty("--slot-scale", `${opacity <= 0.001 ? 0.001 : scale}`);
     s.setProperty("--slot-opacity", `${opacity}`);
     s.zIndex = `${Math.round(40 - distance * 12)}`;
@@ -160,15 +160,18 @@ const backdropText = computed(() => {
           :key="door.id"
           :ref="(el) => setSlotRef(el as Element | null, i)"
           class="showroom-lab__slot"
+          :style="{ '--door-normalize': door.fitScale }"
         >
-          <img
-            :src="door.image"
-            :alt="`${door.nameDisplay.lead} ${door.nameDisplay.tail}`"
-            class="showroom-lab__door-image"
-            loading="lazy"
-            decoding="async"
-            draggable="false"
-          >
+          <span class="showroom-lab__door-shell">
+            <img
+              :src="door.image"
+              :alt="`${door.nameDisplay.lead} ${door.nameDisplay.tail}`"
+              class="showroom-lab__door-image"
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+            >
+          </span>
         </div>
       </div>
 

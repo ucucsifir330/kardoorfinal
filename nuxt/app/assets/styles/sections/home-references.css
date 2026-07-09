@@ -49,14 +49,14 @@
 }
 
 .home-references-flip {
-  --references-bg: #101312;
+  --references-bg: #16101F;
   --references-ink: #f8f3df;
   --references-muted: rgba(248, 243, 223, 0.62);
   --references-soft: rgba(248, 243, 223, 0.18);
   --references-line: rgba(248, 243, 223, 0.28);
   --references-accent: #3a83ff;
   --references-top-radius: clamp(2.75rem, 5.8vw, 6.75rem);
-  --references-bottom-bleed: clamp(180px, 24svh, 320px);
+  --references-bottom-bleed: 0px;
   position: relative;
   z-index: 20;
   background: var(--references-bg);

@@ -635,24 +635,27 @@ onBeforeUnmount(() => {
 }
 
 .title-block {
+  --hero-title-gap-anchor: clamp(14px, 1.2vw, 30px);
+  --hero-title-gap: clamp(28px, 2.35vw, 58px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(8px, 0.85vw, 18px);
+  gap: var(--hero-title-gap);
   letter-spacing: 0;
   margin-left: 0;
   text-align: center;
+  transform: translateY(calc(var(--hero-title-gap) - var(--hero-title-gap-anchor)));
 }
 
 .hero-line {
-  font-family: "Barlow Condensed", "Montserrat", sans-serif;
+  font-family: "PP Mori", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   /* Üst sınır böleni dile göre değişir (--hero-line-divisor): TR 6.8 (mevcut),
      EN 7.45 → uzun "ARCHITECTURAL" satırı sığsın. Var yoksa 6.8'e düşer. */
   font-size: min(
-    clamp(5.85rem, 10.1vw, 14.15rem),
+    clamp(5.35rem, 8.4vw, 11.4rem),
     calc((100vw - 40px) / var(--hero-line-divisor, 6.8))
   );
-  font-weight: 800;
+  font-weight: 600;
   color: var(--ref-ink);
   line-height: 0.9;
   display: block;
@@ -911,15 +914,13 @@ onBeforeUnmount(() => {
   display: none;
 }
 
-/* Serif section title carried over from the home "Seçili Ege Kardoor
-   Projeleri" band, sitting directly above the projects marquee. */
 .ref-projects-title {
   width: 100%;
   margin: 0 0 clamp(28px, 3.4vw, 56px);
   padding: 0 clamp(18px, 4vw, 76px);
   box-sizing: border-box;
   color: var(--ref-title-ink);
-  font-family: "Instrument Serif", Georgia, serif;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(56px, 8vw, 168px);
   font-weight: 400;
   line-height: 1;
@@ -998,15 +999,15 @@ onBeforeUnmount(() => {
 }
 
 .card-title {
-  font-family: "Montserrat", sans-serif;
+  font-family: "PP Mori", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--ref-card-title);
   margin-bottom: 8px;
 }
 
 .card-location {
-  font-family: "Montserrat", sans-serif;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   color: var(--ref-card-loc);
   font-weight: 500;
@@ -1215,8 +1216,8 @@ onBeforeUnmount(() => {
 
   .hero-line {
     font-size: min(
-      clamp(4.9rem, 17vw, 9.1rem),
-      calc((100vw - 32px) / var(--hero-line-divisor, 6.8))
+      clamp(3.65rem, 11.4vw, 6.7rem),
+      calc((100vw - 32px) / 9.8)
     );
     line-height: 0.92;
   }
@@ -1243,8 +1244,8 @@ onBeforeUnmount(() => {
 
   .hero-line {
     font-size: min(
-      clamp(3.15rem, 14.5vw, 4.8rem),
-      calc((100vw - 24px) / var(--hero-line-divisor, 6.8))
+      clamp(2.05rem, 10.4vw, 3.15rem),
+      calc((100vw - 24px) / 11.8)
     );
     line-height: 0.94;
   }

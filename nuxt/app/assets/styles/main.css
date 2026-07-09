@@ -21,15 +21,21 @@
 @import "./pages/contact.css";
 
 /* ──────────────────────────────────────────────────────────────
-   PERFORMANCE — drop backdrop-filter while actively scrolling.
-   backdrop-filter re-blurs everything behind the element every frame;
-   during the pinned cinematic scroll that is one of the heaviest paints.
-   The blur is restored ~120ms after scroll settles (toggled in
-   plugins/scroll.client.ts). Glass UI is unchanged at rest.
+   PERFORMANCE — drop backdrop-filter on known glass surfaces while scrolling.
+   Keep this scoped: a universal selector forces broad style recalculation on
+   every scroll tick in Safari/Chrome.
    ────────────────────────────────────────────────────────────── */
-html.is-scrolling *,
-html.is-scrolling *::before,
-html.is-scrolling *::after {
+html.is-scrolling .site-header__bar::before,
+html.is-scrolling .site-header__mobile-panel::before,
+html.is-scrolling .floating-contact__trigger,
+html.is-scrolling .floating-contact__panel,
+html.is-scrolling .entrance-lab__cta-arrow,
+html.is-scrolling .product-modal,
+html.is-scrolling .product-modal-nav,
+html.is-scrolling .product-modal-content,
+html.is-scrolling .ada-team-card,
+html.is-scrolling .ada-team-modal,
+html.is-scrolling .home-footer__contact-panel {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }

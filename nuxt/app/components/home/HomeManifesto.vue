@@ -7,10 +7,8 @@
         class="ada-manifesto-text ada-split-quote scroll-reveal"
         id="manifesto-text"
         data-gsap-quote="true"
-        @click="playQuoteExit"
       >
         {{ manifestoCopy.quote }}
-        <small>{{ manifestoCopy.brand }}</small>
       </h3>
       <a href="/company" class="ada-manifesto-cta" :aria-label="manifestoCopy.ctaAria">
         <span class="ada-manifesto-cta-text" :data-text="manifestoCopy.cta">{{ manifestoCopy.cta }}</span>
@@ -69,7 +67,6 @@ const { locale } = useKardoorLocale();
 
 const manifestoCopies: Record<string, {
   quote: string;
-  brand: string;
   cta: string;
   ctaAria: string;
   brandsTitle: string;
@@ -77,7 +74,6 @@ const manifestoCopies: Record<string, {
   tr: {
     quote:
       "Bir kapının değeri yalnızca görünüşüyle değil; yıllara meydan okuyan dayanımı ve taşıdığı güvenle ölçülür. Tavizsiz işçilik ve doğru mühendislikle, sadece bir kapı değil güven üretiyoruz.",
-    brand: "Ege Kardoor",
     cta: "Hikâyemizi Keşfet",
     ctaAria: "Hakkımızda sayfasına git",
     brandsTitle: "Birlikte çalıştığımız markalar"
@@ -85,7 +81,6 @@ const manifestoCopies: Record<string, {
   en: {
     quote:
       "The value of a door is measured not only by its appearance, but by the resilience it carries through the years and the confidence it gives every threshold. With uncompromising craft and precise engineering, we create more than doors; we create trust.",
-    brand: "Ege Kardoor",
     cta: "Discover Our Story",
     ctaAria: "Go to the about us page",
     brandsTitle: "Brands We Have Worked With"
@@ -105,25 +100,16 @@ const playQuoteEnter = () => {
   quoteTimeline.pause(0).play("enter");
 };
 
-const playQuoteExit = () => {
-  if (!quoteTimeline) return;
-
-  quoteTimeline.play("exit");
-};
-
 onMounted(async () => {
   await nextTick();
 
   const quoteElement = manifestoQuoteRef.value;
 
   if (quoteElement) {
-    const note = quoteElement.querySelector<HTMLElement>("small");
-
     quoteSplit = SplitText.create(quoteElement, {
-      type: "chars",
-      charsClass: "ada-manifesto-char",
-      ignore: note || undefined,
-      smartWrap: true
+      type: "words,chars",
+      wordsClass: "ada-manifesto-word",
+      charsClass: "ada-manifesto-char"
     });
 
     const chars = quoteSplit.chars as HTMLElement[];
@@ -142,29 +128,13 @@ onMounted(async () => {
           rotationX: 45,
           transformOrigin: "left center",
           opacity: 0,
-          stagger: 0.05,
-          duration: 0.8,
+          stagger: 0.018,
+          duration: 0.46,
           ease: "power3.out"
         },
         "enter"
       )
-      .fromTo(note, { autoAlpha: 0 }, { autoAlpha: 0.72, duration: 1, ease: "none" })
-      .addPause()
-      .addLabel("exit")
-      .to(note, { autoAlpha: 0, duration: 0.5, ease: "none" }, "exit")
-      .to(
-        chars,
-        {
-          rotationY: 90,
-          rotationX: -35,
-          transformOrigin: "right center",
-          opacity: 0,
-          duration: 0.4,
-          ease: "power2.in",
-          stagger: 0.015
-        },
-        "exit"
-      );
+      .addPause();
 
     quoteScrollTrigger = ScrollTrigger.create({
       trigger: quoteElement,
@@ -173,8 +143,7 @@ onMounted(async () => {
       end: "top 54%",
       invalidateOnRefresh: true,
       onEnter: playQuoteEnter,
-      onEnterBack: playQuoteEnter,
-      onLeave: playQuoteExit
+      once: true
     });
   }
 

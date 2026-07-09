@@ -1,5 +1,7 @@
 .contact-page {
-  --contact-gotham: "Gotham", "Gotham SSm", "Gotham HTF", Inter, system-ui, sans-serif;
+  --contact-display: "PP Telegraf", "PP Neue Montreal", Inter, system-ui, sans-serif;
+  --contact-text: "PP Mori", Inter, system-ui, sans-serif;
+  --contact-ui: Inter, system-ui, sans-serif;
   --contact-bg: #080B18;
   --contact-ink: #F4F6FF;
   --contact-muted: #B9C0D8;
@@ -28,7 +30,7 @@
   padding: calc(var(--header) + 4.8rem + 35px) clamp(2rem, 2.7vw, 3.2rem) 3rem;
   background: var(--contact-page-bg);
   color: var(--contact-ink);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--contact-ui);
   overflow: hidden;
 }
 
@@ -62,12 +64,13 @@
 
 .contact-page__title {
   max-width: var(--header-max-width, 1820px);
-  margin: 0 auto 2.75rem;
-  font-family: var(--font-serif);
+  margin: 0 auto 1.9rem;
+  font-family: var(--contact-display);
   font-size: clamp(4.6rem, 6.18vw, 8.15rem);
   font-weight: 400;
-  line-height: 0.92;
-  letter-spacing: 0;
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 
 .contact-page__grid {
@@ -119,11 +122,11 @@
   z-index: 1;
   display: block;
   color: var(--contact-ink);
-  font-family: var(--contact-gotham);
+  font-family: var(--contact-text);
   font-size: clamp(1.22rem, 1.34vw, 1.58rem);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.03em;
   pointer-events: none;
   transform-origin: left center;
   transition:
@@ -146,7 +149,7 @@
   border-radius: 0;
   background: transparent;
   color: var(--contact-ink);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--contact-ui);
   font-size: clamp(1.22rem, 1.34vw, 1.58rem);
   font-weight: 400;
   line-height: 1;
@@ -176,7 +179,7 @@
   max-width: 620px;
   margin: 0.1rem 0 3.05rem;
   color: var(--contact-muted);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--contact-ui);
   font-size: 0.76rem;
   font-weight: 700;
   line-height: 1.42;
@@ -236,13 +239,34 @@
 }
 
 .contact-form__submit-icon {
-  width: 58px;
-  height: 44px;
+  position: relative;
+  width: 68px;
+  height: 50px;
   display: grid;
   place-items: center;
   border: 2px solid currentColor;
   border-radius: 999px;
-  transition: transform 220ms var(--expo-out), background 220ms ease, color 220ms ease;
+  overflow: hidden;
+  transition: color 450ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.contact-form__submit-icon-fill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: var(--contact-submit-hover-bg);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-103%, 0, 0);
+  will-change: transform;
+}
+
+.contact-form__submit-icon svg {
+  position: relative;
+  z-index: 1;
+  width: 28px;
+  height: 20px;
 }
 
 .contact-form__submit:disabled {
@@ -251,9 +275,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .contact-form__submit:hover .contact-form__submit-icon {
-    transform: translateX(7px);
-    background: var(--contact-submit-hover-bg);
+  .contact-form__submit-icon:hover {
     color: var(--contact-submit-hover-color);
   }
 }
@@ -262,7 +284,7 @@
   max-width: 34ch;
   margin: 1.4rem 0 0;
   color: var(--contact-muted);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--contact-ui);
   font-size: 0.95rem;
   line-height: 1.5;
 }
@@ -277,12 +299,12 @@
 
 .contact-info__group h2 {
   margin: 0 0 0.96rem;
-  font-family: var(--contact-gotham);
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-family: var(--contact-display);
+  font-size: 1rem;
+  font-weight: 800;
   line-height: 1;
   text-transform: uppercase;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
 }
 
 .contact-info__group h2 .flip-text-link,
@@ -329,7 +351,7 @@
 .contact-info__group p {
   margin: 0.42rem 0;
   color: var(--contact-ink);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--contact-text);
   font-size: 1.02rem;
   font-weight: 400;
   line-height: 1.28;
@@ -487,11 +509,11 @@
   z-index: 7;
   margin: 0;
   color: var(--contact-ink);
-  font-family: var(--contact-gotham);
+  font-family: var(--contact-display);
   font-size: clamp(0.78rem, 0.72vw, 1rem);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: 0;
+  letter-spacing: -0.025em;
   text-align: left;
   text-transform: uppercase;
   text-decoration: none;
@@ -578,7 +600,11 @@
 
 .app-shell--night:has(.contact-page) .contact-form__submit-icon svg,
 .app-shell--night:has(.contact-page) .contact-form__submit-icon path {
-  stroke: #F4F6FF;
+  stroke: currentColor !important;
+}
+
+.app-shell--night:has(.contact-page) .contact-form__submit-icon:hover {
+  color: var(--contact-submit-hover-color) !important;
 }
 
 .app-shell--night:has(.contact-page) .footer-form .form-row input {
@@ -617,7 +643,7 @@
 
 .app-shell--day:has(.contact-page) .footer-wrapper,
 .app-shell--day:has(.contact-page) .footer-wrapper::before {
-  background-color: #eee8db;
+  background: #eee8db !important;
 }
 
 @media (max-width: 1280px) {
@@ -654,7 +680,7 @@
   }
 
   .contact-page__title {
-    margin-bottom: 2rem;
+    margin-bottom: 1.45rem;
     font-size: clamp(3.2rem, 15vw, 5.4rem);
   }
 
@@ -677,8 +703,13 @@
   }
 
   .contact-form__submit-icon {
-    width: 52px;
-    height: 40px;
+    width: 60px;
+    height: 46px;
+  }
+
+  .contact-form__submit-icon svg {
+    width: 25px;
+    height: 18px;
   }
 
   .contact-info {

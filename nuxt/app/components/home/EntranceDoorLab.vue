@@ -122,10 +122,33 @@ const configureCopy = computed(() =>
       }
 );
 
+const configureBodyParts = computed(() => {
+  const body = configureCopy.value.body.trim();
+  const lastSpaceIndex = body.lastIndexOf(" ");
+
+  if (lastSpaceIndex === -1) {
+    return {
+      lead: "",
+      lastWord: body
+    };
+  }
+
+  return {
+    lead: body.slice(0, lastSpaceIndex),
+    lastWord: body.slice(lastSpaceIndex + 1)
+  };
+});
+
 const sectionRef = ref<HTMLElement | null>(null);
 const zoomRef = ref<HTMLElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+const configureHeadingRef = ref<HTMLElement | null>(null);
+const configureCopyRef = ref<HTMLElement | null>(null);
+const configureCopyLastWordRef = ref<HTMLElement | null>(null);
+const isConfigureHeadingIntroVisible = ref(false);
+const isConfigureCopyIntroVisible = ref(false);
+const isConfigureCopyLastWordVisible = ref(false);
 
 const showroomProgress = ref(0); // 0→1 turntable orbit (kapı dönüşü)
 const showroomFadeRef = ref(0); // 0→1 showroom görünürlüğü (fade, orbit'ten ayrı)
@@ -135,6 +158,12 @@ const { $smoother } = useNuxtApp();
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
 let teardown: (() => void) | undefined;
+let configureHeadingTween: ReturnType<typeof gsap.to> | undefined;
+let configureCopyTween: ReturnType<typeof gsap.to> | undefined;
+let configureCopyLastWordTween: ReturnType<typeof gsap.to> | undefined;
+let hasPlayedConfigureHeadingIntro = false;
+let hasPlayedConfigureCopyIntro = false;
+let hasPlayedConfigureCopyLastWordIntro = false;
 // Kapı-rayı tıklaması, wheel ile AYNI settle makinesini kullanmalı (ayrı bir
 // tween açarsa state — kilit/cooldown/isAutoSettling — güncellenmez, iki tween
 // çakışıp scroll'u geri atar). onMounted içinde atanır.
@@ -185,6 +214,145 @@ const placeDoor = () => {
   }
 };
 
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const playConfigureHeadingIntro = () => {
+  const heading = configureHeadingRef.value;
+  if (!heading || hasPlayedConfigureHeadingIntro) return;
+
+  hasPlayedConfigureHeadingIntro = true;
+
+  if (prefersReducedMotion()) {
+    isConfigureHeadingIntroVisible.value = true;
+    gsap.set(heading, { clearProps: "filter,opacity,scale" });
+    return;
+  }
+
+  configureHeadingTween?.kill();
+  configureHeadingTween = gsap.fromTo(
+    heading,
+    {
+      filter: "blur(20px)",
+      opacity: 0,
+      scale: 0.9
+    },
+    {
+      filter: "blur(0px)",
+      opacity: 1,
+      scale: 1,
+      duration: 1.5,
+      ease: "power2.out",
+      overwrite: "auto",
+      onComplete: () => {
+        configureHeadingTween = undefined;
+        isConfigureHeadingIntroVisible.value = true;
+      }
+    }
+  );
+};
+
+const playConfigureCopyIntro = () => {
+  const copyElement = configureCopyRef.value;
+  if (!copyElement || hasPlayedConfigureCopyIntro) return;
+
+  hasPlayedConfigureCopyIntro = true;
+
+  if (prefersReducedMotion()) {
+    isConfigureCopyIntroVisible.value = true;
+    gsap.set(copyElement, { clearProps: "clipPath" });
+    return;
+  }
+
+  configureCopyTween?.kill();
+  configureCopyTween = gsap.fromTo(
+    copyElement,
+    { clipPath: "inset(0 100% 0 0)" },
+    {
+      clipPath: "inset(0 0% 0 0)",
+      duration: 1.8,
+      delay: 0.28,
+      ease: "power2.out",
+      overwrite: "auto",
+      onComplete: () => {
+        configureCopyTween = undefined;
+        isConfigureCopyIntroVisible.value = true;
+      }
+    }
+  );
+};
+
+const playConfigureCopyLastWordIntro = () => {
+  const lastWord = configureCopyLastWordRef.value;
+  if (!lastWord || hasPlayedConfigureCopyLastWordIntro) return;
+
+  hasPlayedConfigureCopyLastWordIntro = true;
+
+  if (prefersReducedMotion()) {
+    isConfigureCopyLastWordVisible.value = true;
+    gsap.set(lastWord, { clearProps: "clipPath,opacity" });
+    return;
+  }
+
+  configureCopyLastWordTween?.kill();
+  configureCopyLastWordTween = gsap.fromTo(
+    lastWord,
+    {
+      clipPath: "inset(0 100% 0 0)",
+      opacity: 0
+    },
+    {
+      clipPath: "inset(0 0% 0 0)",
+      opacity: 1,
+      duration: 0.86,
+      delay: 1.46,
+      ease: "power2.out",
+      overwrite: "auto",
+      onComplete: () => {
+        configureCopyLastWordTween = undefined;
+        isConfigureCopyLastWordVisible.value = true;
+      }
+    }
+  );
+};
+
+const resetConfigureHeadingIntro = () => {
+  const heading = configureHeadingRef.value;
+  if (!hasPlayedConfigureHeadingIntro && !isConfigureHeadingIntroVisible.value && !configureHeadingTween) return;
+
+  hasPlayedConfigureHeadingIntro = false;
+  isConfigureHeadingIntroVisible.value = false;
+  configureHeadingTween?.kill();
+  configureHeadingTween = undefined;
+  if (heading) gsap.set(heading, { clearProps: "filter,opacity,scale" });
+};
+
+const resetConfigureCopyIntro = () => {
+  const copyElement = configureCopyRef.value;
+  if (!hasPlayedConfigureCopyIntro && !isConfigureCopyIntroVisible.value && !configureCopyTween) return;
+
+  hasPlayedConfigureCopyIntro = false;
+  isConfigureCopyIntroVisible.value = false;
+  configureCopyTween?.kill();
+  configureCopyTween = undefined;
+  if (copyElement) gsap.set(copyElement, { clearProps: "clipPath" });
+};
+
+const resetConfigureCopyLastWordIntro = () => {
+  const lastWord = configureCopyLastWordRef.value;
+  if (
+    !hasPlayedConfigureCopyLastWordIntro &&
+    !isConfigureCopyLastWordVisible.value &&
+    !configureCopyLastWordTween
+  ) return;
+
+  hasPlayedConfigureCopyLastWordIntro = false;
+  isConfigureCopyLastWordVisible.value = false;
+  configureCopyLastWordTween?.kill();
+  configureCopyLastWordTween = undefined;
+  if (lastWord) gsap.set(lastWord, { clearProps: "clipPath,opacity" });
+};
+
 // Master scrub: progress 0→1 boyunca PORTAL → HOLD → ZOOM → SHOWROOM fazları.
 const updateMaster = (raw: number) => {
   const p = clamp01(raw);
@@ -219,6 +387,15 @@ const updateMaster = (raw: number) => {
 
   // HORIZONTAL: son kapıdan sonra showroom + "Kurgulayın" paneli yatay kayar.
   const slideP = easeInOut(clamp01((p - HORIZONTAL_START) / (1 - HORIZONTAL_START)));
+  if (slideP >= 0.46) {
+    playConfigureHeadingIntro();
+    playConfigureCopyIntro();
+    playConfigureCopyLastWordIntro();
+  } else if (p < HORIZONTAL_START - 0.02) {
+    resetConfigureHeadingIntro();
+    resetConfigureCopyIntro();
+    resetConfigureCopyLastWordIntro();
+  }
 
   // HERO COPY + CUE: scroll başlar başlamaz yumuşakça kaybolur (kapı açılırken).
   const copyFade = clamp01((p - 0.02) / 0.16);
@@ -429,6 +606,9 @@ onMounted(() => {
 
   teardown = () => {
     scrollTween?.kill();
+    configureHeadingTween?.kill();
+    configureCopyTween?.kill();
+    configureCopyLastWordTween?.kill();
     settleToDoorIndex = undefined;
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("resize", onResize);
@@ -484,11 +664,24 @@ onBeforeUnmount(() => {
         <!-- KURGULAYIN paneli — yatay kayma ile gelir. -->
         <div class="entrance-lab__slide entrance-lab__configure">
           <div class="entrance-lab__configure-inner">
-            <h2 class="entrance-lab__configure-heading">
+            <h2
+              ref="configureHeadingRef"
+              class="entrance-lab__configure-heading"
+              :class="{ 'is-intro-visible': isConfigureHeadingIntroVisible }"
+            >
               <span v-for="line in configureCopy.titleLines" :key="line">{{ line }}</span>
             </h2>
-            <p class="entrance-lab__configure-copy">
-              {{ configureCopy.body }}
+            <p
+              ref="configureCopyRef"
+              class="entrance-lab__configure-copy"
+              :class="{ 'is-intro-visible': isConfigureCopyIntroVisible }"
+            >
+              {{ configureBodyParts.lead }}
+              <span
+                ref="configureCopyLastWordRef"
+                class="entrance-lab__configure-copy-last-word"
+                :class="{ 'is-intro-visible': isConfigureCopyLastWordVisible }"
+              >{{ configureBodyParts.lastWord }}</span>
             </p>
             <div class="entrance-lab__configure-actions" :aria-label="configureCopy.actionsLabel">
               <button type="button" class="ada-manifesto-cta entrance-lab__soon-cta" aria-disabled="true" :aria-label="configureCopy.configuratorAria">

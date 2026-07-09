@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { useGSAP } from "~/composables/useGSAP";
 
 const emit = defineEmits<{
   complete: [];
@@ -7,15 +8,22 @@ const emit = defineEmits<{
 
 const visible = ref(false);
 const isExiting = ref(false);
+const markRef = ref<HTMLElement | null>(null);
+const wordmarkRef = ref<HTMLElement | null>(null);
+const fillRef = ref<HTMLElement | null>(null);
+const surfaceRef = ref<HTMLElement | null>(null);
+const { gsap } = useGSAP();
 
 let fallbackTimer = 0;
-let holdTimer = 0;
 let exitTimer = 0;
 let removeVisibilityListener: (() => void) | null = null;
+let loaderTimeline: ReturnType<typeof gsap.timeline> | null = null;
 let completed = false;
-let fillComplete = false;
 
-onMounted(() => {
+const prefersReducedMotion = () =>
+  import.meta.client && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+onMounted(async () => {
   if (document.visibilityState === "hidden") return;
 
   visible.value = true;
@@ -33,19 +41,27 @@ onMounted(() => {
 
   fallbackTimer = window.setTimeout(() => {
     startExit();
-  }, 7600);
+  }, 9800);
+
+  await nextTick();
+  playLoader();
 });
 
 const clearTimers = () => {
   window.clearTimeout(fallbackTimer);
-  window.clearTimeout(holdTimer);
   window.clearTimeout(exitTimer);
+};
+
+const stopLoaderTimeline = () => {
+  loaderTimeline?.kill();
+  loaderTimeline = null;
 };
 
 const complete = () => {
   if (completed) return;
 
   clearTimers();
+  stopLoaderTimeline();
   completed = true;
 
   if (document.visibilityState === "hidden") {
@@ -62,36 +78,138 @@ const startExit = () => {
   clearTimers();
   isExiting.value = true;
 
+  const fill = fillRef.value;
+  const surface = surfaceRef.value;
+  const wordmark = wordmarkRef.value;
+
+  stopLoaderTimeline();
+
+  if (!fill || !surface || prefersReducedMotion()) {
+    complete();
+    return;
+  }
+
+  loaderTimeline = gsap.timeline({
+    defaults: { ease: "power3.inOut" },
+    onComplete: complete
+  });
+
+  if (wordmark) {
+    loaderTimeline.to(
+      wordmark,
+      {
+        clipPath: "inset(0% 50% 0% 50%)",
+        autoAlpha: 0,
+        duration: 1.08,
+        overwrite: true
+      },
+      0
+    );
+  }
+
+  loaderTimeline
+    .to(
+      fill,
+      {
+        clipPath: "inset(100% 0% 0% 0%)",
+        duration: 1.38,
+        overwrite: true
+      },
+      0.08
+    )
+    .to(
+      surface,
+      {
+        yPercent: 120,
+        duration: 1.38,
+        overwrite: true
+      },
+      0.08
+    );
+
   exitTimer = window.setTimeout(() => {
     complete();
-  }, 1200);
+  }, 1700);
 };
 
 const dismiss = () => {
   if (!visible.value || completed) return;
-
-  if (!fillComplete) {
-    startExit();
-    return;
-  }
-
-  holdTimer = window.setTimeout(() => {
-    startExit();
-  }, 1000);
+  startExit();
 };
 
-const handleFillAnimationEnd = () => {
-  if (isExiting.value) {
+const playLoader = () => {
+  const mark = markRef.value;
+  const wordmark = wordmarkRef.value;
+  const fill = fillRef.value;
+  const surface = surfaceRef.value;
+
+  if (!mark || !wordmark || !fill || !surface || completed) return;
+
+  stopLoaderTimeline();
+
+  gsap.set(fill, { clipPath: "inset(100% 0% 0% 0%)" });
+  gsap.set(surface, { autoAlpha: 1, yPercent: 120 });
+  gsap.set(wordmark, {
+    autoAlpha: 0,
+    clipPath: "inset(0% 50% 0% 50%)",
+    y: 6
+  });
+
+  if (prefersReducedMotion()) {
+    gsap.set(mark, { autoAlpha: 1, y: 0, scale: 1 });
+    gsap.set(wordmark, {
+      autoAlpha: 1,
+      clipPath: "inset(0% 0% 0% 0%)",
+      y: 0
+    });
+    gsap.set(fill, { clipPath: "inset(0% 0% 0% 0%)" });
+    gsap.set(surface, { yPercent: -248 });
     complete();
     return;
   }
 
-  fillComplete = true;
-  dismiss();
+  loaderTimeline = gsap.timeline({
+    defaults: { ease: "power2.out" },
+    onComplete: startExit
+  });
+
+  loaderTimeline
+    .to(
+      wordmark,
+      {
+        autoAlpha: 1,
+        clipPath: "inset(0% 0% 0% 0%)",
+        y: 0,
+        duration: 1.24,
+        ease: "power3.inOut",
+        overwrite: true
+      },
+      0.58
+    )
+    .to(
+      fill,
+      {
+        clipPath: "inset(0% 0% 0% 0%)",
+        duration: 4.55,
+        overwrite: true
+      },
+      0.42
+    )
+    .to(
+      surface,
+      {
+        yPercent: -248,
+        duration: 4.55,
+        overwrite: true
+      },
+      0.42
+    )
+    .to({}, { duration: 0.62 });
 };
 
 onBeforeUnmount(() => {
   clearTimers();
+  stopLoaderTimeline();
   removeVisibilityListener?.();
   removeVisibilityListener = null;
 });
@@ -105,17 +223,21 @@ onBeforeUnmount(() => {
       :class="{ 'is-exiting': isExiting }"
       aria-hidden="true"
     >
-      <div
-        class="welcome-screen__mark"
-      >
-        <span
-          class="welcome-screen__fill"
-          @animationend="handleFillAnimationEnd"
-        />
-        <span class="welcome-screen__surface" aria-hidden="true">
-          <span class="welcome-screen__wave welcome-screen__wave--front" />
-          <span class="welcome-screen__wave welcome-screen__wave--back" />
-        </span>
+      <div class="welcome-screen__lockup">
+        <div
+          ref="markRef"
+          class="welcome-screen__mark"
+        >
+          <span
+            ref="fillRef"
+            class="welcome-screen__fill"
+          />
+          <span ref="surfaceRef" class="welcome-screen__surface" aria-hidden="true">
+            <span class="welcome-screen__wave welcome-screen__wave--front" />
+            <span class="welcome-screen__wave welcome-screen__wave--back" />
+          </span>
+        </div>
+        <h3 ref="wordmarkRef" class="welcome-screen__wordmark">EGE KARDOOR</h3>
       </div>
     </div>
   </Transition>
@@ -129,12 +251,23 @@ onBeforeUnmount(() => {
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: #2C2C31;
+  --welcome-screen-bg: #080B18;
+  background: var(--welcome-screen-bg);
   --welcome-loader-fill: #E6E7EB;
   pointer-events: none;
   transition:
     opacity 180ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)),
     transform 180ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+:global(.app-shell--day .welcome-screen) {
+  --welcome-screen-bg: #16101F;
+}
+
+.welcome-screen__lockup {
+  display: grid;
+  justify-items: center;
+  row-gap: clamp(18px, 2.2vw, 28px);
 }
 
 .welcome-screen__mark {
@@ -143,7 +276,7 @@ onBeforeUnmount(() => {
   aspect-ratio: 0.485;
   opacity: 0;
   transform: translate3d(0, 8px, 0) scale(0.985);
-  animation: k-loader-mark-in 700ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) 100ms forwards;
+  animation: k-loader-mark-in 920ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) 140ms forwards;
   mask: url("/images/brand/kardoor-footer-mark-tight.png") center / contain no-repeat;
   -webkit-mask: url("/images/brand/kardoor-footer-mark-tight.png") center / contain no-repeat;
   overflow: hidden;
@@ -156,7 +289,6 @@ onBeforeUnmount(() => {
   display: block;
   background: var(--welcome-loader-fill);
   clip-path: inset(100% 0 0 0);
-  animation: k-loader-fill 3900ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)) 360ms forwards;
   will-change: clip-path;
 }
 
@@ -168,8 +300,21 @@ onBeforeUnmount(() => {
   display: block;
   height: 44%;
   background: var(--welcome-loader-fill);
-  animation: k-loader-surface 3900ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)) 360ms forwards;
   will-change: transform;
+}
+
+.welcome-screen__wordmark {
+  margin: 0;
+  font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(18px, 2.45vw, 38px);
+  font-weight: 850;
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  color: var(--welcome-loader-fill);
+  text-transform: uppercase;
+  opacity: 0;
+  clip-path: inset(0 50% 0 50%);
+  will-change: clip-path, transform, opacity;
 }
 
 .welcome-screen__wave {
@@ -203,15 +348,7 @@ onBeforeUnmount(() => {
 }
 
 .welcome-screen.is-exiting .welcome-screen__mark {
-  animation: k-loader-mark-out 960ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
-}
-
-.welcome-screen.is-exiting .welcome-screen__fill {
-  animation: k-loader-empty 960ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
-}
-
-.welcome-screen.is-exiting .welcome-screen__surface {
-  animation: k-loader-surface-out 960ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+  animation: k-loader-mark-out 1280ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
 }
 
 @keyframes k-loader-mark-in {
@@ -233,54 +370,6 @@ onBeforeUnmount(() => {
   }
 }
 
-@keyframes k-loader-fill {
-  0% {
-    clip-path: inset(100% 0 0 0);
-  }
-
-  86% {
-    clip-path: inset(0 0 0 0);
-  }
-
-  100% {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-@keyframes k-loader-empty {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-
-  to {
-    clip-path: inset(100% 0 0 0);
-  }
-}
-
-@keyframes k-loader-surface {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  86% {
-    transform: translate3d(0, -238%, 0);
-  }
-
-  100% {
-    transform: translate3d(0, -248%, 0);
-  }
-}
-
-@keyframes k-loader-surface-out {
-  from {
-    transform: translate3d(0, -248%, 0);
-  }
-
-  to {
-    transform: translate3d(0, 0, 0);
-  }
-}
-
 @keyframes k-loader-wave-front {
   100% {
     transform: translate3d(-50%, 50%, 0) rotate(360deg);
@@ -295,6 +384,7 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .welcome-screen__mark,
+  .welcome-screen__wordmark,
   .welcome-screen__fill,
   .welcome-screen__surface,
   .welcome-screen__wave {
@@ -303,12 +393,6 @@ onBeforeUnmount(() => {
 
   .welcome-screen__mark {
     animation-duration: 1ms;
-  }
-
-  .welcome-screen__fill,
-  .welcome-screen__surface {
-    animation-duration: 1200ms;
-    animation-delay: 80ms;
   }
 
   .welcome-screen__wave {

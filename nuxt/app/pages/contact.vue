@@ -84,6 +84,50 @@ const contactBranches = computed(() =>
   }))
 );
 
+const enterDirectionalFill = (event: PointerEvent, fillSelector: string) => {
+  const target = event.currentTarget as HTMLElement | null;
+  const fill = target?.querySelector<HTMLElement>(fillSelector);
+  if (!target || !fill) return;
+
+  const rect = target.getBoundingClientRect();
+  const x = event.clientX - rect.left - rect.width / 2;
+  const y = event.clientY - rect.top - rect.height / 2;
+  const fromHorizontal = Math.abs(x / rect.width) > Math.abs(y / rect.height);
+  const fromX = fromHorizontal ? (x < 0 ? "-103%" : "103%") : "0%";
+  const fromY = fromHorizontal ? "0%" : y < 0 ? "-103%" : "103%";
+
+  gsap.killTweensOf(fill);
+  gsap.set(fill, { x: fromX, y: fromY, opacity: 1 });
+  gsap.to(fill, {
+    x: "0%",
+    y: "0%",
+    duration: 0.72,
+    ease: "expo.out"
+  });
+};
+
+const leaveDirectionalFill = (event: PointerEvent, fillSelector: string) => {
+  const target = event.currentTarget as HTMLElement | null;
+  const fill = target?.querySelector<HTMLElement>(fillSelector);
+  if (!target || !fill) return;
+
+  const rect = target.getBoundingClientRect();
+  const x = event.clientX - rect.left - rect.width / 2;
+  const y = event.clientY - rect.top - rect.height / 2;
+  const fromHorizontal = Math.abs(x / rect.width) > Math.abs(y / rect.height);
+  const toX = fromHorizontal ? (x < 0 ? "-103%" : "103%") : "0%";
+  const toY = fromHorizontal ? "0%" : y < 0 ? "-103%" : "103%";
+
+  gsap.killTweensOf(fill);
+  gsap.to(fill, {
+    x: toX,
+    y: toY,
+    opacity: 1,
+    duration: 0.56,
+    ease: "expo.out"
+  });
+};
+
 const copy = computed(() => {
   if (locale.value === "en") {
     return {
@@ -446,7 +490,13 @@ onBeforeUnmount(() => {
           :disabled="formState === 'submitting'"
         >
           <span>{{ copy.submit }}</span>
-          <span class="contact-form__submit-icon" aria-hidden="true">
+          <span
+            class="contact-form__submit-icon"
+            aria-hidden="true"
+            @pointerenter="enterDirectionalFill($event, '.contact-form__submit-icon-fill')"
+            @pointerleave="leaveDirectionalFill($event, '.contact-form__submit-icon-fill')"
+          >
+            <span class="contact-form__submit-icon-fill"></span>
             <svg width="25" height="18" viewBox="0 0 25 18" fill="none">
               <path d="M1 9H23M16 2L23 9L16 16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>

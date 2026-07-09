@@ -71,8 +71,11 @@
 
         <div class="footer-panel">
           <h2 class="footer-heading">
-            {{ footerCopy.heading.line1 }}<br>
-            {{ footerCopy.heading.line2Prefix }} <em>{{ footerCopy.heading.emphasis }}</em><br><span class="footer-heading__rest">{{ footerCopy.heading.line3 }}</span>
+            <span class="footer-heading__line">{{ footerCopy.heading.line1 }}</span>
+            <span class="footer-heading__line">{{ footerCopy.heading.line2 }}</span>
+            <span class="footer-heading__line">{{ footerCopy.heading.line3 }}</span>
+            <em class="footer-heading__emphasis">{{ footerCopy.heading.emphasis }}</em>
+            <span class="footer-heading__line footer-heading__rest">{{ footerCopy.heading.line4 }}</span>
           </h2>
 
           <div class="location-group">
@@ -99,7 +102,14 @@
 
             <div class="form-row form-row-message">
               <input type="text" :placeholder="footerCopy.form.message">
-              <button type="submit" class="submit-btn" :aria-label="footerCopy.form.submitAria">
+              <button
+                type="submit"
+                class="submit-btn"
+                :aria-label="footerCopy.form.submitAria"
+                @pointerenter="enterDirectionalFill($event, '.submit-btn__fill')"
+                @pointerleave="leaveDirectionalFill($event, '.submit-btn__fill')"
+              >
+                <span class="submit-btn__fill" aria-hidden="true"></span>
                 <span class="submit-btn__label">{{ footerCopy.form.submit }}</span>
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M8 5L15 12L8 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -113,9 +123,9 @@
       <div class="footer-info">
         <div class="footer-info-left">
           <div class="footer-column">
-            <span class="footer-kicker">{{ footerCopy.productsTitle }}</span>
+            <span class="footer-kicker">Kardoor</span>
             <a
-              v-for="item in footerCopy.productLinks"
+              v-for="item in footerCopy.navLinks"
               :key="item"
               href="#"
               class="flip-text-link no-line"
@@ -124,9 +134,9 @@
           </div>
 
           <div class="footer-column">
-            <span class="footer-kicker">Kardoor</span>
+            <span class="footer-kicker">{{ footerCopy.productsTitle }}</span>
             <a
-              v-for="item in footerCopy.navLinks"
+              v-for="item in footerCopy.productLinks"
               :key="item"
               href="#"
               class="flip-text-link no-line"
@@ -187,9 +197,16 @@
           </template>
         </div>
 
-        <div>
-          <span>{{ footerCopy.legal.agency }}</span>
-        </div>
+        <a
+          class="footer-agency"
+          href="https://www.ucucsifir.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="footerCopy.legal.agencyAria"
+        >
+          <span class="footer-agency__lead">{{ footerCopy.legal.agencyLead }}</span>
+          <span class="footer-agency__brand">{{ footerCopy.legal.agency }}</span>
+        </a>
       </div>
     </footer>
   </div>
@@ -207,10 +224,11 @@ const footerCopies = {
   tr: {
     phoneAria: "Telefon",
     heading: {
-      line1: "Size en yakın showroomu seçin;",
-      line2Prefix: "projeniz için",
+      line1: "Size en yakın",
+      line2: "showroomu seçin;",
+      line3: "projeniz için",
       emphasis: "görüşme talebi",
-      line3: "bırakın."
+      line4: "bırakın."
     },
     locationLabel: "Şube seçimi:",
     locationOptions: ["İzmir", "Kocaeli", "Manisa"],
@@ -223,14 +241,13 @@ const footerCopies = {
     },
     productsTitle: "Ürün Serileri",
     productLinks: [
-      "Alüminyum Seri",
-      "Thermowood Seri",
-      "Doğal Taş Seri",
-      "Cam Panel Seri",
-      "Pivot Seri",
-      "Laminoks Seri"
+      "Çelik Kapı Sistemleri",
+      "Dış İklim Kapı Sistemleri",
+      "Ekonomik Kapı Sistemleri",
+      "Bina Giriş Sistemleri",
+      "Özel Proje Sistemleri"
     ],
-    navLinks: ["Ana Sayfa", "Hakkımızda", "Üretim", "Katalog", "Şubelerimiz", "İletişim"],
+    navLinks: ["Ana Sayfa", "Hakkımızda", "Koleksiyonlar", "Katalog", "İletişim"],
     showroomsTitle: "Şubelerimiz/Showroomlar",
     hours: {
       days: "Pzt-Paz"
@@ -261,17 +278,20 @@ const footerCopies = {
     legal: {
       copyright: "© 2026 Ege Kardoor Çelik Kapı.",
       rights: "Tüm hakları saklıdır.",
-      agency: "Üç Üç Sıfır ®"
+      agencyLead: "Site by",
+      agency: "Üç Üç Sıfır ®",
+      agencyAria: "Üç Üç Sıfır web sitesini yeni sekmede aç"
     },
     policyLinks: ["Gizlilik Politikası", "KVKK Aydınlatma Metni", "Kullanım Koşulları"]
   },
   en: {
     phoneAria: "Phone",
     heading: {
-      line1: "Choose the showroom nearest to you;",
-      line2Prefix: "leave a",
+      line1: "Choose your nearest",
+      line2: "showroom;",
+      line3: "leave a",
       emphasis: "meeting request",
-      line3: "for your project."
+      line4: "for your project."
     },
     locationLabel: "Branch selection:",
     locationOptions: ["Izmir", "Kocaeli", "Manisa"],
@@ -284,14 +304,13 @@ const footerCopies = {
     },
     productsTitle: "Product Series",
     productLinks: [
-      "Aluminium Series",
-      "Thermowood Series",
-      "Natural Stone Series",
-      "Glass Panel Series",
-      "Pivot Series",
-      "Laminox Series"
+      "Steel Door Systems",
+      "Exterior Climate Door Systems",
+      "Economic Door Systems",
+      "Building Entrance Systems",
+      "Custom Project Systems"
     ],
-    navLinks: ["Home", "About Us", "Production", "Catalog", "Showrooms", "Contact"],
+    navLinks: ["Home", "About Us", "Collections", "Catalog", "Contact"],
     showroomsTitle: "Branches/Showrooms",
     hours: {
       days: "Mon-Sun"
@@ -322,7 +341,9 @@ const footerCopies = {
     legal: {
       copyright: "© 2026 Ege Kardoor Steel Door.",
       rights: "All rights reserved.",
-      agency: "Uc Uc Sifir ®"
+      agencyLead: "Site by",
+      agency: "Üç Üç Sıfır ®",
+      agencyAria: "Open Uc Uc Sifir website in a new tab"
     },
     policyLinks: ["Privacy Policy", "KVKK Disclosure Notice", "Terms of Use"]
   }
@@ -334,6 +355,50 @@ const footerWrapper = ref<HTMLElement | null>(null)
 const footerDome = ref<HTMLElement | null>(null)
 
 let cleanupFooter: (() => void) | null = null
+
+const enterDirectionalFill = (event: PointerEvent, fillSelector: string) => {
+  const target = event.currentTarget as HTMLElement | null
+  const fill = target?.querySelector<HTMLElement>(fillSelector)
+  if (!target || !fill) return
+
+  const rect = target.getBoundingClientRect()
+  const x = event.clientX - rect.left - rect.width / 2
+  const y = event.clientY - rect.top - rect.height / 2
+  const fromHorizontal = Math.abs(x / rect.width) > Math.abs(y / rect.height)
+  const fromX = fromHorizontal ? (x < 0 ? "-103%" : "103%") : "0%"
+  const fromY = fromHorizontal ? "0%" : y < 0 ? "-103%" : "103%"
+
+  gsap.killTweensOf(fill)
+  gsap.set(fill, { x: fromX, y: fromY, opacity: 1 })
+  gsap.to(fill, {
+    x: "0%",
+    y: "0%",
+    duration: 0.72,
+    ease: "expo.out"
+  })
+}
+
+const leaveDirectionalFill = (event: PointerEvent, fillSelector: string) => {
+  const target = event.currentTarget as HTMLElement | null
+  const fill = target?.querySelector<HTMLElement>(fillSelector)
+  if (!target || !fill) return
+
+  const rect = target.getBoundingClientRect()
+  const x = event.clientX - rect.left - rect.width / 2
+  const y = event.clientY - rect.top - rect.height / 2
+  const fromHorizontal = Math.abs(x / rect.width) > Math.abs(y / rect.height)
+  const toX = fromHorizontal ? (x < 0 ? "-103%" : "103%") : "0%"
+  const toY = fromHorizontal ? "0%" : y < 0 ? "-103%" : "103%"
+
+  gsap.killTweensOf(fill)
+  gsap.to(fill, {
+    x: toX,
+    y: toY,
+    opacity: 1,
+    duration: 0.56,
+    ease: "expo.out"
+  })
+}
 
 const initFooterAnimation = () => {
   const footer = footerDome.value

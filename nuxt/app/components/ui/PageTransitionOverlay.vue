@@ -69,6 +69,24 @@ const cover = async () => {
   });
 };
 
+const primeCovered = async () => {
+  if (!import.meta.client) return;
+
+  await nextTick();
+
+  const root = rootRef.value;
+  const panels = getPanels();
+  if (!root || panels.length === 0) return;
+
+  stopTimeline();
+  gsap.set(root, { autoAlpha: 1, pointerEvents: "auto" });
+  gsap.set(panels, {
+    autoAlpha: 1,
+    yPercent: 0,
+    clearProps: "transformOrigin"
+  });
+};
+
 const reveal = async () => {
   if (!import.meta.client) return;
 
@@ -115,6 +133,7 @@ onBeforeUnmount(() => {
 
 defineExpose({
   cover,
+  primeCovered,
   reveal
 });
 </script>
@@ -139,6 +158,7 @@ defineExpose({
   position: fixed;
   inset: 0;
   z-index: 10050;
+  --page-transition-panel-bg: #080B18;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   overflow: hidden;
@@ -148,10 +168,14 @@ defineExpose({
   contain: layout paint style;
 }
 
+:global(.app-shell--day .page-transition-overlay) {
+  --page-transition-panel-bg: #16101F;
+}
+
 .page-transition-overlay__panel {
   min-width: 0;
   min-height: 100svh;
-  background: #2C2C31;
+  background: var(--page-transition-panel-bg);
   margin-inline-end: -1px;
   transform: translate3d(0, 0, 0);
   will-change: transform;

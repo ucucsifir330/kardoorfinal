@@ -2576,6 +2576,45 @@ html[data-theme="dark"] .app-shell--night .home-page .catalog-wishlist-panel {
   right: 44px !important;
 }
 
+/* Safari keeps large card shadows and pre-promoted layers alive longer than
+   Chromium during the homepage collection scroll. Keep the design at rest, but
+   make the moving frames cheaper for WebKit only. */
+html.is-safari .home-page .catalog-card.liquid-card,
+html.is-safari .home-page .catalog-row:last-of-type .catalog-card.liquid-card,
+html.is-safari .home-page .catalog-product-image-wrap,
+html.is-safari .home-page .catalog-learn-more__circle,
+html.is-safari .home-page .catalog-all-models .catalog-tag-part {
+  will-change: auto !important;
+}
+
+html.is-safari .home-page .catalog-product-image-wrap {
+  transform: none !important;
+}
+
+@supports (content-visibility: auto) {
+  html.is-safari .home-page .catalog-row {
+    content-visibility: auto;
+    contain-intrinsic-size: 720px;
+  }
+}
+
+html.is-safari.is-scrolling .home-page .catalog-shell,
+html.is-safari.is-scrolling .home-page .catalog-card,
+html.is-safari.is-scrolling .home-page .catalog-row:last-of-type .catalog-card,
+html.is-safari.is-scrolling .home-page .catalog-product-image-wrap,
+html.is-safari.is-scrolling .home-page .catalog-like {
+  box-shadow: none !important;
+}
+
+html.is-safari.is-scrolling .home-page .catalog-card,
+html.is-safari.is-scrolling .home-page .catalog-product-image-wrap,
+html.is-safari.is-scrolling .home-page .catalog-product-image,
+html.is-safari.is-scrolling .home-page .catalog-like,
+html.is-safari.is-scrolling .home-page .catalog-tag-line,
+html.is-safari.is-scrolling .home-page .catalog-code-line {
+  transition: none !important;
+}
+
 @media (hover: hover) and (pointer: fine) {
   html[data-theme="dark"] .app-shell--night .home-page .catalog-like:hover {
     background: #34427F !important;
