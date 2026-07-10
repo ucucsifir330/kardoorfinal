@@ -17,6 +17,8 @@ chrome-*.png
 nuxt/.playwright-cli/
 .playwright-cli/
 nuxt/output/
+nuxt/reports/
+output/
 nuxt/127.0.0.1/
 
 # Raw door sprite source frames (packed sprite committed instead)

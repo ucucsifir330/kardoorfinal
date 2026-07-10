@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "no-duplicate-selectors": true,
+    "declaration-block-no-duplicate-properties": [
+      true,
+      { "ignore": ["consecutive-duplicates-with-different-values"] }
+    ],
+    "declaration-block-no-shorthand-property-overrides": true,
+    "shorthand-property-no-redundant-values": true,
+    "block-no-empty": true,
+    "no-descending-specificity": null,
+    "declaration-no-important": [true, { "severity": "warning" }]
+  }
+}

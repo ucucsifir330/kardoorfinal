@@ -1,0 +1,191 @@
+/* Base */
+@import "./base/fonts.css";
+@import "./base/tokens.css";
+@import "./base/reset.css";
+@import "./base/transitions.css";
+
+/* Shared components */
+@import "./components/buttons.css";
+@import "./components/site-header.css";
+@import "./components/floating-contact.css";
+
+/* Page / section styles */
+@import "./sections/home-catalog.css";
+@import "./sections/home-team.css";
+@import "./sections/home-references.css";
+@import "./sections/home-reviews.css";
+@import "./sections/home-footer.css";
+@import "./pages/catalog/subpage.css";
+@import "./pages/catalog-library.css";
+@import "./pages/company.css";
+@import "./pages/contact.css";
+
+/* ──────────────────────────────────────────────────────────────
+   PERFORMANCE — drop backdrop-filter while actively scrolling.
+   backdrop-filter re-blurs everything behind the element every frame;
+   during the pinned cinematic scroll that is one of the heaviest paints.
+   The blur is restored ~120ms after scroll settles (toggled in
+   plugins/scroll.client.ts). Glass UI is unchanged at rest.
+   ────────────────────────────────────────────────────────────── */
+html.is-scrolling *,
+html.is-scrolling *::before,
+html.is-scrolling *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SCROLLSMOOTHER SEAM FIX — scroll/geçiş anında bölüm sınırlarında
+   beliren 1px yatay hairline'ı yok eder.
+
+   Kök neden: ScrollSmoother #smooth-content'i GPU transform'una alır.
+   Scroll sırasında transform kesirli (sub-pixel) bir değere oturunca,
+   içindeki tam-ekran bölümlerin kenarında anti-alias bir seam görünür;
+   arkadaki iki bölümün rengi sızdığı için zemine göre renk değiştirir
+   ve scroll durup transform tam sayıya oturunca kaybolur.
+
+   Çözüm: içeriği kendi compositing katmanına sabitleyip kenar
+   karelerini düzleştir (backface gizle), böylece komşu katman kenarları
+   yarım piksel açık kalmaz. Görsel olarak hiçbir şeyi değiştirmez.
+   ────────────────────────────────────────────────────────────── */
+#smooth-content {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: flat;
+}
+
+/* Pin'li / transform'lu bölümler kendi compositing katmanlarında render edilir.
+   ScrollSmoother content'i kesirli (sub-pixel) translate ettiğinde bu
+   katmanların kenarında 1px boya seam'i belirir (DOM'da eleman değil —
+   hit-test/querySelector görmez; sadece scroll anında, zemine göre renk
+   değiştirerek görünür).
+
+   Çözüm — .home-references-flip için zaten kullanılan kanıtlanmış yöntem
+   (bkz. home-references.css): her bölümün arka plan rengini box-shadow ile
+   kenarın 1px dışına taşırıp dikişi kendi rengiyle mühürlemek. backface-
+   visibility tek başına yetmedi; bu, seam'i fiziksel pikselle kapatır. */
+.entrance-lab {
+  box-shadow: 0 0 0 1px #0b0b0d;
+}
+
+.entrance-lab__next {
+  box-shadow: 0 0 0 1px #0b0b0d;
+}
+
+.entrance-lab__next[data-ambience="day"] {
+  box-shadow: 0 0 0 1px #d9d6cd;
+}
+
+.ada-team-section {
+  box-shadow: 0 0 0 1px var(--team-section-bg, #14151d);
+}
+
+.testimonial-wrapper {
+  box-shadow: 0 0 0 1px var(--catalog-stage-surface-bg, var(--bg-color));
+}
+
+/* Unified navy dark palette. Color-only overrides; light theme remains intact. */
+html[data-theme="dark"] body,
+html[data-theme="dark"] #app,
+.app-shell--night,
+.app-shell--night main {
+  background-color: #080B18 !important;
+  color: #F4F6FF;
+}
+
+.app-shell--night .entrance-lab,
+.app-shell--night .entrance-lab__next {
+  background-color: #050714 !important;
+  color: #F4F6FF !important;
+}
+
+.app-shell--night .catalog-section,
+.app-shell--night .catalog-shell,
+.app-shell--night .catalog-main,
+.app-shell--night .catalog-sticky-title,
+.app-shell--night .ada-team-section,
+.app-shell--night .testimonial-wrapper {
+  --catalog-stage-bg: #080B18;
+  --catalog-stage-surface-bg: #080B18;
+  --catalog-stage-main-bg: #080B18;
+  --team-section-bg: #080B18;
+  --team-section-text: #F4F6FF;
+  background-color: #080B18 !important;
+  color: #F4F6FF !important;
+}
+
+.app-shell--night .catalog-sidebar {
+  background: linear-gradient(90deg, #131937 0%, #171D3D 100%) !important;
+  border-color: rgba(244, 246, 255, 0.12) !important;
+}
+
+.app-shell--night .catalog-card,
+.app-shell--night .catalog-product-image-wrap,
+.app-shell--night .review-card {
+  background: #171D3D !important;
+  border-color: rgba(244, 246, 255, 0.12) !important;
+}
+
+.app-shell--night .catalog-card:hover,
+.app-shell--night .review-card:hover {
+  background: #1D244A !important;
+  border-color: rgba(142, 162, 255, 0.28) !important;
+}
+
+.app-shell--night .catalog-title,
+.app-shell--night .catalog-product-family,
+.app-shell--night .catalog-card-title,
+.app-shell--night .rotating-title,
+.app-shell--night .quote,
+.app-shell--night .name {
+  color: #F4F6FF !important;
+}
+
+.app-shell--night .catalog-designer,
+.app-shell--night .catalog-card-subtitle,
+.app-shell--night .catalog-finish,
+.app-shell--night .catalog-code,
+.app-shell--night .role {
+  color: #9FA7BD !important;
+}
+
+.app-shell--night .footer-wrapper {
+  background: #080B18 !important;
+  color: #F4F6FF !important;
+}
+
+.app-shell--night .footer-dome {
+  background: linear-gradient(180deg, #0D122B 0%, #131937 100%) !important;
+  background-color: #131937 !important;
+  box-shadow: inset 0 0 0 2px #131937, 0 0 0 2px #131937 !important;
+  outline-color: #131937 !important;
+}
+
+.app-shell--night .footer-socials > .social-btn {
+  background-color: #171D3D !important;
+  color: #F4F6FF !important;
+  border-color: rgba(244, 246, 255, 0.12) !important;
+}
+
+.app-shell--night .footer-socials > .social-btn:hover {
+  background-color: #C3CCFF !important;
+  color: #050714 !important;
+  border-color: rgba(142, 162, 255, 0.28) !important;
+}
+
+.app-shell--night input,
+.app-shell--night textarea,
+.app-shell--night select {
+  border-color: rgba(244, 246, 255, 0.22);
+  color: #F4F6FF;
+}
+
+.app-shell--night input:focus,
+.app-shell--night input:focus-visible,
+.app-shell--night textarea:focus,
+.app-shell--night textarea:focus-visible,
+.app-shell--night select:focus,
+.app-shell--night select:focus-visible {
+  border-color: #8EA2FF;
+  outline-color: #8EA2FF;
+}

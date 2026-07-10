@@ -762,17 +762,6 @@ body {
     box-shadow: none !important;
   }
 
-  .submit-btn::before {
-    content: "Randevu Oluştur";
-    position: absolute;
-    left: 28px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 16px;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
   .submit-btn svg {
     position: absolute !important;
     right: 28px !important;

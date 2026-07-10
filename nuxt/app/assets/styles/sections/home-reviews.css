@@ -1,0 +1,372 @@
+/* Homepage reviews section. Extracted from public theme files because these rules are not theme-specific. */
+
+.testimonial-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background-color: var(--catalog-stage-surface-bg, var(--bg-color));
+  margin: 0;
+  padding: clamp(80px, 7vw, 128px) 0 clamp(150px, 15vw, 240px);
+}
+
+.title-area {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 45%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding-left: 3vw;
+  pointer-events: none;
+}
+
+.rotating-title {
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(4rem, 5.45vw, 6.1rem);
+  line-height: 1.05;
+  color: #424346;
+  font-weight: 500;
+  letter-spacing: 0;
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-row {
+  display: inline-flex;
+  align-items: center;
+  transition: gap var(--title-pill-transition-smooth);
+  white-space: nowrap;
+}
+
+.static-text {
+  display: inline-block;
+  transition: transform var(--title-pill-transition-smooth);
+  will-change: transform;
+}
+
+.bottom-row {
+  display: block;
+  white-space: nowrap;
+}
+
+.rotating-text-wrapper {
+  height: clamp(4.5rem, 6.05vw, 6.75rem);
+  background: #1b39bf;
+  background-size: 300% 300%;
+  border-radius: clamp(28px, 3.2vw, 44px);
+  position: relative;
+  display: block;
+  overflow: hidden;
+  box-shadow: 0 18px 44px rgba(27, 57, 191, 0.18);
+  animation: gradientBG 6s ease infinite;
+  transition: width var(--title-pill-transition-smooth), box-shadow var(--title-pill-transition-smooth);
+}
+
+.hidden-measure {
+  position: absolute;
+  visibility: hidden;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(4rem, 5.45vw, 6.1rem);
+  font-weight: 500;
+  letter-spacing: 0;
+  white-space: nowrap;
+  padding: 0 2vw;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.typewriter-line {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2vw;
+  pointer-events: none;
+}
+
+.typewriter-text,
+.typewriter-cursor {
+  color: #EAE8E8;
+  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  white-space: nowrap;
+  font-size: clamp(4rem, 5.45vw, 6.1rem);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+  transform: translateY(-0.03em);
+}
+
+.typewriter-cursor {
+  font-weight: 400;
+  margin-left: 0.04em;
+  will-change: opacity;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-mask {
+  position: absolute;
+  top: 0;
+  right: -40%;
+  width: 140%;
+  height: 100%;
+  background: linear-gradient(to right, var(--catalog-stage-surface-bg, var(--bg-color)) 60%, transparent 100%);
+  z-index: 1;
+}
+
+.carousel-area {
+  width: 100%;
+  padding-left: 40%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.35rem, 2vw, 2rem);
+}
+
+.track {
+  width: 100%;
+  overflow: visible;
+  cursor: grab;
+}
+
+.track:active {
+  cursor: grabbing;
+}
+
+.track-inner {
+  display: flex;
+  gap: clamp(1rem, 1.5vw, 1.5rem);
+  width: max-content;
+  will-change: transform;
+}
+
+.review-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: clamp(1.55rem, 2vw, 2rem) clamp(1.35rem, 1.7vw, 1.75rem);
+  width: clamp(340px, 27vw, 410px);
+  box-shadow: 0 16px 44px rgba(0,0,0,0.035);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(1.35rem, 1.8vw, 1.75rem);
+  flex-shrink: 0;
+  user-select: none;
+  border: 1px solid rgba(0,0,0,0.03);
+  --scale: 1;
+  transform-style: preserve-3d;
+  transform: perspective(1000px) scale(var(--scale)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+.review-card:hover {
+  --scale: 1.045;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.9),
+    0 0 32px rgba(255,255,255,0.95),
+    0 18px 38px rgba(0, 0, 0, 0.08);
+  border-color: rgba(255,255,255,0.9);
+  z-index: 10;
+}
+
+.review-card.tilting {
+  transition: transform var(--transition-tilt), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+.review-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(800px circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.22), transparent 42%);
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.review-card:hover::before {
+  opacity: 1;
+}
+
+.quote,
+.author {
+  position: relative;
+  z-index: 2;
+}
+
+.quote {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1.02rem, 1.08vw, 1.16rem);
+  line-height: 1.58;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.author {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1.5rem;
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.review-card .name {
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: clamp(0.98rem, 0.95vw, 1.05rem);
+}
+
+.rating {
+  color: #FFB800;
+  font-size: clamp(1.08rem, 1.05vw, 1.22rem);
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 1024px) {
+  .testimonial-wrapper {
+    min-height: auto;
+    align-items: flex-start;
+    padding: 156px 0 180px;
+  }
+
+  .title-area {
+    position: relative;
+    width: 100%;
+    height: auto;
+    align-items: flex-start;
+    padding: 0 clamp(18px, 4vw, 40px);
+  }
+
+  .rotating-title {
+    font-size: clamp(3.25rem, 8.4vw, 5.2rem);
+  }
+
+  .hidden-measure,
+  .typewriter-text,
+  .typewriter-cursor {
+    font-size: clamp(3.25rem, 8.4vw, 5.2rem);
+  }
+
+  .rotating-text-wrapper {
+    height: clamp(3.65rem, 9.1vw, 5.7rem);
+  }
+
+  .gradient-mask {
+    display: none;
+  }
+
+  .carousel-area {
+    position: relative;
+    z-index: 2;
+    margin-top: clamp(42px, 7vw, 72px);
+    padding-left: 0;
+    gap: 1rem;
+  }
+
+  .track {
+    padding-inline: clamp(18px, 4vw, 40px);
+  }
+
+  .review-card {
+    width: min(74vw, 340px);
+    padding: 1.45rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .testimonial-wrapper {
+    flex-direction: column;
+    padding: 124px 0 150px;
+  }
+
+  .title-area {
+    padding: 0 20px;
+  }
+
+  .rotating-title {
+    width: min(100%, 360px);
+    font-size: clamp(2.75rem, 10.8vw, 3.35rem);
+    line-height: 1.04;
+  }
+
+  .top-row {
+    gap: clamp(8px, 2.2vw, 12px);
+  }
+
+  .hidden-measure,
+  .typewriter-text,
+  .typewriter-cursor {
+    font-size: clamp(2.75rem, 10.8vw, 3.35rem);
+  }
+
+  .rotating-text-wrapper {
+    height: clamp(3rem, 12vw, 3.7rem);
+    border-radius: 18px;
+  }
+
+  .carousel-area {
+    margin-top: 34px;
+    gap: 0.85rem;
+  }
+
+  .track {
+    padding-inline: 20px;
+  }
+
+  .track-inner {
+    gap: 0.85rem;
+  }
+
+  .review-card {
+    width: min(72vw, 280px);
+    min-height: 220px;
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .review-card:hover {
+    --scale: 1;
+  }
+
+  .quote {
+    font-size: 0.96rem;
+    line-height: 1.52;
+  }
+
+  .author {
+    padding-top: 1rem;
+  }
+
+  .review-card .name {
+    font-size: 0.95rem;
+  }
+
+  .rating {
+    font-size: 1.02rem;
+  }
+}

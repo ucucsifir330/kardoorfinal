@@ -1,4 +1,5 @@
 import process from "node:process";
+import VueDevTools from "vite-plugin-vue-devtools";
 
 const assetBaseUrl = process.env.NUXT_PUBLIC_ASSET_BASE_URL || "";
 const appCdnUrl = process.env.NUXT_APP_CDN_URL || "";
@@ -9,7 +10,11 @@ const contactFromName = process.env.NUXT_CONTACT_FROM_NAME || "Kardoor Website";
 
 export default defineNuxtConfig({
   compatibilityDate: "2026-05-02",
-  devtools: { enabled: false },
+  debug: true,
+  devtools: { enabled: true },
+  vite: {
+    plugins: [VueDevTools()]
+  },
   hooks: {
     "pages:extend"(pages) {
       const disabledRoutes = new Set(["/doors/:code"]);

@@ -7,17 +7,36 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "lint:css": "stylelint \"app/assets/styles/**/*.css\" \"public/themes/*.css\"",
+    "audit:repo": "node scripts/audit/repo-static-audit.mjs",
+    "audit:runtime": "node scripts/audit/runtime-browser-audit.mjs",
+    "audit:smoke": "node scripts/audit/route-smoke.mjs",
+    "audit:tools": "node scripts/audit/tool-audit.mjs",
+    "audit:summary": "node scripts/audit/summarize-audit.mjs",
+    "audit:knip": "knip",
+    "audit:deps": "depcruise \"app/**/*.{ts,js,vue}\" \"server/**/*.{ts,js}\" --no-config --output-type err",
+    "audit:circular": "madge app server --extensions ts,js --circular",
+    "audit:orphans": "madge app server --extensions ts,js --orphans",
+    "audit:all": "npm run audit:repo && npm run audit:tools && npm run audit:summary"
   },
   "dependencies": {
     "@nuxt/image": "^2.0.0",
     "gsap": "^3.15.0",
     "nuxt": "^4.4.5",
-    "vue": "^3.5.34"
+    "vue": "^3.5.39"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^26.1.0",
+    "dependency-cruiser": "^17.4.3",
+    "knip": "^6.24.0",
+    "madge": "^8.0.0",
+    "playwright": "^1.61.1",
+    "postcss": "^8.5.16",
+    "postcss-selector-parser": "^7.1.4",
+    "stylelint": "^17.14.0",
     "typescript": "^6.0.3",
-    "vue-tsc": "^3.2.9"
+    "vite-plugin-vue-devtools": "^8.1.5",
+    "vue-tsc": "^3.3.6"
   }
 }

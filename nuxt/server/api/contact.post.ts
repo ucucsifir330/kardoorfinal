@@ -1,4 +1,4 @@
-import { buildContactEmail, type ContactDetails } from "~/server/utils/contactEmail.js";
+import { buildContactEmail, type ContactDetails } from "~~/server/utils/contactEmail";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
