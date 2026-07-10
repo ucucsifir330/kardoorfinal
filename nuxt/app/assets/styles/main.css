@@ -114,11 +114,6 @@ html[data-theme="dark"] #app,
   color: #F4F6FF !important;
 }
 
-.app-shell--night .catalog-sidebar {
-  background: linear-gradient(90deg, #131937 0%, #171D3D 100%) !important;
-  border-color: rgba(244, 246, 255, 0.12) !important;
-}
-
 .app-shell--night .catalog-card,
 .app-shell--night .catalog-product-image-wrap,
 .app-shell--night .review-card {
