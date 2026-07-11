@@ -256,8 +256,7 @@ onBeforeUnmount(() => {
   --welcome-loader-fill: #E6E7EB;
   pointer-events: none;
   transition:
-    opacity 180ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1)),
-    transform 180ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1));
+    opacity 180ms var(--ease-soft, cubic-bezier(0.22, 1, 0.36, 1));
 }
 
 :global(.app-shell--day .welcome-screen) {

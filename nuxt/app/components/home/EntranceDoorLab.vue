@@ -641,7 +641,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="entrance-lab-page">
   <section
     ref="sectionRef"
     class="entrance-lab"
@@ -768,7 +767,6 @@ onBeforeUnmount(() => {
        önler). Configure paneliyle aynı zemin → panel'den sonra "boş siyah sayfa"
        hissi olmaz; akış sorunsuz biter. Gerçek içerik (katalog) buraya gelecek. -->
   <section class="entrance-lab__next" :data-ambience="mode" aria-hidden="true" />
-  </div>
 </template>
 
 <style src="~/assets/styles/sections/entrance-lab.css"></style>

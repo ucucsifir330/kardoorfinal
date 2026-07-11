@@ -31,7 +31,6 @@ const applyDomMode = (mode: ShowroomAmbienceMode) => {
   const root = document.documentElement;
   const theme = modeToTheme(mode);
 
-  root.dataset.ambience = mode;
   root.dataset.theme = theme;
   root.style.colorScheme = theme;
 

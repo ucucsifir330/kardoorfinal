@@ -174,8 +174,6 @@ const backdropText = computed(() => {
           </span>
         </div>
       </div>
-
-      <div class="showroom-lab__platform" aria-hidden="true" />
     </div>
 
     <!-- INFO PANELİ -->

@@ -32,10 +32,7 @@ html.is-scrolling .floating-contact__panel,
 html.is-scrolling .entrance-lab__cta-arrow,
 html.is-scrolling .product-modal,
 html.is-scrolling .product-modal-nav,
-html.is-scrolling .product-modal-content,
-html.is-scrolling .ada-team-card,
-html.is-scrolling .ada-team-modal,
-html.is-scrolling .home-footer__contact-panel {
+html.is-scrolling .product-modal-content {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -92,7 +89,6 @@ html.is-scrolling .home-footer__contact-panel {
 
 /* Unified navy dark palette. Color-only overrides; light theme remains intact. */
 html[data-theme="dark"] body,
-html[data-theme="dark"] #app,
 .app-shell--night,
 .app-shell--night main {
   background-color: #080B18 !important;

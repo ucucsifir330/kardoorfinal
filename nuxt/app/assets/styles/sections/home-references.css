@@ -56,16 +56,13 @@
   --references-line: rgba(248, 243, 223, 0.28);
   --references-accent: #3a83ff;
   --references-top-radius: clamp(2.75rem, 5.8vw, 6.75rem);
-  --references-bottom-bleed: 0px;
   position: relative;
   z-index: 20;
   background: var(--references-bg);
   border-top-left-radius: var(--references-top-radius);
   border-top-right-radius: var(--references-top-radius);
-  margin-bottom: calc(-1 * var(--references-bottom-bleed));
   color: var(--references-ink);
   overflow: hidden;
-  padding-bottom: var(--references-bottom-bleed);
   /* ScrollSmoother kesirli transform'u radius köşelerde 1px sub-pixel tel bırakıyordu;
      arka plan rengini köşe eğrisini takip ederek 1px taşırıp dikişi mühürlüyoruz. */
   box-shadow: 0 0 0 1px var(--references-bg);
@@ -246,15 +243,6 @@
   }
 }
 
-.home-references-flip__copy span {
-  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--references-accent);
-}
-
 .home-references-flip__intro h2 {
   position: relative;
   z-index: 1;
@@ -323,7 +311,6 @@
 .home-references-flip__marker {
   position: relative;
   flex: 0 0 auto;
-  overflow: hidden;
 }
 
 .home-references-flip__marker--start {
@@ -332,18 +319,16 @@
   aspect-ratio: 16 / 9;
 }
 
+/* Medya, layout'ta baştan final marker'ı (tam ekran) doldurur; başlangıç
+   kartına JS'in Flip.fit ile hesapladığı transform'la küçültülür (bkz.
+   HomeReferences.vue). Scrub yalnızca transform sürdüğü için relayout ve
+   layout shift (CLS) üretmez. JS kurulumu tamamlanana dek gizli kalır. */
 .home-references-flip__media {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   z-index: 3;
-  container-type: size;
-  display: block;
-  width: 1px;
-  height: 1px;
   opacity: 0;
-  pointer-events: auto;
-  transform: translate3d(0, 0, 0);
+  visibility: hidden;
   will-change: transform;
 }
 
@@ -355,13 +340,6 @@
   background: #050607;
 }
 
-@container (min-width: 70vw) {
-  .home-references-flip__play,
-  .home-references-flip__video {
-    min-height: 100svh;
-  }
-}
-
 .home-references-flip__play {
   position: absolute;
   inset: 0;
@@ -370,7 +348,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(12px, 3.2cqw, 42px);
+  gap: clamp(12px, 3.2vw, 42px);
   border: 0;
   background:
     linear-gradient(rgba(5, 6, 7, 0.14), rgba(5, 6, 7, 0.14)),
@@ -383,12 +361,12 @@
 
 .home-references-flip__play-icon {
   display: grid;
-  width: clamp(46px, 16cqw, 186px);
-  height: clamp(46px, 16cqw, 186px);
+  width: clamp(46px, 16vw, 186px);
+  height: clamp(46px, 16vw, 186px);
   place-items: center;
   border-radius: 50%;
   background: #ffe8c9;
-  box-shadow: 0 clamp(10px, 2.2cqw, 28px) clamp(28px, 6cqw, 86px) rgba(0, 0, 0, 0.3);
+  box-shadow: 0 clamp(10px, 2.2vw, 28px) clamp(28px, 6vw, 86px) rgba(0, 0, 0, 0.3);
   transition: transform 520ms cubic-bezier(0.165, 0.84, 0.44, 1), background-color 520ms cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
@@ -401,7 +379,7 @@
 .home-references-flip__play-text {
   font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
   color: #ffe8c9;
-  font-size: clamp(0.78rem, 3.05cqw, 2.44rem);
+  font-size: clamp(0.78rem, 3.05vw, 2.44rem);
   font-weight: 600;
   letter-spacing: 0;
   line-height: 1;
@@ -423,7 +401,6 @@
 .home-references-flip__marker--final {
   width: 100%;
   height: 100svh;
-  aspect-ratio: auto;
 }
 
 @media (max-width: 760px) {
@@ -479,9 +456,15 @@
     min-height: 74vh;
   }
 
+  /* Mobilde kart dikey: final kutusuyla (100vw × 78vh) aynı en-boy oranında
+     tutulur (74vw → 74 × 0.78 = 57.72vh) ki Flip ölçeklemesi yamultmadan
+     çalışsın. Oranı değiştirirken iki değeri birlikte güncelle. */
   .home-references-flip__marker--start {
-    width: 100%;
+    width: 74vw;
     min-width: 0;
+    height: 57.72vh;
+    aspect-ratio: auto;
+    margin-inline: auto;
   }
 
   .home-references-flip__final {
@@ -511,10 +494,5 @@
     translate: 0 0;
     rotate: 0deg;
     transform: translate3d(0, 0, 0) rotate(8deg);
-  }
-
-  .home-references-flip__final {
-    min-height: auto;
-    padding-top: 0;
   }
 }

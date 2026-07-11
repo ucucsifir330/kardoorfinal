@@ -7,7 +7,7 @@ import { useKardoorLocale } from "~/composables/useKardoorLocale";
 const route = useRoute();
 const router = useRouter();
 const isDevBuild = import.meta.dev;
-const { mode, isHydrated } = useShowroomAmbience();
+const { mode } = useShowroomAmbience();
 const { locale } = useKardoorLocale();
 const isReferencesRoute = computed(() => route.path === "/references");
 const shouldMountStartupScreens = ref(!isReferencesRoute.value);
@@ -66,7 +66,6 @@ const handleStartupComplete = async () => {
 const shellClasses = computed(() => [
   `app-shell--${mode.value}`,
   {
-    "app-shell--hydrated": isHydrated.value,
     "app-shell--references": isReferencesRoute.value
   }
 ]);
@@ -84,11 +83,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    class="app-shell"
-    :class="shellClasses"
-    :data-ambience="mode"
-  >
+  <div class="app-shell" :class="shellClasses">
     <PageTransitionOverlay ref="transitionOverlay" />
     <ClientOnly>
       <DebugLab v-if="isDevBuild" />

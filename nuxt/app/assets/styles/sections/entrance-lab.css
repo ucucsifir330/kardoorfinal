@@ -3,10 +3,8 @@
    (EntranceDoor yeniden yazımının başlangıç noktası)
 
    Z-stack:
-     .entrance-lab__artboard  görsel oranına kilitli kutu (JS ile konumlanır)
-       0  .entrance-lab__bg     tek hero background görseli (tema ile değişir)
-       1  .entrance-lab__stage  kapı canvas'ı (siyah boşluğun üstünde)
-     2  .entrance-lab__content  üstteki içerik (copy sonra buraya)
+     0  .entrance-lab__bg     tek hero background görseli (tema ile değişir)
+     1  .entrance-lab__stage  kapı canvas'ı (siyah boşluğun üstünde)
 
    KAPI KALİBRASYONU:
      Aşağıdaki --door-* değerleri L-21X9.png'deki siyah kapı boşluğundan
@@ -29,7 +27,6 @@
      koyu olmalı ki kapının ince kenar boşluğu gölge/recess gibi okunsun (light
      temada krem zemin olsaydı kapı etrafında beyaz çerçeve görünürdü). */
   background: #0b0b0d;
-  color: #f7f7f2;
   font-family: var(--font-body);
 }
 
@@ -298,8 +295,6 @@
   z-index: 0;
   user-select: none;
   pointer-events: none;
-  /* Tema değişiminde src swap'ini yumuşatmak için. */
-  transition: opacity 600ms var(--ease-soft, ease);
 }
 
 /* ──────────────────────────────────────────────────────────────
@@ -505,7 +500,6 @@
   border-radius: var(--radius-md);
   opacity: 0.92;
   transition:
-    width 450ms var(--ease-soft),
     height 450ms var(--ease-soft),
     border-radius 450ms var(--ease-soft),
     color 450ms var(--ease-soft);
@@ -572,7 +566,6 @@
   }
 
   .entrance-lab__scroll-motion {
-    width: 7px;
     height: 7px;
     margin-top: 25%;
     border-radius: var(--radius-full);
@@ -651,10 +644,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .entrance-lab__bg {
-    transition: none;
-  }
-
   .entrance-lab__cue,
   .entrance-lab__scroll-device,
   .entrance-lab__scroll-device::before,

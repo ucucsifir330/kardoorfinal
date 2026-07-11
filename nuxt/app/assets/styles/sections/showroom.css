@@ -30,8 +30,6 @@
   --sl-line: rgba(244, 246, 255, 0.22);
   --sl-backdrop: rgba(195, 204, 255, 0.07);
 
-  background:
-    radial-gradient(80% 90% at 40% 38%, var(--sl-bg-1) 0%, var(--sl-bg-2) 72%);
   color: var(--sl-text);
 }
 
@@ -209,21 +207,7 @@ html.is-safari .showroom-lab__slot {
   object-position: center bottom;
   transform: scale(var(--door-normalize, 1));
   transform-origin: center bottom;
-  filter: none;
   user-select: none;
-}
-
-/* Oval zemin diski — kapıların altında. */
-.showroom-lab__platform {
-  position: absolute;
-  left: 50%;
-  top: 62%;
-  width: clamp(420px, 46vw, 820px);
-  height: clamp(90px, 10vw, 180px);
-  transform: translate3d(-50%, 0, 0);
-  border-radius: 50%;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.12) 0%, transparent 72%);
-  pointer-events: none;
 }
 
 /* ── INFO PANELİ ─────────────────────────────────────────────── */
@@ -361,7 +345,6 @@ html.is-safari .showroom-lab__slot {
 
 .showroom-lab__meta {
   margin: 0;
-  max-width: none;
   white-space: nowrap;
   font-size: clamp(12px, 0.86vw, 14px);
   line-height: 1.5;
@@ -508,11 +491,6 @@ html.is-safari .showroom-lab__slot {
   }
   .showroom-lab__carousel {
     transform: translateY(-2%);
-  }
-  .showroom-lab__platform {
-    top: min(64%, 360px);
-    width: clamp(300px, 78vw, 560px);
-    height: clamp(64px, 15vw, 118px);
   }
   .showroom-lab__info {
     grid-column: 1;

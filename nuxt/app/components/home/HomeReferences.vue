@@ -1,31 +1,5 @@
 <template>
   <section ref="sectionRef" class="home-references-flip" aria-labelledby="home-references-title">
-    <div ref="mediaRef" class="home-references-flip__media">
-      <iframe
-        v-if="isDocumentaryStarted"
-        class="home-references-flip__video"
-        :src="documentaryYoutubeEmbedUrl"
-        :title="referencesCopy.videoTitle"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen
-      ></iframe>
-      <button
-        v-if="!isDocumentaryStarted"
-        type="button"
-        class="home-references-flip__play"
-        :style="{ '--references-video-poster': `url(${documentaryYoutubePosterUrl})` }"
-        :aria-label="referencesCopy.playAria"
-        @click="startDocumentary"
-      >
-        <span class="home-references-flip__play-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor" />
-          </svg>
-        </span>
-        <span class="home-references-flip__play-text">{{ referencesCopy.playLabel }}</span>
-      </button>
-    </div>
-
     <section
       ref="introRef"
       class="home-references-flip__intro"
@@ -67,59 +41,93 @@
           </template>
         </h3>
         <p>{{ referencesCopy.panelBody }}</p>
-        <span></span>
       </div>
 
-      <div ref="startMarkerRef" class="home-references-flip__marker home-references-flip__marker--start">
-      </div>
+      <div ref="startMarkerRef" class="home-references-flip__marker home-references-flip__marker--start"></div>
     </section>
 
     <section ref="finalRef" class="home-references-flip__panel home-references-flip__final">
-      <div ref="finalMarkerRef" class="home-references-flip__marker home-references-flip__marker--final"></div>
+      <div class="home-references-flip__marker home-references-flip__marker--final">
+        <div ref="mediaRef" class="home-references-flip__media">
+          <iframe
+            v-if="isDocumentaryStarted"
+            class="home-references-flip__video"
+            :src="documentaryYoutubeEmbedUrl"
+            :title="referencesCopy.videoTitle"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+          <button
+            v-if="!isDocumentaryStarted"
+            type="button"
+            class="home-references-flip__play"
+            :style="{ '--references-video-poster': `url(${documentaryYoutubePosterUrl})` }"
+            :aria-label="referencesCopy.playAria"
+            @click="startDocumentary"
+          >
+            <span class="home-references-flip__play-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor" />
+              </svg>
+            </span>
+            <span class="home-references-flip__play-text">{{ referencesCopy.playLabel }}</span>
+          </button>
+        </div>
+      </div>
     </section>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import type { gsap as GsapNamespace } from "gsap";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 const { locale } = useKardoorLocale();
 
-const referencesCopies: Record<string, any> = {
-  tr: {
-    videoTitle: "Ege Kardoor kurumsal belgesel",
-    playAria: "Kurumsal belgeseli oynat",
-    playLabel: "Tanıtımı İzle",
-    titleLines: ["Sınırların nasıl", "çizildiğine", "tanık olun."],
-    intro:
-      "Ege Kardoor’un üretim felsefesi. Ham çeliğin, yüksek mühendislik ve tasarım vizyonuyla premium bir mimari elemente dönüşme serüveni.",
-    panelTitleLines: ["Mikro detaylardan,", "makro projelere."],
-    panelBody:
-      "Sadece bir güvenlik önlemi değil, yapının karakterini belirleyen o ilk temas noktası. Hassas kesimlerden kusursuz yüzey bitişlerine kadar, fabrikamızdaki teknoloji ve zanaat entegrasyonunu keşfedin."
-  },
-  en: {
-    videoTitle: "Ege Kardoor corporate documentary",
-    playAria: "Play the corporate documentary",
-    playLabel: "Watch Intro",
-    titleLines: ["Witness how", "boundaries", "are drawn."],
-    intro:
-      "Ege Kardoor’s production philosophy: the journey of raw steel becoming a premium architectural element through advanced engineering and a refined design vision.",
-    panelTitleLines: ["From micro details,", "to macro projects."],
-    panelBody:
-      "More than a security measure, the entrance door is the first point of contact that defines a structure’s character. Explore the integration of technology and craft in our factory, from precision cuts to flawless surface finishes."
-  }
+interface ReferencesCopy {
+  videoTitle: string;
+  playAria: string;
+  playLabel: string;
+  titleLines: string[];
+  intro: string;
+  panelTitleLines: string[];
+  panelBody: string;
+}
+
+const trCopy: ReferencesCopy = {
+  videoTitle: "Ege Kardoor kurumsal belgesel",
+  playAria: "Kurumsal belgeseli oynat",
+  playLabel: "Tanıtımı İzle",
+  titleLines: ["Sınırların nasıl", "çizildiğine", "tanık olun."],
+  intro:
+    "Ege Kardoor’un üretim felsefesi. Ham çeliğin, yüksek mühendislik ve tasarım vizyonuyla premium bir mimari elemente dönüşme serüveni.",
+  panelTitleLines: ["Mikro detaylardan,", "makro projelere."],
+  panelBody:
+    "Sadece bir güvenlik önlemi değil, yapının karakterini belirleyen o ilk temas noktası. Hassas kesimlerden kusursuz yüzey bitişlerine kadar, fabrikamızdaki teknoloji ve zanaat entegrasyonunu keşfedin."
 };
 
-const referencesCopy = computed(() => referencesCopies[locale.value] ?? referencesCopies.tr);
+const enCopy: ReferencesCopy = {
+  videoTitle: "Ege Kardoor corporate documentary",
+  playAria: "Play the corporate documentary",
+  playLabel: "Watch Intro",
+  titleLines: ["Witness how", "boundaries", "are drawn."],
+  intro:
+    "Ege Kardoor’s production philosophy: the journey of raw steel becoming a premium architectural element through advanced engineering and a refined design vision.",
+  panelTitleLines: ["From micro details,", "to macro projects."],
+  panelBody:
+    "More than a security measure, the entrance door is the first point of contact that defines a structure’s character. Explore the integration of technology and craft in our factory, from precision cuts to flawless surface finishes."
+};
+
+const referencesCopy = computed(() => (locale.value === "en" ? enCopy : trCopy));
+
+// Statik src, Nuxt dev'de virtual:public + HMR cache-bust (?t=...&) etkileşimiyle
+// yolu bozabiliyor; dinamik binding asset transform'unu atlayarak bundan kaçınır.
 const torusSpecimenSrc = "/images/brand/prism-illustrations/metallic-inflated-torus-sculpture.webp";
 
 const sectionRef = ref<HTMLElement | null>(null);
 const initialRef = ref<HTMLElement | null>(null);
 const finalRef = ref<HTMLElement | null>(null);
 const startMarkerRef = ref<HTMLElement | null>(null);
-const finalMarkerRef = ref<HTMLElement | null>(null);
 const mediaRef = ref<HTMLElement | null>(null);
 const introRef = ref<HTMLElement | null>(null);
 const isDocumentaryStarted = ref(false);
@@ -140,8 +148,16 @@ const documentaryYoutubeEmbedUrl = computed(() => {
   return `https://www.youtube.com/embed/${documentaryYoutubeId}?${params.toString()}`;
 });
 
-let flipContext: ReturnType<typeof GsapNamespace.context> | null = null;
-let resizeHandler: (() => void) | null = null;
+// Play içeriği (ikon + yazı) kartla birlikte salt orantısal küçülürse yazı
+// ~7px'e düşüp okunmaz oluyor; kart durumunda tam boyutun bu oranında kalacak
+// şekilde ters ölçekle telafi edilir (scrub sonunda 1'e iner).
+const PLAY_CONTENT_START_SCALE = 0.3;
+
+type FlipContext = { revert: () => void };
+type FlipFitVars = { x?: number; y?: number; scaleX?: number; scaleY?: number };
+
+let flipContext: FlipContext | null = null;
+let rebuildFlip: (() => void) | null = null;
 let documentaryStartScrollY = 0;
 // Catalog rows reserve their final height before product batches reveal, so this
 // trigger should not drift during normal scroll. If an upstream responsive/layout
@@ -207,72 +223,74 @@ const handleDocumentaryScroll = () => {
 
 const setupFlip = async () => {
   const section = sectionRef.value;
-  const initial = initialRef.value;
-  const final = finalRef.value;
-  const finalMarker = finalMarkerRef.value;
-  const media = mediaRef.value;
+  if (!section) return;
 
-  if (!section || !initial || !final || !finalMarker || !media) return;
-
-  const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+  const [{ gsap }, { ScrollTrigger }, { Flip }] = await Promise.all([
     import("gsap"),
-    import("gsap/ScrollTrigger")
+    import("gsap/ScrollTrigger"),
+    import("gsap/Flip")
   ]);
 
-  const getBounds = (element: HTMLElement) => {
-    const sectionRect = section.getBoundingClientRect();
-    const rect = element.getBoundingClientRect();
-
-    return {
-      height: rect.height,
-      left: rect.left - sectionRect.left + section.scrollLeft,
-      top: rect.top - sectionRect.top + section.scrollTop,
-      width: rect.width
-    };
-  };
+  gsap.registerPlugin(ScrollTrigger, Flip);
 
   const create = () => {
     flipContext?.revert();
     flipScrollTrigger = null;
 
     flipContext = gsap.context(() => {
-      if (!mediaRef.value || !startMarkerRef.value || !finalMarkerRef.value || !initialRef.value || !finalRef.value) return;
+      const media = mediaRef.value;
+      const startMarker = startMarkerRef.value;
+      const initial = initialRef.value;
+      const final = finalRef.value;
 
-      const flipTween = gsap.fromTo(
-        mediaRef.value,
-        {
-          autoAlpha: 1,
-          height: () => getBounds(startMarkerRef.value as HTMLElement).height,
-          left: () => getBounds(startMarkerRef.value as HTMLElement).left,
-          top: () => getBounds(startMarkerRef.value as HTMLElement).top,
-          width: () => getBounds(startMarkerRef.value as HTMLElement).width
-        },
-        {
-          height: () => getBounds(finalMarkerRef.value as HTMLElement).height,
-          left: () => getBounds(finalMarkerRef.value as HTMLElement).left,
-          top: () => getBounds(finalMarkerRef.value as HTMLElement).top,
-          width: () => getBounds(finalMarkerRef.value as HTMLElement).width,
-          ease: "none",
-          immediateRender: true,
-          scrollTrigger: {
-            trigger: initialRef.value,
-            start: "top 24%",
-            endTrigger: finalRef.value,
-            end: "bottom bottom",
-            // ScrollSmoother already eases the page; keep this card locked to
-            // that smoothed playhead instead of adding a second one-second lag.
-            scrub: true,
-            invalidateOnRefresh: true
-          }
+      if (!media || !startMarker || !initial || !final) return;
+
+      // Medya layout'ta hep final marker'ı (tam ekran) doldurur; Flip.fit onu
+      // başlangıç kartına oturtan x/y/scale değerlerini verir. Scrub boyunca
+      // yalnızca transform değişir: relayout yok, CLS'e kayma yazılmaz.
+      const fitVars = Flip.fit(media, startMarker, { scale: true, getVars: true }) as FlipFitVars;
+      const fitScaleX = Number(fitVars.scaleX) || 1;
+      const fitScaleY = Number(fitVars.scaleY) || 1;
+
+      gsap.set(media, { autoAlpha: 1 });
+
+      const timeline = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: initial,
+          start: "top 24%",
+          endTrigger: final,
+          end: "bottom bottom",
+          // ScrollSmoother already eases the page; keep this card locked to
+          // that smoothed playhead instead of adding a second one-second lag.
+          scrub: true
         }
+      });
+
+      timeline.fromTo(media, { ...fitVars }, { x: 0, y: 0, scaleX: 1, scaleY: 1 }, 0);
+
+      const playContent = media.querySelectorAll<HTMLElement>(
+        ".home-references-flip__play-icon, .home-references-flip__play-text"
       );
 
-      flipScrollTrigger = flipTween.scrollTrigger ?? null;
+      if (playContent.length) {
+        timeline.fromTo(
+          playContent,
+          {
+            scaleX: Math.max(1, PLAY_CONTENT_START_SCALE / fitScaleX),
+            scaleY: Math.max(1, PLAY_CONTENT_START_SCALE / fitScaleY)
+          },
+          { scaleX: 1, scaleY: 1 },
+          0
+        );
+      }
+
+      flipScrollTrigger = timeline.scrollTrigger ?? null;
     }, section);
   };
 
   create();
-  resizeHandler = create;
+  rebuildFlip = create;
   window.addEventListener("resize", create);
 
   if ("ResizeObserver" in window) {
@@ -299,6 +317,13 @@ const setupFlip = async () => {
   }
 };
 
+// Buton <-> iframe geçişinde play içeriği yeniden mount olur; ters ölçek
+// tween'inin yeni node'ları yakalaması için kurulum tazelenir.
+watch(isDocumentaryStarted, async () => {
+  await nextTick();
+  rebuildFlip?.();
+});
+
 onMounted(() => {
   nextTick(() => {
     setupFlip();
@@ -308,9 +333,9 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (resizeHandler) {
-    window.removeEventListener("resize", resizeHandler);
-    resizeHandler = null;
+  if (rebuildFlip) {
+    window.removeEventListener("resize", rebuildFlip);
+    rebuildFlip = null;
   }
 
   window.clearTimeout(catalogResizeTimer);

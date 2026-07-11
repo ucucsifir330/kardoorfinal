@@ -7,7 +7,6 @@
   --header-pill-radius: 999px;
   --header-control-radius: 999px;
 
-  --header-blur: 30px;
   --header-glass-angle: -75deg;
   --header-shine-angle: -45deg;
   --header-hover-time: 400ms;
@@ -25,26 +24,10 @@
   --header-glass-edge-soft: rgba(255, 255, 255, 0.38);
   --header-glass-shadow: rgba(0, 0, 0, 0.16);
   --header-glass-bottom: rgba(255, 255, 255, 0.1);
-  --header-glass-spark: rgba(255, 255, 255, 0.58);
   --header-glass-rim: rgba(35, 43, 50, 0.18);
 
   --header-control-hover: rgba(255, 255, 255, 0.13);
-  --header-control-active: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.86),
-    rgba(255, 255, 255, 0.58)
-  );
-  --header-control-highlight: rgba(255, 255, 255, 0.92);
-  --header-control-shadow: rgba(0, 0, 0, 0.18);
   --header-font: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-
-  --header-language-track: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.18),
-    rgba(0, 0, 0, 0.08)
-  );
-
-  --header-quote-text: #041016;
 }
 
 [data-theme="light"] {
@@ -60,7 +43,6 @@
   --header-glass-edge-soft: rgba(255, 255, 255, 0.5);
   --header-glass-shadow: rgba(18, 28, 36, 0.13);
   --header-glass-bottom: rgba(255, 255, 255, 0.16);
-  --header-glass-spark: rgba(255, 255, 255, 0.72);
   --header-glass-rim: rgba(18, 28, 36, 0.16);
 
   --header-control-hover: rgba(255, 255, 255, 0.36);
@@ -79,7 +61,6 @@
   --header-glass-edge-soft: rgba(255, 255, 255, 0.3);
   --header-glass-shadow: rgba(0, 0, 0, 0.28);
   --header-glass-bottom: rgba(255, 255, 255, 0.04);
-  --header-glass-spark: rgba(255, 255, 255, 0.38);
   --header-glass-rim: rgba(0, 0, 0, 0.32);
 
   --header-control-hover: rgba(255, 255, 255, 0.12);
@@ -121,19 +102,11 @@
 
 /* Brand sola sabit (akıştan çıkar) → ortadaki bar'ı kaydırmaz.
    transform: aşağıdaki eski kopyayla birleştirildi (shift-x + dikey ortalama). */
-.site-header__brand--ghost {
+.site-header__brand.site-header__brand--ghost {
   position: absolute;
   left: 0;
   top: 50%;
   transform: translate(var(--header-brand-shift-x), -50%);
-}
-
-.site-header__glass-filters {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  pointer-events: none;
 }
 
 .site-header__brand {
@@ -147,22 +120,24 @@
   min-width: 0;
   color: var(--header-brand-text);
   text-decoration: none;
-  filter: none;
   transform: translateX(var(--header-brand-shift-x));
 }
 
 .site-header__brand.site-header__brand .brand-mark {
-  gap: 0;
   font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif;
-}
-
-.site-header__brand.site-header__brand .brand-symbol {
-  display: none;
 }
 
 .site-header__brand.site-header__brand .brand-title {
   font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 700;
+}
+
+/* Ghost dokunmatikte GÖRÜNEN gerçek logodur. Kardoor'un beyaz mürekkebi
+   burada işe yaramaz: fixed header'ın stacking context'i blend'i hapseder,
+   yazı açık temada düz beyaz kalıp kaybolur → düz tema rengi ver.
+   (Blend kopyaları --ghost taşımadığından etkilenmez, beyaz kalırlar.) */
+.site-header__brand.site-header__brand--ghost .brand-title__kardoor {
+  color: var(--header-brand-text);
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -198,30 +173,29 @@
     pointer-events: none;
   }
 
-  /* INK layer: blend on the fixed element ITSELF (like .smooth-cursor) so the
-     symbol + KARDOOR invert against the whole page. EGE is hidden here (but
-     still occupies space, so KARDOOR keeps its position). */
+  /* INK layer: blend on the fixed element ITSELF (like .smooth-cursor) so
+     KARDOOR inverts against the whole page. EGE is hidden here (but still
+     occupies space, so KARDOOR keeps its position).
+     isolation+translateZ: kendi compositing katmanına sabitler — yoksa üstteki
+     --ege katmanıyla (z-index 82, blend'siz) GPU compositing sırasında
+     Chromium yanlış tile'lıyor ve koca siyah dikdörtgenler beliriyordu. */
   .brand-blend-layer--ink {
+    isolation: isolate;
     mix-blend-mode: difference;
-  }
-
-  .brand-blend-layer--ink .brand-symbol,
-  .brand-blend-layer--ink .brand-title__kardoor {
-    mix-blend-mode: normal; /* single page-level inversion done by the layer */
+    transform: translateZ(0);
   }
 
   .brand-blend-layer--ink .brand-title__ege {
     visibility: hidden;
   }
 
-  /* EGE layer: sits on top, no blend, keeps its blue. Symbol + KARDOOR are
-     hidden here (they live in the ink layer) but still reserve their space so
-     EGE lands in exactly the same spot. */
+  /* EGE layer: sits on top, no blend, keeps its blue. KARDOOR is hidden here
+     (it lives in the ink layer) but still reserves its space so EGE lands in
+     exactly the same spot. */
   .brand-blend-layer--ege {
     z-index: 82;
   }
 
-  .brand-blend-layer--ege .brand-symbol,
   .brand-blend-layer--ege .brand-title__kardoor {
     visibility: hidden;
   }
@@ -504,9 +478,6 @@
 }
 
 .site-header__nav-mark {
-  /* Orta grid kolonu → iki yan (1fr) eşit olduğundan K bar'ın merkezinde. */
-  grid-column: 2;
-  justify-self: center;
   isolation: isolate;
   display: inline-grid;
   place-items: center;
@@ -911,6 +882,20 @@
 }
 
 @media (max-width: 1120px) {
+  /* Masaüstü nav linkleri (Ürünler/Referanslar/Hakkımızda/İletişim) hamburger
+     menüyle birlikte görünmesin — mobil panelde zaten navItems'ın tamamı var.
+     --header-group sıfırlanmazsa boşalan grup min-genişliğini korur ve K
+     sağa kayar; grubu içeriğe (kalan ikon/segmentler) göre daraltıyoruz. */
+  .site-header__group--left .site-header__nav-link,
+  .site-header__group--right .site-header__nav-link {
+    display: none;
+  }
+
+  .site-header__group {
+    --header-group: 0px;
+    flex: 0 0 auto;
+  }
+
   .site-header__menu {
     display: inline-flex;
   }
@@ -942,6 +927,16 @@
   }
 }
 
+/* ~600px altında sola sabit logo ile ortalanmış bar çakışıyor (ölçüm:
+   600px'te 3px, 390px'te 94px binişme). Bar'daki K işareti markayı zaten
+   temsil ettiğinden dar ekranda logoyu (ve masaüstü blend kopyalarını) gizle. */
+@media (max-width: 620px) {
+  .site-header__brand--ghost,
+  .brand-blend-layer {
+    display: none;
+  }
+}
+
 @media (max-width: 520px) {
   .site-header {
     --header-offset-x: 12px;
@@ -956,15 +951,6 @@
   .site-header__icon-button {
     min-height: 34px;
     width: 34px;
-  }
-
-  .site-header__brand .brand-mark {
-    overflow: visible;
-  }
-
-  .site-header__brand.site-header__brand .brand-symbol {
-    width: 26px;
-    height: 32px;
   }
 
   .site-header__mobile-panel {
