@@ -450,32 +450,55 @@ onMounted(() => {
     duration = 1.05,
     ease = "power3.inOut"
   ) => {
+    if (!trigger) return;
     const smoother = getSmoother();
-    if (!smoother || !trigger) return;
 
-    const startY = smoother.scrollTop();
-    smoother.scrollTo(startY, false);
-    const proxy = { y: startY };
+    // Önce eski tween ölsün: kill() onInterrupt'ı tetikler ve kilitleri
+    // sıfırlar — bayraklar bu yüzden kill'den SONRA set edilir.
+    scrollTween?.kill();
     isAutoSettling = true;
     settleDirection = direction;
-    scrollTween?.kill();
-    scrollTween = gsap.to(proxy, {
-      y: getProgressY(targetProgress),
+
+    // Snap bitince/kesilince: bir sonraki itiş yeni kapıyı tetikleyebilsin.
+    // Kilidi burada bırakmak orbit bandındaki donmayı önler (cooldown yine de
+    // ardışık snap'ler arasına kısa bir boşluk koyar).
+    const releaseLocks = () => {
+      isAutoSettling = false;
+      isPortalSettling = false;
+      settleDirection = 0;
+      scrollTween = undefined;
+      settleCooldownUntil = performance.now() + 320;
+      wheelGestureLocked = false;
+    };
+
+    const targetY = getProgressY(targetProgress);
+
+    if (smoother) {
+      const startY = smoother.scrollTop();
+      smoother.scrollTo(startY, false);
+      const proxy = { y: startY };
+      scrollTween = gsap.to(proxy, {
+        y: targetY,
+        duration,
+        ease,
+        overwrite: true,
+        onUpdate: () => smoother.scrollTo(proxy.y, false),
+        onInterrupt: releaseLocks,
+        onComplete: releaseLocks
+      });
+      return;
+    }
+
+    // Touch/native scroll (smoother yok): tween doğrudan window'a yazar.
+    // autoKill — kullanıcı parmağıyla araya girerse tween ölür; onInterrupt
+    // kilitleri bırakır, scroll asla kilitli kalmaz.
+    scrollTween = gsap.to(window, {
+      scrollTo: { y: targetY, autoKill: true },
       duration,
       ease,
       overwrite: true,
-      onUpdate: () => smoother.scrollTo(proxy.y, false),
-      onComplete: () => {
-        isAutoSettling = false;
-        isPortalSettling = false;
-        settleDirection = 0;
-        scrollTween = undefined;
-        settleCooldownUntil = performance.now() + 320;
-        // Snap bitti → bir sonraki itiş yeni kapıyı tetikleyebilsin. Kilidi
-        // burada bırakmak orbit bandındaki donmayı önler (cooldown yine de
-        // ardışık snap'ler arasına kısa bir boşluk koyar).
-        wheelGestureLocked = false;
-      }
+      onInterrupt: releaseLocks,
+      onComplete: releaseLocks
     });
   };
 
@@ -503,7 +526,8 @@ onMounted(() => {
   };
 
   const maybePullThroughPortal = (progress: number, delta: number) => {
-    if (!getSmoother() || isAutoSettling || performance.now() < settleCooldownUntil) return;
+    // Native (touch) scroll'da da çalışır — smoother şartı yok.
+    if (isAutoSettling || performance.now() < settleCooldownUntil) return;
     if (Math.abs(delta) < 0.0006) return;
 
     if (delta > 0 && progress >= HOLD_END && progress < SHOWROOM_FULL - 0.01) {
@@ -554,7 +578,12 @@ onMounted(() => {
     isPortalSettling = false;
     settleToProgress(DOOR_SNAP_POINTS[targetIndex]!, direction);
   };
-  window.addEventListener("wheel", onWheel, { passive: false });
+  // Wheel dinleyicisi yalnız masaüstünde: touch cihazda takılırsa passive:false
+  // yüzünden native scroll'u engelleme riski var, wheel olayı da zaten üretilmez.
+  // Plugin'deki gate ile aynı koşul (emülatörde pointer:coarse + geniş ekran
+  // kombinasyonunda smoother'lı akış korunur).
+  const isTouchDevice = window.matchMedia("(pointer: coarse)").matches && window.innerWidth <= 1024;
+  if (!isTouchDevice) window.addEventListener("wheel", onWheel, { passive: false });
 
   door.load(doorMeta.value).catch((error) => {
     console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
@@ -595,7 +624,7 @@ onMounted(() => {
   // aksi halde yukarı çıkış HOLD_END'e (kapı yarı açık) park ediyordu. Smoother'ın
   // kendi scroll'unu kullandığı için scroll pozisyonuyla progress senkron kalır.
   const goHome = () => {
-    if (!trigger || !getSmoother()) return;
+    if (!trigger) return;
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     scrollTween?.kill();
     isPortalSettling = false;
