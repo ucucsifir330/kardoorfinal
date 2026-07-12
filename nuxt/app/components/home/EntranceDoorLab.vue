@@ -108,22 +108,17 @@ const HERO_VARIANTS: HeroVariant[] = [
   }
 ];
 
-// Viewport oranına en yakın varyantı seçer (log ölçekte — 16:9 ile 4:3
-// arasındaki "yakınlık" çarpımsal, aritmetik fark değil). Viewport
-// ultra-wide masaüstü sınırının üzerindeyse orijinal 21:9 hero kullanılır.
-const pickHeroVariant = (viewportAspect: number): HeroVariant => {
-  if (viewportAspect >= ULTRA_WIDE_MIN_ASPECT) return ULTRA_WIDE;
-
-  let closest = HERO_VARIANTS[0]!;
-  let smallestDelta = Infinity;
-  for (const variant of HERO_VARIANTS) {
-    const delta = Math.abs(Math.log(viewportAspect / variant.aspect));
-    if (delta < smallestDelta) {
-      smallestDelta = delta;
-      closest = variant;
-    }
-  }
-  return closest;
+// GEÇİCİ ROLLBACK (2026-07-12): HERO_VARIANTS'taki 5 AVIF, mevcut sprite ile
+// geometrik olarak uyuşmuyor — sprite frame'in opak kanadı sabit dar-uzun bir
+// oranda (0.386), delik oranı ne olursa olsun kutunun ortasında küçük kalıyor.
+// Ekran doğrulamasında (kullanıcı) TÜM oranlarda (16:9 dahil) sorun görüldü;
+// yalnız orijinal 21:9 hero mevcut sprite ile doğru oturuyor. Kalıcı çözüm
+// sprite'ın yeniden render edilmesi (bkz. memory: hero-varyant-kalibrasyon,
+// "GÜNCELLEME" bölümü) — o gelene kadar HER viewport'ta ULTRA_WIDE dönülür.
+// HERO_VARIANTS/pickHeroVariant altyapısı kalır (kod hazır), yalnız seçim
+// devre dışı; sprite hazır olunca tek satır (return ULTRA_WIDE) kaldırılır.
+const pickHeroVariant = (_viewportAspect: number): HeroVariant => {
+  return ULTRA_WIDE;
 };
 
 // Paketlenmiş kapı sprite'ları (scripts/pack-door-sprite.cjs çıktısı).
