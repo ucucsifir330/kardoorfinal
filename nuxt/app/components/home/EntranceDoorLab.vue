@@ -49,13 +49,87 @@ const ORBIT_END = 0.9; // turntable dönüşü burada biter
 const HORIZONTAL_START = 0.9; // yatay kayma burada başlar
 const ZOOM_MAX = 14; // boşluğa girerkenki en yüksek ölçek (tunable)
 
-// Tek master hero görseli — tema ile değişen yegâne kaynak.
-const HERO = {
-  day: "/L-21X9.webp", //  3134×1344  (~21:9, light)
-  night: "/N-21X9.webp" //  3830×1642  (night)
-} as const;
+// Responsive hero varyantları — viewport oranına göre art-direct edilir.
+// Her kayıt kendi doğal aspect'ini ve kapı deliği kalibrasyonunu taşır
+// (day/night aynı kalibrasyonu paylaşır; delik konumu ±0.1pt farkla özdeş,
+// bkz. memory: hero-varyant-kalibrasyon). DOOR_BOX değerleri alpha-kanalı
+// ölçümünden türetildi (width ×1.2651, height ×1.0261, top −height×0.0148 —
+// kapının açılırken süpürdüğü kanat marjı).
+interface HeroVariant {
+  daySrc: string;
+  nightSrc: string;
+  aspect: number;
+  doorBox: { centerX: number; top: number; width: number; height: number };
+}
+
+// ULTRA_WIDE: 21:9 masaüstü için orijinal hero — yeni sette 21:9 karşılığı
+// yok; 16:9'u bu kadar geniş bir alana cover ile zorlamak kompozisyonu
+// dikeyden keser. minAspect eşiğinin üstünde bu varyant seçilir.
+const ULTRA_WIDE_MIN_ASPECT = 21 / 9 - 0.15;
+const ULTRA_WIDE: HeroVariant = {
+  daySrc: "/L-21X9.webp",
+  nightSrc: "/N-21X9.webp",
+  aspect: 3134 / 1344,
+  doorBox: { centerX: 52.195, top: 28.704, width: 14.694, height: 47.64 }
+};
+
+// Diğer 5 varyant, genişten dara sıralı — placeDoor() viewport oranına en
+// yakın olanı seçer (bkz. pickHeroVariant).
+const HERO_VARIANTS: HeroVariant[] = [
+  {
+    daySrc: "/hero-day-16x9.avif",
+    nightSrc: "/hero-night-16x9.avif",
+    aspect: 16 / 9,
+    doorBox: { centerX: 52.335, top: 34.636, width: 15.246, height: 40.549 }
+  },
+  {
+    daySrc: "/hero-day-4x3.avif",
+    nightSrc: "/hero-night-4x3.avif",
+    aspect: 4 / 3,
+    doorBox: { centerX: 53.698, top: 36.899, width: 15.972, height: 31.979 }
+  },
+  {
+    daySrc: "/hero-day-1x1.avif",
+    nightSrc: "/hero-night-1x1.avif",
+    aspect: 1,
+    doorBox: { centerX: 51.147, top: 35.864, width: 17.265, height: 27.13 }
+  },
+  {
+    daySrc: "/hero-day-3x4.avif",
+    nightSrc: "/hero-night-3x4.avif",
+    aspect: 3 / 4,
+    doorBox: { centerX: 49.623, top: 42.497, width: 19.203, height: 21.933 }
+  },
+  {
+    daySrc: "/hero-day-9x16.avif",
+    nightSrc: "/hero-night-9x16.avif",
+    aspect: 9 / 16,
+    doorBox: { centerX: 51.676, top: 43.855, width: 26.274, height: 22.95 }
+  }
+];
+
+// Viewport oranına en yakın varyantı seçer (log ölçekte — 16:9 ile 4:3
+// arasındaki "yakınlık" çarpımsal, aritmetik fark değil). Viewport
+// ultra-wide masaüstü sınırının üzerindeyse orijinal 21:9 hero kullanılır.
+const pickHeroVariant = (viewportAspect: number): HeroVariant => {
+  if (viewportAspect >= ULTRA_WIDE_MIN_ASPECT) return ULTRA_WIDE;
+
+  let closest = HERO_VARIANTS[0]!;
+  let smallestDelta = Infinity;
+  for (const variant of HERO_VARIANTS) {
+    const delta = Math.abs(Math.log(viewportAspect / variant.aspect));
+    if (delta < smallestDelta) {
+      smallestDelta = delta;
+      closest = variant;
+    }
+  }
+  return closest;
+};
 
 // Paketlenmiş kapı sprite'ları (scripts/pack-door-sprite.cjs çıktısı).
+// Tüm hero varyantları AYNI sprite çiftini paylaşır — kapı kanadı
+// DOOR_BOX kutusuna stretch edilerek oturur, varyant başına ayrı sprite
+// gerekmez (bkz. memory: hero-varyant-kalibrasyon).
 const SHOWROOM_DOOR_COUNT = 5;
 const DOOR_SNAP_POINTS = Array.from({ length: SHOWROOM_DOOR_COUNT }, (_, index) =>
   SHOWROOM_FULL + (index / (SHOWROOM_DOOR_COUNT - 1)) * (ORBIT_END - SHOWROOM_FULL)
@@ -66,11 +140,13 @@ const DOOR = {
   night: "/kardoor-door-night.json"
 } as const;
 
-// Hero görselinin doğal en-boy oranı (L ve N aynı: 2.332). Artboard buna kurulur.
-const HERO_ASPECT = 3134 / 1344;
-
 const { isNight, mode } = useShowroomAmbience();
-const heroSrc = computed(() => (isNight.value ? HERO.night : HERO.day));
+
+// Seçili hero varyantı; placeDoor() viewport ölçtükçe günceller (resize/mount).
+const activeHeroVariant = ref<HeroVariant>(ULTRA_WIDE);
+const heroSrc = computed(() =>
+  isNight.value ? activeHeroVariant.value.nightSrc : activeHeroVariant.value.daySrc
+);
 const doorMeta = computed(() => (isNight.value ? DOOR.night : DOOR.day));
 
 const { locale } = useKardoorLocale();
@@ -169,17 +245,13 @@ let hasPlayedConfigureCopyLastWordIntro = false;
 // çakışıp scroll'u geri atar). onMounted içinde atanır.
 let settleToDoorIndex: ((index: number) => void) | undefined;
 
-// Kapı kanadının hero deliğine BİREBİR oturduğu kalibrasyon (cover kutusuna
-// göre yüzde). Hero ŞEFFAF delik + render kanat içerik sınırlarından ölçüldü.
-// Light/Night hero'ları farklı konumda olduğu için tema bazlı.
-const DOOR_BOX = {
-  day: { centerX: 52.195, top: 28.704, width: 14.694, height: 47.64 },
-  night: { centerX: 52.028, top: 28.424, width: 14.871, height: 47.695 }
-} as const;
-
 // Hero artık section'a full-bleed background (object-fit:cover). Kapı stage'i,
 // görselin cover-render kutusuna göre JS ile px olarak konumlanır — böylece
 // viewport oranı değişse de kapı deliğe kilitli kalır (overflow kenarı kırpılır).
+//
+// Viewport oranı değiştikçe (resize, cihaz döndürme) en yakın hero varyantı
+// yeniden seçilir; heroSrc computed'ı bunu izleyip <NuxtImg> kaynağını
+// günceller. Aynı frame'de DOOR_BOX de yeni varyantın kalibrasyonuna geçer.
 const placeDoor = () => {
   const section = sectionRef.value;
   const stage = stageRef.value;
@@ -189,12 +261,15 @@ const placeDoor = () => {
   const vh = section.clientHeight;
   const viewportAspect = vw / vh;
 
-  const coverW = viewportAspect > HERO_ASPECT ? vw : vh * HERO_ASPECT;
-  const coverH = viewportAspect > HERO_ASPECT ? vw / HERO_ASPECT : vh;
+  const variant = pickHeroVariant(viewportAspect);
+  activeHeroVariant.value = variant;
+
+  const coverW = viewportAspect > variant.aspect ? vw : vh * variant.aspect;
+  const coverH = viewportAspect > variant.aspect ? vw / variant.aspect : vh;
   const coverLeft = (vw - coverW) / 2;
   const coverTop = (vh - coverH) / 2;
 
-  const d = isNight.value ? DOOR_BOX.night : DOOR_BOX.day;
+  const d = variant.doorBox;
   const w = (d.width / 100) * coverW;
   const h = (d.height / 100) * coverH;
   const cx = coverLeft + (d.centerX / 100) * coverW;
