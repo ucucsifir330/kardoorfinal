@@ -108,17 +108,29 @@ const HERO_VARIANTS: HeroVariant[] = [
   }
 ];
 
-// GEÇİCİ ROLLBACK (2026-07-12): HERO_VARIANTS'taki 5 AVIF, mevcut sprite ile
-// geometrik olarak uyuşmuyor — sprite frame'in opak kanadı sabit dar-uzun bir
-// oranda (0.386), delik oranı ne olursa olsun kutunun ortasında küçük kalıyor.
-// Ekran doğrulamasında (kullanıcı) TÜM oranlarda (16:9 dahil) sorun görüldü;
-// yalnız orijinal 21:9 hero mevcut sprite ile doğru oturuyor. Kalıcı çözüm
-// sprite'ın yeniden render edilmesi (bkz. memory: hero-varyant-kalibrasyon,
-// "GÜNCELLEME" bölümü) — o gelene kadar HER viewport'ta ULTRA_WIDE dönülür.
-// HERO_VARIANTS/pickHeroVariant altyapısı kalır (kod hazır), yalnız seçim
-// devre dışı; sprite hazır olunca tek satır (return ULTRA_WIDE) kaldırılır.
-const pickHeroVariant = (_viewportAspect: number): HeroVariant => {
-  return ULTRA_WIDE;
+// Viewport oranına en yakın varyantı seçer (log ölçekte — 16:9 ile 4:3
+// arasındaki "yakınlık" çarpımsal, aritmetik fark değil). Viewport
+// ultra-wide masaüstü sınırının üzerindeyse orijinal 21:9 hero kullanılır.
+//
+// NOT (2026-07-12): İlk açılışta (c5d71a2) tüm varyantlar bozuk görünüp
+// rollback yemişti (8aa49a5). Kök neden varyantlar/sprite değil, NuxtImg'in
+// sabit 2560×1098 IPX cover-crop'uydu — ekrana her varyantın 21:9 kesiti
+// gidiyordu. Hero artık düz <img> ile orijinal dosyayı servis ediyor;
+// render'ların kapalı-kapı oranı (0.541) delik oranlarıyla (0.52–0.55)
+// zaten uyumlu ölçüldü. Sprite yeniden üretilmedi, gerek yok.
+const pickHeroVariant = (viewportAspect: number): HeroVariant => {
+  if (viewportAspect >= ULTRA_WIDE_MIN_ASPECT) return ULTRA_WIDE;
+
+  let closest = HERO_VARIANTS[0]!;
+  let smallestDelta = Infinity;
+  for (const variant of HERO_VARIANTS) {
+    const delta = Math.abs(Math.log(viewportAspect / variant.aspect));
+    if (delta < smallestDelta) {
+      smallestDelta = delta;
+      closest = variant;
+    }
+  }
+  return closest;
 };
 
 // Paketlenmiş kapı sprite'ları (scripts/pack-door-sprite.cjs çıktısı).
@@ -808,17 +820,17 @@ onBeforeUnmount(() => {
 
     <!-- ZOOM KATMANI — hero + kapı; kapı boşluğuna doğru ölçeklenip kaybolur. -->
     <div ref="zoomRef" class="entrance-lab__zoom">
-      <!-- TEK hero görseli — full-bleed (object-fit:cover). -->
-      <NuxtImg
+      <!-- Hero görseli — full-bleed (object-fit:cover). Kasten DÜZ <img>:
+           NuxtImg'in sabit width/height'ı IPX'te her varyantı 2560×1098'e
+           cover-CROP'luyordu; ekrana varyantın kendisi değil 21:9 kesiti
+           gidiyor, placeDoor()'un varyant-oranlı cover matematiği ekrandaki
+           görüntüyle uyuşmuyordu (kapı deliğe küçük düşüyordu). Varyant
+           AVIF'leri zaten elde optimize (150–310KB), IPX resize gereksiz. -->
+      <img
         :src="heroSrc"
         class="entrance-lab__bg"
-        width="2560"
-        height="1098"
-        densities="x1"
-        format="webp"
-        fit="cover"
-        preload
         fetchpriority="high"
+        decoding="async"
         alt="Kardoor giriş görseli"
         draggable="false"
       />
