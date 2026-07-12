@@ -3,12 +3,10 @@
 @import "./base/tokens.css";
 @import "./base/reset.css";
 @import "./base/transitions.css";
-
 /* Shared components */
 @import "./components/buttons.css";
 @import "./components/site-header.css";
 @import "./components/floating-contact.css";
-
 /* Page / section styles */
 @import "./sections/home-catalog.css";
 @import "./sections/home-team.css";
@@ -16,6 +14,7 @@
 @import "./sections/home-reviews.css";
 @import "./sections/home-footer.css";
 @import "./pages/catalog/subpage.css";
+@import "./pages/door-detail.css";
 @import "./pages/catalog-library.css";
 @import "./pages/company.css";
 @import "./pages/contact.css";

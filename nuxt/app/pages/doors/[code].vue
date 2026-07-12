@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { getProductByCode } from "~/data/catalog";
-import { products } from "~/data/products";
+import { getProductTaxonomy } from "~/data/catalog-taxonomy";
+import { products, slugifyProductPart } from "~/data/products";
 
 const route = useRoute();
 const product = getProductByCode(String(route.params.code));
@@ -23,6 +24,13 @@ const similar = products
   .filter((item) => item.code !== product.code && item.seriesSlug === product.seriesSlug)
   .slice(0, 3);
 
+// /series/* rotası yok; seri sayfalarının gerçek karşılığı katalog kütüphanesi.
+// Ana kategori facet'iyle deep-link'lenir (filtreler URL query'sinden okunuyor).
+const backLink = {
+  path: "/catalog",
+  query: { anaKategori: slugifyProductPart(getProductTaxonomy(product).anaKategori) }
+};
+
 useSeoMeta({
   title: `${product.code} Steel Door`,
   description: product.description
@@ -31,7 +39,8 @@ useSeoMeta({
 
 <template>
   <section class="detail-page">
-    <NuxtLink class="back-link" :to="`/series/${product.seriesSlug}`">← Back to {{ product.seriesTitle }}</NuxtLink>
+    <!-- Hedef seri sayfası değil, ana-kategori filtreli katalog — metin hedefle uyumlu. -->
+    <NuxtLink class="back-link" :to="backLink">← Back to Catalog</NuxtLink>
 
     <div class="detail-page__grid">
       <div class="detail-page__visual">
@@ -72,7 +81,7 @@ useSeoMeta({
 
         <div class="hero-actions">
           <NuxtLink class="btn btn-primary" to="/contact">Request Quote</NuxtLink>
-          <NuxtLink class="btn btn-secondary" to="/doors">All Doors</NuxtLink>
+          <NuxtLink class="btn btn-secondary" to="/catalog">All Doors</NuxtLink>
         </div>
       </div>
     </div>

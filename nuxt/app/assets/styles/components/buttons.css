@@ -24,8 +24,8 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.04);
-  color: white;
+  background: var(--panel-soft);
+  color: var(--text);
 }
 
 /* Hover — only on real pointer devices */
