@@ -48,18 +48,34 @@ const PORTAL_SPRITE_FADE_END = 0.56; // büyütülen canvas'la gelen siyah ara k
 const ORBIT_END = 0.9; // turntable dönüşü burada biter
 const HORIZONTAL_START = 0.9; // yatay kayma burada başlar
 const ZOOM_MAX = 14; // boşluğa girerkenki en yüksek ölçek (tunable)
+// Canvas tamponu tam CSS pikseline yuvarlanır. Alpha-kalibre kutunun altında
+// oluşabilecek tek satırlık raster sızıntıyı kapatmak için yalnız alta örtüşme.
+const DOOR_BOTTOM_OVERLAP_PX = 3;
 
 // Responsive hero varyantları — viewport oranına göre art-direct edilir.
 // Her kayıt kendi doğal aspect'ini ve kapı deliği kalibrasyonunu taşır
 // (day/night aynı kalibrasyonu paylaşır; delik konumu ±0.1pt farkla özdeş,
-// bkz. memory: hero-varyant-kalibrasyon). DOOR_BOX değerleri alpha-kanalı
-// ölçümünden türetildi (width ×1.2651, height ×1.0261, top −height×0.0148 —
-// kapının açılırken süpürdüğü kanat marjı).
+// bkz. memory: hero-varyant-kalibrasyon). Kutular hem hero deliğinin hem de
+// kapalı sprite karesindeki gerçek opak kanat alanının alpha ölçümünden türetildi.
+// Sprite çerçevesindeki şeffaf taşıma payı hesaba katılır; aksi halde kapı deliği
+// iki temada da ince bir aralık olarak görünür.
+interface DoorBox {
+  centerX: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
 interface HeroVariant {
   daySrc: string;
   nightSrc: string;
   aspect: number;
-  doorBox: { centerX: number; top: number; width: number; height: number };
+  doorBox: DoorBox;
+  // Gece görselinin KENDİ alpha-ölçümünden türetilmiş kutu. En büyük sapma
+  // 21:9 çiftinde (N-21X9 ayrı render: ΔcX −0.168 / Δtop −0.279 / Δw +0.135 —
+  // ekranda ~5px sol + ~2.5px üst kenar açıkta kalıyordu); AVIF çiftlerinde
+  // fark ±0.2 içinde ama yine de ölçülmüş gece değerleri kullanılır.
+  nightDoorBox: DoorBox;
 }
 
 // ULTRA_WIDE: 21:9 masaüstü için orijinal hero — yeni sette 21:9 karşılığı
@@ -70,7 +86,8 @@ const ULTRA_WIDE: HeroVariant = {
   daySrc: "/L-21X9.webp",
   nightSrc: "/N-21X9.webp",
   aspect: 3134 / 1344,
-  doorBox: { centerX: 52.195, top: 28.704, width: 14.694, height: 47.64 }
+  doorBox: { centerX: 52.19, top: 28.199, width: 14.95, height: 48.743 },
+  nightDoorBox: { centerX: 52.02, top: 28.003, width: 15.092, height: 48.617 }
 };
 
 // Diğer 5 varyant, genişten dara sıralı — placeDoor() viewport oranına en
@@ -80,31 +97,36 @@ const HERO_VARIANTS: HeroVariant[] = [
     daySrc: "/hero-day-16x9.avif",
     nightSrc: "/hero-night-16x9.avif",
     aspect: 16 / 9,
-    doorBox: { centerX: 52.335, top: 34.636, width: 15.246, height: 40.549 }
+    doorBox: { centerX: 52.177, top: 34.398, width: 15.414, height: 41.108 },
+    nightDoorBox: { centerX: 52.17, top: 34.334, width: 15.496, height: 41.158 }
   },
   {
     daySrc: "/hero-day-4x3.avif",
     nightSrc: "/hero-night-4x3.avif",
     aspect: 4 / 3,
-    doorBox: { centerX: 53.698, top: 36.899, width: 15.972, height: 31.979 }
+    doorBox: { centerX: 53.523, top: 36.697, width: 16.18, height: 32.448 },
+    nightDoorBox: { centerX: 53.578, top: 36.657, width: 16.179, height: 32.58 }
   },
   {
     daySrc: "/hero-day-1x1.avif",
     nightSrc: "/hero-night-1x1.avif",
     aspect: 1,
-    doorBox: { centerX: 51.147, top: 35.864, width: 17.265, height: 27.13 }
+    doorBox: { centerX: 50.959, top: 35.688, width: 17.5, height: 27.537 },
+    nightDoorBox: { centerX: 50.936, top: 35.584, width: 17.514, height: 27.517 }
   },
   {
     daySrc: "/hero-day-3x4.avif",
     nightSrc: "/hero-night-3x4.avif",
     aspect: 3 / 4,
-    doorBox: { centerX: 49.623, top: 42.497, width: 19.203, height: 21.933 }
+    doorBox: { centerX: 49.414, top: 42.347, width: 19.468, height: 22.275 },
+    nightDoorBox: { centerX: 49.43, top: 42.197, width: 19.637, height: 22.514 }
   },
   {
     daySrc: "/hero-day-9x16.avif",
     nightSrc: "/hero-night-9x16.avif",
     aspect: 9 / 16,
-    doorBox: { centerX: 51.676, top: 43.855, width: 26.274, height: 22.95 }
+    doorBox: { centerX: 51.388, top: 43.722, width: 26.608, height: 23.262 },
+    nightDoorBox: { centerX: 51.368, top: 43.54, width: 26.723, height: 23.533 }
   }
 ];
 
@@ -276,23 +298,24 @@ const placeDoor = () => {
   const coverLeft = (vw - coverW) / 2;
   const coverTop = (vh - coverH) / 2;
 
-  const d = variant.doorBox;
+  const d = isNight.value ? variant.nightDoorBox : variant.doorBox;
   const w = (d.width / 100) * coverW;
   const h = (d.height / 100) * coverH;
+  const stageH = h + DOOR_BOTTOM_OVERLAP_PX;
   const cx = coverLeft + (d.centerX / 100) * coverW;
   const top = coverTop + (d.top / 100) * coverH;
 
   stage.style.left = `${cx - w / 2}px`;
   stage.style.top = `${top}px`;
   stage.style.width = `${w}px`;
-  stage.style.height = `${h}px`;
+  stage.style.height = `${stageH}px`;
 
   // Zoom origin = kapı boşluğunun merkezi (section'a göre px). Zoom katmanı bu
   // noktaya doğru ölçeklenir → kamera kapıdan içeri giriyormuş hissi.
   const zoom = zoomRef.value;
   if (zoom) {
     zoom.style.setProperty("--zoom-origin-x", `${cx}px`);
-    zoom.style.setProperty("--zoom-origin-y", `${top + h / 2}px`);
+    zoom.style.setProperty("--zoom-origin-y", `${top + stageH / 2}px`);
   }
 };
 

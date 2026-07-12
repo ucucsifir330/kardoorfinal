@@ -43,19 +43,17 @@ Karar:
 ### 3. Audit ve debug tooling
 
 Kapsam:
-- `nuxt/scripts/audit/*`
+- `nuxt/tests/audit/*`
 - `nuxt/package.json` audit scriptleri
 - `nuxt/.stylelintrc.json`
 - `DebugLab.vue`
 - Nuxt/Vue DevTools ayarlari
 
 Durum:
-- Bu paket is gormeye basladi.
-- `nuxt/reports/` ve `output/` artifact olarak kalmali, commitlenmemeli.
-
-Karar:
-- Kalmasi mantikli.
-- Commitlenirse kod + scriptler commitlenmeli, uretilen rapor/output dosyalari degil.
+- Test ve audit kodu `nuxt/tests/` altinda izole edilir; Nuxt uygulama
+  derlemesine veya tarayici bundle'ina dahil edilmez.
+- `nuxt/reports/` ve `nuxt/output/` yalnizca test artifact'i olarak uretilir
+  ve commitlenmez.
 
 ### 4. CSS cleanup
 
