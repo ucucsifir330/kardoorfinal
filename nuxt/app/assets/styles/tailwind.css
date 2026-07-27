@@ -1,0 +1,103 @@
+/* ---------------------------------------------------------------------------
+ * Tailwind 4 giris dosyasi — DENEME asamasi.
+ *
+ * Amac: mobil dosyalari Tailwind ile yazarken masaustu tasarimindan SAPMAMAK.
+ * Bunu saglayan sey asagidaki `@theme inline` blogu: token'lari kopyalamiyor,
+ * tokens.css'teki degiskenlere REFERANS veriyor. Yani:
+ *
+ *   - Renk/font/easing tek kaynakta kalir (tokens.css). Kopya yok, sapma yok.
+ *   - `inline` oldugu icin uretilen utility dogrudan var(--...) yazar; bu da
+ *     .app-shell--day / --night tema gecisinin AYNEN calismaya devam etmesini
+ *     saglar. Normal @theme (inline'siz) degeri derleme aninda dondurur ve
+ *     tema gecisi kirilirdi.
+ *
+ * Not: preflight (Tailwind'in reset'i) BILEREK devre disi. Projenin kendi
+ * reset.css'i var; ikisi birlikte mevcut masaustu gorunumunu bozardi.
+ * ------------------------------------------------------------------------- */
+
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Nuxt kaynaklarini tara (bu dosya app/assets/styles altinda oldugu icin ../..) */
+@source "../../components";
+@source "../../pages";
+@source "../../layouts";
+
+@theme inline {
+  /* --- Renkler: tokens.css + tema degiskenleri ------------------------- */
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-soft: var(--panel-soft);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-soft: var(--soft);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-warm: var(--warm);
+
+  --color-bg-deepest: var(--bg-deepest);
+  --color-bg-navy: var(--bg-navy);
+  --color-card: var(--card-bg);
+
+  /* Ambience (gunduz/gece sahne degiskenleri) */
+  --color-ambience-bg: var(--ambience-bg);
+  --color-ambience-text: var(--ambience-text);
+  --color-ambience-muted: var(--ambience-muted);
+  --color-ambience-line: var(--ambience-line);
+
+  /* --- Fontlar --------------------------------------------------------- */
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-serif: var(--font-serif);
+  /* home-reviews'in bastan sona kullandigi baslik ailesi */
+  --font-telegraf: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  --font-mori: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+
+  /* --- Easing ---------------------------------------------------------- */
+  --ease-out: var(--ease-out);
+  --ease-soft: var(--ease-soft);
+  --ease-spring-bounce: var(--spring-bounce);
+  --ease-spring-snappy: var(--spring-snappy);
+  --ease-expo-out: var(--expo-out);
+  --ease-quint-out: var(--quint-out);
+
+  /* --- Golge ----------------------------------------------------------- */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  /* --- Radius ---------------------------------------------------------- */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* --- Akiskan tipografi ----------------------------------------------
+   * Projede 356 adet clamp() var. Bunlari sablonda `text-[clamp(...)]`
+   * seklinde yazmak okunmaz olurdu; isimlendirip `text-rotating` gibi
+   * temiz utility'ler uretiyoruz. Degerler mevcut CSS'ten BIREBIR alindi.
+   * ------------------------------------------------------------------ */
+  --text-rotating: clamp(4rem, 5.45vw, 6.1rem);
+  --text-rotating-lg: clamp(3.25rem, 8.4vw, 5.2rem);
+  --text-rotating-sm: clamp(2.75rem, 10.8vw, 3.35rem);
+  --text-quote: clamp(1.02rem, 1.08vw, 1.16rem);
+  --text-name: clamp(0.98rem, 0.95vw, 1.05rem);
+  --text-rating: clamp(1.08rem, 1.05vw, 1.22rem);
+}
+
+/* ---------------------------------------------------------------------------
+ * Tailwind'e GIRMEYEN kisim — bilerek burada.
+ * Keyframe animasyonlari utility ile ifade edilmiyor; CSS'te kaliyor.
+ * ------------------------------------------------------------------------- */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

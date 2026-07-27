@@ -1,4 +1,5 @@
 import process from "node:process";
+import tailwindcss from "@tailwindcss/vite";
 import VueDevTools from "vite-plugin-vue-devtools";
 
 const assetBaseUrl = process.env.NUXT_PUBLIC_ASSET_BASE_URL || "";
@@ -13,7 +14,7 @@ export default defineNuxtConfig({
   debug: true,
   devtools: { enabled: true },
   vite: {
-    plugins: [VueDevTools()]
+    plugins: [tailwindcss(), VueDevTools()]
   },
   hooks: {
     "pages:extend"(pages) {
@@ -41,7 +42,7 @@ export default defineNuxtConfig({
   },
   modules: ["@nuxt/image"],
   components: [{ path: "~/components", pathPrefix: false }],
-  css: ["~/assets/styles/main.css"],
+  css: ["~/assets/styles/main.css", "~/assets/styles/tailwind.css"],
   app: {
     cdnURL: appCdnUrl,
     head: {
