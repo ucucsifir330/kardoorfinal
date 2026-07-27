@@ -1291,9 +1291,24 @@ const initCatalogObserver = () => {
 
 const checkMobile = () => { isMobile.value = window.innerWidth <= 760; };
 
+// Mobilde dikey scroll adres çubuğunu gizleyince tarayıcı sürekli 'resize'
+// fırlatır; ama katalog çizgisi geometrisi ve isMobile kırılımı GENİŞLİĞE bağlı.
+// Yükseklik-only değişimde iş yapmayıp bu sahte akışı susturuyoruz (mobil scroll
+// jank suçlularından biri — bkz. memory: mobil-scroll-jank).
+let lastCatalogWidth = import.meta.client ? window.innerWidth : 0;
+const onCatalogResize = () => {
+  if (window.innerWidth === lastCatalogWidth) return; // yükseklik-only → yoksay
+  lastCatalogWidth = window.innerWidth;
+  checkMobile();
+  window.clearTimeout(catalogLineRefreshTimer);
+  catalogLineRefreshTimer = window.setTimeout(() => {
+    catalogLineRefreshTimer = 0;
+    refreshCatalogLine();
+  }, 160);
+};
+
 onMounted(() => {
   checkMobile();
-  window.addEventListener("resize", checkMobile, { passive: true });
 
   nextTick(() => {
     isCatalogScrolled.value = false;
@@ -1312,7 +1327,7 @@ onMounted(() => {
     requestAnimationFrame(allowCatalogLineReveal);
   }
 
-  window.addEventListener("resize", refreshCatalogLine, { passive: true });
+  window.addEventListener("resize", onCatalogResize, { passive: true });
   window.addEventListener("scroll", handleCatalogScroll, { passive: true });
   window.addEventListener("keydown", handleProductModalKeydown);
 });
@@ -1335,8 +1350,7 @@ onBeforeUnmount(() => {
   window.clearTimeout(catalogLineRefreshTimer);
   catalogLineRefreshTimer = 0;
 
-  window.removeEventListener("resize", refreshCatalogLine);
-  window.removeEventListener("resize", checkMobile);
+  window.removeEventListener("resize", onCatalogResize);
   window.removeEventListener("scroll", handleCatalogScroll);
   window.removeEventListener("keydown", handleProductModalKeydown);
   window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));

@@ -18,6 +18,12 @@ let registered = false;
 export function registerGsap() {
   if (registered || !import.meta.client) return;
   gsap.registerPlugin(ScrollTrigger, ScrollSmoother, ScrollToPlugin, TextPlugin, SplitText);
+  // Mobilde dikey scroll adres çubuğunu gizleyince yükseklik değişir ve GSAP
+  // varsayılan olarak her seferinde global ScrollTrigger.refresh() yapar (trace:
+  // _getBounds/_getComputedProperty birikimi = mobil scroll jank). ignoreMobileResize
+  // bu yükseklik-only resize'ları yok sayar; gerçek genişlik/rotasyon değişiminde
+  // refresh yine bizim bileşen handler'larımızdan tetiklenir.
+  ScrollTrigger.config({ ignoreMobileResize: true });
   registered = true;
 }
 

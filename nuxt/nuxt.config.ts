@@ -76,6 +76,36 @@ export default defineNuxtConfig({
           href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Science+Gothic:wght@300;400;500;700&display=swap"
         },
         { id: "kardoor-theme", rel: "stylesheet", href: "/themes/light.css" }
+      ],
+      script: [
+        {
+          // LCP hero'sunu erken keşfet: doğru varyant viewport oranına, doğru
+          // tema localStorage'a bağlı — ikisi de SSR'da bilinemez, bu yüzden
+          // <img :src> hydration'a kadar (~3.4s) belirsiz kalıyordu. Bu senkron
+          // inline script <head>'de çalışıp DOĞRU URL'i preload eder; tarayıcı
+          // JS bundle'ını beklemeden LCP görselini çeker. Varyant tablosu
+          // EntranceDoorLab.vue ile BİREBİR aynı olmalı (yoksa çift indirme).
+          key: "kardoor-hero-preload",
+          innerHTML: `(function(){try{
+var UW={d:"/L-21X9.webp",n:"/N-21X9.webp",a:3134/1344};
+var V=[{d:"/hero-day-16x9.avif",n:"/hero-night-16x9.avif",a:16/9},
+{d:"/hero-day-4x3.avif",n:"/hero-night-4x3.avif",a:4/3},
+{d:"/hero-day-1x1.avif",n:"/hero-night-1x1.avif",a:1},
+{d:"/hero-day-3x4.avif",n:"/hero-night-3x4.avif",a:3/4},
+{d:"/hero-day-9x16.avif",n:"/hero-night-9x16.avif",a:9/16}];
+var va=window.innerWidth/window.innerHeight;
+var pick;
+if(va>=(21/9-0.15)){pick=UW;}else{var best=V[0],bd=Infinity;
+for(var i=0;i<V.length;i++){var dl=Math.abs(Math.log(va/V[i].a));if(dl<bd){bd=dl;best=V[i];}}pick=best;}
+var night=false;try{night=window.localStorage.getItem("kardoor-showroom-ambience")==="night";}catch(e){}
+var href=night?pick.n:pick.d;
+window.__kardoorHero={aspect:pick.a,night:night,href:href};
+var l=document.createElement("link");
+l.rel="preload";l.as="image";l.href=href;l.setAttribute("fetchpriority","high");
+document.head.appendChild(l);
+}catch(e){}})();`,
+          tagPosition: "head"
+        }
       ]
     },
     pageTransition: { name: "page", mode: "out-in" }

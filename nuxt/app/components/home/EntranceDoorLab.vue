@@ -175,7 +175,7 @@ const DOOR = {
   night: "/kardoor-door-night.json"
 } as const;
 
-const { isNight, mode } = useShowroomAmbience();
+const { isNight, mode, isHydrated } = useShowroomAmbience();
 const getIsTouchExperience = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches &&
@@ -183,9 +183,27 @@ const getIsTouchExperience = () =>
 const isTouchExperience = ref(getIsTouchExperience());
 
 // Seçili hero varyantı; placeDoor() viewport ölçtükçe günceller (resize/mount).
-const activeHeroVariant = ref<HeroVariant>(ULTRA_WIDE);
+// Client'ta <head>'deki erken preload script'i (nuxt.config.ts) DOĞRU varyantı
+// zaten hesaplayıp window.__kardoorHero'ya yazdı → ilk render aynı URL'i ister,
+// preload'lanan görsel <img>'e cache'ten oturur (çift indirme yok, LCP erken).
+const pickInitialVariant = (): HeroVariant => {
+  if (typeof window === "undefined") return ULTRA_WIDE;
+  // Erken script ile AYNI viewport oranından seç → aynı varyant → aynı URL.
+  return pickHeroVariant(window.innerWidth / window.innerHeight);
+};
+const activeHeroVariant = ref<HeroVariant>(pickInitialVariant());
+// İlk client render'ında isNight henüz onMounted→syncMode ile localStorage'dan
+// senkronlanmadığı için (SSR default: day) heroSrc yanlış temaya düşebilirdi.
+// Erken script localStorage'ı zaten okuyup __kardoorHero.night'a yazdı; ilk
+// değeri ondan alıp preload edilen URL ile birebir hizalıyoruz.
+const initialNight =
+  typeof window !== "undefined"
+    ? Boolean((window as unknown as { __kardoorHero?: { night: boolean } }).__kardoorHero?.night)
+    : false;
 const heroSrc = computed(() =>
-  isNight.value ? activeHeroVariant.value.nightSrc : activeHeroVariant.value.daySrc
+  (isNight.value || (!isHydrated.value && initialNight))
+    ? activeHeroVariant.value.nightSrc
+    : activeHeroVariant.value.daySrc
 );
 const doorMeta = computed(() => (isNight.value ? DOOR.night : DOOR.day));
 
@@ -790,9 +808,21 @@ onMounted(() => {
     updateMaster(0);
 
     // Rotasyon/adres çubuğu değişiminde kapı artboard'a göre yeniden yerleşsin.
+    // Mobilde dikey scroll adres çubuğunu gizleyip sürekli 'resize' fırlatıyor;
+    // ama kapı geometrisi GENİŞLİĞE bağlı (yükseklik-only değişim onu etkilemez).
+    // Genişlik kapısı + debounce ile bu sahte akışta hiç iş yapmayız → mobil
+    // scroll jank'inin doğrudan kaynağı kapanır (bkz. memory: mobil-scroll-jank).
+    let touchResizeDebounce = 0;
+    let lastTouchWidth = window.innerWidth;
     const onTouchResize = () => {
-      placeDoor();
-      door.refresh();
+      if (window.innerWidth === lastTouchWidth) return; // yükseklik-only → yoksay
+      if (touchResizeDebounce) window.clearTimeout(touchResizeDebounce);
+      touchResizeDebounce = window.setTimeout(() => {
+        touchResizeDebounce = 0;
+        lastTouchWidth = window.innerWidth;
+        placeDoor();
+        door.refresh();
+      }, 160);
     };
 
     // ── Dokunmatik giriş + showroom koreografisi ──────────────────────────
@@ -966,6 +996,8 @@ onMounted(() => {
       section.removeEventListener("touchend", onShowroomTouchEnd);
       section.removeEventListener("touchcancel", onShowroomTouchEnd);
       window.removeEventListener("resize", onTouchResize);
+      if (touchResizeDebounce) window.clearTimeout(touchResizeDebounce);
+      touchResizeDebounce = 0;
       window.removeEventListener("kardoor:home", goHomeNative);
     };
     return;
@@ -996,7 +1028,24 @@ onMounted(() => {
     }
   });
 
-  const onResize = () => {
+  // Resize maliyeti asimetrik: ScrollTrigger.refresh() TÜM tetikleyicileri
+  // yeniden ölçer (trace'te _getBounds/_getComputedProperty ~1s reflow). Bunu
+  // her resize event'inde çalıştırmak — özellikle mobilde adres çubuğu scroll'da
+  // gizlenince patlayan sahte resize akışında — jank kaynağıydı. İki kademeli
+  // savunma:
+  //   1) Debounce: fırtınanın yalnızca SON halinde ağır iş yapılır.
+  //   2) Genişlik kapısı: pahalı ScrollTrigger.refresh() SADECE viewport
+  //      genişliği değişince koşar. Yükseklik-only değişim (adres çubuğu /
+  //      dinamik viewport) ucuz placeDoor() ile geçiştirilir — varyant/pin
+  //      geometrisi genişliğe bağlı, yükseklik onu değiştirmez.
+  let resizeDebounce = 0;
+  let lastResizeWidth = window.innerWidth;
+
+  const runResize = () => {
+    resizeDebounce = 0;
+
+    // Touch deneyimine geçiş debounce'suz, anında ele alınmalı (döndürme/geçiş
+    // gecikmesin); teardown yapıp scrub makinesini bırakır.
     if (getIsTouchExperience()) {
       isTouchExperience.value = true;
       teardown?.();
@@ -1005,9 +1054,23 @@ onMounted(() => {
       return;
     }
 
+    const widthChanged = window.innerWidth !== lastResizeWidth;
+    lastResizeWidth = window.innerWidth;
+
     placeDoor();
     door.refresh();
-    ScrollTrigger.refresh();
+    if (widthChanged) ScrollTrigger.refresh();
+  };
+
+  const onResize = () => {
+    // Touch geçişini debounce'tan önce yakala (yön değiştirme anında hissedilsin).
+    if (getIsTouchExperience()) {
+      if (resizeDebounce) window.clearTimeout(resizeDebounce);
+      runResize();
+      return;
+    }
+    if (resizeDebounce) window.clearTimeout(resizeDebounce);
+    resizeDebounce = window.setTimeout(runResize, 160);
   };
   window.addEventListener("resize", onResize);
 
@@ -1031,6 +1094,8 @@ onMounted(() => {
     configureCopyTween?.kill();
     configureCopyLastWordTween?.kill();
     settleToDoorIndex = undefined;
+    if (resizeDebounce) window.clearTimeout(resizeDebounce);
+    resizeDebounce = 0;
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("resize", onResize);
     window.removeEventListener("kardoor:home", goHome);
