@@ -356,7 +356,7 @@ span.ada-brand-logo {
   padding: 0;
   overflow: visible;
   color: #eae8e8;
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(52px, 6vw, 124px);
   font-weight: 500;
   line-height: 1;

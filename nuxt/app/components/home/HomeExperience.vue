@@ -266,6 +266,12 @@ let reviewsObserver: IntersectionObserver | null = null;
 let reviewsAnimationActive = false;
 let typewriterTl: gsap.core.Timeline | null = null;
 let cursorTween: gsap.core.Tween | null = null;
+// Typewriter döngüsü her kelimede DOM'a yazıp genişlik OKUYOR (forced reflow).
+// Bölüm ekran dışındayken sonsuza dek dönmesin: ScrollTrigger ile pause/play.
+// false başlar → timeline paused doğar; ScrollTrigger görünür olunca play eder
+// (mount'ta bölüm zaten görünürse ST create hemen onToggle'ı isActive ile ateşler).
+let typewriterVisible = false;
+let typewriterTrigger: ScrollTrigger | null = null;
 let activeTitleWord = titleWords.value[0] ?? '';
 
 // Measure the pill width for `activeTitleWord` via the hidden span and animate
@@ -323,7 +329,8 @@ const buildTypewriter = () => {
   }
 
   const words = titleWords.value;
-  typewriterTl = gsap.timeline({ repeat: -1 });
+  typewriterTl = gsap.timeline({ repeat: -1, paused: !typewriterVisible });
+  if (!typewriterVisible) cursorTween?.pause();
 
   words.forEach((word) => {
     typewriterTl!
@@ -842,6 +849,34 @@ onMounted(() => {
 
   buildTypewriter();
 
+  // Görünürlük yönetimi ScrollTrigger ile — IntersectionObserver DEĞİL. Site
+  // ScrollSmoother ile transform üzerinden kaydığından, IO'nun viewport
+  // intersection'ı smoother'la güvenilmez çalışıyordu (timeline mid-word pause'da
+  // donup kalıyor, bölüme gelince play() gelmiyordu). ScrollTrigger smoother'ın
+  // scroll pozisyonunu doğrudan okur; onToggle görünürlük geçişinde şaşmaz ateşler.
+  if (typewriter.value) {
+    const twSection = typewriter.value.closest('section') ?? typewriter.value;
+    const applyVisibility = (visible: boolean) => {
+      typewriterVisible = visible;
+      if (visible) {
+        typewriterTl?.play();
+        cursorTween?.play();
+      } else {
+        typewriterTl?.pause();
+        cursorTween?.pause();
+      }
+    };
+    typewriterTrigger = ScrollTrigger.create({
+      trigger: twSection,
+      start: 'top bottom',   // üst kenar viewport altına girince görünür say
+      end: 'bottom top',     // alt kenar viewport üstünü geçince görünmez
+      onToggle: (self) => applyVisibility(self.isActive)
+    });
+    // onToggle yalnız GEÇİŞTE ateşler; create anında bölüm zaten görünürse ilk
+    // toggle gelmez ve timeline paused kalırdı. Mevcut durumu bir kez senkronla.
+    applyVisibility(typewriterTrigger.isActive);
+  }
+
   track2State.x = -400;
 
   if (reviewsStageRef.value) {
@@ -858,7 +893,9 @@ onMounted(() => {
 
   window.addEventListener('mousemove', onDrag as EventListener);
   window.addEventListener('mouseup', endDrag);
-  window.addEventListener('touchmove', onDrag as EventListener, { passive: false });
+  // passive:true — onDrag preventDefault ÇAĞIRMIYOR; non-passive olması iOS'ta
+  // her dokunmatik kaydırmayı (drag yokken bile) JS'i beklemeye zorluyordu.
+  window.addEventListener('touchmove', onDrag as EventListener, { passive: true });
   window.addEventListener('touchend', endDrag);
 });
 
@@ -871,6 +908,8 @@ onBeforeUnmount(() => {
   stopReviewsAnimation();
   reviewsObserver?.disconnect();
   reviewsObserver = null;
+  typewriterTrigger?.kill();
+  typewriterTrigger = null;
   catalogHandoffObserver?.disconnect();
   catalogHandoffObserver = null;
 

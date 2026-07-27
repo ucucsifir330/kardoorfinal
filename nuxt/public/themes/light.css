@@ -27,7 +27,7 @@ body {
   width: 100%;
   background-color: var(--bg-color);
   overflow-x: hidden;
-  font-family: 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 .title-area {

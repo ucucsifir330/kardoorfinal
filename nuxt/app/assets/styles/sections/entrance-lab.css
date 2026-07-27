@@ -133,7 +133,7 @@
 /* Başlık — EntranceDoor "Kurgulayın" paneliyle BİREBİR (boyut/ritim). */
 .entrance-lab__configure-heading {
   margin: 0;
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(68px, 7.26vw, 126px);
   line-height: 1.1;
   letter-spacing: 0;
@@ -343,7 +343,7 @@
 
 .entrance-lab__heading {
   margin: 0;
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(44px, 4.89vw, 160px);
   line-height: 1.04;
   letter-spacing: 0;
@@ -361,7 +361,7 @@
 }
 
 .entrance-lab__heading-line:not(.entrance-lab__heading-line--accent) {
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-style: normal;
 }
 
@@ -370,7 +370,7 @@
 }
 
 .entrance-lab__heading-line--accent {
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-style: normal;
   font-size: 0.86em;
   letter-spacing: 0;
@@ -656,4 +656,33 @@
     animation: none;
     opacity: 0.86;
   }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   DOKUNMATİK GİRİŞ (entrance-lab--touch) — mobilde pin/scrub yok;
+   kapıya dokununca portal animasyonu oynar (EntranceDoorLab.portalEntry).
+   ────────────────────────────────────────────────────────────── */
+
+/* Kapı sahnesi tap alanı olur (masaüstünde pointer-events: none kalır). */
+.entrance-lab--touch .entrance-lab__stage {
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Fare-scroll ikonu dokunmatikte anlamsız — yerine görünür etiket. */
+.entrance-lab--touch .entrance-lab__scroll-device {
+  display: none;
+}
+
+.entrance-lab--touch .entrance-lab__cue-label {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }

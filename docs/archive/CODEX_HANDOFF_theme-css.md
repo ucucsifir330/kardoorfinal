@@ -1,3 +1,12 @@
+> **⚠️ ARŞİV — GÜNCEL DEĞİLDİR. Bu belgeye göre iş yapma.**
+>
+> Dosya yolları Nuxt 4 taşımasından önceki yapıya ait olabilir; her yolu kullanmadan önce doğrula.
+>
+> Güncel durum için: `docs/cleanup2-stabilizasyon.md`, `docs/cdp-css-tarama-raporu.md`, `AGENTS.md`.
+> (Arşivlendi: 2026-07-22)
+
+---
+
 # CODEX HANDOFF — main.css / light.css / dark.css temizlik raporu
 
 Tarih: 2026-07-11 · Kaynak: Claude, üç dosyanın satır satır manuel okuması + sınıf/DOM doğrulaması (script yok, grep ile tekil sınıf teyidi yapıldı).

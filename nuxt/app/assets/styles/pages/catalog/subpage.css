@@ -3,7 +3,7 @@
   padding: 180px 6vw 90px;
   background: #f1eee7;
   color: #15191b;
-  font-family: Gotham, Montserrat, system-ui, sans-serif;
+  font-family: "General Sans", var(--font-body);
 }
 
 .catalog-subpage h1 {

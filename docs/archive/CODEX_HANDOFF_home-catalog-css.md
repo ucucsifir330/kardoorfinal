@@ -1,3 +1,12 @@
+> **⚠️ ARŞİV — GÜNCEL DEĞİLDİR. Bu belgeye göre iş yapma.**
+>
+> Bahsettiği `nuxt/assets/styles/...` yolu artık YOK (Nuxt 4 ile `nuxt/app/assets/styles/...` oldu). Verdiği "2924 satır" da güncel değil (gerçek: 2728).
+>
+> Güncel durum için: `docs/cleanup2-stabilizasyon.md`, `docs/cdp-css-tarama-raporu.md`, `AGENTS.md`.
+> (Arşivlendi: 2026-07-22)
+
+---
+
 # home-catalog.css temizlik — devir notu (v4)
 
 Dosya: `nuxt/assets/styles/sections/home-catalog.css` (branch: `cleanup2`)

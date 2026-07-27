@@ -31,8 +31,34 @@ export default defineNuxtPlugin((nuxtApp) => {
   // the smoother regardless of emulated pointer type.
   const isTouchDevice = isCoarsePointer && window.innerWidth <= 1024;
 
+  // While the page is actively scrolling, drop expensive backdrop-filter blur
+  // (it re-samples everything behind it every frame). Restored shortly after
+  // the scroll settles. CSS keys off html.is-scrolling. Bu HER cihazda kurulur:
+  // mobil Safari'de backdrop-filter masaüstünden de pahalı, optimizasyonun asıl
+  // sahibi orası (eskiden touch erken dönüşü yüzünden mobilde hiç çalışmıyordu).
+  const setupScrollingMarker = () => {
+    const root = document.documentElement;
+    let scrollIdleTimer = 0;
+    const markScrolling = () => {
+      root.classList.add("is-scrolling");
+      window.clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => {
+        root.classList.remove("is-scrolling");
+      }, isSafari ? 320 : 120);
+    };
+    window.addEventListener("scroll", markScrolling, { passive: true });
+    window.addEventListener("wheel", markScrolling, { passive: true });
+    window.addEventListener("touchmove", markScrolling, { passive: true });
+  };
+
+  // lagSmoothing HER cihazda kapatılır. Varsayılan davranış (500ms üstü kare →
+  // "33ms geçti" say) ağır karelerde zaman-bazlı tween'leri kat kat uzatıyor;
+  // mobilde dokunmatik portal girişi (1.9s) bu yüzden ~15-20s sürüyordu.
+  gsap.ticker.lagSmoothing(0);
+
   // Touch devices use native scrolling (ScrollSmoother smoothing is desktop-only here).
   if (isTouchDevice) {
+    nuxtApp.hook("app:mounted", setupScrollingMarker);
     return {
       provide: {
         smoother: () => null as ScrollSmoother | null
@@ -64,22 +90,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook("app:mounted", () => {
     createSmoother();
     ScrollTrigger.refresh();
-
-    // While the page is actively scrolling, drop expensive backdrop-filter blur
-    // (it re-samples everything behind it every frame). Restored shortly after
-    // the scroll settles. Big paint win during the pinned cinematic sections;
-    // the glass UI looks identical at rest. CSS keys off html.is-scrolling.
-    const root = document.documentElement;
-    let scrollIdleTimer = 0;
-    const markScrolling = () => {
-      root.classList.add("is-scrolling");
-      window.clearTimeout(scrollIdleTimer);
-      scrollIdleTimer = window.setTimeout(() => {
-        root.classList.remove("is-scrolling");
-      }, isSafari ? 320 : 120);
-    };
-    window.addEventListener("scroll", markScrolling, { passive: true });
-    window.addEventListener("wheel", markScrolling, { passive: true });
+    setupScrollingMarker();
   });
 
   // Page transitions (out-in): jump to top and recalc after the new page settles.
@@ -107,8 +118,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   window.addEventListener("beforeunload", () => {
     ScrollSmoother.get()?.scrollTo(0, false);
   });
-
-  gsap.ticker.lagSmoothing(0);
 
   return {
     provide: {

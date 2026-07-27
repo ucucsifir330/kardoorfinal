@@ -1046,6 +1046,10 @@ const checkCatalogRows = () => {
 
   if (!mainRef.value) return;
 
+  // isCatalogScrolled da burada, rAF içinde okunur — eskiden handleCatalogScroll
+  // scroll event'inin İÇİNDE rect okuyordu, her kaydırma tick'i forced reflow'du.
+  isCatalogScrolled.value = mainRef.value.getBoundingClientRect().top < -5;
+
   // Viewport-based reveal (was keyed off the tall .catalog-main, which revealed
   // every row at once). Only reveal rows that are at/near the viewport so the
   // door images load in batches as you scroll down.
@@ -1068,8 +1072,6 @@ const requestCatalogRowCheck = () => {
 };
 
 const handleCatalogScroll = () => {
-  const rect = mainRef.value?.getBoundingClientRect();
-  isCatalogScrolled.value = !!rect && rect.top < -5;
   requestCatalogRowCheck();
 };
 

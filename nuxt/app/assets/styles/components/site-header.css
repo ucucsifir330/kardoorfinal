@@ -124,11 +124,11 @@
 }
 
 .site-header__brand.site-header__brand .brand-mark {
-  font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Science Gothic', var(--font-body);
 }
 
 .site-header__brand.site-header__brand .brand-title {
-  font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Science Gothic', var(--font-body);
   font-weight: 700;
 }
 
@@ -498,8 +498,8 @@
   width: 20px;
   height: 24px;
   background: currentColor;
-  mask: url("/images/brand/kardoor-footer-mark-tight.png") center / contain no-repeat;
-  -webkit-mask: url("/images/brand/kardoor-footer-mark-tight.png") center / contain no-repeat;
+  mask: url("/images/brand/ege-logo.svg") center / contain no-repeat;
+  -webkit-mask: url("/images/brand/ege-logo.svg") center / contain no-repeat;
 }
 
 /* K = Home. Bar camıyla bütünleşen İNCE HALKA — dolu daire değil. Zemin neredeyse

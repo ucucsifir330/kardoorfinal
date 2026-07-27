@@ -1,3 +1,12 @@
+> **⚠️ ARŞİV — GÜNCEL DEĞİLDİR. Bu belgeye göre iş yapma.**
+>
+> Projeyi "Nuxt 3" olarak anlatıyor — gerçek sürüm **Nuxt 4.4.5**. Klasör yapısı da değişti (`nuxt/app/` altına taşındı).
+>
+> Güncel durum için: `docs/cleanup2-stabilizasyon.md`, `docs/cdp-css-tarama-raporu.md`, `AGENTS.md`.
+> (Arşivlendi: 2026-07-22)
+
+---
+
 # Ege Kardoor — Proje Devir Notu (Handoff)
 
 Bu dosya, yeni bir sohbet oturumunun projeyi sıfırdan tanıyıp kaldığı yerden devam edebilmesi için hazırlandı. Yeni sohbette ilk mesaj olarak bunu paylaş.

@@ -26,7 +26,7 @@
 }
 
 .rotating-title {
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(4rem, 5.45vw, 6.1rem);
   line-height: 1.05;
   color: #424346;
@@ -73,7 +73,7 @@
 .hidden-measure {
   position: absolute;
   visibility: hidden;
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(4rem, 5.45vw, 6.1rem);
   font-weight: 540;
   letter-spacing: 0;
@@ -100,7 +100,7 @@
 .typewriter-text,
 .typewriter-cursor {
   color: #EAE8E8;
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   white-space: nowrap;
   font-size: clamp(4rem, 5.45vw, 6.1rem);
   font-weight: 540;
@@ -243,6 +243,7 @@
 
 .rating {
   color: #FFB800;
+  font-family: var(--font-body);
   font-size: clamp(1.08rem, 1.05vw, 1.22rem);
   letter-spacing: 0.08em;
 }

@@ -6,7 +6,6 @@ import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 const route = useRoute();
 const router = useRouter();
-const isDevBuild = import.meta.dev;
 const { mode } = useShowroomAmbience();
 const { locale } = useKardoorLocale();
 const isReferencesRoute = computed(() => route.path === "/references");
@@ -85,9 +84,6 @@ onBeforeUnmount(() => {
 <template>
   <div class="app-shell" :class="shellClasses">
     <PageTransitionOverlay ref="transitionOverlay" />
-    <ClientOnly>
-      <DebugLab v-if="isDevBuild" />
-    </ClientOnly>
     <WelcomeScreen
       v-if="shouldMountStartupScreens"
       @complete="handleStartupComplete"

@@ -119,9 +119,16 @@
     transform-origin: top !important;
   }
 
-  .catalog-title {
+  .catalog-title,
+  /* h1 ile özgüllük yükseltildi: taban ".home-page .catalog-title" kuralı
+     kaskadda SONRA geldiği için eşit özgüllükte kazanıyor. */
+  .home-page h1.catalog-title {
     display: block !important;
     margin: 0 !important;
+    /* Taban kuralın masaüstü sıkıştırması (max-width: calc(100% - 188px))
+       mobile sızıyordu → başlık ~210px'e düşüp "Koleksiyo nlar" diye
+       ortadan kırılıyordu. */
+    max-width: 100% !important;
   }
 
   .catalog-product-grid > .catalog-product {
@@ -631,7 +638,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-title {
   margin: 0 0 0 var(--catalog-info-column-width, 188px) !important;
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif !important;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif !important;
   color: var(--text-primary, #111417) !important;
   font-size: clamp(72px, 5.95vw, 104px) !important;
   font-weight: 500 !important;
@@ -1008,7 +1015,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-finish {
   margin: 0 0 4px !important;
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif !important;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif !important;
   color: var(--text-secondary, #6b7280) !important;
   font-size: 15.5px !important;
   line-height: 1.22 !important;
@@ -1162,7 +1169,9 @@ html[data-theme="dark"] .home-page .catalog-code {
   .home-page .catalog-section {
     --catalog-content-left: 16px;
     --catalog-content-right: 16px;
-    --catalog-stage-top-radius: clamp(22px, 8vw, 36px);
+    --catalog-stage-overlap: 0px;
+    --catalog-stage-top-radius: 0px;
+    margin-top: 0 !important;
   }
 
   .home-page .catalog-shell > .catalog-main {
@@ -1192,9 +1201,13 @@ html[data-theme="dark"] .home-page .catalog-code {
     line-height: 1 !important;
     letter-spacing: -0.02em !important;
     font-weight: 500 !important;
+    width: 100% !important;
+    max-width: 100% !important;
     white-space: normal !important;
     overflow: visible !important;
-    word-break: break-word !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    text-wrap: balance;
   }
 
   /* Row: tek kolon, daha az boşluk */
@@ -2713,4 +2726,3 @@ html.is-safari.is-scrolling .home-page .catalog-code-line {
     transform: none;
   }
 }
-

@@ -301,7 +301,7 @@ html.is-safari .showroom-lab__slot {
 
 .showroom-lab__name {
   margin: 0;
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(42px, 4.6vw, 82px);
   line-height: 0.98;
   font-weight: 500;

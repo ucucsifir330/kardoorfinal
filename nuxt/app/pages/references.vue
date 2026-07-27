@@ -648,7 +648,7 @@ onBeforeUnmount(() => {
 }
 
 .hero-line {
-  font-family: "PP Mori", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   /* Üst sınır böleni dile göre değişir (--hero-line-divisor): TR 6.8 (mevcut),
      EN 7.45 → uzun "ARCHITECTURAL" satırı sığsın. Var yoksa 6.8'e düşer. */
   font-size: min(
@@ -920,7 +920,7 @@ onBeforeUnmount(() => {
   padding: 0 clamp(18px, 4vw, 76px);
   box-sizing: border-box;
   color: var(--ref-title-ink);
-  font-family: "PP Telegraf", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(56px, 8vw, 168px);
   font-weight: 400;
   line-height: 1;
@@ -999,7 +999,7 @@ onBeforeUnmount(() => {
 }
 
 .card-title {
-  font-family: "PP Mori", "PP Neue Montreal", "General Sans", Inter, system-ui, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: 18px;
   font-weight: 600;
   color: var(--ref-card-title);

@@ -1,3 +1,12 @@
+> **⚠️ ARŞİV — GÜNCEL DEĞİLDİR. Bu belgeye göre iş yapma.**
+>
+> Projeyi `kardoorfinal-dev/kardoorfinal-dev/nuxt/` altında gösteriyor — böyle bir dizin YOK. Stack de "Nuxt 3" değil, **Nuxt 4.4.5**.
+>
+> Güncel durum için: `docs/cleanup2-stabilizasyon.md`, `docs/cdp-css-tarama-raporu.md`, `AGENTS.md`.
+> (Arşivlendi: 2026-07-22)
+
+---
+
 # Ege Kardoor — Handoff Pin Jitter & Sub-pixel Tel Devir Notu (5. oturum sonu)
 
 Yeni sohbette ilk mesaj olarak bunu paylaş.

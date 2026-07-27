@@ -199,7 +199,7 @@
 .footer-heading__emphasis {
   display: block;
   margin: 0.09em 0 0.14em;
-  font-family: 'Instrument Serif', var(--font-serif);
+  font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
   line-height: 0.84;
@@ -221,7 +221,7 @@
   color: rgba(230, 231, 235, 0.58);
   font-size: 17px;
   line-height: 1.2;
-  font-family: 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
 }
 
 .location-options {
@@ -240,7 +240,7 @@
   color: #E6E7EB;
   font-size: 17px;
   line-height: 1;
-  font-family: 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
 }
 
 .location-option input {
@@ -375,7 +375,7 @@
 
 .footer-info {
   color: #E6E7EB;
-  font-family: 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   z-index: 2;
 }
 
@@ -491,7 +491,7 @@
   pointer-events: none;
   text-align: center;
   white-space: nowrap;
-  font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Science Gothic', var(--font-body);
   font-weight: 300;
   font-size: clamp(96px, 17.2vw, 340px);
   line-height: 0.8;
@@ -525,7 +525,7 @@
   right: 3.34em;
   top: 0.03em;
   transform: translate(0, -24%);
-  font-family: 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: 0.105em;
   font-weight: 700;
   letter-spacing: 0;
@@ -656,7 +656,6 @@
   background-color: transparent;
 }
 
-
 .footer-bottom,
 .footer-bottom a {
   color: #2C2C31 !important;
@@ -721,7 +720,7 @@
   );
 }
 
-.footer-socials {
+.footer-visual {
   width: min(100%, 540px) !important;
   display: grid !important;
   grid-template-columns: repeat(4, 96px) !important;
@@ -729,6 +728,12 @@
   gap: 22px !important;
   align-content: start !important;
   justify-content: start !important;
+}
+
+/* The social group owns only the links; its desktop links are positioned
+   against the footer surface beside the lower wordmark. */
+.footer-visual > .footer-socials {
+  display: contents !important;
 }
 
 .footer-brand {
@@ -741,11 +746,11 @@
   overflow: visible !important;
 }
 
+/* Inline SVG: object-fit/object-position uygulanmaz — karşılığı viewBox +
+   preserveAspectRatio="xMidYMid meet" (varsayılan), yani zaten contain+center. */
 .footer-logo {
   width: clamp(410px, 27vw, 560px) !important;
   height: 100% !important;
-  object-fit: contain !important;
-  object-position: center center !important;
   transform: translate(-3%, -1%) scale(1.04) !important;
   transform-origin: center center !important;
 }
@@ -782,7 +787,7 @@
     display: none !important;
   }
 
-  .footer-socials {
+  .footer-visual {
     width: 100% !important;
     grid-template-columns: repeat(6, 72px) !important;
     grid-auto-rows: 72px !important;
@@ -791,6 +796,10 @@
 
   .footer-panel {
     margin-inline: 0 !important;
+  }
+
+  .footer-visual {
+    display: contents !important;
   }
 
   .footer-info {
@@ -955,12 +964,16 @@
     height: 18px !important;
   }
 
-  .footer-socials {
+  .footer-visual > .footer-brand {
     order: 2 !important;
+  }
+
+  .footer-visual > .footer-socials {
+    order: 3 !important;
+    display: grid !important;
     max-width: 230px !important;
     margin: 0 auto !important;
     grid-template-columns: repeat(3, 48px) !important;
-    /* Taban kuraldaki repeat(3, 120px) satırları mobilde 48px ikonlara boşluk açıyor. */
     grid-template-rows: none !important;
     grid-auto-rows: 48px !important;
     justify-content: center !important;

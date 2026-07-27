@@ -276,8 +276,8 @@ onBeforeUnmount(() => {
   opacity: 0;
   transform: translate3d(0, 8px, 0) scale(0.985);
   animation: k-loader-mark-in 920ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) 140ms forwards;
-  mask: url("/images/brand/kardoor-footer-mark-tight.png") center / contain no-repeat;
-  -webkit-mask: url("/images/brand/kardoor-footer-mark-tight.png") center / contain no-repeat;
+  mask: url("/images/brand/ege-logo.svg") center / contain no-repeat;
+  -webkit-mask: url("/images/brand/ege-logo.svg") center / contain no-repeat;
   overflow: hidden;
   will-change: transform, opacity;
 }
@@ -304,7 +304,7 @@ onBeforeUnmount(() => {
 
 .welcome-screen__wordmark {
   margin: 0;
-  font-family: 'Science Gothic', 'Gotham', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Science Gothic', var(--font-body);
   font-size: clamp(18px, 2.45vw, 38px);
   font-weight: 850;
   line-height: 0.92;
