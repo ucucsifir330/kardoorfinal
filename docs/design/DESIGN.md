@@ -281,7 +281,7 @@ When editing this repository, agents must not:
 - Create new shadows.
 - Create new radii.
 - Create a new spacing system.
-- Add Tailwind.
+- Add Tailwind outside the approved migration (see section 12).
 - Add a new font family.
 - Add decorative gradients, glow, or glass effects without approval.
 - Redesign unrelated areas.
@@ -293,7 +293,8 @@ When editing this repository, agents must not:
 - Touch resize logic unless the task is specifically about resize behavior.
 - Delete or clean `public/themes/light.css` or `public/themes/dark.css` overrides during normal feature work.
 - Perform speculative cleanup.
-- Replace the current CSS architecture with Tailwind or another styling system.
+- Replace the current CSS architecture with a styling system other than the
+  approved Tailwind migration (see section 12).
 
 ## 9. Token Usage Rules
 
@@ -380,3 +381,72 @@ External design references may be studied only through:
 - What must not be copied.
 
 For every reference note, explicitly separate the reference's useful principle from its surface skin. Kardoor may borrow discipline, hierarchy, rhythm, and restraint; it must not borrow brand colors, fonts, layout identity, product language, or decorative tricks directly.
+
+## 12. Tailwind Migration (Approved)
+
+Status: **approved and in progress.** This section overrides the blanket
+Tailwind prohibition in section 8. Nothing else in section 8 is relaxed.
+
+### 12.1 Why
+
+The current CSS is ~11k lines across 21+ files, with `home-catalog.css` alone
+at 2728 lines and 24 media queries. Desktop and mobile rules for one component
+are spread across several files and breakpoints, which is the direct cause of
+the scroll/touch regressions on mobile. Tailwind is adopted to put a
+component's layout rules next to its markup.
+
+Tailwind is **not** expected to reduce complexity by itself. If a migrated
+component only produces long `class=""` blocks without reducing total rules,
+the migration stops.
+
+### 12.2 Scope rule — no split architecture
+
+Migration is **per component, desktop and mobile together**. A component is
+never half Tailwind and half legacy CSS, and there is never a
+"mobile Tailwind + desktop legacy" pair. Splitting the architecture by
+viewport is explicitly forbidden — it produces two systems to maintain and
+guarantees drift.
+
+### 12.3 What migrates and what stays
+
+Moves to Tailwind:
+
+- Layout, flex/grid, spacing, sizing.
+- Typography scale and responsive behavior.
+- Simple state variants (hover, focus, active).
+
+Stays in CSS (by design, not as debt):
+
+- `@keyframes` and animation definitions.
+- Pseudo-elements with complex backgrounds.
+- GSAP/ScrollTrigger state classes and pin structure.
+- Theme override layers (`public/themes/*.css`).
+- Browser-specific fixes.
+
+### 12.4 Token discipline
+
+- Color, font, radius, shadow: **only** via Kardoor tokens exposed through
+  `@theme inline` in `tailwind.css`. Arbitrary values for these are forbidden
+  in new work.
+- Pre-existing hardcoded values (e.g. `#1b39bf` in reviews) are carried over
+  **unchanged** during migration. Migration must not alter appearance; token
+  cleanup is a separate task.
+- `@theme inline` is mandatory — it references `tokens.css` instead of copying
+  it, so `.app-shell--day/--night` theme switching keeps working.
+- Preflight stays disabled; the project has its own `reset.css`.
+
+### 12.5 Evidence requirement
+
+Before a legacy CSS file is deleted, the migrated component must be verified
+against the original at every breakpoint, in both light and dark themes, using
+real rendered output (CDP computed styles), not static file reading. Static
+analysis alone is not acceptable evidence — see the earlier cleanup failure
+recorded in the repo's handoff notes.
+
+Dead rules found only in the old file are **not** migrated. Migration copies
+what actually renders.
+
+### 12.6 Order
+
+Low-risk leaf components first. `EntranceDoorLab`, the scroll handoff chain,
+and anything touching GSAP pinning go last.
