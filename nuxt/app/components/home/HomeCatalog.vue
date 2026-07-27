@@ -246,172 +246,21 @@
     </div>
   </section>
 
-  <Teleport to="body">
-  <div
+  <CatalogProductModal
     v-if="activeProduct"
-    class="product-modal"
-    role="dialog"
-    aria-modal="true"
-    :aria-label="`${activeProduct.code} ${catalogCopy.modal.productDetail}`"
-    @click.self="closeProductModal"
-  >
-    <button
-      type="button"
-      class="product-modal-close"
-      :aria-label="catalogCopy.modal.close"
-      @click="closeProductModal"
-    >
-      ×
-    </button>
-
-    <button
-      type="button"
-      class="product-modal-nav product-modal-prev"
-      :aria-label="catalogCopy.modal.previous"
-      @click="showPreviousProduct"
-    >
-      <svg viewBox="0 0 44 16" aria-hidden="true">
-        <line x1="43" y1="8" x2="2" y2="8" />
-        <polyline points="9,1 2,8 9,15" />
-      </svg>
-    </button>
-
-    <button
-      type="button"
-      class="product-modal-nav product-modal-next"
-      :aria-label="catalogCopy.modal.next"
-      @click="showNextProduct"
-    >
-      <svg viewBox="0 0 44 16" aria-hidden="true">
-        <line x1="1" y1="8" x2="42" y2="8" />
-        <polyline points="35,1 42,8 35,15" />
-      </svg>
-    </button>
-
-    <section class="product-modal-panel">
-      <div class="product-modal-visual">
-        <div class="product-modal-visual-frame">
-          <img
-            :src="activeProduct.image"
-            :alt="activeProduct.finish"
-            class="product-modal-image"
-            @error="handleCatalogImageError($event, activeProduct.localImage)"
-          >
-        </div>
-
-        <div class="product-modal-visual-caption">
-          <span>{{ activeProduct.code }}</span>
-          <span>{{ activeProduct.finish }}</span>
-        </div>
-      </div>
-
-      <div class="product-modal-content">
-        <div class="product-modal-heading">
-          <p class="product-modal-kicker">
-            {{ localizedActiveProductSeries || catalogCopy.modal.seriesFallback }}
-          </p>
-
-          <h2>{{ activeProduct.code }}</h2>
-
-          <div class="product-modal-meta">
-            <span>{{ localizedActiveProductCollection || catalogCopy.modal.collectionFallback }}</span>
-            <span>{{ localizedActiveProductCategory || catalogCopy.modal.categoryFallback }}</span>
-            <span>{{ activeProduct.finish }}</span>
-          </div>
-        </div>
-
-        <p class="product-modal-description">
-          {{ catalogCopy.modal.description }}
-        </p>
-
-        <div class="product-modal-actions">
-          <button
-            type="button"
-            class="product-modal-like"
-            @click.stop="toggleLike(activeProductIndex)"
-          >
-            <span aria-hidden="true">♥</span>
-            {{ activeProduct.liked ? catalogCopy.favorite.remove : catalogCopy.favorite.add }}
-          </button>
-
-          <NuxtLink class="product-modal-quote" to="/contact">
-            {{ catalogCopy.modal.quote }}
-          </NuxtLink>
-        </div>
-
-        <div class="product-modal-details">
-          <div class="product-modal-info-block">
-            <h3>{{ catalogCopy.modal.infoTitle }}</h3>
-
-            <dl>
-              <div>
-                <dt>{{ catalogCopy.modal.fields.code }}</dt>
-                <dd>{{ activeProduct.code }}</dd>
-              </div>
-
-              <div>
-                <dt>{{ catalogCopy.modal.fields.series }}</dt>
-                <dd>{{ localizedActiveProductSeries || catalogCopy.modal.collectionFallback }}</dd>
-              </div>
-
-              <div>
-                <dt>{{ catalogCopy.modal.fields.finish }}</dt>
-                <dd>{{ activeProduct.finish }}</dd>
-              </div>
-
-              <div>
-                <dt>{{ catalogCopy.modal.fields.system }}</dt>
-                <dd>{{ localizedActiveProductSystem || catalogCopy.modal.systemFallback }}</dd>
-              </div>
-
-              <div>
-                <dt>{{ catalogCopy.modal.fields.usage }}</dt>
-                <dd>{{ catalogCopy.modal.usage }}</dd>
-              </div>
-            </dl>
-          </div>
-
-          <div class="product-modal-info-block">
-            <h3>{{ catalogCopy.modal.filesTitle }}</h3>
-
-            <div class="product-modal-files">
-              <a href="#">{{ catalogCopy.modal.files.specSheet }}</a>
-              <a href="#">{{ catalogCopy.modal.files.productImage }}</a>
-              <a href="#">{{ catalogCopy.modal.files.drawing }}</a>
-              <a href="#">{{ catalogCopy.modal.files.installation }}</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="product-modal-specs">
-          <div>
-            <span>01</span>
-            <strong>{{ catalogCopy.modal.specs.body }}</strong>
-          </div>
-
-          <div>
-            <span>02</span>
-            <strong>{{ catalogCopy.modal.specs.customSize }}</strong>
-          </div>
-
-          <div>
-            <span>03</span>
-            <strong>{{ catalogCopy.modal.specs.finishes }}</strong>
-          </div>
-        </div>
-
-        <div class="product-modal-finishes" :aria-label="catalogCopy.modal.finishesAria">
-          <button type="button" style="--finish: #111111" :aria-label="catalogCopy.modal.finishLabels.black"></button>
-          <button type="button" style="--finish: #2f3335" :aria-label="catalogCopy.modal.finishLabels.anthracite"></button>
-          <button type="button" style="--finish: #7a6f5f" :aria-label="catalogCopy.modal.finishLabels.bronze"></button>
-          <button type="button" style="--finish: #f3f0e9" :aria-label="catalogCopy.modal.finishLabels.light"></button>
-          <button type="button" style="--finish: #c99354" :aria-label="catalogCopy.modal.finishLabels.brass"></button>
-          <button type="button" class="is-metal" :aria-label="catalogCopy.modal.finishLabels.metal"></button>
-        </div>
-      </div>
-    </section>
-  </div>
-  </Teleport>
+    :product="activeProduct"
+    :product-index="activeProductIndex"
+    :copy="catalogCopy"
+    :series="localizedActiveProductSeries"
+    :collection="localizedActiveProductCollection"
+    :category="localizedActiveProductCategory"
+    :system="localizedActiveProductSystem"
+    @close="closeProductModal"
+    @prev="showPreviousProduct"
+    @next="showNextProduct"
+    @toggle-like="toggleLike"
+    @image-error="handleCatalogImageError"
+  />
   </template>
 
 <script setup lang="ts">
