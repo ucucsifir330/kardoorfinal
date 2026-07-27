@@ -22,7 +22,6 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useShowroomAmbience } from "~/composables/useShowroomAmbience";
-import { useShowroomDoors } from "~/composables/useShowroomDoors";
 import { useDoorSprite } from "~/composables/useDoorSprite";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
@@ -49,11 +48,6 @@ const PORTAL_SPRITE_FADE_END = 0.56; // büyütülen canvas'la gelen siyah ara k
 const ORBIT_END = 0.9; // turntable dönüşü burada biter
 const HORIZONTAL_START = 0.9; // yatay kayma burada başlar
 const ZOOM_MAX = 14; // boşluğa girerkenki en yüksek ölçek (tunable)
-// Dokunmatik giriş: kapı tap'inde updateMaster bu progress'e kadar oynatılır.
-// SHOWROOM_FULL'a (0.8) götürülür → zoom tamamlanır, ön katman söner, showroom
-// tam belirir ve orbit başlangıç noktasında (ilk kapı) durur. Buradan sonrasını
-// (kapılar arası dönüş) parmak swipe'ı sürer. Tunable.
-const TOUCH_PORTAL_END = SHOWROOM_FULL;
 // Canvas tamponu tam CSS pikseline yuvarlanır. Alpha-kalibre kutunun altında
 // oluşabilecek tek satırlık raster sızıntıyı kapatmak için yalnız alta örtüşme.
 const DOOR_BOTTOM_OVERLAP_PX = 3;
@@ -176,11 +170,6 @@ const DOOR = {
 } as const;
 
 const { isNight, mode, isHydrated } = useShowroomAmbience();
-const getIsTouchExperience = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(pointer: coarse)").matches &&
-  window.innerWidth <= 1024;
-const isTouchExperience = ref(getIsTouchExperience());
 
 // Seçili hero varyantı; placeDoor() viewport ölçtükçe günceller (resize/mount).
 // Client'ta <head>'deki erken preload script'i (nuxt.config.ts) DOĞRU varyantı
@@ -218,9 +207,6 @@ const copy = computed(() =>
         subtitleAccent: "yaşar.",
         ctaLabel: "Koleksiyonları Keşfet",
         scrollCue: "Kaydır",
-        touchEnterCue: "Kaydırarak gir",
-        showroomSwipeCue: "Kapıları görmek için kaydır",
-        showroomContinue: "Koleksiyona devam"
       }
     : {
         line1: "The Door",
@@ -230,9 +216,6 @@ const copy = computed(() =>
         subtitleAccent: "",
         ctaLabel: "Explore Collections",
         scrollCue: "Scroll",
-        touchEnterCue: "Swipe up to enter",
-        showroomSwipeCue: "Swipe to browse the doors",
-        showroomContinue: "Continue to collection"
       }
 );
 
@@ -293,20 +276,11 @@ const isConfigureCopyLastWordVisible = ref(false);
 const showroomProgress = ref(0); // 0→1 turntable orbit (kapı dönüşü)
 const showroomFadeRef = ref(0); // 0→1 showroom görünürlüğü (fade, orbit'ten ayrı)
 const isShowroomActive = ref(false);
-// Mobil (dokunmatik) showroom: kapıdan girince tam ekran overlay olarak açılır,
-// swipe ile showroomProgress sürülür. Masaüstünde HEP false (orada isShowroomActive
-// scroll-scrub'la yönetilir). Showroom'un mount koşulu ve son-kapı CTA'sı buna bakar.
-const isTouchShowroomOpen = ref(false);
-// Son kapıya (showroomProgress≈1) gelindi mi → "Koleksiyona devam" CTA'sı belirir.
-const isTouchShowroomAtEnd = ref(false);
 const { $smoother } = useNuxtApp();
 
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
 let teardown: (() => void) | undefined;
-// Mobil showroom "devam" — mobil dalda atanır; showroom'u kapatıp kataloğa iner.
-let touchShowroomContinue: (() => void) | undefined;
-const onTouchShowroomContinue = () => touchShowroomContinue?.();
 let configureHeadingTween: ReturnType<typeof gsap.to> | undefined;
 let configureCopyTween: ReturnType<typeof gsap.to> | undefined;
 let configureCopyLastWordTween: ReturnType<typeof gsap.to> | undefined;
@@ -568,7 +542,6 @@ onMounted(() => {
   const section = sectionRef.value;
   if (!section || !canvasRef.value) return;
 
-  isTouchExperience.value = getIsTouchExperience();
   placeDoor();
   let previousProgress = 0;
   let scrollTween: ReturnType<typeof gsap.to> | undefined;
@@ -666,8 +639,8 @@ onMounted(() => {
       return;
     }
 
-    // Touch/native scroll (smoother yok): tween doğrudan window'a yazar.
-    // autoKill — kullanıcı parmağıyla araya girerse tween ölür; onInterrupt
+    // Native scroll fallback'ında tween doğrudan window'a yazar.
+    // autoKill — kullanıcı araya girerse tween ölür; onInterrupt
     // kilitleri bırakır, scroll asla kilitli kalmaz.
     scrollTween = gsap.to(window, {
       scrollTo: { y: targetY, autoKill: true },
@@ -713,7 +686,7 @@ onMounted(() => {
   };
 
   const maybePullThroughPortal = (progress: number, delta: number) => {
-    // Native (touch) scroll'da da çalışır — smoother şartı yok.
+    // Native scroll fallback'ında da çalışır — smoother şartı yok.
     if (isAutoSettling || performance.now() < settleCooldownUntil) return;
     if (Math.abs(delta) < 0.0006) return;
 
@@ -797,349 +770,6 @@ onMounted(() => {
     console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
   });
 
-  // Mobile uses native scroll end-to-end. The pinned nine-viewport entrance,
-  // portal auto-settle, and showroom turntable are desktop choreography; on a
-  // touch-primary viewport they make a normal swipe feel trapped or reversed
-  // (settleToProgress tweens window scroll AGAINST the finger). Keep the
-  // composed first frame, then hand off straight to the catalog.
-  if (isTouchExperience.value) {
-    updateMaster(0);
-
-    // Rotasyon/adres çubuğu değişiminde kapı artboard'a göre yeniden yerleşsin.
-    // Mobilde dikey scroll adres çubuğunu gizleyip sürekli 'resize' fırlatıyor;
-    // ama kapı geometrisi GENİŞLİĞE bağlı (yükseklik-only değişim onu etkilemez).
-    // Genişlik kapısı + debounce ile bu sahte akışta hiç iş yapmayız → mobil
-    // scroll jank'inin doğrudan kaynağı kapanır (bkz. memory: mobil-scroll-jank).
-    let touchResizeDebounce = 0;
-    let lastTouchWidth = window.innerWidth;
-    const onTouchResize = () => {
-      if (window.innerWidth === lastTouchWidth) return; // yükseklik-only → yoksay
-      if (touchResizeDebounce) window.clearTimeout(touchResizeDebounce);
-      touchResizeDebounce = window.setTimeout(() => {
-        touchResizeDebounce = 0;
-        lastTouchWidth = window.innerWidth;
-        placeDoor();
-        door.refresh();
-      }, 160);
-    };
-
-    // ── Dokunmatik giriş + showroom koreografisi ──────────────────────────
-    // 1) Kapıya dokun → ZAMANLI zoom tween'i (scroll rehin alınmaz) master'ı
-    //    SHOWROOM_FULL'a taşır: kapı açılır, içeri girilir, showroom belirir.
-    // 2) Zoom bitince sayfa scroll'u kilitlenir; showroom tam ekran overlay olur.
-    // 3) Parmak swipe'ı showroomProgress'i (kapılar arası orbit) snap'li sürer.
-    // 4) Son kapıda "Koleksiyona devam" → showroom kapanır, katalog açılır.
-    let portalTween: ReturnType<typeof gsap.to> | undefined;
-    let showroomSnapTween: ReturnType<typeof gsap.to> | undefined;
-    const { doors } = useShowroomDoors();
-    const doorCount = () => Math.max(1, doors.value.length);
-
-    // GERÇEK scroll kilidi. Eskiden burası sadece bir class atıyordu ama o class
-    // hiçbir CSS'te tanımlı değildi → kilit hiç çalışmıyordu (mobil giriş bug'ının
-    // ikinci yarısı buydu). position:fixed + scrollY telafisi: sayfa donar ama
-    // görsel konum kaymaz; açılışta tam olarak aynı yere geri konur.
-    let lockedScrollY = 0;
-    let scrollLocked = false;
-    const lockPageScroll = (lock: boolean) => {
-      if (lock === scrollLocked) return;
-      scrollLocked = lock;
-      const body = document.body;
-      if (lock) {
-        lockedScrollY = window.scrollY;
-        body.style.position = "fixed";
-        body.style.top = `${-lockedScrollY}px`;
-        body.style.left = "0";
-        body.style.right = "0";
-        body.style.width = "100%";
-        body.classList.add("entrance-lab-touch-showroom-on");
-      } else {
-        body.style.position = "";
-        body.style.top = "";
-        body.style.left = "";
-        body.style.right = "";
-        body.style.width = "";
-        body.classList.remove("entrance-lab-touch-showroom-on");
-        window.scrollTo(0, lockedScrollY);
-      }
-    };
-
-    const scrollToCatalog = (behavior: ScrollBehavior) => {
-      const catalog = document.querySelector<HTMLElement>(".catalog-section");
-      const top = catalog
-        ? window.scrollY + catalog.getBoundingClientRect().top
-        : window.innerHeight;
-      window.scrollTo({ top, behavior });
-    };
-
-    // ── KAYDIRARAK GİRİŞ (mobilin TEK giriş yolu) ─────────────────────────
-    // Tek mekanizma: parmağın DİKEY sürükleme miktarı doğrudan updateMaster(p)'ye
-    // beslenir. Tap girişi YOK (sürükleme sonu yanlışlıkla portal tetikliyordu),
-    // desktop'ın scroll-scrub/pin/settle makinesi de burada YOK.
-    //
-    // Giriş fazı "pinli" olmalı: p>0 iken sayfanın kendisi kaymamalı, yoksa hero
-    // yukarı kayıp katalog gelir (eski bug'ın kök nedeni buydu — kod hero'yu pinli
-    // sanıyordu ama CSS'te öyle bir kural yoktu). Pin iki parçadan oluşur:
-    //   1) body'ye kilit class'ı → position: fixed (lockPageScroll)
-    //   2) section'a --entering → touch-action: none, böylece touchmove'daki
-    //      preventDefault tarayıcı tarafından yok sayılmaz.
-    // p=0'a dönünce ikisi de kalkar → sayfa yine normal kayar, aşağı çekiş
-    // kataloğa iner (istenen davranış).
-    let enterProgress = 0;         // 0 → TOUCH_PORTAL_END
-    let enterStartY = 0;
-    let enterStartX = 0;
-    let enterStartProgress = 0;
-    let enterActive = false;
-    let enterAxisLocked: "x" | "y" | undefined;
-    // Ekran yüksekliğinin ~1.15 katı sürükleme tam girişi tamamlar (kontrol hissi).
-    const enterPerPx = () => TOUCH_PORTAL_END / (window.innerHeight * 1.15);
-
-    // Giriş fazı pini. p>0 olduğu ANDA açılır (parmak hâlâ ekranda) — böylece
-    // sürüklemenin ortasında sayfa kaymaya başlayamaz.
-    let entering = false;
-    const setEntering = (on: boolean) => {
-      if (entering === on) return;
-      entering = on;
-      section.classList.toggle("entrance-lab--entering", on);
-      lockPageScroll(on);
-    };
-
-    const finishEnter = (toShowroom: boolean) => {
-      if (toShowroom) {
-        // Zoom tamamlandı: showroom ilk kapıda. Kilit showroom adına sürer,
-        // sonrasını yatay swipe-orbit yönetir.
-        showroomProgress.value = 0;
-        isTouchShowroomOpen.value = true;
-        isTouchShowroomAtEnd.value = false;
-        section.classList.remove("entrance-lab--entering");
-        entering = false;
-        lockPageScroll(true);
-      } else {
-        // Hero'ya döndük: pin tamamen kalkar, sayfa normal kayar.
-        isTouchShowroomOpen.value = false;
-        setEntering(false);
-      }
-    };
-
-    const settleEnter = (toShowroom: boolean) => {
-      portalTween?.kill();
-      const target = toShowroom ? TOUCH_PORTAL_END : 0;
-      if (prefersReducedMotion()) {
-        enterProgress = target;
-        updateMaster(target);
-        finishEnter(toShowroom);
-        return;
-      }
-      const proxy = { p: enterProgress };
-      portalTween = gsap.to(proxy, {
-        p: target,
-        duration: 0.5,
-        ease: "power3.out",
-        overwrite: true,
-        onUpdate: () => { enterProgress = proxy.p; updateMaster(proxy.p); },
-        onComplete: () => { portalTween = undefined; finishEnter(toShowroom); }
-      });
-    };
-
-    const onEnterTouchStart = (event: TouchEvent) => {
-      if (isTouchShowroomOpen.value) return; // showroom açıkken bu faz devre dışı
-      const t = event.touches[0];
-      if (!t) return;
-      portalTween?.kill();
-      portalTween = undefined;
-      enterStartY = t.clientY;
-      enterStartX = t.clientX;
-      enterStartProgress = enterProgress;
-      enterActive = true;
-      enterAxisLocked = undefined;
-    };
-
-    const onEnterTouchMove = (event: TouchEvent) => {
-      if (!enterActive || isTouchShowroomOpen.value) return;
-      const t = event.touches[0];
-      if (!t) return;
-      const dy = t.clientY - enterStartY;
-      const dx = t.clientX - enterStartX;
-
-      if (!enterAxisLocked) {
-        if (Math.abs(dy) < 8 && Math.abs(dx) < 8) return;
-        enterAxisLocked = Math.abs(dy) >= Math.abs(dx) ? "y" : "x";
-      }
-      if (enterAxisLocked === "x") return; // yatay hareketi yok say
-
-      // Hero'nun tam tepesindeyken (p=0) AŞAĞI çekiş sayfanın işi: kataloğa insin.
-      // Sadece YUKARI çekiş girişi başlatır. Giriş sürerken iki yön de bizim.
-      if (enterStartProgress <= 0.0001 && dy > 0) { enterActive = false; return; }
-
-      // Parmak YUKARI (dy<0) = içeri gir = p artar.
-      const next = enterStartProgress - dy * enterPerPx();
-      enterProgress = Math.min(TOUCH_PORTAL_END, Math.max(0, next));
-      // Pin, p>0 olur olmaz devreye girer (preventDefault'un tutması için şart).
-      setEntering(enterProgress > 0.0001);
-      if (entering && event.cancelable) event.preventDefault();
-      updateMaster(enterProgress);
-    };
-
-    const onEnterTouchEnd = () => {
-      enterActive = false;
-      enterAxisLocked = undefined;
-      if (isTouchShowroomOpen.value) return; // zaten showroom'a geçmiş
-      // Parmak kalkınca ASLA ara değerde bırakma: her zaman en yakın uca snap
-      // (0=hero, TOUCH_PORTAL_END=showroom) → zoom yarı açık "takılı" kalamaz.
-      if (enterProgress <= 0.0001) { setEntering(false); return; }
-      settleEnter(enterProgress >= TOUCH_PORTAL_END * 0.5);
-    };
-
-    // Showroom'u kapat + giriş fazını tam sıfırla (pin kalkar, kapı kapanır).
-    // Giriş state'ini kullandığı için onun ARDINDA tanımlı.
-    const closeShowroom = () => {
-      showroomSnapTween?.kill();
-      showroomSnapTween = undefined;
-      portalTween?.kill();
-      portalTween = undefined;
-      isTouchShowroomOpen.value = false;
-      isTouchShowroomAtEnd.value = false;
-      enterProgress = 0;
-      // Kilidi setEntering'e BIRAKMA: showroom açılırken entering zaten false'a
-      // çekilmişti (kilit showroom adına sürüyordu), dolayısıyla setEntering(false)
-      // erken return eder ve sayfa fixed kilitli kalırdı. Doğrudan aç.
-      entering = false;
-      section.classList.remove("entrance-lab--entering");
-      lockPageScroll(false);
-      updateMaster(0);
-    };
-
-    // ── Swipe → showroomProgress snap'li orbit ────────────────────────────
-    // showroomProgress 0→1, kapı sayısına göre eşit aralıklı snap noktaları.
-    // Yatay swipe: sola çekince ileri (sonraki kapı), sağa çekince geri.
-    let swipeStartX = 0;
-    let swipeStartY = 0;
-    let swipeStartProgress = 0;
-    let swipeActive = false;
-    let swipeAxisLocked: "x" | "y" | undefined;
-
-    const snapToNearestDoor = (velocity = 0) => {
-      const count = doorCount();
-      const maxIndex = count - 1;
-      if (maxIndex <= 0) return;
-      const raw = showroomProgress.value * maxIndex;
-      // Hız yönünde bir kapı ötesine taşımaya izin ver (flick hissi).
-      let target = Math.round(raw + Math.sign(velocity) * (Math.abs(velocity) > 0.4 ? 0.5 : 0));
-      target = Math.min(maxIndex, Math.max(0, target));
-      const targetProgress = target / maxIndex;
-
-      showroomSnapTween?.kill();
-      const proxy = { v: showroomProgress.value };
-      showroomSnapTween = gsap.to(proxy, {
-        v: targetProgress,
-        duration: 0.5,
-        ease: "power3.out",
-        onUpdate: () => { showroomProgress.value = proxy.v; },
-        onComplete: () => {
-          showroomSnapTween = undefined;
-          isTouchShowroomAtEnd.value = target >= maxIndex;
-        }
-      });
-    };
-
-    const onShowroomTouchStart = (event: TouchEvent) => {
-      if (!isTouchShowroomOpen.value) return;
-      const t = event.touches[0];
-      if (!t) return;
-      showroomSnapTween?.kill();
-      showroomSnapTween = undefined;
-      swipeStartX = t.clientX;
-      swipeStartY = t.clientY;
-      swipeStartProgress = showroomProgress.value;
-      swipeActive = true;
-      swipeAxisLocked = undefined;
-    };
-
-    const onShowroomTouchMove = (event: TouchEvent) => {
-      if (!swipeActive) return;
-      const t = event.touches[0];
-      if (!t) return;
-      const dx = t.clientX - swipeStartX;
-      const dy = t.clientY - swipeStartY;
-
-      // İlk anlamlı hareket ekseni belirler: yatay → orbit, dikey → yok say.
-      if (!swipeAxisLocked) {
-        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
-        swipeAxisLocked = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
-      }
-      if (swipeAxisLocked === "y") return;
-
-      event.preventDefault(); // yatay swipe sayfayı kaydırmasın
-      const count = doorCount();
-      const maxIndex = Math.max(1, count - 1);
-      // Ekran genişliği boyunca ~1.15 kapı kat edilir (kontrol hissi).
-      const perPx = 1 / (window.innerWidth * 0.86);
-      const next = swipeStartProgress - dx * perPx / maxIndex;
-      showroomProgress.value = Math.min(1, Math.max(0, next));
-      isTouchShowroomAtEnd.value = false;
-    };
-
-    const onShowroomTouchEnd = () => {
-      if (!swipeActive) return;
-      swipeActive = false;
-      if (swipeAxisLocked === "x") snapToNearestDoor();
-      swipeAxisLocked = undefined;
-    };
-
-    // Scroll-to-enter (hero → showroom) — showroom KAPALIYKEN aktif.
-    section.addEventListener("touchstart", onEnterTouchStart, { passive: true });
-    section.addEventListener("touchmove", onEnterTouchMove, { passive: false });
-    section.addEventListener("touchend", onEnterTouchEnd, { passive: true });
-    section.addEventListener("touchcancel", onEnterTouchEnd, { passive: true });
-
-    // Showroom orbit swipe — showroom AÇIKKEN aktif (kendi guard'ı var).
-    section.addEventListener("touchstart", onShowroomTouchStart, { passive: true });
-    section.addEventListener("touchmove", onShowroomTouchMove, { passive: false });
-    section.addEventListener("touchend", onShowroomTouchEnd, { passive: true });
-    section.addEventListener("touchcancel", onShowroomTouchEnd, { passive: true });
-
-    // "Koleksiyona devam" — showroom'u kapat, kataloğa in.
-    // closeShowroom() kilidi açarken scroll'u kilitlenme anındaki yere geri
-    // koyar; hedefe gitmek için BİR FRAME sonra scroll etmeliyiz, yoksa o
-    // geri-koyma bizim scrollTo'muzu ezer.
-    touchShowroomContinue = () => {
-      closeShowroom();
-      requestAnimationFrame(() => {
-        scrollToCatalog(prefersReducedMotion() ? "auto" : "smooth");
-      });
-    };
-
-    // K (Home): showroom'u kapat, hero'ya (tepeye) dön.
-    const goHomeNative = () => {
-      closeShowroom();
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
-      });
-    };
-    window.addEventListener("resize", onTouchResize);
-    window.addEventListener("kardoor:home", goHomeNative);
-
-    teardown = () => {
-      showroomSnapTween?.kill();
-      portalTween?.kill();
-      section.classList.remove("entrance-lab--entering");
-      lockPageScroll(false);
-      touchShowroomContinue = undefined;
-      section.removeEventListener("touchstart", onEnterTouchStart);
-      section.removeEventListener("touchmove", onEnterTouchMove);
-      section.removeEventListener("touchend", onEnterTouchEnd);
-      section.removeEventListener("touchcancel", onEnterTouchEnd);
-      section.removeEventListener("touchstart", onShowroomTouchStart);
-      section.removeEventListener("touchmove", onShowroomTouchMove);
-      section.removeEventListener("touchend", onShowroomTouchEnd);
-      section.removeEventListener("touchcancel", onShowroomTouchEnd);
-      window.removeEventListener("resize", onTouchResize);
-      if (touchResizeDebounce) window.clearTimeout(touchResizeDebounce);
-      touchResizeDebounce = 0;
-      window.removeEventListener("kardoor:home", goHomeNative);
-    };
-    return;
-  }
-
   window.addEventListener("wheel", onWheel, { passive: false });
 
   // Tek pinli scrub: progress 0→1 boyunca PORTAL → HOLD → ZOOM → SHOWROOM.
@@ -1166,10 +796,8 @@ onMounted(() => {
   });
 
   // Resize maliyeti asimetrik: ScrollTrigger.refresh() TÜM tetikleyicileri
-  // yeniden ölçer (trace'te _getBounds/_getComputedProperty ~1s reflow). Bunu
-  // her resize event'inde çalıştırmak — özellikle mobilde adres çubuğu scroll'da
-  // gizlenince patlayan sahte resize akışında — jank kaynağıydı. İki kademeli
-  // savunma:
+  // yeniden ölçer (trace'te _getBounds/_getComputedProperty ~1s reflow). İki
+  // kademeli savunma:
   //   1) Debounce: fırtınanın yalnızca SON halinde ağır iş yapılır.
   //   2) Genişlik kapısı: pahalı ScrollTrigger.refresh() SADECE viewport
   //      genişliği değişince koşar. Yükseklik-only değişim (adres çubuğu /
@@ -1181,16 +809,6 @@ onMounted(() => {
   const runResize = () => {
     resizeDebounce = 0;
 
-    // Touch deneyimine geçiş debounce'suz, anında ele alınmalı (döndürme/geçiş
-    // gecikmesin); teardown yapıp scrub makinesini bırakır.
-    if (getIsTouchExperience()) {
-      isTouchExperience.value = true;
-      teardown?.();
-      teardown = undefined;
-      updateMaster(0);
-      return;
-    }
-
     const widthChanged = window.innerWidth !== lastResizeWidth;
     lastResizeWidth = window.innerWidth;
 
@@ -1200,12 +818,6 @@ onMounted(() => {
   };
 
   const onResize = () => {
-    // Touch geçişini debounce'tan önce yakala (yön değiştirme anında hissedilsin).
-    if (getIsTouchExperience()) {
-      if (resizeDebounce) window.clearTimeout(resizeDebounce);
-      runResize();
-      return;
-    }
     if (resizeDebounce) window.clearTimeout(resizeDebounce);
     resizeDebounce = window.setTimeout(runResize, 160);
   };
@@ -1267,54 +879,24 @@ onBeforeUnmount(() => {
   <section
     ref="sectionRef"
     class="entrance-lab"
-    :class="{ 'entrance-lab--touch': isTouchExperience }"
     :data-ambience="mode"
     aria-label="Kardoor giriş — hero zemini"
   >
     <!-- SHOWROOM + KURGULAYIN — zoom içeri girince fade-in (z:0, en arka).
-         Masaüstü: yatay kayan track [showroom] [configure paneli], son kapıdan
-         sonra --page-x sola kayar → panel gelir.
-         Mobil (entrance-lab__showroom--touch): tam ekran overlay, kapıya dokununca
-         açılır (is-active = isTouchShowroomOpen), kapılar arası PARMAK SWIPE ile
-         gezilir; configure paneli mount edilmez, yerine "Koleksiyona devam" CTA'sı. -->
+         Yatay kayan track [showroom] [configure paneli], son kapıdan sonra
+         --page-x sola kayar ve panel gelir. -->
     <div
       class="entrance-lab__showroom"
-      :class="{
-        'is-active': isTouchExperience ? isTouchShowroomOpen : isShowroomActive,
-        'entrance-lab__showroom--touch': isTouchExperience
-      }"
-      :style="{ '--showroom-p': isTouchExperience ? (isTouchShowroomOpen ? 1 : 0) : showroomFadeRef }"
+      :class="{ 'is-active': isShowroomActive }"
+      :style="{ '--showroom-p': showroomFadeRef }"
     >
       <div class="entrance-lab__slider">
         <div class="entrance-lab__slide">
           <ShowroomLab :progress="showroomProgress" @door-select="handleShowroomDoorSelect" />
-
-          <!-- MOBİL: swipe ipucu + "Koleksiyona devam". Swipe ipucu son kapıya
-               gelince gizlenir; devam CTA'sı belirir. -->
-          <div v-if="isTouchExperience" class="entrance-lab__touch-nav" aria-hidden="false">
-            <span
-              class="entrance-lab__touch-swipe-cue"
-              :class="{ 'is-hidden': isTouchShowroomAtEnd }"
-            >{{ copy.showroomSwipeCue }}</span>
-            <button
-              type="button"
-              class="ada-manifesto-cta entrance-lab__touch-continue"
-              :class="{ 'is-ready': isTouchShowroomAtEnd }"
-              @click="onTouchShowroomContinue"
-            >
-              <span class="ada-manifesto-cta-text">{{ copy.showroomContinue }}</span>
-              <span class="ada-manifesto-cta-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 12H19" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-                  <path d="M14 7L19 12L14 17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </span>
-            </button>
-          </div>
         </div>
 
         <!-- KURGULAYIN paneli — yatay kayma ile gelir (yalnız masaüstü). -->
-        <div v-if="!isTouchExperience" class="entrance-lab__slide entrance-lab__configure">
+        <div class="entrance-lab__slide entrance-lab__configure">
           <div class="entrance-lab__configure-inner">
             <h2
               ref="configureHeadingRef"
@@ -1378,9 +960,7 @@ onBeforeUnmount(() => {
       />
 
       <!-- Kapı canvas'ı — hero deliğinin üstüne JS ile (px) konumlanır.
-           Tamamen dekoratif: mobil giriş kapıya DEĞİL, section'ın tamamına
-           bağlı dikey sürüklemeyle olur. Ekran okuyucular için eşdeğer yol
-           CTA ("Koleksiyonları Keşfet"). -->
+           Tamamen dekoratif; eşdeğer yol CTA ("Koleksiyonları Keşfet"). -->
       <div ref="stageRef" class="entrance-lab__stage" aria-hidden="true">
         <canvas ref="canvasRef" class="entrance-lab__canvas" />
       </div>
@@ -1410,10 +990,9 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- KAYDIR ipucu — scroll başlayınca kaybolur (--hero-cue-opacity).
-         Dokunmatikte fare ikonu yerine görünür "Kaydırarak gir" etiketi. -->
+    <!-- KAYDIR ipucu — scroll başlayınca kaybolur (--hero-cue-opacity). -->
     <div class="entrance-lab__cue" aria-hidden="true">
-      <span class="entrance-lab__cue-label">{{ isTouchExperience ? copy.touchEnterCue : copy.scrollCue }}</span>
+      <span class="entrance-lab__cue-label">{{ copy.scrollCue }}</span>
       <span class="entrance-lab__scroll-device">
         <span class="entrance-lab__scroll-motion" />
       </span>
@@ -1424,7 +1003,6 @@ onBeforeUnmount(() => {
        önler). Configure paneliyle aynı zemin → panel'den sonra "boş siyah sayfa"
        hissi olmaz; akış sorunsuz biter. Gerçek içerik (katalog) buraya gelecek. -->
   <section
-    v-if="!isTouchExperience"
     class="entrance-lab__next"
     :data-ambience="mode"
     aria-hidden="true"

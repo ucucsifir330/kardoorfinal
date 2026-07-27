@@ -1,5 +1,17 @@
 <template>
-  <EntranceDoorLab />
+  <!-- Mobil/masaüstü ayrımı yalnız istemcide bilinir; ClientOnly olmadan
+       sunucu her zaman masaüstünü basar ve mobilde hydration uyuşmazlığı
+       yüzünden giriş bir kare yanlış bileşenle çizilir. -->
+  <ClientOnly>
+    <EntranceDoorMobile v-if="isMobileEntrance" />
+    <EntranceDoorLab v-else />
+    <template #fallback>
+      <div
+        aria-hidden="true"
+        style="width: 100%; height: 100dvh; background: var(--ambience-bg)"
+      />
+    </template>
+  </ClientOnly>
   <section ref="catalogStackRef" class="home-catalog-reference-stack">
     <div ref="catalogHandoffRef" class="home-catalog-reference-stack__catalog">
       <div ref="catalogHandoffPinRef" class="home-catalog-reference-stack__catalog-pin">
@@ -70,6 +82,12 @@ const initialTitleWidth =
   typeof window !== 'undefined'
     ? Math.max(180, Math.min(320, window.innerWidth * 0.18))
     : 220;
+
+const isMobileEntrance = ref(
+  typeof window !== 'undefined' &&
+    window.innerWidth <= 1024 &&
+    window.matchMedia('(pointer: coarse)').matches
+);
 
 const { locale } = useKardoorLocale();
 
