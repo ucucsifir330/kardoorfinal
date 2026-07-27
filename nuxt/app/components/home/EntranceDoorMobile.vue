@@ -383,6 +383,10 @@ const settleConfigure = (target: 0 | 1) => {
       configureProgress.value = proxy.progress;
     },
     onComplete: () => {
+      // power3.out sona asimptotik yaklasir; tween bitse bile deger
+      // 0.9997 gibi kalabiliyordu. finishGesture'daki ">= 0.999" esigi
+      // bu yuzden tutmuyor ve panelden kataloga cikis hic tetiklenmiyordu.
+      configureProgress.value = target;
       configureTween = undefined;
     }
   });
@@ -478,7 +482,13 @@ const finishGesture = (event: PointerEvent) => {
   const axis = gesture.axis;
   const wasEntered = isEntered.value;
   const startedAtLastDoor = gesture.startShowroomProgress >= 0.999;
-  const startedAtConfigure = gesture.startConfigureProgress >= 0.999;
+  // Panel "acik sayilir" esigi 0.999 idi. Ama onPointerDown her dokunusta
+  // configureTween'i kill ediyor; kullanici paneli acan jestin hemen ardindan
+  // tekrar kaydirinca startConfigureProgress 0.87 gibi bir yerde kaliyor,
+  // sart tutmuyor ve exitToCatalog() HIC cagrilmiyordu → koleksiyonlara
+  // gecilemiyor, panel acik kaliyordu. Panel gorsel olarak acik oldugunda
+  // (>= 0.85) cikis calismali.
+  const startedAtConfigure = gesture.startConfigureProgress >= 0.85;
 
   rootRef.value?.releasePointerCapture(event.pointerId);
   gesture = undefined;
