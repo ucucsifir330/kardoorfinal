@@ -659,15 +659,37 @@
 }
 
 /* ──────────────────────────────────────────────────────────────
-   DOKUNMATİK GİRİŞ (entrance-lab--touch) — mobilde pin/scrub yok;
-   kapıya dokununca portal animasyonu oynar (EntranceDoorLab.portalEntry).
+   DOKUNMATİK GİRİŞ (entrance-lab--touch) — mobilin TEK giriş yolu:
+   section üzerinde dikey sürükleme. Tap girişi yok, desktop'ın
+   scroll-scrub/pin/settle makinesi burada çalışmaz.
+
+   JS ile SÖZLEŞME (EntranceDoorLab.vue, isTouchExperience dalı):
+     .entrance-lab--entering  → giriş sürüyor (p > 0). Bu class varken
+       section touch-action:none olur; JS'in touchmove'daki
+       preventDefault'u ancak böyle tutar. Yoksa tarayıcı scroll'u
+       compositor'da başlatır, preventDefault yok sayılır ve sayfa
+       kataloğa kayar — eski bug tam olarak buydu.
+     body.entrance-lab-touch-showroom-on → showroom açık (JS ayrıca
+       inline position:fixed uygular; buradaki kural onu tamamlar).
    ────────────────────────────────────────────────────────────── */
 
-/* Kapı sahnesi tap alanı olur (masaüstünde pointer-events: none kalır). */
+/* Kapı sahnesi dekoratif: giriş kapıya değil section'a bağlı. */
 .entrance-lab--touch .entrance-lab__stage {
-  pointer-events: auto;
-  cursor: pointer;
-  touch-action: manipulation;
+  pointer-events: none;
+}
+
+/* Giriş fazı pini: tarayıcının kendi pan'ini kapat ki sürükleme bizim olsun.
+   p=0'a dönünce JS class'ı kaldırır → sayfa yine normal kayar (aşağı çekiş
+   kataloğa iner). */
+.entrance-lab--touch.entrance-lab--entering {
+  touch-action: none;
+}
+
+/* Showroom açıkken sayfa tamamen kilitli (JS inline fixed + bu kural). */
+body.entrance-lab-touch-showroom-on {
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 /* Fare-scroll ikonu dokunmatikte anlamsız — yerine görünür etiket. */
@@ -685,4 +707,56 @@
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBİL SHOWROOM NAV — swipe ipucu + "Koleksiyona devam".
+   Template'te (entrance-lab__touch-nav) vardı ama hiç stili yoktu:
+   ikisi de sol üste yığılıp header'ın altında kalıyordu. Alt şeride
+   sabitlenir; ipucu son kapıda söner, CTA son kapıda belirir.
+   ────────────────────────────────────────────────────────────── */
+.entrance-lab__touch-nav {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(22px, env(safe-area-inset-bottom, 0px));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+  pointer-events: none; /* swipe alanını yeme; buton kendi açar */
+}
+
+.entrance-lab__touch-swipe-cue {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(7, 16, 24, 0.62);
+  transition: opacity 0.4s ease;
+}
+
+.entrance-lab[data-ambience="night"] .entrance-lab__touch-swipe-cue {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.entrance-lab__touch-swipe-cue.is-hidden {
+  opacity: 0;
+}
+
+/* CTA yalnızca son kapıda tıklanabilir olur (is-ready). */
+.entrance-lab__touch-continue {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.entrance-lab__touch-continue.is-ready {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }

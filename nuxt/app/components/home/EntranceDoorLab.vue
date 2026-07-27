@@ -218,7 +218,7 @@ const copy = computed(() =>
         subtitleAccent: "yaşar.",
         ctaLabel: "Koleksiyonları Keşfet",
         scrollCue: "Kaydır",
-        tapCue: "Kapıya dokun",
+        touchEnterCue: "Kaydırarak gir",
         showroomSwipeCue: "Kapıları görmek için kaydır",
         showroomContinue: "Koleksiyona devam"
       }
@@ -230,7 +230,9 @@ const copy = computed(() =>
         subtitleAccent: "",
         ctaLabel: "Explore Collections",
         scrollCue: "Scroll",
-        tapCue: "Tap the door"
+        touchEnterCue: "Swipe up to enter",
+        showroomSwipeCue: "Swipe to browse the doors",
+        showroomContinue: "Continue to collection"
       }
 );
 
@@ -302,10 +304,6 @@ const { $smoother } = useNuxtApp();
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
 let teardown: (() => void) | undefined;
-// Dokunmatik giriş handler'ı — mobil dalda (onMounted) atanır; masaüstünde
-// undefined kalır ve kapı tap'i no-op olur (stage pointer-events zaten kapalı).
-let portalEntry: (() => void) | undefined;
-const onDoorTap = () => portalEntry?.();
 // Mobil showroom "devam" — mobil dalda atanır; showroom'u kapatıp kataloğa iner.
 let touchShowroomContinue: (() => void) | undefined;
 const onTouchShowroomContinue = () => touchShowroomContinue?.();
@@ -836,8 +834,33 @@ onMounted(() => {
     const { doors } = useShowroomDoors();
     const doorCount = () => Math.max(1, doors.value.length);
 
+    // GERÇEK scroll kilidi. Eskiden burası sadece bir class atıyordu ama o class
+    // hiçbir CSS'te tanımlı değildi → kilit hiç çalışmıyordu (mobil giriş bug'ının
+    // ikinci yarısı buydu). position:fixed + scrollY telafisi: sayfa donar ama
+    // görsel konum kaymaz; açılışta tam olarak aynı yere geri konur.
+    let lockedScrollY = 0;
+    let scrollLocked = false;
     const lockPageScroll = (lock: boolean) => {
-      document.body.classList.toggle("entrance-lab-touch-showroom-on", lock);
+      if (lock === scrollLocked) return;
+      scrollLocked = lock;
+      const body = document.body;
+      if (lock) {
+        lockedScrollY = window.scrollY;
+        body.style.position = "fixed";
+        body.style.top = `${-lockedScrollY}px`;
+        body.style.left = "0";
+        body.style.right = "0";
+        body.style.width = "100%";
+        body.classList.add("entrance-lab-touch-showroom-on");
+      } else {
+        body.style.position = "";
+        body.style.top = "";
+        body.style.left = "";
+        body.style.right = "";
+        body.style.width = "";
+        body.classList.remove("entrance-lab-touch-showroom-on");
+        window.scrollTo(0, lockedScrollY);
+      }
     };
 
     const scrollToCatalog = (behavior: ScrollBehavior) => {
@@ -848,6 +871,126 @@ onMounted(() => {
       window.scrollTo({ top, behavior });
     };
 
+    // ── KAYDIRARAK GİRİŞ (mobilin TEK giriş yolu) ─────────────────────────
+    // Tek mekanizma: parmağın DİKEY sürükleme miktarı doğrudan updateMaster(p)'ye
+    // beslenir. Tap girişi YOK (sürükleme sonu yanlışlıkla portal tetikliyordu),
+    // desktop'ın scroll-scrub/pin/settle makinesi de burada YOK.
+    //
+    // Giriş fazı "pinli" olmalı: p>0 iken sayfanın kendisi kaymamalı, yoksa hero
+    // yukarı kayıp katalog gelir (eski bug'ın kök nedeni buydu — kod hero'yu pinli
+    // sanıyordu ama CSS'te öyle bir kural yoktu). Pin iki parçadan oluşur:
+    //   1) body'ye kilit class'ı → position: fixed (lockPageScroll)
+    //   2) section'a --entering → touch-action: none, böylece touchmove'daki
+    //      preventDefault tarayıcı tarafından yok sayılmaz.
+    // p=0'a dönünce ikisi de kalkar → sayfa yine normal kayar, aşağı çekiş
+    // kataloğa iner (istenen davranış).
+    let enterProgress = 0;         // 0 → TOUCH_PORTAL_END
+    let enterStartY = 0;
+    let enterStartX = 0;
+    let enterStartProgress = 0;
+    let enterActive = false;
+    let enterAxisLocked: "x" | "y" | undefined;
+    // Ekran yüksekliğinin ~1.15 katı sürükleme tam girişi tamamlar (kontrol hissi).
+    const enterPerPx = () => TOUCH_PORTAL_END / (window.innerHeight * 1.15);
+
+    // Giriş fazı pini. p>0 olduğu ANDA açılır (parmak hâlâ ekranda) — böylece
+    // sürüklemenin ortasında sayfa kaymaya başlayamaz.
+    let entering = false;
+    const setEntering = (on: boolean) => {
+      if (entering === on) return;
+      entering = on;
+      section.classList.toggle("entrance-lab--entering", on);
+      lockPageScroll(on);
+    };
+
+    const finishEnter = (toShowroom: boolean) => {
+      if (toShowroom) {
+        // Zoom tamamlandı: showroom ilk kapıda. Kilit showroom adına sürer,
+        // sonrasını yatay swipe-orbit yönetir.
+        showroomProgress.value = 0;
+        isTouchShowroomOpen.value = true;
+        isTouchShowroomAtEnd.value = false;
+        section.classList.remove("entrance-lab--entering");
+        entering = false;
+        lockPageScroll(true);
+      } else {
+        // Hero'ya döndük: pin tamamen kalkar, sayfa normal kayar.
+        isTouchShowroomOpen.value = false;
+        setEntering(false);
+      }
+    };
+
+    const settleEnter = (toShowroom: boolean) => {
+      portalTween?.kill();
+      const target = toShowroom ? TOUCH_PORTAL_END : 0;
+      if (prefersReducedMotion()) {
+        enterProgress = target;
+        updateMaster(target);
+        finishEnter(toShowroom);
+        return;
+      }
+      const proxy = { p: enterProgress };
+      portalTween = gsap.to(proxy, {
+        p: target,
+        duration: 0.5,
+        ease: "power3.out",
+        overwrite: true,
+        onUpdate: () => { enterProgress = proxy.p; updateMaster(proxy.p); },
+        onComplete: () => { portalTween = undefined; finishEnter(toShowroom); }
+      });
+    };
+
+    const onEnterTouchStart = (event: TouchEvent) => {
+      if (isTouchShowroomOpen.value) return; // showroom açıkken bu faz devre dışı
+      const t = event.touches[0];
+      if (!t) return;
+      portalTween?.kill();
+      portalTween = undefined;
+      enterStartY = t.clientY;
+      enterStartX = t.clientX;
+      enterStartProgress = enterProgress;
+      enterActive = true;
+      enterAxisLocked = undefined;
+    };
+
+    const onEnterTouchMove = (event: TouchEvent) => {
+      if (!enterActive || isTouchShowroomOpen.value) return;
+      const t = event.touches[0];
+      if (!t) return;
+      const dy = t.clientY - enterStartY;
+      const dx = t.clientX - enterStartX;
+
+      if (!enterAxisLocked) {
+        if (Math.abs(dy) < 8 && Math.abs(dx) < 8) return;
+        enterAxisLocked = Math.abs(dy) >= Math.abs(dx) ? "y" : "x";
+      }
+      if (enterAxisLocked === "x") return; // yatay hareketi yok say
+
+      // Hero'nun tam tepesindeyken (p=0) AŞAĞI çekiş sayfanın işi: kataloğa insin.
+      // Sadece YUKARI çekiş girişi başlatır. Giriş sürerken iki yön de bizim.
+      if (enterStartProgress <= 0.0001 && dy > 0) { enterActive = false; return; }
+
+      // Parmak YUKARI (dy<0) = içeri gir = p artar.
+      const next = enterStartProgress - dy * enterPerPx();
+      enterProgress = Math.min(TOUCH_PORTAL_END, Math.max(0, next));
+      // Pin, p>0 olur olmaz devreye girer (preventDefault'un tutması için şart).
+      setEntering(enterProgress > 0.0001);
+      if (entering && event.cancelable) event.preventDefault();
+      updateMaster(enterProgress);
+    };
+
+    const onEnterTouchEnd = () => {
+      enterActive = false;
+      enterAxisLocked = undefined;
+      if (isTouchShowroomOpen.value) return; // zaten showroom'a geçmiş
+      // Parmak kalkınca ASLA ara değerde bırakma: her zaman en yakın uca snap
+      // (0=hero, TOUCH_PORTAL_END=showroom) → zoom yarı açık "takılı" kalamaz.
+      if (enterProgress <= 0.0001) { setEntering(false); return; }
+      settleEnter(enterProgress >= TOUCH_PORTAL_END * 0.5);
+    };
+
+    // Showroom'u kapat + giriş fazını tam sıfırla (pin kalkar, kapı kapanır).
+    // Giriş state'ini kullandığı için onun ARDINDA tanımlı.
     const closeShowroom = () => {
       showroomSnapTween?.kill();
       showroomSnapTween = undefined;
@@ -855,38 +998,14 @@ onMounted(() => {
       portalTween = undefined;
       isTouchShowroomOpen.value = false;
       isTouchShowroomAtEnd.value = false;
+      enterProgress = 0;
+      // Kilidi setEntering'e BIRAKMA: showroom açılırken entering zaten false'a
+      // çekilmişti (kilit showroom adına sürüyordu), dolayısıyla setEntering(false)
+      // erken return eder ve sayfa fixed kilitli kalırdı. Doğrudan aç.
+      entering = false;
+      section.classList.remove("entrance-lab--entering");
       lockPageScroll(false);
       updateMaster(0);
-    };
-
-    portalEntry = () => {
-      if (portalTween || isTouchShowroomOpen.value) return; // tekrar tap yok
-
-      if (prefersReducedMotion()) {
-        // Hareket azaltma: showroom'u animasyonsuz aç.
-        updateMaster(SHOWROOM_FULL);
-        showroomProgress.value = 0;
-        isTouchShowroomOpen.value = true;
-        lockPageScroll(true);
-        return;
-      }
-
-      const proxy = { p: 0 };
-      portalTween = gsap.to(proxy, {
-        p: TOUCH_PORTAL_END,
-        duration: 1.9,
-        ease: "power2.inOut",
-        onUpdate: () => updateMaster(proxy.p),
-        onComplete: () => {
-          portalTween = undefined;
-          // Zoom bitti: showroom ilk kapıda tam görünür. Sayfa scroll'u
-          // kilitlenir; buradan sonrasını swipe sürer.
-          showroomProgress.value = 0;
-          isTouchShowroomOpen.value = true;
-          isTouchShowroomAtEnd.value = false;
-          lockPageScroll(true);
-        }
-      });
     };
 
     // ── Swipe → showroomProgress snap'li orbit ────────────────────────────
@@ -966,21 +1085,35 @@ onMounted(() => {
       swipeAxisLocked = undefined;
     };
 
+    // Scroll-to-enter (hero → showroom) — showroom KAPALIYKEN aktif.
+    section.addEventListener("touchstart", onEnterTouchStart, { passive: true });
+    section.addEventListener("touchmove", onEnterTouchMove, { passive: false });
+    section.addEventListener("touchend", onEnterTouchEnd, { passive: true });
+    section.addEventListener("touchcancel", onEnterTouchEnd, { passive: true });
+
+    // Showroom orbit swipe — showroom AÇIKKEN aktif (kendi guard'ı var).
     section.addEventListener("touchstart", onShowroomTouchStart, { passive: true });
     section.addEventListener("touchmove", onShowroomTouchMove, { passive: false });
     section.addEventListener("touchend", onShowroomTouchEnd, { passive: true });
     section.addEventListener("touchcancel", onShowroomTouchEnd, { passive: true });
 
     // "Koleksiyona devam" — showroom'u kapat, kataloğa in.
+    // closeShowroom() kilidi açarken scroll'u kilitlenme anındaki yere geri
+    // koyar; hedefe gitmek için BİR FRAME sonra scroll etmeliyiz, yoksa o
+    // geri-koyma bizim scrollTo'muzu ezer.
     touchShowroomContinue = () => {
       closeShowroom();
-      scrollToCatalog(prefersReducedMotion() ? "auto" : "smooth");
+      requestAnimationFrame(() => {
+        scrollToCatalog(prefersReducedMotion() ? "auto" : "smooth");
+      });
     };
 
     // K (Home): showroom'u kapat, hero'ya (tepeye) dön.
     const goHomeNative = () => {
       closeShowroom();
-      window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+      });
     };
     window.addEventListener("resize", onTouchResize);
     window.addEventListener("kardoor:home", goHomeNative);
@@ -988,9 +1121,13 @@ onMounted(() => {
     teardown = () => {
       showroomSnapTween?.kill();
       portalTween?.kill();
+      section.classList.remove("entrance-lab--entering");
       lockPageScroll(false);
-      portalEntry = undefined;
       touchShowroomContinue = undefined;
+      section.removeEventListener("touchstart", onEnterTouchStart);
+      section.removeEventListener("touchmove", onEnterTouchMove);
+      section.removeEventListener("touchend", onEnterTouchEnd);
+      section.removeEventListener("touchcancel", onEnterTouchEnd);
       section.removeEventListener("touchstart", onShowroomTouchStart);
       section.removeEventListener("touchmove", onShowroomTouchMove);
       section.removeEventListener("touchend", onShowroomTouchEnd);
@@ -1241,10 +1378,10 @@ onBeforeUnmount(() => {
       />
 
       <!-- Kapı canvas'ı — hero deliğinin üstüne JS ile (px) konumlanır.
-           Mobilde tap ile portal girişi tetikler (entrance-lab--touch
-           modifier'ı pointer-events'i açar); ekran okuyucular için eşdeğer
-           yol CTA ("Koleksiyonları Keşfet") olduğundan dekoratif kalır. -->
-      <div ref="stageRef" class="entrance-lab__stage" aria-hidden="true" @click="onDoorTap">
+           Tamamen dekoratif: mobil giriş kapıya DEĞİL, section'ın tamamına
+           bağlı dikey sürüklemeyle olur. Ekran okuyucular için eşdeğer yol
+           CTA ("Koleksiyonları Keşfet"). -->
+      <div ref="stageRef" class="entrance-lab__stage" aria-hidden="true">
         <canvas ref="canvasRef" class="entrance-lab__canvas" />
       </div>
     </div>
@@ -1274,9 +1411,9 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- KAYDIR ipucu — scroll başlayınca kaybolur (--hero-cue-opacity).
-         Dokunmatikte fare ikonu yerine görünür "Kapıya dokun" etiketi. -->
+         Dokunmatikte fare ikonu yerine görünür "Kaydırarak gir" etiketi. -->
     <div class="entrance-lab__cue" aria-hidden="true">
-      <span class="entrance-lab__cue-label">{{ isTouchExperience ? copy.tapCue : copy.scrollCue }}</span>
+      <span class="entrance-lab__cue-label">{{ isTouchExperience ? copy.touchEnterCue : copy.scrollCue }}</span>
       <span class="entrance-lab__scroll-device">
         <span class="entrance-lab__scroll-motion" />
       </span>
