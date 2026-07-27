@@ -712,19 +712,23 @@ body.entrance-lab-touch-showroom-on {
 /* ──────────────────────────────────────────────────────────────
    MOBİL SHOWROOM NAV — swipe ipucu + "Koleksiyona devam".
    Template'te (entrance-lab__touch-nav) vardı ama hiç stili yoktu:
-   ikisi de sol üste yığılıp header'ın altında kalıyordu. Alt şeride
-   sabitlenir; ipucu son kapıda söner, CTA son kapıda belirir.
+   ikisi de sol üste yığılıp header'ın altında kalıyordu.
+
+   Dikkat: ShowroomLab'in kendi kart içeriği ("Detaylar" / "Teklif Al"
+   buton satırı) ekranın ~695-740px bandını kullanıyor. Nav bundan
+   AŞAĞIDA durmalı, yoksa ipucu butonların üstüne biner. Bu yüzden
+   alt boşluk dar tutulur ve ipucuna okunabilirlik zemini verilir.
    ────────────────────────────────────────────────────────────── */
 .entrance-lab__touch-nav {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: max(22px, env(safe-area-inset-bottom, 0px));
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
   z-index: 4;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   padding: 0 20px;
   pointer-events: none; /* swipe alanını yeme; buton kendi açar */
 }
@@ -735,20 +739,31 @@ body.entrance-lab-touch-showroom-on {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   text-align: center;
+  /* Kart içeriğinin üstüne denk gelse de okunur kalsın. */
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(248, 247, 243, 0.82);
+  backdrop-filter: blur(6px);
   color: rgba(7, 16, 24, 0.62);
   transition: opacity 0.4s ease;
 }
 
 .entrance-lab[data-ambience="night"] .entrance-lab__touch-swipe-cue {
-  color: rgba(255, 255, 255, 0.7);
+  background: rgba(11, 11, 13, 0.72);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .entrance-lab__touch-swipe-cue.is-hidden {
   opacity: 0;
 }
 
-/* CTA yalnızca son kapıda tıklanabilir olur (is-ready). */
+/* CTA yalnızca son kapıda görünür + tıklanabilir olur (is-ready).
+   is-ready DEĞİLKEN akıştan da çıkar (position: absolute): yoksa gizli
+   buton nav kolonunda ~48px yer tutup swipe ipucunu yukarı iter ve ipucu
+   ShowroomLab'in "Detaylar/Teklif Al" satırının üstüne biner. */
 .entrance-lab__touch-continue {
+  position: absolute;
+  bottom: 0;
   opacity: 0;
   transform: translateY(8px);
   pointer-events: none;
@@ -756,6 +771,7 @@ body.entrance-lab-touch-showroom-on {
 }
 
 .entrance-lab__touch-continue.is-ready {
+  position: static;
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
