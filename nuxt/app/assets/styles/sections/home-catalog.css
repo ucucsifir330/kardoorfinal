@@ -1,39 +1,4 @@
 /* Homepage catalog and product modal base rules extracted from light/dark themes. */
-.catalog-wishlist-panel {
-  position: absolute;
-  width: 174px;
-  padding: 10px 0;
-  background: var(--catalog-wishlist-panel-bg);
-  border-right: 4px solid var(--catalog-wishlist-panel-border);
-  box-shadow: var(--catalog-wishlist-panel-shadow);
-  display: block;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-6px);
-  pointer-events: none;
-  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s linear 0.22s;
-  z-index: 18 !important;
-}
-
-.catalog-wishlist-panel button {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--catalog-wishlist-button-color);
-  cursor: pointer;
-  display: block;
-  font: inherit;
-  font-size: 14px;
-  line-height: 1.25;
-  padding: 8px 14px;
-  text-align: left;
-}
-
-.catalog-wishlist-panel button:hover {
-  color: var(--catalog-wishlist-button-hover-color);
-  background: var(--catalog-wishlist-button-hover-bg);
-}
-
 
 @media (max-width: 760px) {
 
@@ -135,7 +100,6 @@
     width: 100% !important;
   }
 
-
 }
 .catalog-shell {
   width: 100% !important;
@@ -164,41 +128,7 @@
 .catalog-product-image {
   margin: auto;
 }
-.catalog-like {
-  z-index: 10;
-}
-.catalog-like-wrap {
-  pointer-events: none;
-}
-.catalog-like-wrap .catalog-like {
-  pointer-events: auto;
-}
-.catalog-heart {
-  color: #242929;
-  transition: transform 0.3s ease, color 0.3s ease, fill 0.3s ease;
-}
-.catalog-like.is-liked .catalog-heart {
-  color: #ef4444;
-  fill: #ef4444;
-  transform: scale(1.1);
-}
-.catalog-like-wrap:hover .catalog-wishlist-panel {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-  transition-delay: 0.42s, 0.42s, 0s;
-}
-.catalog-like-wrap:focus-within .catalog-wishlist-panel,
-.catalog-wishlist-panel.is-click-open,
-.catalog-wishlist-panel:hover {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-  transition-delay: 0s;
-}
-
+.catalog-like-wrap:hover 
 
 .catalog-product-info {
   cursor: pointer;
@@ -950,55 +880,7 @@ html[data-theme="dark"] .home-page .catalog-section {
   transform: scale(1.045) translateY(-3px) !important;
 }
 
-.home-page .catalog-like-wrap {
-  position: absolute !important;
-  top: 10px !important;
-  right: 10px !important;
-  width: 28px !important;
-  height: 28px !important;
-  z-index: 10 !important;
-}
-
-.home-page .catalog-like {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 28px !important;
-  height: 28px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 50% !important;
-  background: #f3f4f6 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  color: #242929 !important;
-  cursor: pointer !important;
-  transition: transform 0.9s cubic-bezier(0.19, 1, 0.22, 1), color 0.65s ease !important;
-}
-
-.home-page .catalog-like:hover {
-  transform: scale(1.055) !important;
-}
-
-.home-page .catalog-heart {
-  width: 14px !important;
-  height: 14px !important;
-  fill: currentColor !important;
-  stroke: currentColor !important;
-  stroke-width: 2 !important;
-  stroke-linecap: round !important;
-  stroke-linejoin: round !important;
-}
-
-.home-page .catalog-like.is-liked {
-  color: #ef4444 !important;
-}
-
-.home-page .catalog-wishlist-panel {
-  top: 0 !important;
-  right: 38px !important;
-}
+.home-page 
 
 .home-page .catalog-product-bottom {
   display: flex !important;
@@ -1319,17 +1201,6 @@ html[data-theme="dark"] .home-page .catalog-code {
   }
 
   /* Like butonu boyutu */
-  .home-page .catalog-like-wrap {
-    top: 8px !important;
-    right: 8px !important;
-    width: 30px !important;
-    height: 30px !important;
-  }
-
-  .home-page .catalog-like {
-    width: 30px !important;
-    height: 30px !important;
-  }
 
   /* Alt bilgi: sade */
   .home-page .catalog-product-bottom {
@@ -1349,9 +1220,7 @@ html[data-theme="dark"] .home-page .catalog-code {
   }
 
   .home-page .catalog-product-arrow-wrap,
-  .home-page .catalog-wishlist-panel {
-    display: none !important;
-  }
+  .home-page 
 
   /* Liquid menu mobilde tamamen gizle */
   .home-page .liquid-menu,
@@ -2585,9 +2454,7 @@ html[data-theme="dark"] .app-shell--night .home-page .catalog-like:active {
   transform: scale(0.94) !important;
 }
 
-html[data-theme="dark"] .app-shell--night .home-page .catalog-wishlist-panel {
-  right: 44px !important;
-}
+html[data-theme="dark"] .app-shell--night .home-page 
 
 /* Safari keeps large card shadows and pre-promoted layers alive longer than
    Chromium during the homepage collection scroll. Keep the design at rest, but
@@ -2678,7 +2545,6 @@ html.is-safari.is-scrolling .home-page .catalog-code-line {
     color: #F4F6FF !important;
   }
 }
-
 
 /* ============================================================
    ESKİ catalog.css'TEN TAŞINAN KALINTI — büyük kısmı temizlendi.
