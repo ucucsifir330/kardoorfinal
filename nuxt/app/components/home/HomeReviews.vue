@@ -180,7 +180,9 @@ const reviewCardClass = [
   'hover:z-10 hover:border-white/90 hover:[--scale:1.045]',
   'hover:[box-shadow:0_0_0_1px_rgba(255,255,255,0.9),0_0_32px_rgba(255,255,255,0.95),0_18px_38px_rgba(0,0,0,0.08)]',
   'max-[1024px]:w-[min(74vw,340px)] max-[1024px]:p-[1.45rem]',
-  'max-[640px]:min-h-[220px] max-[640px]:w-[min(72vw,280px)] max-[640px]:rounded-xl max-[640px]:p-5',
+  // rounded-xl projenin --radius-xl token'ina (20px) baglaniyor; orijinal
+  // CSS'te mobil kart radius'u 12px idi. Birebir esitlik icin acik deger.
+  'max-[640px]:min-h-[220px] max-[640px]:w-[min(72vw,280px)] max-[640px]:rounded-[12px] max-[640px]:p-5',
   'max-[640px]:hover:[--scale:1]'
 ].join(' ');
 

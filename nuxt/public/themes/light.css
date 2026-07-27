@@ -34,29 +34,11 @@ body {
   isolation: isolate;
 }
 
-.testimonial-wrapper {
-  position: relative !important;
-  width: 100% !important;
-  min-height: 100svh !important;
-  height: auto !important;
-  display: flex !important;
-  align-items: center !important;
-  overflow: hidden !important;
-  background: var(--bg-color) !important;
-  margin-top: 0 !important;
-  padding: clamp(92px, 10vw, 148px) 0 clamp(150px, 15vw, 240px) !important;
-  z-index: auto !important;
-}
 
-.title-area,
-.carousel-area {
-  transform: none !important;
-}
 
-.testimonial-wrapper::before {
-  content: none !important;
-  display: none !important;
-}
+
+
+
 
 .gradient-mask {
   position: absolute !important;
@@ -75,21 +57,11 @@ body {
   -webkit-backdrop-filter: none !important;
 }
 
-.rotating-title {
-  position: relative !important;
-  z-index: 2 !important;
-}
 
-.review-card {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
-}
 
-.review-card:hover {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.9),
-    0 0 32px rgba(255, 255, 255, 0.95),
-    0 18px 38px rgba(0, 0, 0, 0.08) !important;
-}
+
+
+
 
 .reveal-word { display: inline-block; white-space: nowrap; }
 .reveal-char { display: inline; color: #EAE8E8; opacity: 0.18; will-change: opacity; }
@@ -130,13 +102,7 @@ body {
   stroke: #EAE8E8 !important;
 }
 
-/* Final 1080p rhythm pass for the team, testimonial, and footer sections. */
-
-.testimonial-wrapper {
-  min-height: 100svh !important;
-  height: auto !important;
-  padding: clamp(92px, 10vw, 148px) 0 clamp(150px, 15vw, 240px) !important;
-}
+/* Final 1080p rhythm pass for the team, testimonial, and footer sections. */
 
 .carousel-area {
   padding-left: 40% !important;
@@ -273,13 +239,7 @@ body {
     padding: 0 18px !important;
     display: block !important;
     pointer-events: none !important;
-  }
-
-  .rotating-title {
-    font-size: clamp(36px, 10.8vw, 48px) !important;
-    line-height: 1.05 !important;
-    letter-spacing: 0 !important;
-  }
+  }
 
   .top-row {
     align-items: center !important;
@@ -317,26 +277,7 @@ body {
 
   .track-inner {
     gap: 16px !important;
-  }
-
-  .review-card {
-    width: min(78vw, 320px) !important;
-    min-height: 230px !important;
-    padding: 22px 20px !important;
-    border-radius: 14px !important;
-    gap: 22px !important;
-    transform: none !important;
-  }
-
-  .review-card:hover {
-    --scale: 1 !important;
-    transform: none !important;
-  }
-
-  .quote {
-    font-size: 15px !important;
-    line-height: 1.55 !important;
-  }
+  }
 }
 
 /* Mobile final notes: carousel centering, catalog line, chips, CTA, footer. */
