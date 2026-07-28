@@ -296,14 +296,28 @@ let activeTitleWord = titleWords.value[0] ?? '';
 // the static "Son" word a touch to keep the composition balanced. The pill width
 // is set to the full word up-front so the centered typewriter has room and the
 // caret never clips while characters stream in.
+// Aynı kelime + aynı viewport genişliği için ölçüm sonucunu sakla.
+// Sebep: textContent YAZIP hemen getBoundingClientRect() OKUMAK tarayıcıyı
+// senkron reflow'a zorluyor (layout thrashing). Bu fonksiyon açılışta 3 kez,
+// ayrıca her resize ve her harf animasyonunda çağrılıyordu.
+const titleWidthCache = new Map<string, number>();
+
 const updateTitleWidth = () => {
   const hiddenSpanEl = hiddenSpan.value as HTMLElement | null;
   const staticTextEl = staticText.value as HTMLElement | null;
 
   if (!hiddenSpanEl) return;
 
-  hiddenSpanEl.textContent = activeTitleWord;
-  const measuredWidth = hiddenSpanEl.getBoundingClientRect().width;
+  const cacheKey = `${activeTitleWord}@${window.innerWidth}`;
+  let measuredWidth = titleWidthCache.get(cacheKey) ?? 0;
+
+  if (!measuredWidth) {
+    hiddenSpanEl.textContent = activeTitleWord;
+    measuredWidth = hiddenSpanEl.getBoundingClientRect().width;
+    // 0 gelirse (font henüz yüklenmemiş) önbelleğe alma — sonraki çağrı ölçsün.
+    if (measuredWidth) titleWidthCache.set(cacheKey, measuredWidth);
+  }
+
   titleWidth.value = measuredWidth;
 
   if (!baseTitleWidth.value) {
@@ -786,9 +800,10 @@ onMounted(() => {
   updateTitleWidth();
 
   nextTick(() => {
-    updateTitleWidth();
+    // updateTitleWidth burada 2 kez daha çağrılıyordu (nextTick + rAF).
+    // Artık önbellekli, ama yine de gereksiz çağrıyı hiç yapmıyoruz:
+    // fontlar hazır olduğunda aşağıdaki fonts.ready bloğu zaten yeniden ölçüyor.
     requestCatalogHandoffHeight();
-    requestAnimationFrame(updateTitleWidth);
     requestAnimationFrame(requestCatalogHandoffHeight);
     requestAnimationFrame(requestCatalogHandoffPin);
 
@@ -823,6 +838,8 @@ onMounted(() => {
 
     if (fonts?.ready) {
       fonts.ready.then(() => {
+        // Fontlar değişince önceki ölçümler geçersiz — önbelleği boşalt.
+        titleWidthCache.clear();
         updateTitleWidth();
         requestCatalogHandoffHeight();
         requestCatalogHandoffPin();

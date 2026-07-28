@@ -159,7 +159,16 @@ onMounted(() => {
   updateEnabled();
   mediaQuery.addEventListener("change", updateEnabled);
 
-  bumpAboveTopLayer();
+  // Popover hide/show ciftı zorunlu reflow uretiyor ve bu, LCP'nin kritik
+  // yukleme anina denk geliyordu. Amaci imleci <dialog> top-layer'inin ustunde
+  // tutmak — acilista dialog YOK, o yuzden tarayici bosaldiktan sonra yap.
+  // Dialog acilirsa asagidaki MutationObserver zaten tekrar cagiriyor.
+  if ("requestIdleCallback" in window) {
+    (window as any).requestIdleCallback(() => bumpAboveTopLayer(), { timeout: 2000 });
+  } else {
+    setTimeout(bumpAboveTopLayer, 300);
+  }
+
   topLayerObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.target instanceof HTMLDialogElement && mutation.target.open) {
