@@ -14,12 +14,6 @@
   --catalog-product-scrollbar: rgba(36, 41, 41, 0.45) rgba(36, 41, 41, 0.08);
 }
 
-/* Kardoor mobile page polish: catalog route and embedded catalog surfaces. */
-
-* {
-  box-sizing: border-box;
-}
-
 html,
 body {
   margin: 0;
@@ -102,17 +96,6 @@ body {
   stroke: #EAE8E8 !important;
 }
 
-/* User note pass: tighten team title/cards, restore card stature, and rebalance neighboring sections. */
-
-/* Final catalog/manifest/testimonial/footer polish from browser notes. */
-
-.catalog-card {
-  box-shadow:
-    0 -18px 42px -34px rgba(36, 41, 41, 0.16),
-    -18px 0 42px -36px rgba(36, 41, 41, 0.14),
-    0 1px 0 rgba(255, 255, 255, 0.82) inset !important;
-}
-
 .top-row {
   gap: max(42px, var(--title-gap, 42px));
 }
@@ -123,38 +106,6 @@ body {
 
 .footer-dome {
   box-shadow: 0 -12px 42px rgba(0, 0, 0, 0.1);
-}
-
-/* Clean catalog pass: remove artificial shadows and let the page scroll naturally. */
-
-.catalog-section::after {
-  transform: scaleY(var(--catalog-line-progress)) !important;
-}
-
-.catalog-main {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 100vh !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  overscroll-behavior: contain !important;
-  border-radius: 0 !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(36, 41, 41, 0.35) transparent !important;
-}
-
-.catalog-main::-webkit-scrollbar-thumb {
-  background: rgba(36, 41, 41, 0.35) !important;
-  border-radius: 4px !important;
-}
-
-.catalog-main::-webkit-scrollbar-thumb:hover {
-  background: rgba(36, 41, 41, 0.55) !important;
-}
-
-.catalog-card {
-  border-radius: 6px 6px 46px 6px !important;
-  overflow: hidden !important;
 }
 
 /* Responsive viewport fit: 1920x1080 stays the reference size. */
@@ -171,25 +122,6 @@ body {
 
 /* Mobile team/testimonial pass: keep footer untouched. */
 @media (max-width: 760px) {
-  .catalog-section::after {
-    content: "" !important;
-    display: block !important;
-    position: absolute !important;
-    left: 28px !important;
-    top: calc(100% - 2px) !important;
-    bottom: auto !important;
-    width: 1px !important;
-    height: 170px !important;
-    background: linear-gradient(
-      to bottom,
-      rgba(234, 232, 232, 0.96) 0%,
-      rgba(20, 21, 29, 0.28) 24%,
-      rgba(20, 21, 29, 0.78) 100%
-    ) !important;
-    transform: none !important;
-    z-index: 6 !important;
-    pointer-events: none !important;
-  }
 
   .testimonial-wrapper {
     display: block !important;
@@ -250,21 +182,6 @@ body {
 
 /* Mobile final notes: carousel centering, catalog line, chips, CTA, footer. */
 @media (max-width: 760px) {
-  .catalog-section::after {
-    left: 28px !important;
-    top: calc(100% - 2px) !important;
-    width: 1px !important;
-    height: 430px !important;
-    background: linear-gradient(
-      to bottom,
-      rgba(234, 232, 232, 0.98) 0%,
-      rgba(20, 21, 29, 0.28) 18%,
-      rgba(20, 21, 29, 0.58) 100%
-    ) !important;
-    transform: scaleY(var(--catalog-line-progress)) !important;
-    transform-origin: top !important;
-    transition: none !important;
-  }
 
   .footer-wrapper {
   background: #EAE8E8 !important;
@@ -406,63 +323,6 @@ body,
 .app-shell,
 .app-shell--day {
   background-color: #F4F1EA !important;
-}
-
-.catalog-section {
-  background: var(--entrance-handoff-bg) !important;
-}
-
-.catalog-shell,
-.catalog-main,
-.catalog-sticky-title,
-.testimonial-wrapper,
-.footer-wrapper {
-  background: #F4F1EA !important;
-}
-
-.catalog-card,
-.catalog-product-image-wrap,
-.review-card {
-  background-color: rgba(255, 252, 245, 0.72) !important;
-  border-color: rgba(17, 20, 23, 0.08) !important;
-}
-
-.catalog-title,
-.catalog-product-family,
-.catalog-card-title,
-.rotating-title {
-  color: #111417 !important;
-}
-
-.catalog-designer,
-.catalog-card-subtitle,
-.catalog-finish,
-.catalog-code,
-.quote,
-.name {
-  color: #66706C !important;
-}
-
-.catalog-section::before {
-  background: linear-gradient(
-    to bottom,
-    #F4F1EA 0%,
-    #F4F1EA 138px,
-    rgba(184, 138, 68, 0.22) 220px,
-    rgba(17, 20, 23, 0.24) 100%
-  ) !important;
-}
-
-.catalog-section::after {
-  background: linear-gradient(
-    to bottom,
-    #F4F1EA 0%,
-    #F4F1EA 132px,
-    rgba(184, 138, 68, 0.48) 220px,
-    #B88A44 320px,
-    #B88A44 100%
-  ) !important;
-  filter: none !important;
 }
 
 .gradient-mask {

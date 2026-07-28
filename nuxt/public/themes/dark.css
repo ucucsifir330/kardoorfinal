@@ -54,12 +54,6 @@ body {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-
-
-
-/* Kardoor mobile page polish: catalog route and embedded catalog surfaces. */
-
-.reveal-word { display: inline-block; white-space: nowrap; }
 .reveal-char { display: inline; color: #F4F6FF; opacity: 0.18; will-change: opacity; }
 
 .reveal-word.brand-gradient-word .reveal-char {
@@ -92,58 +86,6 @@ body {
   color: #F4F6FF !important;
 }
 
-.catalog-section {
-  color: #F4F6FF !important;
-}
-
-.catalog-product-arrow {
-  color: rgba(244, 246, 255, 0.42) !important;
-}
-
-.catalog-product:hover .catalog-product-arrow {
-  color: #F4F6FF !important;
-}
-
-.catalog-card-title span {
-  color: rgba(244, 246, 255, 0.5) !important;
-}
-
-.catalog-product:hover .catalog-finish {
-  color: #F4F6FF !important;
-}
-
-.catalog-product:hover .catalog-product-image-wrap {
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24) !important;
-}
-
-.catalog-like {
-  background-color: #1D244A !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28) !important;
-}
-
-.catalog-heart {
-  color: #F4F6FF !important;
-  fill: #F4F6FF !important;
-}
-
-.catalog-like.is-liked .catalog-heart {
-  color: #ef4444 !important;
-  fill: #ef4444 !important;
-}
-
-.catalog-code-line {
-  background-color: rgba(244, 246, 255, 0.36) !important;
-}
-
-.catalog-row:last-of-type .catalog-card {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14) !important;
-}
-
-.catalog-section::after {
-  content: none !important;
-  display: none !important;
-}
-
 
 
 
@@ -156,15 +98,6 @@ body {
   border-top-color: rgba(244, 246, 255, 0.1) !important;
 }
 
-/* Final catalog/manifest/testimonial/footer polish from browser notes. */
-
-.catalog-card {
-  box-shadow:
-    0 -18px 42px -34px rgba(0, 0, 0, 0.32),
-    -18px 0 42px -36px rgba(0, 0, 0, 0.26),
-    0 1px 0 rgba(244, 246, 255, 0.035) inset !important;
-}
-
 .top-row {
   gap: max(42px, var(--title-gap, 42px));
 }
@@ -175,38 +108,6 @@ body {
 
 .footer-dome {
   box-shadow: 0 -12px 42px rgba(0, 0, 0, 0.1);
-}
-
-/* Clean catalog pass: remove artificial shadows and let the page scroll naturally. */
-
-.catalog-section::after {
-  transform: scaleY(var(--catalog-line-progress)) !important;
-}
-
-.catalog-main {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 100vh !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  overscroll-behavior: contain !important;
-  border-radius: 0 !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(244, 246, 255, 0.35) transparent !important;
-}
-
-.catalog-main::-webkit-scrollbar-thumb {
-  background: rgba(244, 246, 255, 0.35) !important;
-  border-radius: 4px !important;
-}
-
-.catalog-main::-webkit-scrollbar-thumb:hover {
-  background: rgba(244, 246, 255, 0.55) !important;
-}
-
-.catalog-card {
-  border-radius: 6px 6px 46px 6px !important;
-  overflow: hidden !important;
 }
 
 /* Responsive viewport fit: 1920x1080 stays the reference size. */
@@ -223,25 +124,6 @@ body {
 
 /* Mobile team/testimonial pass: keep footer untouched. */
 @media (max-width: 760px) {
-  .catalog-section::after {
-    content: "" !important;
-    display: block !important;
-    position: absolute !important;
-    left: 28px !important;
-    top: calc(100% - 2px) !important;
-    bottom: auto !important;
-    width: 1px !important;
-    height: 170px !important;
-    background: linear-gradient(
-      to bottom,
-      rgba(20, 21, 29, 0.96) 0%,
-      rgba(244, 246, 255, 0.26) 24%,
-      rgba(244, 246, 255, 0.78) 100%
-    ) !important;
-    transform: none !important;
-    z-index: 6 !important;
-    pointer-events: none !important;
-  }
 
   .testimonial-wrapper {
     display: block !important;
@@ -302,21 +184,6 @@ body {
 
 /* Mobile final notes: carousel centering, catalog line, chips, CTA, footer. */
 @media (max-width: 760px) {
-  .catalog-section::after {
-    left: 28px !important;
-    top: calc(100% - 2px) !important;
-    width: 1px !important;
-    height: 430px !important;
-    background: linear-gradient(
-      to bottom,
-      rgba(20, 21, 29, 0.98) 0%,
-      rgba(244, 246, 255, 0.28) 18%,
-      rgba(244, 246, 255, 0.58) 100%
-    ) !important;
-    transform: scaleY(var(--catalog-line-progress)) !important;
-    transform-origin: top !important;
-    transition: none !important;
-  }
 
   .footer-wrapper {
   background: #080B18 !important;
@@ -442,31 +309,6 @@ body {
 .catalog-tag span,
 .catalog-row-info .catalog-tag {
   color: #F4F6FF !important;
-}
-
-.catalog-tag-line {
-  background-color: rgba(244, 246, 255, 0.42) !important;
-}
-
-/* Mineral Executive dark palette tokens. Selector-level colors are owned by
-   main.css's navy palette, but these tokens MUST stay defined here: this file
-   (html/body, .testimonial-wrapper, .gradient-mask) and the bundle
-   (home-catalog, home-reviews, home-footer) consume them via var() — dark mode
-   loads exclusively, so there is no fallback definition anywhere else. */
-:root {
-  --bg-color: #050714;
-  --text-primary: #F4F6FF;
-  --text-secondary: rgba(244, 246, 255, 0.68);
-}
-
-.catalog-section::before {
-  background: linear-gradient(
-    to bottom,
-    #080B18 0%,
-    #080B18 138px,
-    rgba(184, 138, 68, 0.22) 220px,
-    rgba(244, 246, 255, 0.18) 100%
-  ) !important;
 }
 
 .footer-dome {
