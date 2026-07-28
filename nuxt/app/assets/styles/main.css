@@ -148,11 +148,13 @@ html[data-theme="dark"] body,
   color: #F4F6FF !important;
 }
 
+/* Gece footer'i PALET rengiyle: #080B18 — WelcomeScreen ile AYNI.
+   Eskiden #0D122B -> #131937 gradyaniydi; paletten sapiyordu. */
 .app-shell--night .footer-dome {
-  background: linear-gradient(180deg, #0D122B 0%, #131937 100%) !important;
-  background-color: #131937 !important;
-  box-shadow: inset 0 0 0 2px #131937, 0 0 0 2px #131937 !important;
-  outline-color: #131937 !important;
+  background: #080B18 !important;
+  background-color: #080B18 !important;
+  box-shadow: inset 0 0 0 2px #080B18, 0 0 0 2px #080B18 !important;
+  outline-color: #080B18 !important;
 }
 
 .app-shell--night .footer-socials > .social-btn {

@@ -1144,16 +1144,21 @@ onBeforeUnmount(() => {
   margin-top: 0;
 }
 
+/* Footer dome rengi PALETTEN gelir — WelcomeScreen ile AYNI degerler:
+     gunduz #16101F, gece #080B18
+   Eskiden burada #2a2a30 (gri) ve #131937 vardi; ikisi de paletten sapmisti
+   ve home-footer.css'in dogru degerini eziyordu (ayni ozgullik, sonra
+   yuklendigi icin kazaniyordu). */
 :global(.app-shell--references .footer-dome) {
-  background-color: #2a2a30;
-  box-shadow: 0 0 0 1px #2a2a30;
+  background-color: #16101F;
+  box-shadow: 0 0 0 1px #16101F;
 }
 
 :global(.app-shell--references:not(.app-shell--day) .footer-dome) {
-  background: linear-gradient(180deg, #0D122B 0%, #131937 100%) !important;
-  background-color: #131937 !important;
-  box-shadow: 0 0 0 1px #131937 !important;
-  outline-color: #131937 !important;
+  background: #080B18 !important;
+  background-color: #080B18 !important;
+  box-shadow: 0 0 0 1px #080B18 !important;
+  outline-color: #080B18 !important;
 }
 
 :global(.app-shell--references:not(.app-shell--day) .site-header) {

@@ -27,6 +27,11 @@
   display: block;
   /* Inset/debossed shadow that follows the K glyph (see #kInnerShadow). */
   filter: url(#kInnerShadow);
+  /* EgeLogo fill="currentColor" kullanir — renk BURADAN gelir.
+     Palet: WelcomeScreen'deki K ile AYNI (#E6E7EB).
+     Onceden color verilmemisti; gunduzde sayfa metin rengini (koyu) miras
+     alip koyu footer uzerinde gorunmez oluyordu. */
+  color: #E6E7EB;
 }
 
 .footer-logo-filter {
