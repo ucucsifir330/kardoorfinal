@@ -467,6 +467,13 @@ const initFooterAnimation = () => {
     const progress = Math.min(1, Math.max(0, rawProgress))
     const easedProgress = gsap.parseEase("sine.inOut")(progress)
 
+    // Marka katmanı (fixed, sol üst) sayfa sonunda footer içeriğiyle
+    // çakışıyordu. Footer'ın üst kenarı ekranın üst yarısına girdiğinde
+    // işaretle; CSS o an markayı gizliyor. Ölçüm zaten burada yapıldığı
+    // için ek reflow maliyeti yok.
+    // NOT: erken return'den ÖNCE olmalı — sonrasında atlanırdı.
+    footer.classList.toggle("is-brand-overlap", rect.top < viewportHeight * 0.5)
+
     // Değer değişmediyse (footer ekran dışında progress 0/1'de sabit) tween'i
     // yeniden başlatma — eskiden her scroll frame'inde 0.9s'lik gsap.to restart
     // ediliyordu, sayfanın tepesinde bile.
