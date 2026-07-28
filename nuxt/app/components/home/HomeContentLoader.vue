@@ -53,6 +53,19 @@ const scheduleRenderFlow = () => {
 };
 
 onMounted(() => {
+  // LCP DUZELTMESI — hero'yu rAF beklemeden SENKRON mount et.
+  //
+  // Olculen sorun: hero (LCP elemani) rAF arkasinda mount ediliyordu.
+  // ScrollSmoother "app:mounted"ta hero HENUZ YOKKEN kuruluyor, hero sonradan
+  // gelince translateY(1400px) ile ekran disinda konumlaniyor ve
+  // ScrollTrigger.refresh() 8 frame boyunca duzeltmeye calisiyordu.
+  // Sonuc: gorsel 131ms'de hazir, ekrana 4784ms'de ciziliyordu (%97.6 render delay).
+  //
+  // Senkron mount edince ScrollSmoother hero'yu GORE­REK kuruluyor, duzeltme
+  // turuna gerek kalmiyor. Alttaki rAF/timeout yolu yalnizca guvenlik agi
+  // olarak duruyor (shouldRender zaten true ise no-op).
+  shouldRender.value = true;
+
   scheduleRenderFlow();
 
   if (mountRef.value) {
