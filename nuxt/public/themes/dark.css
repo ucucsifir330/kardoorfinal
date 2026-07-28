@@ -357,3 +357,14 @@ body {
 
 @media (max-width: 760px) {
 }
+
+/* Dark mode token'lari — bunlar tema DEGISKENLERI, katalog kurali degil.
+   Onceki temizlikte ":root" blogu icinde --catalog-* degiskenleri de oldugu
+   icin filtre tum blogu goturmustu; --bg-color kaybolunca .gradient-mask'in
+   linear-gradient'i cozulemez hale gelip seffaf kaldi ve yorumlar bolumunde
+   kartlar basligin altindan gecti. */
+:root {
+  --bg-color: #050714;
+  --text-primary: #F4F6FF;
+  --text-secondary: rgba(244, 246, 255, 0.68);
+}
