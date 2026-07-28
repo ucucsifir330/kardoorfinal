@@ -81,6 +81,14 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-full: 999px;
+
+  /* --- Gecis egrileri — temaya bagli DEGIL, her iki temada ayni.
+     Onceki yer: public/themes/{light,dark}.css (birebir kopyaydilar). --- */
+  --transition-smooth: 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  --title-pill-transition-smooth: 4s cubic-bezier(0.16, 1, 0.3, 1);
+  --word-transition-smooth: 4s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-tilt: 0.2s linear;
+
 }
 
 .app-shell {
@@ -128,6 +136,32 @@
   --header-language-track: rgba(255, 255, 255, 0.2);
   --header-bulb-fill: rgba(255, 255, 255, 0.18);
   --header-bulb-glow: 0 0 0 rgba(44, 227, 255, 0);
+
+  /* --- public/themes/light.css'ten tasindi (2026-07-29).
+     Tema dosyalari yalnizca DEGISKEN atamali; duzen kurali yazmamali. --- */
+  --bg-color: #111417;
+  --text-primary: #111417;
+  --text-secondary: #66706C;
+  --entrance-handoff-bg: #EAE8E8;
+  --catalog-stage-bg: #111417;
+  --catalog-stage-surface-bg: #F4F1EA;
+  --catalog-stage-main-bg: #F4F1EA;
+  --catalog-stage-sticky-bg: #F4F1EA;
+  --catalog-stage-line-track: rgba(17, 20, 23, 0.16);
+  --catalog-stage-line-fill: #B88A44;
+  --catalog-stage-line-filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+  --catalog-product-scrollbar: rgba(36, 41, 41, 0.45) rgba(36, 41, 41, 0.08);
+  --catalog-product-scrollbar-track: rgba(17, 20, 23, 0.08);
+  --catalog-product-scrollbar-thumb: rgba(62, 111, 115, 0.42);
+  --catalog-product-scrollbar-thumb-hover: rgba(62, 111, 115, 0.68);
+  --catalog-product-modal-backdrop: rgba(20, 21, 29, 0.48);
+  --catalog-wishlist-panel-bg: rgba(247, 247, 247, 0.96);
+  --catalog-wishlist-panel-border: #14151D;
+  --catalog-wishlist-panel-shadow: 0 14px 34px rgba(20, 21, 29, 0.12);
+  --catalog-wishlist-button-color: #4b4f55;
+  --catalog-wishlist-button-hover-color: #14151D;
+  --catalog-wishlist-button-hover-bg: rgba(20, 21, 29, 0.055);
+
 }
 
 .app-shell--night {
@@ -171,6 +205,24 @@
   --header-bulb-glow:
     0 0 18px rgba(142, 162, 255, 0.52),
     0 0 34px rgba(142, 162, 255, 0.24);
+
+  /* --- public/themes/dark.css'ten tasindi (2026-07-29).
+     NOT: --bg-color kaybolunca .gradient-mask'in gradyani cozulemez hale
+     gelip yorumlar bolumu kirilmisti (bkz. 4ef0de0). Bu degiskenler
+     baska hicbir yerde tanimli DEGIL — fallback yok. --- */
+  --bg-color: #050714;
+  --text-primary: #F4F6FF;
+  --text-secondary: rgba(244, 246, 255, 0.68);
+  --catalog-stage-line-filter: none;
+  --catalog-product-scrollbar: rgba(244, 246, 255, 0.45) rgba(244, 246, 255, 0.08);
+  --catalog-product-modal-backdrop: rgba(0, 0, 0, 0.62);
+  --catalog-wishlist-panel-bg: rgba(28, 29, 38, 0.96);
+  --catalog-wishlist-panel-border: #F4F6FF;
+  --catalog-wishlist-panel-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+  --catalog-wishlist-button-color: rgba(244, 246, 255, 0.74);
+  --catalog-wishlist-button-hover-color: #ffffff;
+  --catalog-wishlist-button-hover-bg: rgba(244, 246, 255, 0.075);
+
 }
 
 @media (max-width: 820px) {
