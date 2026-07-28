@@ -444,6 +444,17 @@
   transform: translateY(calc(-100% - var(--header-offset-y) - 16px));
 }
 
+/* Header gizlendiginde MARKA KATMANI da gizlenmeli.
+   brand-blend-layer position:fixed + z-index:81 ile ekranda sabit duruyor ve
+   .site-header--hidden onu hedeflemiyordu; sayfa sonuna inildiginde
+   "EGE KARDOOR" footer linklerinin ustune biniyordu.
+   :has() ile kardes iliskisi kuruluyor — katman header'in DISINDA. */
+body:has(.site-header--hidden) .brand-blend-layer {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.32s var(--ease-out, ease);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .site-header__bar {
     transition: none;
