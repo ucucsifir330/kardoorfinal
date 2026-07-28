@@ -64,10 +64,10 @@ export default defineNuxtConfig({
         { rel: "preconnect", href: "https://api.fontshare.com" },
         // Yerel PP fontları dev CSS zinciri tamamlanmadan indirilmeye başlasın.
         // Böylece ilk boyamada fallback yazı tipi görünmez.
-        { rel: "preload", as: "font", type: "font/otf", href: "/fonts/pp-telegraf/PPTelegraf-Regular.otf", crossorigin: "" },
-        { rel: "preload", as: "font", type: "font/otf", href: "/fonts/pp-telegraf/PPTelegraf-Ultrabold.otf", crossorigin: "" },
-        { rel: "preload", as: "font", type: "font/otf", href: "/fonts/pp-mori/PPMori-Regular.otf", crossorigin: "" },
-        { rel: "preload", as: "font", type: "font/otf", href: "/fonts/pp-mori/PPMori-Semibold.otf", crossorigin: "" },
+        { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/pp-telegraf/PPTelegraf-Regular.woff2", crossorigin: "" },
+        { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/pp-telegraf/PPTelegraf-Ultrabold.woff2", crossorigin: "" },
+        { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/pp-mori/PPMori-Regular.woff2", crossorigin: "" },
+        { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/pp-mori/PPMori-Semibold.woff2", crossorigin: "" },
         {
           rel: "stylesheet",
           href: "https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700,800&display=swap"

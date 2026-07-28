@@ -1,6 +1,13 @@
+/* woff2 ONCE, otf fallback: tarayici destekledigi ilk formati secer.
+   woff2 ayni glyph verisini Brotli ile paketler — dosyalar %53 kucuk
+   (416KB -> 195KB), gorsel olarak BIREBIR ayni.
+   Uretim: python scripts/convert-fonts-woff2.py */
+
 @font-face {
   font-family: "PP Mori";
-  src: url("/fonts/pp-mori/PPMori-Extralight.otf") format("opentype");
+  src:
+    url("/fonts/pp-mori/PPMori-Extralight.woff2") format("woff2"),
+    url("/fonts/pp-mori/PPMori-Extralight.otf") format("opentype");
   font-display: swap;
   font-style: normal;
   font-weight: 200;
@@ -8,7 +15,9 @@
 
 @font-face {
   font-family: "PP Mori";
-  src: url("/fonts/pp-mori/PPMori-Regular.otf") format("opentype");
+  src:
+    url("/fonts/pp-mori/PPMori-Regular.woff2") format("woff2"),
+    url("/fonts/pp-mori/PPMori-Regular.otf") format("opentype");
   font-display: swap;
   font-style: normal;
   font-weight: 400;
@@ -16,7 +25,9 @@
 
 @font-face {
   font-family: "PP Mori";
-  src: url("/fonts/pp-mori/PPMori-Semibold.otf") format("opentype");
+  src:
+    url("/fonts/pp-mori/PPMori-Semibold.woff2") format("woff2"),
+    url("/fonts/pp-mori/PPMori-Semibold.otf") format("opentype");
   font-display: swap;
   font-style: normal;
   font-weight: 600;
@@ -24,7 +35,9 @@
 
 @font-face {
   font-family: "PP Mori";
-  src: url("/fonts/pp-mori/PPMori-Black.otf") format("opentype");
+  src:
+    url("/fonts/pp-mori/PPMori-Black.woff2") format("woff2"),
+    url("/fonts/pp-mori/PPMori-Black.otf") format("opentype");
   font-display: swap;
   font-style: normal;
   font-weight: 900;
@@ -32,7 +45,9 @@
 
 @font-face {
   font-family: "PP Telegraf";
-  src: url("/fonts/pp-telegraf/PPTelegraf-Regular.otf") format("opentype");
+  src:
+    url("/fonts/pp-telegraf/PPTelegraf-Regular.woff2") format("woff2"),
+    url("/fonts/pp-telegraf/PPTelegraf-Regular.otf") format("opentype");
   font-display: swap;
   font-style: normal;
   font-weight: 400 500;
@@ -40,7 +55,9 @@
 
 @font-face {
   font-family: "PP Telegraf";
-  src: url("/fonts/pp-telegraf/PPTelegraf-Ultrabold.otf") format("opentype");
+  src:
+    url("/fonts/pp-telegraf/PPTelegraf-Ultrabold.woff2") format("woff2"),
+    url("/fonts/pp-telegraf/PPTelegraf-Ultrabold.otf") format("opentype");
   font-display: swap;
   font-style: normal;
   font-weight: 800;
