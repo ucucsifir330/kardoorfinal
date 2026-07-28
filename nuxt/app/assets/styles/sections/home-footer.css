@@ -110,8 +110,11 @@
 .flip-text-link {
   position: relative;
   display: inline-block;
-  color: transparent;
-  text-decoration: none;
+  /* !important GEREKLI: ".footer-column a { color: #E6E7EB }" ayni ozgullukte
+     ve dosyada SONRA geliyor. Onsuz metin hem <a>'da hem ::before'da cizilip
+     ust uste biniyor; hover'da ::before donerken alttaki sabit metin kaliyor. */
+  color: transparent !important;
+  text-decoration: none !important;
   padding-bottom: 3px;
   overflow: hidden;
   perspective: 700px;
