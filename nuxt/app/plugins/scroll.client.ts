@@ -105,10 +105,23 @@ export default defineNuxtPlugin((nuxtApp) => {
     const smoother = ScrollSmoother.get();
     smoother?.scrollTo(0, false);
 
+    // Sabit 8 frame yerine: trigger sayısı sabitlenene kadar ölç, sonra dur.
+    // refresh() tüm sayfa geometrisini okur; her sayfa geçişinde 8 kez tekrar
+    // etmek geçişlerdeki takılmanın kaynağıydı. Tavan yine 8, yani en kötü
+    // durumda eski davranış korunur.
     let frame = 0;
+    let oncekiSayi = -1;
+    let sabitFrame = 0;
+
     const tick = () => {
       ScrollTrigger.refresh();
-      if (++frame < 8) requestAnimationFrame(tick); // ~8 frame boyunca yeniden ölç
+
+      const sayi = ScrollTrigger.getAll().length;
+      sabitFrame = sayi === oncekiSayi ? sabitFrame + 1 : 0;
+      oncekiSayi = sayi;
+
+      if (sabitFrame >= 2 || ++frame >= 8) return;
+      requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
     // Fontlar/görseller geç çözülürse son bir ölçüm daha.

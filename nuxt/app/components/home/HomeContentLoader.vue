@@ -11,15 +11,28 @@ let renderFallbackTimer = 0;
 const refreshScrollTriggers = async () => {
   try {
     const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-    // HomeExperience LAZY mount edilir; içindeki EntranceDoorLab'ın pinli ScrollTrigger'ı
-    // bu noktadan birkaç frame sonra kurulur. Tek bir refresh, pin var olmadan çalışıp
-    // boşa gidebiliyor (pin sonra ScrollSmoother'ın güncel transform'una göre kurulup
-    // section'ı kaydırıyor → kenarda zemin şeridi). Birkaç frame boyunca yeniden ölç
-    // ki geç kurulan pin de temiz hizalansın. refresh() idempotent.
+    // Pin'ler birkaç frame içinde kurulabildiği için tek refresh yetmiyordu;
+    // eskiden SABİT 8 frame refresh atılıyordu. Ama refresh() TÜM sayfanın
+    // geometrisini yeniden ölçer — canlıda ölçülen 965ms forced reflow'un
+    // büyük kısmı bu tekrarlardan geliyordu.
+    //
+    // Yeni davranış: trigger SAYISI sabitlenene kadar ölç, sabitlenince dur.
+    // Tipik durumda 2-3 frame'de biter; en kötü ihtimalde eski 8 frame tavanı
+    // korunur, yani davranış hiçbir zaman eskisinden kötü olamaz.
     let frame = 0;
+    let oncekiSayi = -1;
+    let sabitFrame = 0;
+
     const tick = () => {
       ScrollTrigger.refresh();
-      if (++frame < 8) requestAnimationFrame(tick);
+
+      const sayi = ScrollTrigger.getAll().length;
+      sabitFrame = sayi === oncekiSayi ? sabitFrame + 1 : 0;
+      oncekiSayi = sayi;
+
+      // Arka arkaya 2 frame boyunca yeni trigger kurulmadıysa iş bitti.
+      if (sabitFrame >= 2 || ++frame >= 8) return;
+      requestAnimationFrame(tick);
     };
     tick();
   } catch {
