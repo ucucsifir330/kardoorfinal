@@ -450,3 +450,100 @@ what actually renders.
 
 Low-risk leaf components first. `EntranceDoorLab`, the scroll handoff chain,
 and anything touching GSAP pinning go last.
+
+## 13. CSS Ownership & Naming (Plan)
+
+Status: **approved, not yet executed.** Section 12 (Tailwind migration) stays in
+force; this section adds the ownership rules that migration must follow.
+
+### 13.1 The problem, measured
+
+`scripts/class-ownership.mjs` output (2026-07-28):
+
+- **36 classes are written from 3+ separate files.** Worst: `.footer-wrapper`
+  (7 files, 27 rules), `.app-shell--day` (9 files), `.catalog-section` (4 files).
+- `scripts/classify-rules.mjs`: **56% of `themes/dark.css` is LAYOUT**, not theme.
+  `.catalog-main` gets `width`, `height`, `overflow`, `scrollbar-*` from a theme file.
+
+This is the root cause of the `!important` wars. Two files write the same property
+to the same element, neither owns it, so whoever loads last (or shouts `!important`)
+wins. Fixing `!important` without fixing ownership just moves the fight.
+
+### 13.2 Rule 1 — one owner per class
+
+| Layer | Writes | Lives in |
+|---|---|---|
+| Token | raw values (`--accent`, `--bg-navy`) | `base/tokens.css` |
+| Theme | **only** variable assignments (`--x: <color>`) | `public/themes/*.css` |
+| Component | layout, typography, motion | the component's own file |
+
+A theme file must never write `width`, `padding`, `display`, `grid-*`, `position`.
+If a theme needs a different size, the component reads a variable the theme sets.
+
+Proven: applying this to the footer took `!important` from 241 → 14 and deleted
+1045 lines from the theme files, with **zero** measured pixel change.
+
+### 13.3 Rule 2 — names declare ownership
+
+Target convention (not yet applied):
+
+```
+.c-catalog__card            component: catalog, part: card
+.c-catalog__card--liquid    variant
+.is-liquid-expanded         state (added by JS)
+.u-visually-hidden          utility (rare)
+```
+
+The `c-` prefix means "this class has an owner." Nothing outside the component
+writes to it. Current names (`.catalog-card`, `.social-btn`, `.hours`) carry no
+ownership signal, which is why anyone felt free to write to them.
+
+### 13.4 Rule 3 — the Tailwind/CSS boundary
+
+Goes to Tailwind: layout, spacing, sizing, typography scale, simple hover/focus.
+
+Stays in CSS: `::before`/`::after` content, `@keyframes`, parent-state selectors
+(`.is-expanded .hamburger-line`), anything GSAP touches, theme variables.
+
+This is not preference. A utility class styles the element itself; it cannot
+express "when my ancestor has state X." In `home-catalog`, 45 of 61 rules are
+parent-state — which is why Tailwind alone did not help there.
+
+### 13.5 Execution order
+
+Per component, never in bulk:
+
+1. Collect every rule for the component into one place, wherever it currently lives
+2. Delete layout rules from the theme files; leave only colour variables
+3. Strip `!important` — with no rival left, they are inert
+4. Rename to `c-<component>__<part>`
+5. Verify at 1440 + 390 with CDP computed styles; commit only at zero deviation
+
+Steps 1–3 are done for `HomeReviews`, `FloatingContactHub`, and the footer.
+Step 4 has not been attempted anywhere yet.
+
+### 13.6 Remaining work, measured
+
+| File | Lines | !important | Theme rules |
+|---|---|---|---|
+| home-catalog.css | 1773 | 686 | 89 |
+| home-footer.css | 1141 | 17 | 0 |
+| home-references.css | 499 | 9 | 0 |
+| home-team.css | 509 | 0 | 0 |
+| showroom.css | 583 | 0 | 0 |
+| entrance-lab.css | 659 | 0 | 0 |
+| entrance-mobile.css | 318 | 0 | 0 |
+
+**All ownership debt is now concentrated in `home-catalog`.** Every other section
+already has a single owner. Rule 1 work = `home-catalog` only.
+
+### 13.7 Renaming risk (read before step 4)
+
+Class names appear in JS selectors, GSAP targets, theme files, and `main.css`
+performance rules (`html.is-scrolling .site-header__bar`). A missed reference
+fails **silently** — see the `.flip-text-link` regression on 2026-07-28, where
+dropping one `!important` made text render twice with no error.
+
+Therefore renaming requires: grep every occurrence across `.vue`, `.ts`, `.css`
+before touching anything; rename one component per commit; verify hover, theme
+switch, and scroll state — not just static layout.
