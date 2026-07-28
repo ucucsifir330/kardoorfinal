@@ -100,12 +100,16 @@ const playQuoteEnter = () => {
   quoteTimeline.pause(0).play("enter");
 };
 
-onMounted(async () => {
-  await nextTick();
+// Kurulum ERTELENDİ — sebep ölçüldü:
+// SplitText açılışta 188 DOM elemanı (163 harf + 25 kelime) üretiyordu,
+// sayfanın toplam DOM'unun %9'u. Üstelik bu bölüm ~7 ekran aşağıda; kullanıcı
+// ilk ekrandayken oraya ait animasyon hazırlanıyordu.
+let hazirlikTrigger: ScrollTrigger | null = null;
 
+const kurManifestoAnimasyonu = () => {
   const quoteElement = manifestoQuoteRef.value;
 
-  if (quoteElement) {
+  if (quoteElement && !quoteSplit) {
     quoteSplit = SplitText.create(quoteElement, {
       type: "words,chars",
       wordsClass: "ada-manifesto-word",
@@ -145,11 +149,40 @@ onMounted(async () => {
       onEnter: playQuoteEnter,
       once: true
     });
-  }
 
+    // Trigger geç kurulduğu için konum bilgisi güncel değil; bir kez ölçtür.
+    ScrollTrigger.refresh();
+
+    // onEnter yalnızca GEÇİŞTE ateşler. Kurulum anında kullanıcı başlangıç
+    // noktasını geçmişse hiç tetiklenmez ve harfler opacity:0 kalırdı.
+    // Mevcut durumu bir kez senkronla.
+    if (quoteScrollTrigger.isActive) playQuoteEnter();
+  }
+};
+
+onMounted(async () => {
+  await nextTick();
+
+  const quoteElement = manifestoQuoteRef.value;
+  if (!quoteElement) return;
+
+  // NOT: IntersectionObserver burada çalışmaz — sayfa ScrollSmoother ile
+  // transform üzerinden kayıyor, IO'nun viewport kesişimi tetiklenmiyor
+  // (denendi, animasyon hiç kurulmadı). ScrollTrigger smoother'ın scroll
+  // pozisyonunu doğrudan okur.
+  hazirlikTrigger = ScrollTrigger.create({
+    trigger: quoteElement,
+    // 2 ekran kala hazırla: kullanıcı varmadan animasyon hazır olsun,
+    // ama açılış maliyeti ödenmesin.
+    start: "top bottom+=200%",
+    once: true,
+    onEnter: kurManifestoAnimasyonu
+  });
 });
 
 onBeforeUnmount(() => {
+  hazirlikTrigger?.kill();
+  hazirlikTrigger = null;
   quoteScrollTrigger?.kill();
   quoteScrollTrigger = null;
   quoteTimeline?.kill();
