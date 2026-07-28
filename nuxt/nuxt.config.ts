@@ -64,8 +64,16 @@ export default defineNuxtConfig({
         { rel: "preconnect", href: "https://api.fontshare.com" },
         // Yerel PP fontları dev CSS zinciri tamamlanmadan indirilmeye başlasın.
         // Böylece ilk boyamada fallback yazı tipi görünmez.
+        //
+        // SADECE ilk ekranda GERÇEKTEN kullanılan ağırlıklar preload edilir.
+        // Ölçüm (canlı, 1440x900 ilk ekran): PP Telegraf 500, PP Mori 400,
+        // PP Mori 600 kullanılıyor. PPTelegraf-Ultrabold (800) ilk ekranda YOK —
+        // preload'dan çıkarıldı, normal @font-face zinciriyle gerektiğinde iner.
+        //
+        // Sebep: preload'lar hero görseliyle AYNI ANDA başlıyordu (font 3017ms,
+        // hero 3032ms) ve aynı bant genişliği için yarışıyorlardı. Hero LCP
+        // elemanı olduğu için önceliği o almalı.
         { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/pp-telegraf/PPTelegraf-Regular.woff2", crossorigin: "" },
-        { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/pp-telegraf/PPTelegraf-Ultrabold.woff2", crossorigin: "" },
         { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/pp-mori/PPMori-Regular.woff2", crossorigin: "" },
         { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/pp-mori/PPMori-Semibold.woff2", crossorigin: "" },
         {
