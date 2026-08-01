@@ -62,25 +62,8 @@
       </section>
     </div>
   </section>
-  <div ref="reviewsStageRef" class="home-reviews-runtime">
-    <HomeReviews
-      :key="locale"
-      :static-label="reviewCopy.staticLabel"
-      :bottom-label="reviewCopy.bottomLabel"
-      :dynamic-gap="dynamicGap"
-      :title-width="titleWidth"
-      :row1="row1"
-      :row2="row2"
-      :set-static-text-ref="setStaticTextRef"
-      :set-hidden-span-ref="setHiddenSpanRef"
-      :set-typewriter-ref="setTypewriterRef"
-      :set-inner1-ref="setInner1Ref"
-      :set-inner2-ref="setInner2Ref"
-      :start-drag="startDrag"
-      :set-hover="setHover"
-      :tilt-card="tiltCard"
-      :reset-tilt="resetTilt"
-    />
+  <div class="home-reviews-runtime">
+    <HomeReviews />
   </div>
 </template><script setup lang="ts">
 // @ts-nocheck
@@ -93,20 +76,7 @@ import { useEntranceCopy } from '~/composables/useEntranceCopy'
 import { useShowroomAmbience } from '~/composables/useShowroomAmbience'
 import AdaCtaButton from '~/components/home/AdaCtaButton.vue'
 
-interface Review {
-  id: number;
-  text: string;
-  name: string;
-}
 
-interface TrackState {
-  x: number;
-  isDragging: boolean;
-  startX: number;
-  isHovered: boolean;
-  baseSpeed: number;
-  currentVelocity: number;
-}
 
 let manifestoGsapContext: ReturnType<typeof gsap.context> | null = null;
 let manifestoCleanupTasks: Array<() => void> = [];
@@ -115,12 +85,6 @@ const premiumEase = 'power3.out';
 const silkEase = 'sine.inOut';
 const smoothScrollScrub = 3.2;
 
-// SSR/hydration sözleşmesi: ilk render'da sunucu ve istemci AYNI değeri
-// üretmek zorunda. Eskiden burada window.innerWidth okunuyordu → sunucu 220,
-// istemci 259.2 basıp hydration mismatch veriyordu (pill genişliği + gap).
-// Gerçek ölçüm zaten onMounted'daki updateTitleWidth() ile yapılıyor; buradaki
-// değer yalnızca ilk boyamanın makul bir başlangıcı.
-const initialTitleWidth = 220;
 
 const isMobileEntrance = ref(
   typeof window !== 'undefined' &&
@@ -143,114 +107,7 @@ const ssrHeroSrc = computed(() =>
 
 const { locale } = useKardoorLocale();
 
-const reviewCopies: Record<string, { staticLabel: string; bottomLabel: string; titleWords: string[]; reviews: Review[] }> = {
-  tr: {
-    staticLabel: 'Son',
-    bottomLabel: 'size bırakıyoruz.',
-    titleWords: ['sözü', 'kararı', 'yorumu'],
-    reviews: [
-      {
-        id: 1,
-        text: 'Kardoor Çelik Kapı ailesi sorunumu özenle dinledi ve çözdü. Güven bey ve montaj ekibi arkadaşlara teşekkür ediyorum. Titizlikle ilgilendiler.',
-        name: 'Nadire Ş.'
-      },
-      {
-        id: 2,
-        text: 'Kendi evime ve oğlumun evine kapı yaptırdık. Çok memnun kaldık. Personeller işi beklediğimden hızlı teslim ettiler.',
-        name: 'Ahmet M.'
-      },
-      {
-        id: 3,
-        text: 'Yaptıkları işlerde gerek kaliteleri olsun gerek hızları olsun 20 yıldır böyle bir firmayla hiç çalışmamıştım. Teşekkürler Kardoor Çelik Kapı.',
-        name: 'Mustafa K.'
-      },
-      {
-        id: 4,
-        text: "İzmir'de dış iklim kapısı ararken Kardoor'u bulduk. Güven Bey çok yardımcı oldu. Kapının yalıtımı ve malzeme kalitesi gerçekten muazzam.",
-        name: 'Elif T.'
-      },
-      {
-        id: 5,
-        text: 'Bina giriş kapımızı yeniledik. Cam kapı detayları ve işçilik çok başarılı. Tüm süreçte profesyonelce yaklaştılar, tavsiye ederim.',
-        name: 'Kemal S.'
-      },
-      {
-        id: 6,
-        text: 'Montaj ekibi söz verdikleri gün ve saatte gelip tertemiz çalıştı. Hem estetik hem de güven veren, sağlam bir yapısı var. Elinize sağlık.',
-        name: 'Ayşe Y.'
-      },
-      {
-        id: 7,
-        text: "Showroom'daki 3D sunum ile evimize uygulanacak kapıyı önceden görmek harikaydı. Sonuç beklediğimizden de şık oldu.",
-        name: 'Burak D.'
-      },
-      {
-        id: 8,
-        text: 'Hızlı, net ve profesyonel yaklaşım. İhtiyacımız olan çelik kapı çözümünü doğrudan aldık, fiyat ve performans çok iyi.',
-        name: 'Serkan A.'
-      }
-    ]
-  },
-  en: {
-    staticLabel: 'Your',
-    bottomLabel: 'is the final word.',
-    titleWords: ['verdict', 'review', 'impression'],
-    reviews: [
-      {
-        id: 1,
-        text: 'The Kardoor team listened carefully and resolved our concern with real attention. Mr. Güven and the installation crew were meticulous from start to finish.',
-        name: 'Nadire Ş.'
-      },
-      {
-        id: 2,
-        text: 'We commissioned doors for both my home and my son’s. The result was excellent, and the team delivered sooner than I expected.',
-        name: 'Ahmet M.'
-      },
-      {
-        id: 3,
-        text: 'Their quality, pace, and discipline are rare. In twenty years, I have not worked with a company this composed and capable.',
-        name: 'Mustafa K.'
-      },
-      {
-        id: 4,
-        text: "We discovered Kardoor while searching for an exterior-grade door in Izmir. Mr. Güven guided us beautifully; the insulation and material quality are outstanding.",
-        name: 'Elif T.'
-      },
-      {
-        id: 5,
-        text: 'We renewed the entrance door of our building. The glass detailing and workmanship are exceptional, and the entire process felt thoroughly professional.',
-        name: 'Kemal S.'
-      },
-      {
-        id: 6,
-        text: 'The installation team arrived exactly when promised and worked impeccably. The door feels elegant, reassuring, and truly solid.',
-        name: 'Ayşe Y.'
-      },
-      {
-        id: 7,
-        text: "Seeing the door in the showroom's 3D presentation before installation was remarkable. The finished result is even more refined than we imagined.",
-        name: 'Burak D.'
-      },
-      {
-        id: 8,
-        text: 'Fast, clear, and highly professional. They delivered the steel-door solution we needed with excellent value and performance.',
-        name: 'Serkan A.'
-      }
-    ]
-  }
-};
 
-const reviewCopy = computed(() => reviewCopies[locale.value] ?? reviewCopies.tr);
-const titleWords = computed(() => reviewCopy.value.titleWords);
-const titleIndex = ref(0);
-const titleWidth = ref(initialTitleWidth);
-const hiddenSpan = ref<HTMLElement | null>(null);
-const staticText = ref<HTMLElement | null>(null);
-const baseTitleWidth = ref(0);
-
-const inner1 = ref<HTMLElement | null>(null);
-const inner2 = ref<HTMLElement | null>(null);
-const reviewsStageRef = ref<HTMLElement | null>(null);
 const catalogStackRef = ref<HTMLElement | null>(null);
 const catalogHandoffRef = ref<HTMLElement | null>(null);
 const catalogHandoffPinRef = ref<HTMLElement | null>(null);
@@ -262,29 +119,12 @@ let catalogHandoffPinFrame = 0;
 let catalogHandoffTrigger: ScrollTrigger | null = null;
 let catalogCurtainTween: gsap.core.Tween | null = null;
 
-const setHiddenSpanRef = (el: Element | ComponentPublicInstance | null) => {
-  hiddenSpan.value = el as HTMLElement | null;
-};
 
-const setStaticTextRef = (el: Element | ComponentPublicInstance | null) => {
-  staticText.value = el as HTMLElement | null;
-};
 
-const typewriter = ref<HTMLElement | null>(null);
 
-const setTypewriterRef = (el: Element | ComponentPublicInstance | null) => {
-  typewriter.value = el as HTMLElement | null;
-};
 
-const setInner1Ref = (el: Element | ComponentPublicInstance | null) => {
-  inner1.value = el as HTMLElement | null;
-};
 
-const setInner2Ref = (el: Element | ComponentPublicInstance | null) => {
-  inner2.value = el as HTMLElement | null;
-};
 
-const googleReviews = computed<Review[]>(() => reviewCopy.value.reviews);
 
 const updateCatalogHandoffHeight = () => {
   catalogHandoffFrame = 0;
@@ -309,293 +149,6 @@ const requestCatalogHandoffHeight = () => {
 // Eskisi her scroll frame'inde getBoundingClientRect+transform yapıyordu (FPS katili).
 const requestCatalogHandoffPin = () => {};
 
-const row1 = computed(() => googleReviews.value.slice(0, 4));
-const row2 = computed(() => googleReviews.value.slice(4, 8));
-
-const track1State: TrackState = {
-  x: 0,
-  isDragging: false,
-  startX: 0,
-  isHovered: false,
-  baseSpeed: 0.4,
-  currentVelocity: 0.4
-};
-
-const track2State: TrackState = {
-  x: 0,
-  isDragging: false,
-  startX: 0,
-  isHovered: false,
-  baseSpeed: 0.25,
-  currentVelocity: 0.25
-};
-
-let activeTrack: number | null = null;
-let animationFrameId = 0;
-let reviewsTrigger: ScrollTrigger | null = null;
-let reviewsAnimationActive = false;
-let typewriterTl: gsap.core.Timeline | null = null;
-let cursorTween: gsap.core.Tween | null = null;
-// Typewriter döngüsü her kelimede DOM'a yazıp genişlik OKUYOR (forced reflow).
-// Bölüm ekran dışındayken sonsuza dek dönmesin: ScrollTrigger ile pause/play.
-// false başlar → timeline paused doğar; ScrollTrigger görünür olunca play eder
-// (mount'ta bölüm zaten görünürse ST create hemen onToggle'ı isActive ile ateşler).
-let typewriterVisible = false;
-let typewriterTrigger: ScrollTrigger | null = null;
-let activeTitleWord = titleWords.value[0] ?? '';
-
-// Measure the pill width for `activeTitleWord` via the hidden span and animate
-// the static "Son" word a touch to keep the composition balanced. The pill width
-// is set to the full word up-front so the centered typewriter has room and the
-// caret never clips while characters stream in.
-// Aynı kelime + aynı viewport genişliği için ölçüm sonucunu sakla.
-// Sebep: textContent YAZIP hemen getBoundingClientRect() OKUMAK tarayıcıyı
-// senkron reflow'a zorluyor (layout thrashing). Bu fonksiyon açılışta 3 kez,
-// ayrıca her resize ve her harf animasyonunda çağrılıyordu.
-const titleWidthCache = new Map<string, number>();
-
-const updateTitleWidth = () => {
-  const hiddenSpanEl = hiddenSpan.value as HTMLElement | null;
-  const staticTextEl = staticText.value as HTMLElement | null;
-
-  if (!hiddenSpanEl) return;
-
-  const cacheKey = `${activeTitleWord}@${window.innerWidth}`;
-  let measuredWidth = titleWidthCache.get(cacheKey) ?? 0;
-
-  if (!measuredWidth) {
-    hiddenSpanEl.textContent = activeTitleWord;
-    measuredWidth = hiddenSpanEl.getBoundingClientRect().width;
-    // 0 gelirse (font henüz yüklenmemiş) önbelleğe alma — sonraki çağrı ölçsün.
-    if (measuredWidth) titleWidthCache.set(cacheKey, measuredWidth);
-  }
-
-  titleWidth.value = measuredWidth;
-
-  if (!baseTitleWidth.value) {
-    baseTitleWidth.value = measuredWidth;
-  }
-
-  if (staticTextEl) {
-    const offset = (measuredWidth - baseTitleWidth.value) * 0.18;
-    staticTextEl.style.transform = `translateX(${offset}px)`;
-  }
-};
-
-// Feel knobs (seconds). Tuned live with the user — keep these readable.
-const TYPE_PER_CHAR = 0.14;
-const ERASE_PER_CHAR = 0.07;
-const WORD_HOLD = 1.5;
-
-// One GSAP timeline drives the whole "sözü → kararı → yorumu" cycle:
-// type the word in (TextPlugin), hold, erase it, advance to the next. The pill
-// width is re-measured per word BEFORE typing so the centered word + caret sit
-// in a correctly sized pill. The caret blink is a separate stepped tween.
-const buildTypewriter = () => {
-  const el = typewriter.value as HTMLElement | null;
-  if (!el) return;
-
-  typewriterTl?.kill();
-  el.textContent = '';
-
-  const cursorEl = el.parentElement?.querySelector(
-    '.typewriter-cursor'
-  ) as HTMLElement | null;
-  if (cursorEl) {
-    cursorTween?.kill();
-    cursorTween = gsap.to(cursorEl, {
-      opacity: 0,
-      duration: 0.5,
-      ease: 'steps(1)',
-      repeat: -1,
-      yoyo: true
-    });
-  }
-
-  const words = titleWords.value;
-  typewriterTl = gsap.timeline({ repeat: -1, paused: !typewriterVisible });
-  if (!typewriterVisible) cursorTween?.pause();
-
-  words.forEach((word) => {
-    typewriterTl!
-      .call(() => {
-        activeTitleWord = word;
-        updateTitleWidth();
-      })
-      .to(el, {
-        duration: Math.max(0.4, word.length * TYPE_PER_CHAR),
-        text: { value: word, delimiter: '' },
-        ease: 'none'
-      })
-      .to(
-        el,
-        {
-          duration: Math.max(0.3, word.length * ERASE_PER_CHAR),
-          text: { value: '', delimiter: '' },
-          ease: 'none'
-        },
-        `+=${WORD_HOLD}`
-      );
-  });
-};
-
-watch(
-  locale,
-  async () => {
-    activeTitleWord = titleWords.value[0] ?? '';
-    titleIndex.value = 0;
-    typewriterTl?.kill();
-    typewriterTl = null;
-    cursorTween?.kill();
-    cursorTween = null;
-
-    if (typewriter.value) {
-      typewriter.value.textContent = '';
-    }
-
-    await nextTick();
-    updateTitleWidth();
-    buildTypewriter();
-  },
-  { flush: 'post' }
-);
-
-const dynamicGap = computed(() => {
-  const gapValue = 34 + titleWidth.value * 0.04;
-  return `${Math.max(38, Math.min(58, gapValue))}px`;
-});
-
-const getX = (event: MouseEvent | TouchEvent): number => {
-  if ('touches' in event && event.touches.length > 0) {
-    return event.touches[0].pageX;
-  }
-
-  return (event as MouseEvent).pageX;
-};
-
-const shouldRunReviewsAnimation = () =>
-  reviewsAnimationActive || track1State.isDragging || track2State.isDragging;
-
-const requestReviewsAnimation = () => {
-  if (!animationFrameId && shouldRunReviewsAnimation()) {
-    animationFrameId = requestAnimationFrame(animate);
-  }
-};
-
-const stopReviewsAnimation = () => {
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = 0;
-  }
-};
-
-const animate = () => {
-  animationFrameId = 0;
-
-  if (!shouldRunReviewsAnimation()) return;
-
-  const tracks: Array<{ state: TrackState; inner: HTMLElement | null }> = [
-    {
-      state: track1State,
-      inner: inner1.value as HTMLElement | null
-    },
-    {
-      state: track2State,
-      inner: inner2.value as HTMLElement | null
-    }
-  ];
-
-  tracks.forEach(({ state, inner }: { state: TrackState; inner: HTMLElement | null }) => {
-    if (!inner) return;
-
-    const halfWidth = inner.scrollWidth / 2;
-
-    if (!state.isDragging && reviewsAnimationActive) {
-      const targetVelocity = state.isHovered ? 0 : state.baseSpeed;
-      state.currentVelocity += (targetVelocity - state.currentVelocity) * 0.04;
-      state.x -= state.currentVelocity;
-    }
-
-    if (state.x <= -halfWidth) {
-      state.x += halfWidth;
-    } else if (state.x > 0) {
-      state.x -= halfWidth;
-    }
-
-    inner.style.transform = `translate3d(${state.x}px, 0, 0)`;
-  });
-
-  animationFrameId = requestAnimationFrame(animate);
-};
-
-const startDrag = (event: MouseEvent | TouchEvent, trackNum: number) => {
-  activeTrack = trackNum;
-
-  const state = trackNum === 1 ? track1State : track2State;
-
-  state.isDragging = true;
-  state.startX = getX(event);
-
-  document.body.style.cursor = 'grabbing';
-  requestReviewsAnimation();
-};
-
-const onDrag = (event: MouseEvent | TouchEvent) => {
-  if (activeTrack === null) return;
-
-  const state = activeTrack === 1 ? track1State : track2State;
-
-  if (!state.isDragging) return;
-
-  const currentX = getX(event);
-
-  state.x += currentX - state.startX;
-  state.startX = currentX;
-};
-
-const endDrag = () => {
-  track1State.isDragging = false;
-  track2State.isDragging = false;
-  activeTrack = null;
-
-  document.body.style.cursor = 'default';
-  if (!reviewsAnimationActive) stopReviewsAnimation();
-};
-
-const setHover = (value: boolean, trackNum: number) => {
-  const state = trackNum === 1 ? track1State : track2State;
-  state.isHovered = value;
-  requestReviewsAnimation();
-};
-
-const tiltCard = (event: MouseEvent) => {
-  const card = event.currentTarget as HTMLElement;
-  const box = card.getBoundingClientRect();
-
-  const x = event.clientX - box.left;
-  const y = event.clientY - box.top;
-
-  card.style.setProperty('--x', `${x}px`);
-  card.style.setProperty('--y', `${y}px`);
-
-  const centerX = box.width / 2;
-  const centerY = box.height / 2;
-
-  const rotateX = (centerY - y) / 15;
-  const rotateY = (x - centerX) / 20;
-
-  card.classList.add('tilting');
-  card.style.setProperty('--rx', `${rotateX}deg`);
-  card.style.setProperty('--ry', `${rotateY}deg`);
-};
-
-const resetTilt = (event: MouseEvent) => {
-  const card = event.currentTarget as HTMLElement;
-
-  card.classList.remove('tilting');
-  card.style.setProperty('--rx', '0deg');
-  card.style.setProperty('--ry', '0deg');
-};
 
 const addManifestoCleanup = (task: () => void) => {
   manifestoCleanupTasks.push(task);
@@ -849,12 +402,7 @@ const initManifestoAnimations = () => {
 };
 
 onMounted(() => {
-  updateTitleWidth();
-
   nextTick(() => {
-    // updateTitleWidth burada 2 kez daha çağrılıyordu (nextTick + rAF).
-    // Artık önbellekli, ama yine de gereksiz çağrıyı hiç yapmıyoruz:
-    // fontlar hazır olduğunda aşağıdaki fonts.ready bloğu zaten yeniden ölçüyor.
     requestCatalogHandoffHeight();
     requestAnimationFrame(requestCatalogHandoffHeight);
     requestAnimationFrame(requestCatalogHandoffPin);
@@ -890,9 +438,6 @@ onMounted(() => {
 
     if (fonts?.ready) {
       fonts.ready.then(() => {
-        // Fontlar değişince önceki ölçümler geçersiz — önbelleği boşalt.
-        titleWidthCache.clear();
-        updateTitleWidth();
         requestCatalogHandoffHeight();
         requestCatalogHandoffPin();
         ScrollTrigger.refresh();
@@ -930,80 +475,11 @@ onMounted(() => {
     }
   });
 
-  window.addEventListener('resize', updateTitleWidth);
   window.addEventListener('resize', requestCatalogHandoffHeight);
   window.addEventListener('resize', requestCatalogHandoffPin);
-
-  buildTypewriter();
-
-  // Görünürlük yönetimi ScrollTrigger ile — IntersectionObserver DEĞİL. Site
-  // ScrollSmoother ile transform üzerinden kaydığından, IO'nun viewport
-  // intersection'ı smoother'la güvenilmez çalışıyordu (timeline mid-word pause'da
-  // donup kalıyor, bölüme gelince play() gelmiyordu). ScrollTrigger smoother'ın
-  // scroll pozisyonunu doğrudan okur; onToggle görünürlük geçişinde şaşmaz ateşler.
-  if (typewriter.value) {
-    const twSection = typewriter.value.closest('section') ?? typewriter.value;
-    const applyVisibility = (visible: boolean) => {
-      typewriterVisible = visible;
-      if (visible) {
-        typewriterTl?.play();
-        cursorTween?.play();
-      } else {
-        typewriterTl?.pause();
-        cursorTween?.pause();
-      }
-    };
-    typewriterTrigger = ScrollTrigger.create({
-      trigger: twSection,
-      start: 'top bottom',   // üst kenar viewport altına girince görünür say
-      end: 'bottom top',     // alt kenar viewport üstünü geçince görünmez
-      onToggle: (self) => applyVisibility(self.isActive)
-    });
-    // onToggle yalnız GEÇİŞTE ateşler; create anında bölüm zaten görünürse ilk
-    // toggle gelmez ve timeline paused kalırdı. Mevcut durumu bir kez senkronla.
-    applyVisibility(typewriterTrigger.isActive);
-  }
-
-  track2State.x = -400;
-
-  if (reviewsStageRef.value) {
-    // IntersectionObserver, ScrollSmoother'in transform tabanli scroll'unda
-    // TETIKLENMEZ (viewport gercekten kaymadigi icin) — typewriterTrigger'daki
-    // gibi ScrollTrigger kullanilmali. Onceden bu hep false kaliyordu, marquee
-    // hicbir zaman otomatik akmiyordu.
-    reviewsTrigger = ScrollTrigger.create({
-      trigger: reviewsStageRef.value,
-      start: 'top bottom+=260',
-      end: 'bottom top-=260',
-      onToggle: (self) => {
-        reviewsAnimationActive = self.isActive;
-        if (reviewsAnimationActive) requestReviewsAnimation();
-        else if (!track1State.isDragging && !track2State.isDragging) stopReviewsAnimation();
-      }
-    });
-    reviewsAnimationActive = reviewsTrigger.isActive;
-    if (reviewsAnimationActive) requestReviewsAnimation();
-  }
-
-  window.addEventListener('mousemove', onDrag as EventListener);
-  window.addEventListener('mouseup', endDrag);
-  // passive:true — onDrag preventDefault ÇAĞIRMIYOR; non-passive olması iOS'ta
-  // her dokunmatik kaydırmayı (drag yokken bile) JS'i beklemeye zorluyordu.
-  window.addEventListener('touchmove', onDrag as EventListener, { passive: true });
-  window.addEventListener('touchend', endDrag);
 });
 
 onBeforeUnmount(() => {
-  typewriterTl?.kill();
-  typewriterTl = null;
-  cursorTween?.kill();
-  cursorTween = null;
-
-  stopReviewsAnimation();
-  reviewsTrigger?.kill();
-  reviewsTrigger = null;
-  typewriterTrigger?.kill();
-  typewriterTrigger = null;
   catalogHandoffObserver?.disconnect();
   catalogHandoffObserver = null;
 
@@ -1036,13 +512,8 @@ onBeforeUnmount(() => {
   manifestoCleanupTasks.forEach((task) => task());
   manifestoCleanupTasks = [];
 
-  window.removeEventListener('resize', updateTitleWidth);
   window.removeEventListener('resize', requestCatalogHandoffHeight);
   window.removeEventListener('resize', requestCatalogHandoffPin);
-  window.removeEventListener('mousemove', onDrag as EventListener);
-  window.removeEventListener('mouseup', endDrag);
-  window.removeEventListener('touchmove', onDrag as EventListener);
-  window.removeEventListener('touchend', endDrag);
 });
 </script>
 
