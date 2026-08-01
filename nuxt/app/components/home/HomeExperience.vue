@@ -78,10 +78,12 @@ const premiumEase = 'power3.out';
 const silkEase = 'sine.inOut';
 const smoothScrollScrub = 3.2;
 
-const initialTitleWidth =
-  typeof window !== 'undefined'
-    ? Math.max(180, Math.min(320, window.innerWidth * 0.18))
-    : 220;
+// SSR/hydration sözleşmesi: ilk render'da sunucu ve istemci AYNI değeri
+// üretmek zorunda. Eskiden burada window.innerWidth okunuyordu → sunucu 220,
+// istemci 259.2 basıp hydration mismatch veriyordu (pill genişliği + gap).
+// Gerçek ölçüm zaten onMounted'daki updateTitleWidth() ile yapılıyor; buradaki
+// değer yalnızca ilk boyamanın makul bir başlangıcı.
+const initialTitleWidth = 220;
 
 const isMobileEntrance = ref(
   typeof window !== 'undefined' &&

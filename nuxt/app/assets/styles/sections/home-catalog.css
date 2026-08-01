@@ -85,9 +85,11 @@
   }
 
   .catalog-title,
-  /* h1 ile özgüllük yükseltildi: taban ".home-page .catalog-title" kuralı
-     kaskadda SONRA geldiği için eşit özgüllükte kazanıyor. */
-  .home-page h1.catalog-title {
+  /* Etiketle özgüllük yükseltildi: taban ".home-page .catalog-title" kuralı
+     kaskadda SONRA geldiği için eşit özgüllükte kazanıyor.
+     h2: SSR açıldıktan sonra sayfada iki <h1> oluşuyordu; katalog başlığı
+     h2'ye indirildi, seçici de onunla birlikte güncellendi. */
+  .home-page h2.catalog-title {
     display: block !important;
     margin: 0 !important;
     /* Taban kuralın masaüstü sıkıştırması (max-width: calc(100% - 188px))
