@@ -140,6 +140,16 @@
     opacity: 0;
   }
 
+  /* Ghost klavye hedefidir (yukarıdaki nota bak) ama opacity:0 outline'ı da
+     yutuyordu → Tab ile gelen kullanıcı odağın nerede olduğunu göremiyordu.
+     Odakta elemanı geri getir; mürekkep .brand-blend-layer'da zaten çizili
+     olduğu için metin çift görünmesin diye yalnız outline bırakılır. */
+  .site-header__brand--ghost:focus-visible,
+  .site-header__brand--ghost:focus-visible .brand-title__kardoor {
+    opacity: 1;
+    color: transparent;
+  }
+
   .brand-blend-layer {
     position: fixed;
     top: 0;
