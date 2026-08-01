@@ -280,7 +280,7 @@ const track2State: TrackState = {
 
 let activeTrack: number | null = null;
 let animationFrameId = 0;
-let reviewsObserver: IntersectionObserver | null = null;
+let reviewsTrigger: ScrollTrigger | null = null;
 let reviewsAnimationActive = false;
 let typewriterTl: gsap.core.Timeline | null = null;
 let cursorTween: gsap.core.Tween | null = null;
@@ -915,15 +915,22 @@ onMounted(() => {
   track2State.x = -400;
 
   if (reviewsStageRef.value) {
-    reviewsObserver = new IntersectionObserver(
-      (entries) => {
-        reviewsAnimationActive = entries.some((entry) => entry.isIntersecting);
+    // IntersectionObserver, ScrollSmoother'in transform tabanli scroll'unda
+    // TETIKLENMEZ (viewport gercekten kaymadigi icin) — typewriterTrigger'daki
+    // gibi ScrollTrigger kullanilmali. Onceden bu hep false kaliyordu, marquee
+    // hicbir zaman otomatik akmiyordu.
+    reviewsTrigger = ScrollTrigger.create({
+      trigger: reviewsStageRef.value,
+      start: 'top bottom+=260',
+      end: 'bottom top-=260',
+      onToggle: (self) => {
+        reviewsAnimationActive = self.isActive;
         if (reviewsAnimationActive) requestReviewsAnimation();
         else if (!track1State.isDragging && !track2State.isDragging) stopReviewsAnimation();
-      },
-      { rootMargin: '260px 0px', threshold: 0.01 }
-    );
-    reviewsObserver.observe(reviewsStageRef.value);
+      }
+    });
+    reviewsAnimationActive = reviewsTrigger.isActive;
+    if (reviewsAnimationActive) requestReviewsAnimation();
   }
 
   window.addEventListener('mousemove', onDrag as EventListener);
@@ -941,8 +948,8 @@ onBeforeUnmount(() => {
   cursorTween = null;
 
   stopReviewsAnimation();
-  reviewsObserver?.disconnect();
-  reviewsObserver = null;
+  reviewsTrigger?.kill();
+  reviewsTrigger = null;
   typewriterTrigger?.kill();
   typewriterTrigger = null;
   catalogHandoffObserver?.disconnect();
