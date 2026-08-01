@@ -46,38 +46,24 @@
       </section>
     </template>
   </ClientOnly>
-  <section ref="catalogStackRef" class="home-catalog-reference-stack">
-    <div ref="catalogHandoffRef" class="home-catalog-reference-stack__catalog">
-      <div ref="catalogHandoffPinRef" class="home-catalog-reference-stack__catalog-pin">
-        <div ref="catalogHandoffFrameRef" class="home-catalog-reference-stack__catalog-frame">
-          <HomeCatalog />
-        </div>
-      </div>
-    </div>
-
-    <div class="home-catalog-reference-stack__references">
-      <section class="ada-team-section">
-        <HomeReferences />
-        <HomeManifesto :key="locale" />
-      </section>
-    </div>
-  </section>
+  <HomeCatalogTransition>
+    <template #catalog>
+      <HomeCatalog />
+    </template>
+    <template #references>
+      <HomeReferences />
+      <HomeManifesto :key="locale" />
+    </template>
+  </HomeCatalogTransition>
   <div class="home-reviews-runtime">
     <HomeReviews />
   </div>
 </template><script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import type { ComponentPublicInstance } from 'vue'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { computed, ref } from 'vue'
 import { useKardoorLocale } from '~/composables/useKardoorLocale'
 import { useEntranceCopy } from '~/composables/useEntranceCopy'
 import { useShowroomAmbience } from '~/composables/useShowroomAmbience'
 import AdaCtaButton from '~/components/home/AdaCtaButton.vue'
-
-
-
-
 
 const isMobileEntrance = ref(
   typeof window !== 'undefined' &&
@@ -99,155 +85,6 @@ const ssrHeroSrc = computed(() =>
 );
 
 const { locale } = useKardoorLocale();
-
-
-const catalogStackRef = ref<HTMLElement | null>(null);
-const catalogHandoffRef = ref<HTMLElement | null>(null);
-const catalogHandoffPinRef = ref<HTMLElement | null>(null);
-const catalogHandoffFrameRef = ref<HTMLElement | null>(null);
-
-let catalogHandoffObserver: ResizeObserver | null = null;
-let catalogHandoffFrame = 0;
-let catalogHandoffPinFrame = 0;
-let catalogHandoffTrigger: ScrollTrigger | null = null;
-let catalogCurtainTween: gsap.core.Tween | null = null;
-
-
-
-
-
-
-
-
-const updateCatalogHandoffHeight = () => {
-  catalogHandoffFrame = 0;
-
-  const hold = catalogHandoffRef.value;
-  const frame = catalogHandoffFrameRef.value;
-
-  if (!hold || !frame) return;
-
-  const frameHeight = frame.scrollHeight;
-  hold.style.setProperty('--catalog-handoff-height', `${frameHeight}px`);
-};
-
-const requestCatalogHandoffHeight = () => {
-  if (catalogHandoffFrame) return;
-
-  catalogHandoffFrame = window.requestAnimationFrame(updateCatalogHandoffHeight);
-};
-
-// Manuel pin (updateCatalogHandoffPin / requestCatalogHandoffPin) KALDIRILDI →
-// artık GSAP native pin'i kullanılıyor (aşağıdaki onMounted ScrollTrigger.create).
-// Eskisi her scroll frame'inde getBoundingClientRect+transform yapıyordu (FPS katili).
-const requestCatalogHandoffPin = () => {};
-
-
-
-onMounted(() => {
-  nextTick(() => {
-    requestCatalogHandoffHeight();
-    requestAnimationFrame(requestCatalogHandoffHeight);
-    requestAnimationFrame(requestCatalogHandoffPin);
-
-    if (catalogHandoffFrameRef.value) {
-      catalogHandoffObserver = new ResizeObserver(requestCatalogHandoffHeight);
-      catalogHandoffObserver.observe(catalogHandoffFrameRef.value);
-    }
-
-    // Katalog handoff pin'i artık GSAP'in NATIVE pin'i ile yapılıyor.
-    // Eskiden onUpdate her scroll frame'inde getBoundingClientRect okuyup
-    // translate3d yazıyordu (manuel pin emülasyonu) → sürekli layout reflow,
-    // FPS düşüşünün ana kaynaklarından. ScrollTrigger pin'i ScrollSmoother ile
-    // uyumlu çalışır ve transform'u kendi yönetir; scroll'da bizim JS'imiz hiç
-    // çalışmaz. frame viewport'tan kısa olduğu için onu alt kenara yapıştırıyoruz:
-    // pin başlangıcı "frame altı viewport altına değince", bitişi "hold'un sonu".
-    // Masaüstü (>760) dışında pin yok.
-    if (catalogHandoffFrameRef.value && window.innerWidth > 760) {
-      catalogHandoffTrigger = ScrollTrigger.create({
-        trigger: catalogHandoffFrameRef.value,
-        // frame'in altı viewport altına değince yapış (sticky bottom eşdeğeri)
-        start: () => `bottom bottom`,
-        // hold'un (catalog) altı, viewport altına gelince bırak
-        endTrigger: catalogHandoffRef.value,
-        end: 'bottom bottom',
-        pin: catalogHandoffPinRef.value,
-        pinSpacing: false,
-        invalidateOnRefresh: true
-      });
-    }
-
-    const fonts = (document as any).fonts;
-
-    if (fonts?.ready) {
-      fonts.ready.then(() => {
-        requestCatalogHandoffHeight();
-        requestCatalogHandoffPin();
-        ScrollTrigger.refresh();
-      });
-    }
-
-    // PERDE (parallax): katalog stack scroll'dan daha hızlı yukarı gelir →
-    // "Kurgulayın" panelinin/CTA'ların üzerine biner. --catalog-curtain-y 0'dan
-    // -extra'ya scrub edilir; katalog ekranın altından üst-orta bölgeye girerken
-    // ekstra yukarı tırmanır. catalogHandoff PIN'i transform'a değil pin div'ine
-    // dokunduğu için çakışmaz (ayrı katman). Sadece masaüstü.
-    if (catalogStackRef.value && window.innerWidth > 760) {
-      const extra =
-        parseFloat(
-          getComputedStyle(catalogStackRef.value).getPropertyValue('--catalog-curtain-extra')
-        ) || 240;
-
-      catalogCurtainTween = gsap.fromTo(
-        catalogStackRef.value,
-        { '--catalog-curtain-y': '0px' },
-        {
-          '--catalog-curtain-y': `${-extra}px`,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: catalogStackRef.value,
-            start: 'top bottom',
-            end: 'top center',
-            scrub: true,
-            invalidateOnRefresh: true
-          }
-        }
-      );
-    }
-  });
-
-  window.addEventListener('resize', requestCatalogHandoffHeight);
-  window.addEventListener('resize', requestCatalogHandoffPin);
-});
-
-onBeforeUnmount(() => {
-  catalogHandoffObserver?.disconnect();
-  catalogHandoffObserver = null;
-
-  catalogHandoffTrigger?.kill();
-  catalogHandoffTrigger = null;
-
-  catalogCurtainTween?.scrollTrigger?.kill();
-  catalogCurtainTween?.kill();
-  catalogCurtainTween = null;
-
-  if (catalogHandoffFrame) {
-    cancelAnimationFrame(catalogHandoffFrame);
-    catalogHandoffFrame = 0;
-  }
-
-  if (catalogHandoffPinFrame) {
-    cancelAnimationFrame(catalogHandoffPinFrame);
-    catalogHandoffPinFrame = 0;
-  }
-
-  if (catalogHandoffPinRef.value) {
-    catalogHandoffPinRef.value.style.transform = '';
-  }
-
-  window.removeEventListener('resize', requestCatalogHandoffHeight);
-  window.removeEventListener('resize', requestCatalogHandoffPin);
-});
 </script>
 
 <style scoped>
