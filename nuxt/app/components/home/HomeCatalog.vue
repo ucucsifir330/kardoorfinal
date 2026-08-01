@@ -34,8 +34,9 @@
         :ref="setMainRef"
       >
         <div class="catalog-sticky-title" :class="{ 'is-scrolled': isCatalogScrolled }">
-          <!-- h2: sayfanın tek <h1>'i hero'daki ana başlıktır (SSR açıldıktan
-               sonra ikisi de sunucu çıktısına girdiği için çakışıyordu). -->
+          <!-- h2 (h1 değil): sayfanın tek birinci düzey başlığı hero'dadır.
+               SSR açıldıktan sonra ikisi de sunucu çıktısına girip
+               çakışıyordu. -->
           <h2 ref="catalogTitleRef" class="catalog-title">{{ catalogCopy.title }}</h2>
         </div>
 

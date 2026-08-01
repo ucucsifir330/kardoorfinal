@@ -1,15 +1,49 @@
 <template>
-  <!-- Mobil/masaüstü ayrımı yalnız istemcide bilinir; ClientOnly olmadan
-       sunucu her zaman masaüstünü basar ve mobilde hydration uyuşmazlığı
-       yüzünden giriş bir kare yanlış bileşenle çizilir. -->
+  <!-- Mobil/masaüstü ayrımı yalnız istemcide bilinir (viewport + pointer),
+       o yüzden İNTERAKTİF sahne ClientOnly'de kalır: sunucu masaüstünü basıp
+       mobilde hydration uyuşmazlığı üretmesin.
+
+       Ama SSR fallback'i artık boş bir div DEĞİL — sayfanın ana başlığı, alt
+       başlığı, CTA'sı ve hero görseli burada, sunucu çıktısında. Böylece
+       arama motoru gerçek içerik görür ve tarayıcının preload scanner'ı
+       hero'yu HTML'den bulabilir (JS'i beklemeden). Sahne mount olunca bu
+       kabuğun yerini alır; metin birebir aynı kaynaktan (useEntranceCopy)
+       geldiği için görsel sıçrama olmaz. -->
   <ClientOnly>
     <EntranceDoorMobile v-if="isMobileEntrance" />
     <EntranceDoorLab v-else />
     <template #fallback>
-      <div
-        aria-hidden="true"
-        style="width: 100%; height: 100dvh; background: var(--ambience-bg)"
-      />
+      <section class="entrance-ssr-shell">
+        <img
+          :src="ssrHeroSrc"
+          class="entrance-ssr-shell__bg"
+          fetchpriority="high"
+          decoding="async"
+          alt="Kardoor giriş görseli"
+          draggable="false"
+        />
+        <div class="entrance-ssr-shell__copy">
+          <h1 class="entrance-ssr-shell__heading">
+            <span>{{ entranceCopy.line1 }}</span>
+            <span class="entrance-ssr-shell__heading-accent">
+              <em>{{ entranceCopy.accent }}</em> {{ entranceCopy.line2 }}
+            </span>
+          </h1>
+          <p class="entrance-ssr-shell__subtitle">
+            {{ entranceCopy.subtitleLead
+            }}{{ entranceCopy.subtitleAccent ? " " : ""
+            }}<em v-if="entranceCopy.subtitleAccent">{{ entranceCopy.subtitleAccent }}</em>
+          </p>
+          <div class="entrance-ssr-shell__cta">
+            <AdaCtaButton
+              :label="entranceCopy.ctaLabel"
+              href="/catalog"
+              variant="filled"
+              icon-position="none"
+            />
+          </div>
+        </div>
+      </section>
     </template>
   </ClientOnly>
   <section ref="catalogStackRef" class="home-catalog-reference-stack">
@@ -55,6 +89,9 @@ import type { ComponentPublicInstance } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useKardoorLocale } from '~/composables/useKardoorLocale'
+import { useEntranceCopy } from '~/composables/useEntranceCopy'
+import { useShowroomAmbience } from '~/composables/useShowroomAmbience'
+import AdaCtaButton from '~/components/home/AdaCtaButton.vue'
 
 interface Review {
   id: number;
@@ -89,6 +126,19 @@ const isMobileEntrance = ref(
   typeof window !== 'undefined' &&
     window.innerWidth <= 1024 &&
     window.matchMedia('(pointer: coarse)').matches
+);
+
+// SSR kabuğunun metni — interaktif sahnelerle AYNI kaynak, yoksa sunucu
+// çıktısı ile mount sonrası metin ayrışır.
+const { copy: entranceCopy } = useEntranceCopy();
+const { isNight } = useShowroomAmbience();
+
+// Sunucu viewport oranını bilemez; varyant seçimi mount'ta placeDoor() ile
+// yapılıyor. Kabukta en yaygın masaüstü oranı (16:9) kullanılır — sahne
+// mount olunca doğru varyantla değişir. Tema ise inline script'ten gelen
+// sınıfla SSR'da doğru biliniyor.
+const ssrHeroSrc = computed(() =>
+  isNight.value ? '/hero-night-16x9.avif' : '/hero-day-16x9.avif'
 );
 
 const { locale } = useKardoorLocale();

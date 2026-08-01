@@ -24,6 +24,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useShowroomAmbience } from "~/composables/useShowroomAmbience";
 import { useDoorSprite } from "~/composables/useDoorSprite";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
+import { useEntranceCopy } from "~/composables/useEntranceCopy";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 import ShowroomLab from "~/components/home/ShowroomLab.vue";
 
@@ -202,27 +203,11 @@ const heroSrc = computed(() =>
 const doorMeta = computed(() => (isNight.value ? DOOR.night : DOOR.day));
 
 const { locale } = useKardoorLocale();
-const copy = computed(() =>
-  locale.value === "tr"
-    ? {
-        line1: "Hayallerinize",
-        accent: "Açılan",
-        line2: "Kapı",
-        subtitleLead: "Güven kapının ardında",
-        subtitleAccent: "yaşar.",
-        ctaLabel: "Koleksiyonları Keşfet",
-        scrollCue: "Kaydır",
-      }
-    : {
-        line1: "The Door",
-        accent: "to Your",
-        line2: "Dreams",
-        subtitleLead: "Confidence lives behind the door",
-        subtitleAccent: "",
-        ctaLabel: "Explore Collections",
-        scrollCue: "Scroll",
-      }
-);
+// Hero metni ortak kaynaktan (useEntranceCopy) gelir — mobil sürümle birebir
+// aynıydı ve SSR kabuğu da aynı metni basıyor. scrollCue cihaza özgü olduğu
+// için burada kalır.
+const { copy } = useEntranceCopy();
+const scrollCue = computed(() => (locale.value === "tr" ? "Kaydır" : "Scroll"));
 
 const configureCopy = computed(() =>
   locale.value === "tr"
@@ -1085,7 +1070,7 @@ onBeforeUnmount(() => {
 
     <!-- KAYDIR ipucu — scroll başlayınca kaybolur (--hero-cue-opacity). -->
     <div class="entrance-lab__cue" aria-hidden="true">
-      <span class="entrance-lab__cue-label">{{ copy.scrollCue }}</span>
+      <span class="entrance-lab__cue-label">{{ scrollCue }}</span>
       <span class="entrance-lab__scroll-device">
         <span class="entrance-lab__scroll-motion" />
       </span>
