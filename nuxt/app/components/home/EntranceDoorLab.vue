@@ -25,6 +25,7 @@ import { useShowroomAmbience } from "~/composables/useShowroomAmbience";
 import { useDoorSprite } from "~/composables/useDoorSprite";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import { useEntranceCopy } from "~/composables/useEntranceCopy";
+import { useEntranceInput } from "~/composables/useEntranceInput";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 import ShowroomLab from "~/components/home/ShowroomLab.vue";
 
@@ -280,6 +281,8 @@ const { $smoother } = useNuxtApp();
 
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
+// Girdi otoritesi (tekerlek + klavye) — kendi bandını yönetir, bkz. useEntranceInput.
+let entranceInput: ReturnType<typeof useEntranceInput> | null = null;
 let teardown: (() => void) | undefined;
 let configureHeadingTween: ReturnType<typeof gsap.to> | undefined;
 let configureCopyTween: ReturnType<typeof gsap.to> | undefined;
@@ -791,40 +794,16 @@ onMounted(() => {
     settleToProgress(DOOR_SNAP_POINTS[targetIndex]!, direction);
   };
 
-  const onWheel = (event: WheelEvent) => {
-    if (event.deltaY === 0) return;
-    driveEntrance(event.deltaY > 0 ? 1 : -1, Math.abs(event.deltaY), () => event.preventDefault());
-  };
+  // Girdi (tekerlek + klavye) artık useEntranceInput'un sorumluluğu. Sahne
+  // yalnız `driveEntrance` sözleşmesini sağlar; girdi türünü hiç bilmez.
+  // Listener'lar sadece pin bandı aktifken DOM'a bağlanır (aşağıda start()).
+  entranceInput = useEntranceInput({
+    trigger: section,
+    drive: driveEntrance,
+    start: "top top",
+    end: () => `+=${Math.round(window.innerHeight * 9)}`
+  });
 
-  /**
-   * KLAVYE — sahnenin ikinci girdi adaptörü.
-   *
-   * Sahne pinliyken tarayıcının kendi klavye scroll'u işe yaramaz: ScrollSmoother
-   * sayfayı transform ile sürdüğü için Space/PageDown hiçbir şey yapmıyordu ve
-   * kullanıcı hero'da KİLİTLİ kalıyordu (kataloğa, referanslara, footer'a
-   * klavyeyle ulaşmanın yolu yoktu). Aynı `driveEntrance` sözleşmesine bağlanır,
-   * böylece kapı seçimi/snap davranışı tekerlekle birebir aynı olur.
-   */
-  const KEY_DIRECTIONS: Record<string, 1 | -1> = {
-    ArrowDown: 1, PageDown: 1, ArrowRight: 1,
-    ArrowUp: -1, PageUp: -1, ArrowLeft: -1
-  };
-
-  const onKeydown = (event: KeyboardEvent) => {
-    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
-
-    // Form alanı / düzenlenebilir içerik odaktayken sahneyi sürme.
-    const el = document.activeElement as HTMLElement | null;
-    if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
-
-    const direction =
-      KEY_DIRECTIONS[event.key] ?? (event.key === " " ? (event.shiftKey ? -1 : 1) : undefined);
-    if (!direction) return;
-
-    // strength: tuş basımı zaten kasıtlı → portal geri-çekme eşiğini (>8) geçen
-    // sabit bir değer ver; tekerlekteki "hafif dokunuş" filtresine takılmasın.
-    driveEntrance(direction, 40, () => event.preventDefault());
-  };
   // finally: yükleme BAŞARISIZ olsa bile showroom açılır. Aksi halde sprite
   // 404'lerse delik sonsuza dek kapalı kalır ve sahne hiç görünmez.
   door
@@ -836,8 +815,7 @@ onMounted(() => {
       isDoorPainted.value = true;
     });
 
-  window.addEventListener("wheel", onWheel, { passive: false });
-  window.addEventListener("keydown", onKeydown);
+  entranceInput.start();
 
   // Tek pinli scrub: progress 0→1 boyunca PORTAL → HOLD → ZOOM → SHOWROOM.
   trigger = ScrollTrigger.create({
@@ -912,8 +890,8 @@ onMounted(() => {
     settleToDoorIndex = undefined;
     if (resizeDebounce) window.clearTimeout(resizeDebounce);
     resizeDebounce = 0;
-    window.removeEventListener("wheel", onWheel);
-    window.removeEventListener("keydown", onKeydown);
+    entranceInput?.destroy();
+    entranceInput = null;
     window.removeEventListener("resize", onResize);
     window.removeEventListener("kardoor:home", goHome);
     trigger?.kill(true);
