@@ -1,81 +1,33 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   SITE HEADER
+   İki bağımsız parça:
+     1) SOL MARKA — "EGE KARDOOR" + sayfaya karşı blend edilen ikiz katman.
+     2) ORTA NAVBAR (.site-nav) — üst kenara yapışan koyu çubuk, ortasından
+        sarkan K damlası, dar ekranda damladan açılan panel.
+   ═══════════════════════════════════════════════════════════════════════ */
+
 :root {
   --header-max-width: 1820px;
   --header-offset-x: clamp(18px, 2.55vw, 48px);
-  --header-offset-y: clamp(14px, 1.75vw, 30px);
+  --header-offset-y: clamp(10px, calc(0.4vw + 4px), 12px);
 
+  /* Markanın dikey ortalama yüksekliği. Header ve blend katmanı AYNI değeri
+     kullanır → ikiz kopya her zaman piksel hizasında kalır. */
   --header-pill-height: 56px;
-  --header-pill-radius: 999px;
-  --header-control-radius: 999px;
-
-  --header-glass-angle: -75deg;
-  --header-shine-angle: -45deg;
-  --header-hover-time: 400ms;
-  --header-hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
 
   --header-brand-text: rgba(255, 255, 255, 0.96);
   --header-brand-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
-
-  --header-link: rgba(255, 255, 255, 0.74);
-  --header-link-hover: rgba(255, 255, 255, 0.98);
-  --header-link-active: rgba(5, 12, 18, 0.96);
-
-  --header-glass-tint: rgba(255, 255, 255, 0.34);
-  --header-glass-edge: rgba(255, 255, 255, 0.92);
-  --header-glass-edge-soft: rgba(255, 255, 255, 0.38);
-  --header-glass-shadow: rgba(0, 0, 0, 0.16);
-  --header-glass-bottom: rgba(255, 255, 255, 0.1);
-  --header-glass-rim: rgba(35, 43, 50, 0.18);
-
-  --header-control-hover: rgba(255, 255, 255, 0.13);
   --header-font: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 [data-theme="light"] {
   --header-brand-text: rgba(4, 10, 16, 0.94);
   --header-brand-shadow: 0 14px 30px rgba(255, 255, 255, 0.22);
-
-  --header-link: rgba(5, 12, 18, 0.68);
-  --header-link-hover: rgba(5, 12, 18, 0.96);
-  --header-link-active: rgba(5, 12, 18, 0.98);
-
-  --header-glass-tint: rgba(255, 255, 255, 0.46);
-  --header-glass-edge: rgba(255, 255, 255, 0.98);
-  --header-glass-edge-soft: rgba(255, 255, 255, 0.5);
-  --header-glass-shadow: rgba(18, 28, 36, 0.13);
-  --header-glass-bottom: rgba(255, 255, 255, 0.16);
-  --header-glass-rim: rgba(18, 28, 36, 0.16);
-
-  --header-control-hover: rgba(255, 255, 255, 0.36);
 }
 
 [data-theme="dark"] {
   --header-brand-text: rgba(255, 255, 255, 0.96);
   --header-brand-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
-
-  --header-link: rgba(255, 255, 255, 0.72);
-  --header-link-hover: rgba(255, 255, 255, 0.98);
-  --header-link-active: rgba(5, 12, 18, 0.96);
-
-  --header-glass-tint: rgba(255, 255, 255, 0.16);
-  --header-glass-edge: rgba(255, 255, 255, 0.72);
-  --header-glass-edge-soft: rgba(255, 255, 255, 0.3);
-  --header-glass-shadow: rgba(0, 0, 0, 0.28);
-  --header-glass-bottom: rgba(255, 255, 255, 0.04);
-  --header-glass-rim: rgba(0, 0, 0, 0.32);
-
-  --header-control-hover: rgba(255, 255, 255, 0.12);
-}
-
-@property --header-glass-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: -75deg;
-}
-
-@property --header-shine-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: -45deg;
 }
 
 .site-header {
@@ -93,20 +45,26 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center; /* bar ekranın ortasında */
-  gap: clamp(16px, 2vw, 30px);
+  justify-content: center;
   width: min(100%, var(--header-max-width));
+  /* Marka mutlak konumlu (top:50%) → satırın yüksekliğini burası verir.
+     Blend katmanının __inner'ıyla aynı değer olmalı. */
+  min-height: var(--header-pill-height);
   margin: 0 auto;
-  pointer-events: none; /* boşluklar tıklanmasın; bar + brand kendi auto'larını alır */
+  pointer-events: none;
 }
 
-/* Brand sola sabit (akıştan çıkar) → ortadaki bar'ı kaydırmaz.
-   transform: aşağıdaki eski kopyayla birleştirildi (shift-x + dikey ortalama). */
+/* ───────────────────────────────────────────────────────────────
+   SOL MARKA
+   ─────────────────────────────────────────────────────────────── */
+
+/* Marka sola sabit (akıştan çıkar) → ortadaki navbar'ı kaydırmaz. */
 .site-header__brand.site-header__brand--ghost {
   position: absolute;
   left: 0;
   top: 50%;
   transform: translate(var(--header-brand-shift-x), -50%);
+  pointer-events: auto;
 }
 
 .site-header__brand {
@@ -140,6 +98,25 @@
   color: var(--header-brand-text);
 }
 
+.site-header__brand--ghost:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+}
+
+.site-header__brand .brand-title__ege {
+  filter: drop-shadow(var(--header-brand-shadow));
+}
+
+[data-theme="light"] .site-header__brand .brand-title__ege {
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.32))
+    drop-shadow(0 12px 28px rgba(0, 0, 0, 0.12));
+}
+
+[data-theme="dark"] .site-header__brand .brand-title__ege {
+  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.34));
+}
+
 /* ───────────────────────────────────────────────────────────────
    Cursor-style negative logo.
    The real header brand lives inside the fixed header, whose stacking
@@ -155,6 +132,7 @@
    ─────────────────────────────────────────────────────────────── */
 .brand-blend-layer {
   display: none;
+  transition: opacity 0.32s var(--ease-out, ease);
 }
 
 @media (any-hover: hover) and (any-pointer: fine) {
@@ -213,245 +191,6 @@
   }
 }
 
-.site-header__brand .brand-title__ege {
-  filter: drop-shadow(var(--header-brand-shadow));
-}
-
-.site-header__bar {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  border: 0;
-  background: transparent;
-  box-shadow:
-    0 12px 30px var(--header-glass-shadow),
-    0 1px 1px rgba(255, 255, 255, 0.34);
-  /* Katmanı kendi compositing katmanına sabitle → scroll'da arka plan blur'unun
-     kenar "seam/tearing" (her frame yeniden örnekleme) artefaktını bastırır. */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  contain: paint;
-  /* TEK BAR: [sol grup] K [sağ grup]. Sol/sağ gruba EŞİT min-genişlik (--header-group)
-     → K iki eşit blok arasında TAM ORTADA. İçerik K'ye yaslı; bar sayfada ortalı. */
-  --header-group: clamp(220px, 22vw, 320px);
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(10px, 1.2vw, 22px);
-  width: fit-content;
-  max-width: 100%;
-  min-height: var(--header-pill-height);
-  padding: 4px clamp(10px, 0.9vw, 16px);
-  border-radius: var(--header-pill-radius);
-  pointer-events: auto;
-  will-change: transform, opacity;
-  transition:
-    box-shadow var(--header-hover-time) var(--header-hover-ease),
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.site-header__bar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  /* GERÇEK CAM: arkayı GÖSTEREN katman. Opak beyaz boya yok — sadece çok ince
-     bir üst-kenar parlaması (cam refraksiyonu) + temaya bağlı hafif tint.
-     Asıl "cam" hissi backdrop-filter'dan gelir (blur + saturate, arka renk geçer). */
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.14) 0%,
-      rgba(255, 255, 255, 0.02) 30%,
-      rgba(255, 255, 255, 0) 70%
-    ),
-    linear-gradient(180deg, var(--header-glass-tint), var(--header-glass-bottom));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -1px 1px rgba(20, 28, 34, 0.08);
-  backdrop-filter: blur(16px) saturate(1.7);
-  -webkit-backdrop-filter: blur(16px) saturate(1.7);
-}
-
-.site-header__bar::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  border-radius: inherit;
-  padding: 1px;
-  background:
-    conic-gradient(
-      from var(--header-glass-angle) at 50% 50%,
-      var(--header-glass-rim),
-      rgba(0, 0, 0, 0) 8% 42%,
-      var(--header-glass-rim) 52%,
-      rgba(0, 0, 0, 0) 62% 94%,
-      var(--header-glass-rim)
-    ),
-    linear-gradient(180deg, var(--header-glass-edge), var(--header-glass-edge-soft));
-  opacity: 0.78;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  transition:
-    --header-glass-angle 500ms ease,
-    opacity var(--header-hover-time) var(--header-hover-ease);
-}
-
-.site-header__bar > * {
-  position: relative;
-  z-index: 3;
-}
-
-.site-header__bar:hover {
-  --header-glass-angle: -125deg;
-  box-shadow:
-    0 10px 24px var(--header-glass-shadow),
-    0 1px 1px rgba(255, 255, 255, 0.4);
-}
-
-/* Sol/sağ grup — İKİSİ DE eşit min-genişlik (--header-group) alır → K iki eşit
-   blok arasında TAM ORTADA. İçerik K'ye yaslı; içerik dar kalırsa boşluk DIŞ
-   kenarda olur (K tarafında değil), bar yine kompakt. */
-.site-header__group {
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(4px, 0.5vw, 10px);
-  /* Sol ve sağ grup AYNI taban + AYNI esneme → içerik dengesiz olsa bile iki
-     blok eşit genişlikte kalır, K her zaman bar'ın TAM ortasında durur. */
-  flex: 1 1 var(--header-group, 300px);
-  min-width: var(--header-group, 300px);
-}
-
-.site-header__group--left {
-  justify-content: flex-end; /* içerik K'ye yaslı */
-}
-
-.site-header__group--right {
-  justify-content: flex-start; /* İletişim K'ye yaslı */
-  gap: clamp(6px, 0.6vw, 12px);
-}
-
-/* İletişim, K (sol uç) ile güneş segmenti (sağ uç) arasında TAM ORTADA dursun:
-   her iki yana eşit auto-marj → kalan boşluk eşit bölünür, Contact ortalanır. */
-.site-header__group--right .site-header__nav-link {
-  margin-inline: auto;
-}
-
-/* Tema + dil segmentleri sağ grubun DIŞ (sağ) kenarına yaslı kalır; Contact ise
-   margin-inline:auto ile K ↔ güneş arasında ortalanır. */
-
-/* ── Segmented control: GÜNEŞ|AY ve TR|EN — iki ayrı buton, aktif vurgulu ──
-   Pill camıyla bütünleşen ince bir yuva; içinde iki seçenek yan yana. */
-.site-header__segment {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 3px;
-  border-radius: var(--header-control-radius);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.03)
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    inset 0 -1px 1px rgba(18, 28, 36, 0.05);
-}
-
-.site-header__segment-button {
-  position: relative;
-  isolation: isolate;
-  display: inline-grid;
-  place-items: center;
-  width: calc(var(--header-pill-height) - 16px);
-  min-height: calc(var(--header-pill-height) - 14px);
-  padding: 0;
-  border: 0;
-  border-radius: var(--header-control-radius);
-  background: transparent;
-  color: var(--header-link);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition:
-    background 0.25s var(--ease-soft),
-    box-shadow 0.25s var(--ease-soft),
-    color 0.25s var(--ease-soft),
-    transform 0.2s var(--ease-soft);
-}
-
-.site-header__segment-button--text {
-  width: auto;
-  min-width: calc(var(--header-pill-height) - 14px);
-  padding: 0 10px;
-}
-
-.site-header__segment-button:hover {
-  color: var(--header-link-hover);
-  background: var(--header-control-hover);
-}
-
-.site-header__segment-button:active {
-  transform: scale(0.94);
-}
-
-.site-header__segment-button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-.site-header__segment-button.is-active {
-  color: var(--header-link-active);
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.96),
-    rgba(255, 255, 255, 0.72) 44%,
-    rgba(232, 238, 244, 0.56) 100%
-  );
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.98),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.08),
-    0 6px 16px rgba(0, 0, 0, 0.14);
-}
-
-[data-theme="dark"] .site-header__segment-button.is-active {
-  color: #071019;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.94),
-    rgba(255, 255, 255, 0.68) 44%,
-    rgba(220, 228, 236, 0.54) 100%
-  );
-}
-
-.site-header__segment-button .site-header__theme-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.site-header--hidden .site-header__bar {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(calc(-100% - var(--header-offset-y) - 16px));
-}
-
-/* Marka katmani SABIT kalir — asagi scroll'da gizlenmez.
-   .site-header--hidden yalnizca nav CUBUGU icindir (asagi inince cubuk
-   kayar, yukari cikinca geri gelir). Marka o mantiga bagli DEGIL.
-   Sayfa sonunda footer ile cakisma sorunu asagidaki kuralla cozuluyor. */
-.brand-blend-layer {
-  transition: opacity 0.32s var(--ease-out, ease);
-}
-
 /* Sayfa SONUNDA marka footer icerigiyle cakisiyordu ("EGE KARDOOR" yazisi
    footer linklerinin ustune biniyordu). Footer dome'u viewport'un ust
    yarisina girdiginde markayi gizle — sadece o anda, her scroll'da degil. */
@@ -460,493 +199,616 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
   pointer-events: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .site-header__bar {
-    transition: none;
-  }
+/* Panel açıkken marka scrim'in üstünde (z-index 81/82 > header 80) kalırdı.
+   Burada :has() KULLANMIYORUZ: sınıf katmana doğrudan bağlanıyor. :has()
+   gövde seviyesinde her DOM değişiminde yeniden değerlendirilir ve sayfa
+   geçişlerinde <main> tamamen değiştiği için bedeli geçişe biniyordu. */
+.brand-blend-layer.is-dimmed {
+  opacity: 0;
+  pointer-events: none;
 }
 
-.site-header__nav-link {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
+/* ═══════════════════════════════════════════════════════════════════════
+   ORTA NAVBAR (.site-nav)
+
+   Geometri notu — DAMLA:
+     Çubuğun alt kenarından sarkan daire, gövdeye `--nav-overlap` kadar gömülür.
+     Gövdedeki oyuğun genişliği (mouth) daire-doğru kesişiminden gelir:
+         mouth = 2 · √(R² − (R − overlap)²),  R = logo / 2
+     overlap'i logo boyutunun sabit bir oranında (2/3) tutunca mouth da logoyla
+     orantılı kalır (0.943 · logo) — böylece logo ölçüsü akışkan (clamp) olsa
+     bile oyuk her zaman tam oturur, JS ölçümü gerekmez.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.site-nav {
+  --nav-bar: #050505;
+  --nav-ink: #f4f4f5;
+  --nav-ink-dim: rgba(244, 244, 245, 0.58);
+  --nav-seg-bg: rgba(255, 255, 255, 0.09);
+  --nav-seg-thumb: #fff;
+  --nav-seg-ink-active: #0a0a0a;
+  --nav-divider: rgba(255, 255, 255, 0.15);
+
+  /* Ölçüler akışkan: dar laptop'ta çubuk kendiliğinden toparlanır, böylece
+     sol markayla çakışmadan mümkün olan en geniş aralıkta tam nav kalır. */
+  --nav-logo: clamp(68px, 5vw, 90px);
+  --nav-overlap: calc(var(--nav-logo) * 0.667);
+  --nav-mouth: calc(var(--nav-logo) * 0.943);
+  --nav-fillet: 3px;
+
+  --nav-text-gap: clamp(18px, 2vw, 40px);
+  --nav-slot: calc(var(--nav-logo) + 2 * var(--nav-text-gap));
+
+  --nav-flare: clamp(26px, 2.8vw, 40px);
+  --nav-radius: clamp(26px, 2.8vw, 40px);
+
+  --nav-pad-y: clamp(12px, 1.1vw, 15px);
+  --nav-pad-x: clamp(14px, 1.8vw, 30px);
+  --nav-gap-left: clamp(18px, 1.9vw, 34px);
+  --nav-gap-right: clamp(11px, 1.3vw, 22px);
+  --nav-seg-h: clamp(30px, 2.7vw, 38px);
+  --nav-font: clamp(13px, 1.05vw, 16px);
+}
+
+.site-nav__shell {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 4;
+  display: flex;
   justify-content: center;
-  min-height: calc(var(--header-pill-height) - 8px);
-  padding: 0 clamp(13px, 1.08vw, 18px);
-  border-radius: var(--header-pill-radius);
-  color: var(--header-link);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: 0;
-  text-decoration: none;
-  white-space: nowrap;
-  transition:
-    background 0.25s var(--ease-soft),
-    box-shadow 0.25s var(--ease-soft),
-    color 0.25s var(--ease-soft),
-    transform 0.25s var(--ease-soft);
+  pointer-events: none;
+  /* Çubuğu KENDİ compositing katmanına sabitler. Çubuk 44px bulanık bir
+     gölge taşıyor; kendi katmanı olmazsa sayfanın üst bandındaki her
+     yeniden boyama (sayfa geçişi, tema geçişi, scroll) bu gölgeyi de
+     yeniden çiziyor. backface: ScrollSmoother'ın kesirli transform'unda
+     oluşan kenar seam'ini bastırır. */
+  will-change: transform;
+  backface-visibility: hidden;
+  transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.site-header__nav-link:hover {
-  color: var(--header-link-hover);
-  background: var(--header-control-hover);
+/* Shell'in yüksekliği yalnız çubuk kadardır; damla mutlak konumlu olduğu için
+   o yüksekliğe katılmaz. Yüzdeyle ötelemek damlayı ekranda bırakırdı —
+   damlanın alt kenarı kadar (çubuk + logo − gömülme) yukarı taşıyoruz. */
+.site-header--hidden .site-nav__shell {
+  transform: translateY(calc(-100% + var(--nav-overlap) - var(--nav-logo) - 16px));
 }
 
-.site-header__nav-mark {
-  isolation: isolate;
-  display: inline-grid;
-  place-items: center;
-  width: calc(var(--header-pill-height) - 8px);
-  min-height: calc(var(--header-pill-height) - 8px);
-  border-radius: var(--header-control-radius);
-  color: var(--header-link-hover);
-  background: transparent;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-  text-decoration: none;
-  transition:
-    background 0.25s var(--ease-soft),
-    color 0.25s var(--ease-soft),
-    transform 0.25s var(--ease-soft);
-}
-
-.site-header__nav-mark span {
-  width: 20px;
-  height: 24px;
-  background: currentColor;
-  mask: url("/images/brand/ege-logo.svg") center / contain no-repeat;
-  -webkit-mask: url("/images/brand/ege-logo.svg") center / contain no-repeat;
-}
-
-/* K = Home. Bar camıyla bütünleşen İNCE HALKA — dolu daire değil. Zemin neredeyse
-   şeffaf, sadece hafif bir çember K'yi merkez öğe olarak işaretler. */
-.site-header__nav-mark.is-active,
-.site-header__nav-mark:hover {
-  color: var(--header-link-hover);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
-}
-
-[data-theme="light"] .site-header__nav-mark {
-  color: var(--header-link-active);
-  box-shadow: inset 0 0 0 1px rgba(20, 28, 36, 0.16);
-}
-
-[data-theme="light"] .site-header__nav-mark.is-active,
-[data-theme="light"] .site-header__nav-mark:hover {
-  background: rgba(255, 255, 255, 0.4);
-  box-shadow: inset 0 0 0 1px rgba(20, 28, 36, 0.22);
-  color: var(--header-link-active);
-}
-
-.site-header__nav-link--disabled,
-.site-header__mobile-link--disabled {
-  cursor: default;
-}
-
-.site-header__nav-link--disabled:hover,
-.site-header__mobile-link--disabled:hover {
-  color: var(--header-link);
-  background: transparent;
-}
-
-.site-header__nav-link.is-active {
-  --header-glass-angle: -75deg;
-  color: var(--header-link-active);
-  font-weight: 600;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.96),
-      rgba(255, 255, 255, 0.72) 44%,
-      rgba(232, 238, 244, 0.56) 100%
-    );
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.98),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.08),
-    inset 8px 0 16px rgba(255, 255, 255, 0.22),
-    inset -10px -6px 18px rgba(0, 0, 0, 0.08),
-    0 8px 22px rgba(0, 0, 0, 0.16);
-}
-
-.site-header__nav-link.is-active::before,
-.site-header__mobile-link.is-active::before {
-  opacity: 0.72;
-}
-
-.site-header__nav-link.is-active::after,
-.site-header__mobile-link.is-active::after {
-  opacity: 1;
-}
-
-.site-header__nav-link:active,
-.site-header__icon-button:active,
-.site-header__mobile-link:active {
-  --header-glass-angle: -75deg;
-  --header-shine-angle: -15deg;
-  transform: scale(0.975);
-}
-
-.site-header__nav-mark:active {
-  --header-glass-angle: -75deg;
-  transform: scale(0.96);
-}
-
-.site-header__nav-link--disabled:active,
-.site-header__mobile-link--disabled:active {
-  transform: none;
-}
-
-.site-header__nav-link:active::before,
-.site-header__icon-button:active::before,
-.site-header__mobile-link:active::before {
-  background-position: 50% 15%, center;
-}
-
-.site-header__icon-button {
-  flex: 0 0 auto;
-  display: inline-grid;
-  place-items: center;
+.site-nav__bar {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  width: calc(var(--header-pill-height) - 8px);
-  min-height: calc(var(--header-pill-height) - 8px);
-  padding: 0;
-  border: 0;
-  border-radius: var(--header-control-radius);
-  color: var(--header-link);
-  background: transparent;
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: 0;
-  text-decoration: none;
-  transition:
-    background 0.25s var(--ease-soft),
-    box-shadow 0.25s var(--ease-soft),
-    color 0.25s var(--ease-soft),
-    transform 0.25s var(--ease-soft);
+  display: inline-grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: auto;
+  padding: var(--nav-pad-y) var(--nav-pad-x);
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
+  background: var(--nav-bar);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.28);
+  pointer-events: auto;
 }
 
-.site-header__nav-link::before,
-.site-header__nav-link::after,
-.site-header__icon-button::before,
-.site-header__icon-button::after,
-.site-header__mobile-link::before,
-.site-header__mobile-link::after {
+/* Ters (concave) flare'ler: çubuğu ekranın üst kenarına organik bağlar. */
+.site-nav__bar::before,
+.site-nav__bar::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  top: 0;
+  width: var(--nav-flare);
+  height: var(--nav-flare);
+}
+
+.site-nav__bar::before {
+  right: 100%;
+  background: radial-gradient(
+    circle at bottom left,
+    transparent var(--nav-flare),
+    var(--nav-bar) calc(var(--nav-flare) + 0.5px)
+  );
+}
+
+.site-nav__bar::after {
+  left: 100%;
+  background: radial-gradient(
+    circle at bottom right,
+    transparent var(--nav-flare),
+    var(--nav-bar) calc(var(--nav-flare) + 0.5px)
+  );
+}
+
+.site-nav__group {
+  display: flex;
+  align-items: center;
+}
+
+/* Sol ve sağ grup 1fr paylaşır → damla her zaman çubuğun TAM ortasında.
+   İçerik damlaya yaslı; artan boşluk dış kenarlarda kalır. */
+.site-nav__group--left {
+  gap: var(--nav-gap-left);
+  justify-self: end;
+}
+
+.site-nav__group--right {
+  gap: var(--nav-gap-right);
+  justify-self: start;
+}
+
+/* DİL DEĞİŞİMİNDE SIFIR KAYMA
+   Görünen etiket ve tüm dil varyantları AYNI grid hücresini paylaşır.
+   Hücrenin genişliği en uzun varyant kadar olur → çubuk TR/EN geçişinde
+   yeniden ölçülenmez, ortadaki damla yerinden oynamaz. */
+.site-nav__link {
+  display: inline-grid;
+  justify-items: center;
+  color: var(--nav-ink-dim);
+  font-size: var(--nav-font);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.28s var(--ease-soft);
+}
+
+.site-nav__link-text,
+.site-nav__link-sizer {
+  grid-area: 1 / 1;
+}
+
+.site-nav__link-text {
+  position: relative;
+}
+
+.site-nav__link-sizer {
+  display: inline-grid;
+  visibility: hidden;
   pointer-events: none;
-  opacity: 0;
-  transition:
-    opacity var(--header-hover-time) var(--header-hover-ease),
-    background-position calc(var(--header-hover-time) * 1.25) var(--header-hover-ease),
-    --header-shine-angle calc(var(--header-hover-time) * 1.25) var(--header-hover-ease),
-    --header-glass-angle 500ms ease;
 }
 
-.site-header__nav-link::before,
-.site-header__icon-button::before,
-.site-header__mobile-link::before {
-  z-index: -1;
-  background:
-    linear-gradient(
-      var(--header-shine-angle),
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.32) 40% 50%,
-      rgba(255, 255, 255, 0) 55%
-    ),
-    linear-gradient(
-      -75deg,
-      rgba(255, 255, 255, 0.04),
-      rgba(255, 255, 255, 0.18),
-      rgba(255, 255, 255, 0.04)
-    );
-  background-size: 200% 200%, auto;
-  background-position: 0% 50%, center;
-  mix-blend-mode: screen;
+.site-nav__link-sizer > span {
+  grid-area: 1 / 1;
 }
 
-.site-header__nav-link::after,
-.site-header__icon-button::after,
-.site-header__mobile-link::after {
-  z-index: 0;
-  padding: 1px;
-  background:
-    conic-gradient(
-      from var(--header-glass-angle) at 50% 50%,
-      rgba(35, 43, 50, 0.18),
-      rgba(0, 0, 0, 0) 5% 40%,
-      rgba(35, 43, 50, 0.18) 50%,
-      rgba(0, 0, 0, 0) 60% 95%,
-      rgba(35, 43, 50, 0.18)
-    ),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.34));
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
+/* Soldan açılan 1px çizgi — hover'da çizilir, aktif sayfada kalıcıdır.
+   Ölçü katmanına değil GÖRÜNEN metne bağlı, yoksa kısa dilde metinden
+   taşardı. */
+.site-nav__link-text::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -7px;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.42s var(--ease-soft);
 }
 
-.site-header__nav-link:hover::before,
-.site-header__icon-button:hover::before,
-.site-header__mobile-link:hover::before {
-  opacity: 0.62;
-  background-position: 25% 50%, center;
+.site-nav__link:hover,
+.site-nav__link:focus-visible {
+  color: var(--nav-ink);
 }
 
-.site-header__nav-link:hover::after,
-.site-header__icon-button:hover::after,
-.site-header__mobile-link:hover::after {
-  --header-glass-angle: -125deg;
-  opacity: 0.75;
+.site-nav__link:hover .site-nav__link-text::after,
+.site-nav__link:focus-visible .site-nav__link-text::after,
+.site-nav__link.is-active .site-nav__link-text::after {
+  transform: scaleX(1);
 }
 
-/* Tema ikonu (güneş/ay) — rengi buton durumundan (currentColor) alır. */
-.site-header__theme-icon {
+.site-nav__link.is-active {
+  color: var(--nav-ink);
+}
+
+.site-nav__link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 2px;
+}
+
+/* ── "Menü" tuşu — yalnız ara ölçülerde görünür ─────────────────────── */
+
+.site-nav__menu-toggle {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--nav-ink-dim);
+  font: inherit;
+  font-size: var(--nav-font);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.28s var(--ease-soft);
+}
+
+.site-nav__menu-toggle:hover {
+  color: var(--nav-ink);
+}
+
+.site-nav__menu-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 2px;
+}
+
+.site-nav__menu-icon {
+  position: relative;
+  display: block;
   width: 18px;
-  height: 18px;
-  fill: currentColor;
+  height: 10px;
 }
 
-.site-header__icon-button:hover {
-  color: var(--header-link-hover);
-  background: var(--header-control-hover);
+.site-nav__menu-icon span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.34s var(--ease-soft);
 }
 
-.site-header__icon-button:focus-visible,
-.site-header__nav-mark:focus-visible,
-.site-header__nav-link:focus-visible {
+.site-nav__menu-icon span:first-child {
+  top: 0;
+}
+
+.site-nav__menu-icon span:last-child {
+  bottom: 0;
+}
+
+/* Panel açıkken iki çizgi çarpıya kapanır (4.25px = kutu ortası). */
+.site-header--menu-open .site-nav__menu-icon span:first-child {
+  transform: translateY(4.25px) rotate(45deg);
+}
+
+.site-header--menu-open .site-nav__menu-icon span:last-child {
+  transform: translateY(-4.25px) rotate(-45deg);
+}
+
+/* ── Damla ──────────────────────────────────────────────────────────── */
+
+.site-nav__slot {
+  position: relative;
+  grid-column: 2;
+  align-self: stretch;
+  width: var(--nav-slot);
+}
+
+/* Sıfır yükseklikli çapa: çubuğun alt kenarına oturur, oyuğun genişliğini
+   taşır ve iki yanına yumuşatıcı fillet'leri koyar. */
+.site-nav__node {
+  position: absolute;
+  top: calc(100% + var(--nav-pad-y));
+  left: 50%;
+  z-index: 2;
+  width: var(--nav-mouth);
+  height: 0;
+  transform: translateX(-50%);
+}
+
+.site-nav__node::before,
+.site-nav__node::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: var(--nav-fillet);
+  height: var(--nav-fillet);
+}
+
+.site-nav__node::before {
+  right: 100%;
+  background: radial-gradient(
+    circle at bottom left,
+    transparent var(--nav-fillet),
+    var(--nav-bar) calc(var(--nav-fillet) + 0.5px)
+  );
+}
+
+.site-nav__node::after {
+  left: 100%;
+  background: radial-gradient(
+    circle at bottom right,
+    transparent var(--nav-fillet),
+    var(--nav-bar) calc(var(--nav-fillet) + 0.5px)
+  );
+}
+
+.site-nav__logo {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: var(--nav-logo);
+  height: var(--nav-logo);
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--nav-bar);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.26);
+  color: var(--nav-ink);
+  transform: translate(-50%, calc(-1 * var(--nav-overlap)));
+}
+
+.site-nav__logo:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
-.site-header__menu {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+.site-nav__logo-mark {
+  display: block;
+  width: 52%;
+  height: 52%;
+  transition: transform 0.5s var(--ease-soft);
 }
 
-.site-header__menu span {
-  width: 21px;
-  height: 2px;
-  border-radius: 999px;
-  background: currentColor;
-  transition:
-    transform 0.25s var(--ease-soft),
-    opacity 0.25s var(--ease-soft);
+.site-nav__logo:hover .site-nav__logo-mark {
+  transform: scale(1.09);
 }
 
-.site-header--menu-open .site-header__menu span:first-child {
-  transform: translateY(8px) rotate(45deg);
+.site-nav__logo:active .site-nav__logo-mark {
+  transform: scale(0.96);
 }
 
-.site-header--menu-open .site-header__menu span:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
+/* ── Segmentli kontroller (tema · dil) ──────────────────────────────── */
+
+.site-nav__divider {
+  width: 1px;
+  height: 22px;
+  background: var(--nav-divider);
 }
 
-.site-header--menu-open .site-header__menu span:last-child {
-  transform: translateY(-8px) rotate(-45deg);
-}
-
-.site-header__mobile-panel {
-  position: absolute;
-  top: calc(100% - var(--header-offset-y) + 10px);
-  right: var(--header-offset-x);
-  z-index: 2;
-  display: none;
-  width: min(360px, calc(100vw - (var(--header-offset-x) * 2)));
-  overflow: hidden;
-  isolation: isolate;
-  border: 0;
-  border-radius: 24px;
-  padding: 8px;
-  background: transparent;
-  box-shadow: 0 18px 42px var(--header-glass-shadow);
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-8px) scale(0.98);
-  transform-origin: top right;
-  transition:
-    opacity 0.24s var(--ease-soft),
-    transform 0.24s var(--ease-soft);
-}
-
-.site-header__mobile-panel::before,
-.site-header__mobile-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-}
-
-.site-header__mobile-panel::before {
-  z-index: 0;
-  /* Pill ile aynı gerçek-cam reçetesi (opak beyaz boya yerine arkayı gösteren tint). */
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.14) 0%,
-      rgba(255, 255, 255, 0.02) 30%,
-      rgba(255, 255, 255, 0) 70%
-    ),
-    linear-gradient(180deg, var(--header-glass-tint), var(--header-glass-bottom));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -1px 1px rgba(20, 28, 34, 0.08);
-  backdrop-filter: blur(16px) saturate(1.7);
-  -webkit-backdrop-filter: blur(16px) saturate(1.7);
-}
-
-.site-header__mobile-panel::after {
-  z-index: 2;
-  padding: 1px;
-  background:
-    conic-gradient(
-      from var(--header-glass-angle) at 50% 50%,
-      var(--header-glass-rim),
-      rgba(0, 0, 0, 0) 8% 42%,
-      var(--header-glass-rim) 52%,
-      rgba(0, 0, 0, 0) 62% 94%,
-      var(--header-glass-rim)
-    ),
-    linear-gradient(180deg, var(--header-glass-edge), var(--header-glass-edge-soft));
-  opacity: 0.78;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  transition: --header-glass-angle 500ms ease;
-}
-
-.site-header__mobile-panel > * {
+.site-nav__seg {
   position: relative;
-  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  background: var(--nav-seg-bg);
 }
 
-.site-header--menu-open .site-header__mobile-panel {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0) scale(1);
+.site-nav__seg-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: var(--radius-full);
+  background: var(--nav-seg-thumb);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  transition: transform 0.34s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.site-header__mobile-nav {
+.site-nav__seg[data-index="1"] .site-nav__seg-thumb {
+  transform: translateX(100%);
+}
+
+.site-nav__seg-btn {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 4px;
-}
-
-.site-header__mobile-link {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  display: flex;
-  min-height: 44px;
-  align-items: center;
-  justify-content: space-between;
+  place-items: center;
+  height: var(--nav-seg-h);
+  padding: 0;
   border: 0;
-  border-radius: 16px;
-  padding: 0 14px;
-  color: var(--header-link-active);
-  background: transparent;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--nav-ink-dim);
   font: inherit;
-  font-size: 0.94rem;
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: 0;
-  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.28s var(--ease-soft);
 }
 
-.site-header__mobile-link.is-active {
+.site-nav__seg-btn.is-active {
+  color: var(--nav-seg-ink-active);
+}
+
+.site-nav__seg-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.site-nav__seg--theme .site-nav__seg-btn {
+  width: clamp(34px, 3.1vw, 40px);
+}
+
+.site-nav__seg--theme svg {
+  width: 18px;
+  height: 18px;
+}
+
+.site-nav__seg-btn--text {
+  width: clamp(42px, 3.9vw, 50px);
+  font-size: 14px;
   font-weight: 600;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.9),
-      rgba(255, 255, 255, 0.62) 48%,
-      rgba(230, 236, 242, 0.48)
-    );
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.96),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.06),
-    0 10px 26px rgba(0, 0, 0, 0.14);
+  letter-spacing: 0.04em;
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .site-header__bar {
-    background: rgba(38, 43, 49, 0.88);
-  }
-
-  [data-theme="light"] .site-header__bar {
-    background: rgba(236, 240, 242, 0.92);
-  }
+/* Panel parçaları geniş ekranda hiç render edilmez. */
+.site-nav__scrim,
+.site-nav__panel-wrap {
+  display: none;
 }
 
-@media (max-width: 1320px) {
-  .site-header__nav-link {
-    padding-inline: 12px;
-    font-size: 13px;
-  }
-}
+/* ═══════════════════════════════════════════════════════════════════════
+   ARA ÖLÇÜ (≤1120px) — laptop
+   Linkler panele taşınır, yerlerine "Menü" tuşu gelir. Tema/dil segmentleri
+   çubukta kalır: düzen [☰ Menü] — K — [tema · dil] olarak dengede durur
+   (1fr auto 1fr sayesinde damla yine tam ortada).
+   ═══════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1120px) {
-  /* Masaüstü nav linkleri (Ürünler/Referanslar/Hakkımızda/İletişim) hamburger
-     menüyle birlikte görünmesin — mobil panelde zaten navItems'ın tamamı var.
-     --header-group sıfırlanmazsa boşalan grup min-genişliğini korur ve K
-     sağa kayar; grubu içeriğe (kalan ikon/segmentler) göre daraltıyoruz. */
-  .site-header__group--left .site-header__nav-link,
-  .site-header__group--right .site-header__nav-link {
+  .site-nav {
+    --nav-logo: 76px;
+    --nav-pad-y: 15px;
+    --nav-flare: 26px;
+    --nav-radius: 26px;
+  }
+
+  .site-nav__link {
     display: none;
   }
 
-  .site-header__group {
-    --header-group: 0px;
-    flex: 0 0 auto;
-  }
-
-  .site-header__menu {
+  .site-nav__menu-toggle {
     display: inline-flex;
   }
 
-  .site-header__mobile-panel {
+  .site-nav__divider {
+    display: none;
+  }
+
+  .site-nav__logo {
+    cursor: pointer;
+  }
+
+  /* backdrop-filter YOK: bu katman menü kapalıyken de (opacity 0) DOM'da
+     duruyor ve tam ekran bir backdrop kökü açıyordu — tarayıcı her kare
+     arkasını yeniden örneklediği için tema geçişi ve sayfa geçişleri
+     takılıyordu. Düz yarı saydam siyah görsel olarak yeterli.
+     visibility: kapalıyken katmanı tamamen compositing dışında bırakır;
+     gecikmeli geçiş sayesinde kapanış solması yine görünür. */
+  .site-nav__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
     display: block;
+    background: rgba(0, 0, 0, 0.52);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.32s ease,
+      visibility 0s linear 0.32s;
+  }
+
+  .site-nav__scrim.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.32s ease;
+  }
+
+  .site-nav__panel-wrap {
+    position: fixed;
+    top: calc(8px + var(--nav-pad-y));
+    left: 50%;
+    z-index: 3;
+    display: block;
+    width: min(320px, calc(100vw - 36px));
+    transform: translateX(-50%);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .site-nav__panel-wrap.is-open {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* Damla panelin üstünde durur; üst dolgu ona yer açar. */
+  .site-nav__panel {
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--nav-logo) + 20px) 20px 22px;
+    border-radius: 34px;
+    background: var(--nav-bar);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.42);
+    transform: scale(0.08);
+    transform-origin: top center;
+    opacity: 0;
+  }
+
+  .site-nav__panel-nav {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .site-nav__panel-link {
+    padding: 13px 8px;
+    border-radius: 14px;
+    color: var(--nav-ink);
+    font-size: 21px;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    transition: background 0.24s var(--ease-soft);
+  }
+
+  .site-nav__panel-link:hover,
+  .site-nav__panel-link:active {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .site-nav__panel-link.is-active {
+    background: rgba(255, 255, 255, 0.09);
+  }
+
+  .site-nav__panel-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  .site-nav__panel-row {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 16px;
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   YALIN SEKME (≤880px) — tablet
+   Segmentler de panele iner; çubukta yalnız damla kalır. Bu noktanın
+   altında [☰ Menü] + segmentli çubuk sol markaya değmeye başlıyordu.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 880px) {
+  .site-nav {
+    /* Çubuk içeriği boşalınca yükseklik yalnız padding'den gelir; damlanın
+       ekranın üstüne taşmaması için pad-y büyür, gömülme payı küçülür.
+       mouth = 2·√(38² − 16²) ≈ 68.9  (logo 76, overlap 22) */
+    --nav-overlap: 22px;
+    --nav-mouth: 68.9px;
+    --nav-fillet: 8px;
+    --nav-slot: 80px;
+    --nav-pad-y: 24px;
+    --nav-pad-x: 18px;
+    --nav-flare: 28px;
+    --nav-radius: 28px;
+  }
+
+  .site-nav__group {
+    display: none;
+  }
+}
+
+/* Marka ölçüleri :root'ta duruyor: ghost (header içinde) ve blend ikizi
+   (<body>'e teleport edilmiş) AYNI değerleri okumak zorunda, yoksa iki kopya
+   birbirinden kayar. */
 @media (max-width: 760px) {
-  .site-header {
+  :root {
     --header-offset-x: 16px;
+    --header-offset-y: max(8px, env(safe-area-inset-top));
     --header-pill-height: 46px;
-
-    padding: max(8px, env(safe-area-inset-top)) 14px 8px;
-  }
-
-  .site-header__icon-button {
-    min-height: 38px;
-    width: 38px;
-  }
-
-  .site-header__mobile-panel {
-    top: calc(100% - 4px);
-    right: 16px;
-    left: 16px;
-    width: auto;
-    border-radius: 22px;
   }
 }
 
-/* ~600px altında sola sabit logo ile ortalanmış bar çakışıyor (ölçüm:
-   600px'te 3px, 390px'te 94px binişme). Bar'daki K işareti markayı zaten
-   temsil ettiğinden dar ekranda logoyu (ve masaüstü blend kopyalarını) gizle. */
-@media (max-width: 620px) {
+/* Telefon: çubuk tam genişliğe oturur, flare'ler anlamını yitirir.
+   Aynı noktada sola sabit marka ile koyu çubuk çakışıyor; çubuktaki K
+   damlası markayı zaten temsil ettiği için logoyu (ve masaüstü blend
+   kopyalarını) burada gizliyoruz. */
+@media (max-width: 680px) {
+  .site-nav__bar {
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .site-nav__bar::before,
+  .site-nav__bar::after {
+    display: none;
+  }
+
   .site-header__brand--ghost,
   .brand-blend-layer {
     display: none;
@@ -954,46 +816,25 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
 }
 
 @media (max-width: 520px) {
-  .site-header {
+  :root {
     --header-offset-x: 12px;
+    --header-offset-y: max(7px, env(safe-area-inset-top));
     --header-pill-height: 42px;
-    padding: max(7px, env(safe-area-inset-top)) 8px 7px;
   }
 
-  .site-header__inner {
-    gap: 6px;
-  }
-
-  .site-header__icon-button {
-    min-height: 34px;
-    width: 34px;
-  }
-
-  .site-header__mobile-panel {
-    top: calc(100% - 2px);
-    right: 8px;
-    left: 8px;
-    width: auto;
+  .site-nav__panel-wrap {
+    width: min(320px, calc(100vw - 28px));
   }
 }
 
-/* Active capsules: smaller, cleaner, less plastic (dark theme) */
-[data-theme="dark"] .site-header__nav-link.is-active {
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.94),
-      rgba(255, 255, 255, 0.68) 44%,
-      rgba(220, 228, 236, 0.54) 100%
-    );
-}
-
-[data-theme="light"] .site-header__brand .brand-title__ege {
-  filter:
-    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.32))
-    drop-shadow(0 12px 28px rgba(0, 0, 0, 0.12));
-}
-
-[data-theme="dark"] .site-header__brand .brand-title__ege {
-  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.34));
+@media (prefers-reduced-motion: reduce) {
+  .site-nav__shell,
+  .site-nav__scrim,
+  .site-nav__link-text::after,
+  .site-nav__menu-icon span,
+  .site-nav__logo-mark,
+  .site-nav__seg-thumb,
+  .site-nav__panel-link {
+    transition: none;
+  }
 }

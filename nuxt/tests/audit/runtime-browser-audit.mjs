@@ -82,7 +82,7 @@ async function exercisePage(page) {
     }
   });
 
-  const hoverTargets = await page.locator("a, button, [role='button'], .catalog-card, .product-card, .site-header__nav-link").elementHandles();
+  const hoverTargets = await page.locator("a, button, [role='button'], .catalog-card, .product-card, .site-nav__link").elementHandles();
   for (const handle of hoverTargets.slice(0, 30)) {
     try {
       await handle.hover({ timeout: 250 });

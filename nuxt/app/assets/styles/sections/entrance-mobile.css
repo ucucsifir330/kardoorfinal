@@ -62,6 +62,16 @@ body.entrance-mobile-locked {
   pointer-events: none;
 }
 
+/* SHOWROOM = kapının ardındaki SAYFA. Hero sahnesi (z:2) üstünde durur; bu
+   katman ekranda yalnızca hero'nun ŞEFFAF kapı deliğinden görünür (girişten
+   sonra .is-active ile z:3'e çıkıp öne geçer ve etkileşime açılır).
+
+   Buradaki visibility/opacity yalnızca JS DEVREYE GİRENE KADAR geçerli olan
+   başlangıç durumudur: kapı sprite'ı henüz yüklenmemişken delik açıkta kalır,
+   o yüzden gizli başlar. renderEntrance() bunları her karede inline yazar
+   (visibility isDoorPainted'e bağlı). transform/transform-origin da JS'e ait
+   (renderEntrance / placeDoor) — burada tekrar tanımlanmıyor ki CSS ile inline
+   değerler birbiriyle çelişiyormuş gibi okunmasın. */
 .entrance-mobile__showroom {
   position: absolute;
   inset: 0;
@@ -70,8 +80,6 @@ body.entrance-mobile-locked {
   visibility: hidden;
   opacity: 0;
   background: var(--ambience-bg);
-  transform: scale(1.06);
-  transform-origin: center;
   will-change: transform, opacity;
   pointer-events: none;
 }

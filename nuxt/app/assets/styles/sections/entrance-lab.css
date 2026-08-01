@@ -3,8 +3,9 @@
    (EntranceDoor yeniden yazımının başlangıç noktası)
 
    Z-stack:
-     0  .entrance-lab__bg     tek hero background görseli (tema ile değişir)
-     1  .entrance-lab__stage  kapı canvas'ı (siyah boşluğun üstünde)
+     0  .entrance-lab__showroom kapı deliğinden görünen SAYFA (baştan açık)
+     1  .entrance-lab__zoom     hero + kapı canvas'ı (deliğe doğru büyür)
+     3  .entrance-lab__copy     hero metni
 
    KAPI KALİBRASYONU:
      Aşağıdaki --door-* değerleri L-21X9.png'deki siyah kapı boşluğundan
@@ -22,11 +23,9 @@
   height: 100dvh;
   overflow: hidden;
   isolation: isolate;
-  /* KÖK NEDEN: hero'daki kapı boşluğu ŞEFFAF (alpha=0). Hero full-bleed cover
-     olduğu için section zemini YALNIZCA o delikten görünür → her iki temada da
-     koyu olmalı ki kapının ince kenar boşluğu gölge/recess gibi okunsun (light
-     temada krem zemin olsaydı kapı etrafında beyaz çerçeve görünürdü). */
-  background: #0b0b0d;
+  /* Son çare zemini. Kapı deliğinden görünen asıl katman artık showroom;
+     bu renk yalnızca showroom boyanmadan önceki ilk frame'de görünür. */
+  background: #08080c;
   font-family: var(--font-body);
 }
 
@@ -35,24 +34,67 @@
 }
 
 /* ──────────────────────────────────────────────────────────────
-   SHOWROOM — zoom kapıdan içeri girince beliren en arka katman.
-   --showroom-p (0→1, fade) JS'ten gelir. İçindeki ShowroomLab kendi tema
-   zeminini taşır (light/night). Burada zemin YOK — yoksa light modda sızar.
+   SHOWROOM — kapının ARDINDAKİ SAYFA. En arka katman (z:0).
+
+   KÖK NEDEN / TASARIM KARARI: hero görselindeki kapı boşluğu ŞEFFAF (alpha=0)
+   ve hero full-bleed cover. Yani bu katman ekranda YALNIZCA kapı deliğinden
+   görünür. Eskiden showroom scroll'un %27'sine kadar gizliydi (opacity 0 +
+   visibility:hidden) ve delikten section'ın düz siyahı görünüyordu — kapı
+   hiçliğe açılıyordu. Artık showroom İLK KAREDEN İTİBAREN burada duruyor:
+   kanat aralanır aralanmaz delikten gerçek sayfa görünür, kapı sayfanın
+   İÇİNE açılır. Ayrı bir "fade-in" beat'i yok; zoom zaten sahneyi doldurur.
+
+   DERİNLİK: ön katman (hero+kapı) 15×'e büyürken showroom 1.14× → 1×
+   iner (--showroom-depth, JS). İki hızın farkı parallax üretir.
+   transform-origin = KAPI DELİĞİNİN merkezi (--zoom-origin-*, placeDoor'dan),
+   böylece delikten görünen kesit hero büyürken kaymaz.
+
+   İçindeki ShowroomLab kendi tema zeminini taşır (light/night). Burada zemin
+   YOK — yoksa light modda sızar.
    ────────────────────────────────────────────────────────────── */
 
 .entrance-lab__showroom {
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: var(--showroom-p, 0);
-  /* Zoom katmanı silinirken showroom hafifçe yakınlaşıp gelir (kameranın
-     içeri girip durması hissi). */
-  transform: scale(calc(1.08 - 0.08 * var(--showroom-p, 0)));
+  transform-origin: var(--zoom-origin-x, 50%) var(--zoom-origin-y, 50%);
+  transform: scale(var(--showroom-depth, 1.14));
+  will-change: transform;
+  /* Kapı açılmadan önce sahne görünür ama etkileşime kapalı (inert ile
+     birlikte; eski visibility:hidden'ın sağladığı korumanın yerini alır). */
+  pointer-events: none;
+  /* Kapı sprite'ı ilk kez çizilene kadar gizli: canvas boşken hero'nun kapı
+     deliği tamamen şeffaf olduğu için showroom kapı olmadan sızardı.
+     is-revealed, sprite yüklemesi sonuçlanınca (başarı VEYA hata) gelir —
+     ayrıca placeDoor()'dan sonra geldiği için transform-origin de o an
+     kesinlikle ölçülmüş olur (ilk-kare origin sıçraması da kapanır). */
   visibility: hidden;
 }
 
-.entrance-lab__showroom.is-active {
+.entrance-lab__showroom.is-revealed {
   visibility: visible;
+}
+
+.entrance-lab__showroom.is-interactive {
+  pointer-events: auto;
+}
+
+/* Delikten bakarken sahne hafif kısık (dışarıdan loş bir içeriye bakma hissi);
+   içeri girildikçe açılır. KASTEN filter:brightness DEĞİL — filter her scroll
+   frame'inde tüm showroom alt ağacını yeniden boyardı. Opacity animasyonu
+   compositor'da kalır. */
+.entrance-lab__showroom-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #05060c;
+  opacity: var(--showroom-dim, 0.18);
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.entrance-lab[data-ambience="day"] .entrance-lab__showroom-dim {
+  background: #2b2721;
 }
 
 /* Yatay kayan track: [showroom] [configure]. --page-x (JS) sola kaydırır. */
@@ -387,7 +429,7 @@
 
 .entrance-lab__subtitle {
   width: min(100%, clamp(232px, 18.59vw, 600px));
-  margin: clamp(14px, 1.35vw, 40px) 0 0;
+  margin: calc(clamp(14px, 1.35vw, 40px) + 10px) 0 0;
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(18px, 1.35vw, 42px);
   line-height: 1.3;
@@ -634,7 +676,7 @@
   }
 
   .entrance-lab__subtitle {
-    margin-top: min(2.4svh, 1.35vw);
+    margin-top: calc(min(2.4svh, 1.35vw) + 10px);
     font-size: min(2.4svh, 1.35vw);
   }
 

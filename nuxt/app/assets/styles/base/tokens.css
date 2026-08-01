@@ -25,33 +25,11 @@
   --accent-blue: var(--accent);
   --warm: #a77a55;
 
+  /* Sayfa ust bosluklari icin (contact/company). Navbar olculeri
+     components/site-header.css'te — tek kaynak orasi. */
   --header: 82px;
-  --header-max-width: 1800px;
-  --header-offset-x: clamp(24px, 2.6vw, 50px);
-  --header-offset-y: clamp(18px, 2.2vw, 34px);
-  --header-pill-height: 72px;
-  --header-pill-radius: 999px;
-  --header-control-radius: 999px;
-  --header-blur: 24px;
   --header-brand-text: #f7f7f2;
   --header-brand-shadow: 0 16px 32px rgba(0, 0, 0, 0.26);
-  --header-glass: rgba(230, 232, 230, 0.62);
-  --header-glass-strong: rgba(238, 240, 239, 0.72);
-  --header-glass-sheen: rgba(255, 255, 255, 0.56);
-  --header-glass-line: rgba(255, 255, 255, 0.42);
-  --header-glass-highlight: rgba(255, 255, 255, 0.72);
-  --header-glass-shadow: rgba(0, 0, 0, 0.18);
-  --header-link: rgba(7, 16, 24, 0.72);
-  --header-link-hover: rgba(7, 16, 24, 0.96);
-  --header-link-active: #071018;
-  --header-control-hover: rgba(255, 255, 255, 0.34);
-  --header-control-active: rgba(255, 255, 255, 0.78);
-  --header-control-highlight: rgba(255, 255, 255, 0.88);
-  --header-control-shadow: rgba(0, 0, 0, 0.1);
-  --header-language-track: rgba(255, 255, 255, 0.16);
-  --header-bulb-fill: rgba(255, 255, 255, 0.16);
-  --header-bulb-glow: 0 0 0 rgba(44, 227, 255, 0);
-  --header-quote-text: #00121a;
 
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-body: Inter, system-ui, sans-serif;
@@ -120,22 +98,6 @@
   --ambience-copy-shadow: 0 1px 16px rgba(255, 255, 255, 0.36);
   --header-brand-text: #071018;
   --header-brand-shadow: 0 12px 26px rgba(255, 255, 255, 0.18);
-  --header-glass: rgba(236, 238, 236, 0.64);
-  --header-glass-strong: rgba(246, 247, 246, 0.8);
-  --header-glass-sheen: rgba(255, 255, 255, 0.62);
-  --header-glass-line: rgba(255, 255, 255, 0.58);
-  --header-glass-highlight: rgba(255, 255, 255, 0.84);
-  --header-glass-shadow: rgba(0, 0, 0, 0.14);
-  --header-link: rgba(7, 16, 24, 0.68);
-  --header-link-hover: rgba(7, 16, 24, 0.96);
-  --header-link-active: #071018;
-  --header-control-hover: rgba(255, 255, 255, 0.42);
-  --header-control-active: rgba(255, 255, 255, 0.82);
-  --header-control-highlight: rgba(255, 255, 255, 0.92);
-  --header-control-shadow: rgba(0, 0, 0, 0.08);
-  --header-language-track: rgba(255, 255, 255, 0.2);
-  --header-bulb-fill: rgba(255, 255, 255, 0.18);
-  --header-bulb-glow: 0 0 0 rgba(44, 227, 255, 0);
 
   /* --- public/themes/light.css'ten tasindi (2026-07-29).
      Tema dosyalari yalnizca DEGISKEN atamali; duzen kurali yazmamali. --- */
@@ -187,24 +149,6 @@
   --ambience-copy-shadow: 0 18px 52px rgba(0, 0, 0, 0.5);
   --header-brand-text: var(--text-main);
   --header-brand-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
-  --header-glass: rgba(228, 231, 229, 0.22);
-  --header-glass-strong: rgba(228, 231, 229, 0.3);
-  --header-glass-sheen: rgba(255, 255, 255, 0.22);
-  --header-glass-line: rgba(255, 255, 255, 0.22);
-  --header-glass-highlight: rgba(255, 255, 255, 0.26);
-  --header-glass-shadow: rgba(0, 0, 0, 0.34);
-  --header-link: rgba(244, 246, 255, 0.74);
-  --header-link-hover: var(--text-main);
-  --header-link-active: var(--bg-deepest);
-  --header-control-hover: rgba(255, 255, 255, 0.12);
-  --header-control-active: rgba(255, 255, 255, 0.78);
-  --header-control-highlight: rgba(255, 255, 255, 0.74);
-  --header-control-shadow: rgba(0, 0, 0, 0.18);
-  --header-language-track: rgba(0, 0, 0, 0.12);
-  --header-bulb-fill: rgba(142, 162, 255, 0.22);
-  --header-bulb-glow:
-    0 0 18px rgba(142, 162, 255, 0.52),
-    0 0 34px rgba(142, 162, 255, 0.24);
 
   /* --- public/themes/dark.css'ten tasindi (2026-07-29).
      NOT: --bg-color kaybolunca .gradient-mask'in gradyani cozulemez hale

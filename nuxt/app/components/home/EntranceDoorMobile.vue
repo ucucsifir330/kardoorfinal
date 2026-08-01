@@ -168,6 +168,11 @@ const heroSrc = computed(() =>
 const doorSpriteSrc = computed(() =>
   isNight.value ? "/mobile-door-night.webp" : "/mobile-door-light.webp"
 );
+// Kapı sprite'ı (background-image) yüklenene kadar stage div'i ŞEFFAF, yani
+// hero'nun kapı deliği açıkta. Showroom artık baştan görünür olduğu için o
+// pencerede kapı çizilmeden delikten sahne sızardı. Sprite ilk kez sonuçlanana
+// kadar (başarı VEYA hata) showroom gizli tutulur — bkz. EntranceDoorLab.
+const isDoorPainted = ref(false);
 
 let entranceProgress = 0;
 let gesture: GestureState | undefined;
@@ -221,6 +226,13 @@ const placeDoor = () => {
   stage.style.width = `${width}px`;
   stage.style.height = `${height}px`;
   scene.style.transformOrigin = `${centerX}px ${top + height / 2}px`;
+
+  // Kapı deliğinden görünen showroom, deliğin merkezine doğru ölçeklenir →
+  // sahne büyürken delikten görünen kesit kaymaz (bkz. EntranceDoorLab).
+  const showroom = showroomRef.value;
+  if (showroom) {
+    showroom.style.transformOrigin = `${centerX}px ${top + height / 2}px`;
+  }
 };
 
 const setDoorFrame = (progress: number) => {
@@ -259,9 +271,14 @@ const renderEntrance = (rawProgress: number) => {
   scene.style.transform = `scale(${1 + zoomProgress * 14})`;
   scene.style.opacity = `${sceneFade}`;
   scene.style.visibility = sceneFade <= 0.002 ? "hidden" : "visible";
-  showroom.style.opacity = `${showroomFade}`;
-  showroom.style.transform = `scale(${1.06 - showroomFade * 0.06})`;
-  showroom.style.visibility = showroomFade > 0.002 ? "visible" : "hidden";
+
+  // SHOWROOM = kapının ardındaki SAYFA. Fade YOK: hero'nun kapı deliği şeffaf
+  // olduğu için sahne ilk kareden itibaren arkada durur ve kanat aralanınca
+  // delikten görünür (eskiden delikten section'ın düz zemini görünüyordu).
+  // Sahne 15×'e büyürken showroom 1.12× → 1× iner: parallax = içeri girme.
+  showroom.style.opacity = "1";
+  showroom.style.transform = `scale(${1 + (1 - zoomProgress) * 0.12})`;
+  showroom.style.visibility = isDoorPainted.value ? "visible" : "hidden";
   copyElement.style.opacity = `${copyFade}`;
   copyElement.style.transform = `translate3d(0, calc(-50% - ${24 * (1 - copyFade)}px), 0)`;
   cue.style.opacity = `${cueFade}`;
@@ -577,9 +594,26 @@ onMounted(() => {
   setEntranceLocked(true);
   placeDoor();
   renderEntrance(0);
+
+  // Sprite'ı ayrıca ön-yükle ki "çizildi" anını yakalayabilelim. Aynı URL
+  // olduğu için CSS background-image bunu cache'ten alır, ikinci indirme yok.
+  const probe = new Image();
+  const reveal = () => {
+    isDoorPainted.value = true;
+  };
+  probe.onload = reveal;
+  probe.onerror = reveal; // 404 olsa bile sahne sonsuza dek kilitli kalmasın
+  probe.src = doorSpriteSrc.value;
+  if (probe.complete) reveal();
+
   window.addEventListener("resize", handleResize);
   window.addEventListener("kardoor:home", handleHome);
 });
+
+// Sprite çizildiği anda showroom'u aç: renderEntrance visibility'yi
+// isDoorPainted'e göre kuruyor, ama bayrak async geldiği için yeniden
+// çalıştırılması gerekir.
+watch(isDoorPainted, () => renderEntrance(entranceProgress));
 
 watch([isNight, doorSpriteSrc], async () => {
   await nextTick();
@@ -615,6 +649,7 @@ onBeforeUnmount(() => {
       ref="showroomRef"
       class="entrance-mobile__showroom"
       :class="{ 'is-active': isEntered }"
+      :inert="!isEntered"
     >
       <ShowroomLab :progress="showroomProgress" @door-select="onDoorSelect" />
 

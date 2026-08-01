@@ -35,6 +35,32 @@ const getOrbitRadiusX = () => {
   if (window.innerWidth <= 900) return Math.min(250, window.innerWidth * 0.42);
   return Math.min(620, Math.max(430, window.innerWidth * 0.3));
 };
+const NEIGHBOR_SCALE = 0.72;
+const NEIGHBOR_VISIBLE_RATIO = 0.75;
+const AVERAGE_VISIBLE_DOOR_WIDTH_RATIO = 0.52;
+
+// Yan kapının %75'ini sahnede bırakıp %25'ini dış kenara gömer. Hesap, CSS'teki
+// responsive stage / slot ölçülerini izler; böylece sabit piksel ofsetin farklı
+// viewportlarda ürettiği değişken görünürlük oranı oluşmaz.
+const getNeighborEdgeOffset = (step: number) => {
+  if (typeof window === "undefined") return 0;
+
+  const viewportWidth = window.innerWidth;
+  const stageWidth = viewportWidth <= 900
+    ? viewportWidth
+    : viewportWidth - clamp(viewportWidth * 0.32, 320, 520);
+  const slotHeight = viewportWidth <= 380
+    ? clamp(viewportWidth * 0.61, 220, 250)
+    : viewportWidth <= 900
+      ? clamp(viewportWidth * 0.64, 240, 310)
+      : clamp(viewportWidth * 0.35, 330, 560);
+  const neighborWidth =
+    slotHeight * AVERAGE_VISIBLE_DOOR_WIDTH_RATIO * NEIGHBOR_SCALE;
+  const hiddenWidth = neighborWidth * (1 - NEIGHBOR_VISIBLE_RATIO);
+  const baseNeighborX = Math.abs(Math.sin(degToRad(step)) * getOrbitRadiusX());
+
+  return Math.max(0, stageWidth / 2 - hiddenWidth - baseNeighborX);
+};
 const ORBIT_RADIUS_Y = 22;
 const stepDeg = computed(() => 360 / Math.max(1, doors.value.length));
 
@@ -55,6 +81,7 @@ const applyOrbit = (p: number) => {
   const count = doors.value.length;
   const f = floatIndex(p);
   const step = stepDeg.value;
+  const neighborEdgeOffset = getNeighborEdgeOffset(step);
 
   for (let i = 0; i < count; i++) {
     const el = slotEls[i];
@@ -63,15 +90,17 @@ const applyOrbit = (p: number) => {
     const offset = i - f;
     const distance = Math.abs(offset);
     const rad = degToRad(offset * step);
-    const x = Math.sin(rad) * getOrbitRadiusX();
     const orbitY = (1 - Math.cos(rad)) * ORBIT_RADIUS_Y;
     const nearActive = clamp(1 - distance, 0, 1);
 
     const neighborFade = fadeOut(clamp((distance - 1) / 0.38, 0, 1));
+    const edgeOffset =
+      Math.sign(offset) * neighborEdgeOffset * (1 - nearActive) * neighborFade;
+    const x = Math.sin(rad) * getOrbitRadiusX() + edgeOffset;
     const scale =
       distance <= 1
-        ? lerp(0.72, 1.34, nearActive)
-        : lerp(0.72, 0.62, 1 - neighborFade);
+        ? lerp(NEIGHBOR_SCALE, 1.34, nearActive)
+        : lerp(NEIGHBOR_SCALE, 0.62, 1 - neighborFade);
     const opacity = distance <= 1
       ? lerp(0.22, 1, nearActive)
       : 0.2 * neighborFade;
@@ -160,7 +189,11 @@ const backdropText = computed(() => {
           :key="door.id"
           :ref="(el) => setSlotRef(el as Element | null, i)"
           class="showroom-lab__slot"
-          :style="{ '--door-normalize': door.fitScale }"
+          :style="{
+            '--door-normalize': door.fitScale,
+            '--door-baseline-shift': `${door.baselineShift}%`,
+            '--door-image-mask': `url(${door.image})`
+          }"
         >
           <span class="showroom-lab__door-shell">
             <img

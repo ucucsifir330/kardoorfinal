@@ -21,6 +21,7 @@ export type ShowroomDoor = {
   series: string; // kategori / seri adı (ör. "Alüminyum Sistemler")
   image: string;
   fitScale: number;
+  baselineShift: number;
   /** Kısa teknik satır — specs'ten birleştirilir. */
   spec: string;
   /** Alt meta — materyaller. */
@@ -119,6 +120,7 @@ type ShowroomSeriesSlug = (typeof SHOWROOM_SERIES)[number];
 type ShowroomRepresentative = {
   image: number;
   fitScale: number;
+  baselineShift: number;
 };
 
 const showroomImagePath = (imageNumber: number) =>
@@ -127,11 +129,13 @@ const showroomImagePath = (imageNumber: number) =>
 // Showroom orbitinde canvas/ürün ölçeği birbirine yakın duran 5 kapı.
 // Otomatik showcase seçimi Image04 gibi geniş bina-giriş kadrajlarını çekiyordu.
 const SHOWROOM_REPRESENTATIVES: Record<ShowroomSeriesSlug, ShowroomRepresentative> = {
-  "aluminyum-sistemler": { image: 41, fitScale: 1.06 },
-  "dogal-yuzeyler": { image: 57, fitScale: 1 },
-  "camli-modeller": { image: 17, fitScale: 1.07 },
-  "pvc-laminoks": { image: 117, fitScale: 1.07 },
-  "mimari-ozel": { image: 142, fitScale: 1.07 }
+  // fitScale: görünür alfa yüksekliğini ortak ~%92 seviyesine getirir.
+  // baselineShift: kaynak görseldeki farklı alt transparan boşlukları eşitler.
+  "aluminyum-sistemler": { image: 41, fitScale: 1.152, baselineShift: 7.5 },
+  "dogal-yuzeyler": { image: 57, fitScale: 1, baselineShift: -1.2 },
+  "camli-modeller": { image: 17, fitScale: 1.055, baselineShift: 1.6 },
+  "pvc-laminoks": { image: 117, fitScale: 1.057, baselineShift: 2.7 },
+  "mimari-ozel": { image: 142, fitScale: 1.013, baselineShift: 0.2 }
 };
 
 // Bir family içinde temsilci kapı seçimi: vitrin/showcase rolü olan görseller
@@ -183,6 +187,8 @@ export function useShowroomDoors() {
       series: copy?.series ?? product.seriesTitle ?? product.category,
       image: product.localImage,
       fitScale: SHOWROOM_REPRESENTATIVES[product.seriesSlug as ShowroomSeriesSlug]?.fitScale ?? 1,
+      baselineShift:
+        SHOWROOM_REPRESENTATIVES[product.seriesSlug as ShowroomSeriesSlug]?.baselineShift ?? 0,
       spec: copy?.spec ?? product.specs.slice(0, 3).join(" · "),
       meta: copy?.meta ?? product.materials.slice(0, 3).join(" · "),
       accentColor: product.accentColor

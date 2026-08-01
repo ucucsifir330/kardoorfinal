@@ -34,7 +34,8 @@ const easeInOut = (t: number) => t * t * (3 - 2 * t);
 //   0.00–0.273 PORTAL     : kapı referans açısına gelir (sprite %65), zoom yok
 //   0.273–0.42 PORTAL+ZOOM: kapı açılmaya devam ederken içeri giriş başlar
 //   0.42–0.78 ZOOM        : kapı sekansı tamamlanır; içeri giriş sürer
-//   0.273–0.56 SHOWROOM   : açık kapı boşluğunun arkasında erkenden hazır olur
+//   SHOWROOM              : fade YOK — sahne 0'dan itibaren kapı deliğinin
+//                           ardında duruyor; kanat aralandıkça görünür olur
 //   0.80–0.90  ORBIT      : kapılar arası gezinme (turntable döner)
 //   0.90–1.00  HORIZONTAL : showroom + "Kurgulayın" paneli yatay kayar
 const PORTAL_PICKUP = 0.273;
@@ -42,12 +43,16 @@ const PORTAL_OPEN_END = 0.42;
 const HOLD_END = PORTAL_PICKUP;
 const ZOOM_END = 0.78;
 const SHOWROOM_START = HOLD_END;
-const SHOWROOM_COVER = 0.56; // showroom bu noktada opak; sonra ön katman sönmeye başlar
+const SHOWROOM_COVER = 0.56; // ön katmanın (hero) sönmeye başladığı nokta
 const SHOWROOM_FULL = 0.8; // ilk kapı snap'i ve orbit başlangıcı
 const PORTAL_SPRITE_FADE_END = 0.56; // büyütülen canvas'la gelen siyah ara kareyi gizler
 const ORBIT_END = 0.9; // turntable dönüşü burada biter
 const HORIZONTAL_START = 0.9; // yatay kayma burada başlar
 const ZOOM_MAX = 14; // boşluğa girerkenki en yüksek ölçek (tunable)
+// Kapı deliğinden görünen showroom'un başlangıç derinlik ölçeği. Ön katman
+// ZOOM_MAX ile 15×'e çıkarken showroom bu değerden 1×'e iner; aradaki hız
+// farkı parallax = "kapıdan içeri giriliyor" hissi.
+const SHOWROOM_DEPTH = 0.14;
 // Canvas tamponu tam CSS pikseline yuvarlanır. Alpha-kalibre kutunun altında
 // oluşabilecek tek satırlık raster sızıntıyı kapatmak için yalnız alta örtüşme.
 const DOOR_BOTTOM_OVERLAP_PX = 3;
@@ -274,8 +279,18 @@ const isConfigureCopyIntroVisible = ref(false);
 const isConfigureCopyLastWordVisible = ref(false);
 
 const showroomProgress = ref(0); // 0→1 turntable orbit (kapı dönüşü)
-const showroomFadeRef = ref(0); // 0→1 showroom görünürlüğü (fade, orbit'ten ayrı)
-const isShowroomActive = ref(false);
+// Showroom ARTIK BAŞTAN AÇIK. Hero'nun kapı deliği şeffaf olduğu için, kapı
+// kanadı aralandığı anda delikten görünen şey doğrudan showroom'dur — yani
+// "arkadan gelen sayfa". Eskiden showroom 0.273'e kadar gizliydi ve delikten
+// section'ın düz siyahı görünüyordu (kapı hiçliğe açılıyordu).
+const showroomDepthRef = ref(1 + SHOWROOM_DEPTH); // delik ardındaki derinlik (parallax)
+// Kapı sprite'ı yüklenene kadar canvas BOŞ, yani hero'nun kapı deliği tamamen
+// şeffaf. Showroom artık baştan görünür olduğu için, bu pencerede kapı henüz
+// çizilmeden delikten showroom sızardı (917KB sprite → yavaş bağlantıda
+// belirgin bir sıçrama). Eskiden orada düz siyah vardı ve fark edilmiyordu.
+// Sprite ilk kez SONUÇLANANA kadar (başarı ya da hata) showroom gizli tutulur.
+const isDoorPainted = ref(false);
+const isShowroomActive = ref(false); // yalnız body sınıfı için (hub'ı gizler)
 const { $smoother } = useNuxtApp();
 
 const door = useDoorSprite(canvasRef);
@@ -330,11 +345,18 @@ const placeDoor = () => {
 
   // Zoom origin = kapı boşluğunun merkezi (section'a göre px). Zoom katmanı bu
   // noktaya doğru ölçeklenir → kamera kapıdan içeri giriyormuş hissi.
+  const originY = top + stageH / 2;
   const zoom = zoomRef.value;
   if (zoom) {
     zoom.style.setProperty("--zoom-origin-x", `${cx}px`);
-    zoom.style.setProperty("--zoom-origin-y", `${top + stageH / 2}px`);
+    zoom.style.setProperty("--zoom-origin-y", `${originY}px`);
   }
+
+  // Aynı origin section'a da yazılır: showroom katmanı (zoom'un DIŞINDA, arkada)
+  // custom-property kalıtımıyla okur. Showroom ölçeği KAPI DELİĞİNİN merkezine
+  // doğru yakınsar → delikten görünen kesit kaymaz, hero büyürken sabit kalır.
+  section.style.setProperty("--zoom-origin-x", `${cx}px`);
+  section.style.setProperty("--zoom-origin-y", `${originY}px`);
 };
 
 const prefersReducedMotion = () =>
@@ -499,10 +521,15 @@ const updateMaster = (raw: number) => {
     zoom.style.opacity = `${zoomFade}`;
   }
 
-  // SHOWROOM görünürlüğü (fade): ön katman sönmeden önce tamamlanır.
-  // Orbit'ten AYRI — sahne önce belirir, sonra kapılar döner.
+  // SHOWROOM: fade YOK — sahne en baştan arkada duruyor ve kapı deliğinden
+  // görünüyor. Onun yerine DERİNLİK var: ön katman 15×'e büyürken showroom
+  // 1.14×'ten 1×'e iner. İki hızın farkı, kapıdan içeri girme hissini üretir;
+  // delikten görünen kesit hero büyürken kaymaz (transform-origin = delik).
+  showroomDepthRef.value = 1 + (1 - zoomP) * SHOWROOM_DEPTH;
+
+  // Body sınıfı (FloatingContactHub'ı gizler) ESKİ eşikte kalır — showroom
+  // görünür oldu diye hero fazında hub'ı kaybetmeyelim.
   const showroomFade = easeInOut(clamp01((p - SHOWROOM_START) / (SHOWROOM_COVER - SHOWROOM_START)));
-  showroomFadeRef.value = showroomFade;
   isShowroomActive.value = showroomFade > 0.02;
 
   // SHOWROOM orbit (kapı dönüşü): sahne tam belirdikten sonra ORBIT_END'e kadar.
@@ -529,6 +556,10 @@ const updateMaster = (raw: number) => {
     section.style.setProperty("--hero-copy-opacity", `${1 - copyFade}`);
     section.style.setProperty("--hero-copy-y", `${copyFade * -28}px`);
     section.style.setProperty("--hero-cue-opacity", `${1 - clamp01(p / 0.08)}`);
+    // Kapı deliğinden görünen sahne, henüz "dışarıdan bakılan loş bir iç mekân"
+    // olduğu için hafif kısık; içeri girildikçe açılır. Delik bir fotoğraf
+    // kesiği gibi değil, derinlik gibi okunsun diye.
+    section.style.setProperty("--showroom-dim", `${0.18 * (1 - zoomP)}`);
   }
 };
 
@@ -766,9 +797,16 @@ onMounted(() => {
     isPortalSettling = false;
     settleToProgress(DOOR_SNAP_POINTS[targetIndex]!, direction);
   };
-  door.load(doorMeta.value).catch((error) => {
-    console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
-  });
+  // finally: yükleme BAŞARISIZ olsa bile showroom açılır. Aksi halde sprite
+  // 404'lerse delik sonsuza dek kapalı kalır ve sahne hiç görünmez.
+  door
+    .load(doorMeta.value)
+    .catch((error) => {
+      console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
+    })
+    .finally(() => {
+      isDoorPainted.value = true;
+    });
 
   window.addEventListener("wheel", onWheel, { passive: false });
 
@@ -882,13 +920,19 @@ onBeforeUnmount(() => {
     :data-ambience="mode"
     aria-label="Kardoor giriş — hero zemini"
   >
-    <!-- SHOWROOM + KURGULAYIN — zoom içeri girince fade-in (z:0, en arka).
-         Yatay kayan track [showroom] [configure paneli], son kapıdan sonra
-         --page-x sola kayar ve panel gelir. -->
+    <!-- SHOWROOM + KURGULAYIN — kapının ARDINDAKİ SAYFA (z:0, en arka).
+         İlk kareden itibaren burada; hero'nun şeffaf kapı deliğinden görünür,
+         kanat aralandıkça ortaya çıkar. Yatay kayan track [showroom]
+         [configure paneli], son kapıdan sonra --page-x sola kayar. -->
+    <!-- inert/pointer-events: sahne artık baştan GÖRÜNÜR olduğu için, kapı
+         henüz açılmadan içindeki bağlantılar tıklanabilir ve odaklanabilir
+         hâle gelirdi (eski visibility:hidden bunu kendiliğinden engelliyordu).
+         Showroom fazına girilene kadar etkileşime kapalı tutulur. -->
     <div
       class="entrance-lab__showroom"
-      :class="{ 'is-active': isShowroomActive }"
-      :style="{ '--showroom-p': showroomFadeRef }"
+      :class="{ 'is-interactive': isShowroomActive, 'is-revealed': isDoorPainted }"
+      :style="{ '--showroom-depth': showroomDepthRef }"
+      :inert="!isShowroomActive"
     >
       <div class="entrance-lab__slider">
         <div class="entrance-lab__slide">
@@ -940,6 +984,10 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </div>
+
+      <!-- Delikten bakarken sahneyi hafif kısan katman; içeri girildikçe açılır.
+           Track'in DIŞINDA → yatay kayma sırasında birlikte kaymaz. -->
+      <div class="entrance-lab__showroom-dim" aria-hidden="true" />
     </div>
 
     <!-- ZOOM KATMANI — hero + kapı; kapı boşluğuna doğru ölçeklenip kaybolur. -->

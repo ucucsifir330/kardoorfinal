@@ -163,7 +163,6 @@ html.is-safari .showroom-lab__backdrop-text {
     translate3d(-50%, -50%, 0)
     translate3d(var(--slot-x, 0), var(--slot-y, 0), 0)
     scale(var(--slot-scale, 1));
-  opacity: var(--slot-opacity, 1);
   transform-origin: center bottom;
   will-change: transform, opacity;
   pointer-events: none;
@@ -182,6 +181,25 @@ html.is-safari .showroom-lab__slot {
   transform-origin: center bottom;
 }
 
+/* Kapının görsel transparanlığını değiştirmeden, arkadaki kayan tipografiyi
+   yalnızca ürün siluetinin altında kes. Alfa maskesi kaynak WebP'nin şeffaf
+   alanlarını korur; böylece kapı çevresinde dikdörtgen bir yama oluşmaz. */
+.showroom-lab__door-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--sl-bg-1);
+  opacity: clamp(0, calc(var(--slot-opacity, 1) * 5), 1);
+  transform:
+    translateY(var(--door-baseline-shift, 0%))
+    scale(var(--door-normalize, 1));
+  transform-origin: center bottom;
+  -webkit-mask: var(--door-image-mask) center bottom / auto 100% no-repeat;
+  mask: var(--door-image-mask) center bottom / auto 100% no-repeat;
+  pointer-events: none;
+}
+
 .showroom-lab__door-shell::after {
   content: "";
   position: absolute;
@@ -193,19 +211,24 @@ html.is-safari .showroom-lab__slot {
   transform: translate3d(-50%, 18%, 0);
   border-radius: 50%;
   background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0.32) 0%, transparent 72%);
-  opacity: 0.8;
+  opacity: calc(var(--slot-opacity, 1) * 0.8);
   pointer-events: none;
 }
 
 .showroom-lab__door-image {
-  position: relative;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
   z-index: 1;
   display: block;
-  width: 100%;
+  width: auto;
   height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-  transform: scale(var(--door-normalize, 1));
+  max-width: none;
+  opacity: var(--slot-opacity, 1);
+  transform:
+    translateX(-50%)
+    translateY(var(--door-baseline-shift, 0%))
+    scale(var(--door-normalize, 1));
   transform-origin: center bottom;
   user-select: none;
 }

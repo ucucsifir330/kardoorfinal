@@ -32,3 +32,31 @@
     transform: none;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   TEMA GEÇİŞİ — View Transitions API
+
+   Tema değişimini SiteNavControls tıklanan noktadan açılan bir daire
+   (clip-path) ile canlandırıyor. Ama tarayıcı VARSAYILAN olarak iki
+   anlık görüntüye de ayrıca cross-fade uygular: eski katman solarken
+   yeni katman açılıyor, yani iki TAM EKRAN katman aynı anda hem opacity
+   hem clip-path ile composite ediliyor. Ağır anasayfada geçişin
+   "takılmasının" sebebi buydu.
+
+   Fade'i kapatıp katmanları sabit sırayla üst üste koyuyoruz; geriye tek
+   animasyon kalıyor: yeni katmanın clip-path'i. Eski katman altta hiç
+   animasyonsuz durur, üstünde yeni tema dairesi açılır.
+   ────────────────────────────────────────────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+}

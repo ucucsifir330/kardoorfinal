@@ -1,53 +1,77 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useRoute } from "#imports";
+import gsap from "gsap";
+import { useNuxtApp, useRoute } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
+/**
+ * Site header — iki bağımsız parça:
+ *
+ *  1. SOL MARKA ("EGE KARDOOR"): sabit, sayfaya karşı difference-blend edilen
+ *     ikiz katmanla birlikte çalışır. Navbar'dan tamamen ayrı, scroll'da
+ *     gizlenmez. (bkz. site-header.css → brand-blend-layer)
+ *  2. ORTA NAVBAR: ekranın üst kenarına yapışan koyu çubuk; alt köşeleri
+ *     yuvarlak, üst köşelerinde ters (concave) flare'ler var ve ortasından
+ *     K markası bir damla gibi aşağı sarkıyor. Aşağı scroll'da gizlenir,
+ *     yukarı çekince geri gelir. Dar ekranda linkler damlaya dokununca açılan
+ *     panele taşınır.
+ */
+
 const route = useRoute();
-const { isNight, theme, setTheme } = useShowroomAmbience();
-const { locale, locales, localeLabels, setLocale } = useKardoorLocale();
+const { $smoother } = useNuxtApp();
+const { locale, locales } = useKardoorLocale();
+
+/**
+ * Bu genişliğin altında linkler çubuktan panele taşınır ve yerine "Menü"
+ * tuşu gelir. Sınır ölçümle bulundu: sol marka 163px + offset ≈ 192px yer
+ * kaplıyor, tam nav ise ~610px; 1120'nin altında ikisi çakışıyor.
+ */
+const MENU_MODE_QUERY = "(max-width: 1120px)";
 
 const isHidden = ref(false);
 const isMenuOpen = ref(false);
-const menuButtonRef = ref<HTMLButtonElement | null>(null);
-let lastScrollY = 0;
+/**
+ * SSR'da her zaman false. matchMedia yalnız onMounted'da okunur, böylece ilk
+ * client render'ı sunucu çıktısıyla birebir eşleşir (hydration uyuşmazlığı yok).
+ */
+const isMenuMode = ref(false);
 
-const navItems = computed(() => {
-  const labels = {
-    tr: {
-      home: "Ana Sayfa",
-      products: "Ürünler",
-      references: "Referanslar",
-      about: "Hakkımızda",
-      contact: "İletişim"
-    },
-    en: {
-      home: "Home",
-      products: "Products",
-      references: "References",
-      about: "About Us",
-      contact: "Contact"
-    }
-  }[locale.value];
+const navRoot = ref<HTMLElement | null>(null);
+const panelWrap = ref<HTMLElement | null>(null);
+const panel = ref<HTMLElement | null>(null);
 
-  return [
-    { to: "/", label: labels.home },
-    { to: "/doors", label: labels.products, disabled: true },
-    { to: "/references", label: labels.references },
-    { to: "/company", label: labels.about },
-    { to: "/contact", label: labels.contact, disabled: false }
-  ];
-});
+/**
+ * Her öğe İKİ dildeki etiketini de taşır. Şablon, görünen etiketin altına
+ * tüm varyantları görünmez bir ölçü katmanı olarak da basar; böylece link
+ * genişliği her zaman en uzun varyant kadar olur ve dil değiştirince
+ * çubuk yeniden ölçülenmez (damla yerinden oynamaz).
+ */
+const NAV_ENTRIES = [
+  { to: "/", labels: { tr: "Ana Sayfa", en: "Home" } },
+  { to: "/catalog", labels: { tr: "Koleksiyonlar", en: "Collections" } },
+  { to: "/references", labels: { tr: "Referanslar", en: "References" } },
+  { to: "/company", labels: { tr: "Hakkımızda", en: "About Us" } },
+  { to: "/contact", labels: { tr: "İletişim", en: "Contact" } }
+] as const;
 
-// Tek bar düzeni: SOL [Products · References] — ORTA [K=Home] — SAĞ [About · Contact].
-// Home (K) ortadaki marka işareti olduğundan masaüstü nav linklerinden ayrılır;
-// mobil menüde tüm öğeler (Home dahil) navItems'tan gelir.
+const navItems = computed(() =>
+  NAV_ENTRIES.map((entry) => ({
+    to: entry.to,
+    labels: entry.labels,
+    label: entry.labels[locale.value]
+  }))
+);
+
+// Çubuk düzeni: SOL [Ürünler · Referanslar · Hakkımızda] — ORTA [K = Home]
+// — SAĞ [İletişim · tema · dil]. K ortadaki marka işareti olduğu için
+// masaüstü link listelerinden ayrı durur; panelde ise (dar ekran) tüm
+// öğeler Home dahil navItems'tan gelir.
 const navLeft = computed(() =>
   navItems.value.filter(
-    (i) => i.to === "/doors" || i.to === "/references" || i.to === "/company"
+    (item) => item.to === "/catalog" || item.to === "/references" || item.to === "/company"
   )
 );
-const navRight = computed(() => navItems.value.filter((i) => i.to === "/contact"));
+const navRight = computed(() => navItems.value.filter((item) => item.to === "/contact"));
 
 const isActive = (to: string) => {
   if (to === "/") return route.path === "/";
@@ -60,137 +84,211 @@ const headerClass = computed(() => ({
   "site-header--menu-open": isMenuOpen.value
 }));
 
+const isTurkish = computed(() => locale.value === "tr");
+
 const brandLabel = computed(() =>
-  locale.value === "tr" ? "Kardoor ana sayfa" : "Kardoor home"
+  isTurkish.value ? "Kardoor ana sayfa" : "Kardoor home"
 );
 
 const primaryNavLabel = computed(() =>
-  locale.value === "tr" ? "Ana navigasyon" : "Primary navigation"
+  isTurkish.value ? "Ana navigasyon" : "Primary navigation"
 );
 
-const languageLabel = computed(() =>
-  locale.value === "tr" ? "Dil seçici" : "Language selector"
+const panelNavLabel = computed(() =>
+  isTurkish.value ? "Mobil navigasyon" : "Mobile navigation"
 );
 
-const themeLabel = computed(() =>
-  locale.value === "tr" ? "Tema seçici" : "Theme selector"
+const menuWord = computed(() => (isTurkish.value ? "Menü" : "Menu"));
+
+const menuToggleLabel = computed(() => {
+  if (isMenuOpen.value) {
+    return isTurkish.value ? "Menüyü kapat" : "Close navigation";
+  }
+
+  return isTurkish.value ? "Menüyü aç" : "Open navigation";
+});
+
+const logoLabel = computed(() =>
+  isMenuMode.value ? menuToggleLabel.value : brandLabel.value
 );
 
-const getThemeSwitchLabel = (nextTheme: "light" | "dark") =>
-  locale.value === "tr"
-    ? nextTheme === "light"
-      ? "Aydınlık temaya geç"
-      : "Karanlık temaya geç"
-    : nextTheme === "light"
-      ? "Switch to light theme"
-      : "Switch to dark theme";
+/* ── Menü animasyonu ───────────────────────────────────────────────────── */
 
-const menuLabel = computed(() =>
-  isMenuOpen.value
-    ? locale.value === "tr"
-      ? "Header menüyü kapat"
-      : "Close header navigation"
-    : locale.value === "tr"
-      ? "Header menüyü aç"
-      : "Open header navigation"
-);
+let animationContext: ReturnType<typeof gsap.context> | null = null;
+let menuTimeline: ReturnType<typeof gsap.timeline> | null = null;
 
-const mobileNavLabel = computed(() =>
-  locale.value === "tr" ? "Mobil navigasyon" : "Mobile navigation"
-);
+const prefersReducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const getLanguageSwitchLabel = (nextLocale: typeof locales[number]) =>
-  locale.value === "tr"
-    ? `Arayüz dilini ${localeLabels[nextLocale]} yap`
-    : `Switch interface language to ${localeLabels[nextLocale]}`;
+const getLogoElement = () =>
+  navRoot.value?.querySelector<HTMLElement>(".site-nav__logo") ?? null;
+
+const getPanelItems = () =>
+  panel.value
+    ? Array.from(
+        panel.value.querySelectorAll<HTMLElement>(".site-nav__panel-link, .site-nav__panel-row")
+      )
+    : [];
+
+const killMenuAnimation = (items = getPanelItems()) => {
+  menuTimeline?.kill();
+  menuTimeline = null;
+  gsap.killTweensOf(panel.value ? [panel.value, ...items] : items);
+};
+
+/** Panel, damlanın merkezinden büyüyüp yine oraya kapanır. */
+const setPanelOrigin = () => {
+  const logo = getLogoElement();
+
+  if (!panel.value || !panelWrap.value || !logo) return;
+
+  const logoRect = logo.getBoundingClientRect();
+  const wrapRect = panelWrap.value.getBoundingClientRect();
+
+  gsap.set(panel.value, {
+    transformOrigin: `${logoRect.left + logoRect.width / 2 - wrapRect.left}px ${
+      logoRect.top + logoRect.height / 2 - wrapRect.top
+    }px`
+  });
+};
+
+const runInAnimationContext = (callback: () => void) => {
+  if (animationContext) animationContext.add(callback);
+  else callback();
+};
+
+/**
+ * Scroll kilidi: ScrollSmoother varsa onu duraklat (native scrollbar'ı
+ * bozmaz), yoksa (dokunmatik cihazlar — smoother orada devre dışı) klasik
+ * overflow kilidi.
+ */
+const setScrollLock = (locked: boolean) => {
+  const smoother = ($smoother as undefined | (() => { paused: (value: boolean) => void } | null))?.();
+
+  if (smoother) {
+    smoother.paused(locked);
+    return;
+  }
+
+  document.documentElement.style.overflow = locked ? "hidden" : "";
+};
+
+const openMenu = () => {
+  isMenuOpen.value = true;
+  setScrollLock(true);
+
+  const items = getPanelItems();
+  killMenuAnimation(items);
+  setPanelOrigin();
+
+  runInAnimationContext(() => {
+    if (prefersReducedMotion()) {
+      gsap.set(panel.value, { scale: 1, opacity: 1 });
+      gsap.set(items, { y: 0, opacity: 1 });
+      return;
+    }
+
+    menuTimeline = gsap
+      .timeline({ defaults: { ease: "power4.out" } })
+      .fromTo(panel.value, { scale: 0.08, opacity: 1 }, { scale: 1, opacity: 1, duration: 0.66 }, 0)
+      .fromTo(
+        items,
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.34, stagger: 0.055, ease: "power3.out" },
+        0.22
+      );
+  });
+};
 
 const closeMenu = () => {
   if (!isMenuOpen.value) return;
 
-  const activeElement = document.activeElement;
+  setScrollLock(false);
 
-  if (activeElement instanceof HTMLElement && activeElement.closest("#site-mobile-menu")) {
-    menuButtonRef.value?.focus();
+  // Odak panelin içindeyse damlaya geri ver — yoksa kapanan panelde asılı kalır.
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement && activeElement.closest(".site-nav__panel")) {
+    getLogoElement()?.focus();
   }
 
-  isMenuOpen.value = false;
+  const items = getPanelItems();
+  killMenuAnimation(items);
+  setPanelOrigin();
+
+  const finishClose = () => {
+    isMenuOpen.value = false;
+  };
+
+  runInAnimationContext(() => {
+    if (prefersReducedMotion()) {
+      gsap.set(panel.value, { scale: 0.08, opacity: 0 });
+      gsap.set(items, { y: 14, opacity: 0 });
+      finishClose();
+      return;
+    }
+
+    menuTimeline = gsap
+      .timeline({ onComplete: finishClose })
+      .to(
+        items,
+        { y: -8, opacity: 0, duration: 0.18, stagger: { each: 0.025, from: "end" }, ease: "power2.in" },
+        0
+      )
+      .to(panel.value, { scale: 0.08, opacity: 0, duration: 0.38, ease: "power4.in" }, 0.04);
+  });
 };
+
+/* ── Etkileşimler ──────────────────────────────────────────────────────── */
 
 const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value;
+  if (isMenuOpen.value) closeMenu();
+  else openMenu();
 };
 
-// K (Home) tıklaması: zaten anasayfadaysak yönlendirme yerine sayfanın en başına
-// scroll yap. Başka sayfadaysak normal link davranışı (/'e gider).
-const { $smoother } = useNuxtApp();
+/**
+ * Damla (K) çift görevli:
+ *  - dar ekranda menüyü açar/kapatır,
+ *  - geniş ekranda ana sayfa bağlantısıdır. Zaten ana sayfadaysak yönlendirme
+ *    yerine sayfanın en başına döner.
+ */
+const onLogoClick = (event: MouseEvent) => {
+  if (isMenuMode.value) {
+    event.preventDefault();
+    toggleMenu();
+    return;
+  }
 
-const onBrandHome = (event: MouseEvent) => {
-  if (route.path !== "/") return; // farklı sayfa → NuxtLink normal çalışsın
+  if (route.path !== "/") return; // başka sayfa → NuxtLink normal çalışsın
 
   event.preventDefault();
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // Hero (EntranceDoorLab) tek-pinli scrub + portal auto-settle ile çalışıyor.
   // Düz scrollTo yukarı çıkarken portal-pull tarafından HOLD'a (kapı yarı açık)
-  // kaçırılıyordu. Hero varsa ona olay gönder; o kendi settle'ıyla (pull bastırılı)
-  // progress'i 0'a (kapı tam kapalı) götürür.
+  // kaçırılıyordu. Hero varsa ona olay gönder; o kendi settle'ıyla (pull
+  // bastırılı) progress'i 0'a (kapı tam kapalı) götürür.
   if (document.querySelector(".entrance-lab")) {
     window.dispatchEvent(new CustomEvent("kardoor:home"));
     return;
   }
 
-  // Hero yoksa (ör. henüz mount olmadıysa) düz smoother/native scroll.
-  const smoother = ($smoother as undefined | (() => any))?.();
+  const smoother = ($smoother as undefined | (() => { scrollTo: (y: number, smooth: boolean) => void } | null))?.();
+
   if (smoother) {
-    smoother.scrollTo(0, !prefersReducedMotion);
+    smoother.scrollTo(0, !prefersReducedMotion());
   } else {
-    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   }
 };
 
-const switchThemeWithTransition = (nextTheme: "light" | "dark", event: MouseEvent) => {
-  if (nextTheme === theme.value) return;
+/* ── Scroll & yaşam döngüsü ────────────────────────────────────────────── */
 
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (prefersReducedMotion || !document.startViewTransition) {
-    setTheme(nextTheme);
-    return;
-  }
-
-  const x = event.clientX;
-  const y = event.clientY;
-  const endRadius = Math.hypot(
-    Math.max(x, window.innerWidth - x),
-    Math.max(y, window.innerHeight - y)
-  );
-
-  const transition = document.startViewTransition(() => {
-    setTheme(nextTheme);
-  });
-
-  transition.ready.then(() => {
-    document.documentElement.animate(
-      {
-        clipPath: [
-          `circle(0px at ${x}px ${y}px)`,
-          `circle(${endRadius}px at ${x}px ${y}px)`
-        ]
-      },
-      {
-        duration: 650,
-        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-        pseudoElement: "::view-transition-new(root)"
-      }
-    );
-  });
-};
+let lastScrollY = 0;
 
 const onScroll = () => {
   const currentY = window.scrollY;
 
-  // Never hide while the mobile menu is open or near the very top of the page.
-  if (isMenuOpen.value || currentY < 80) {
+  // Menü açıkken ya da sayfanın en üstündeyken asla gizleme.
+  if (isMenuOpen.value || currentY < 90) {
     isHidden.value = false;
     lastScrollY = currentY;
     return;
@@ -198,7 +296,7 @@ const onScroll = () => {
 
   const delta = currentY - lastScrollY;
 
-  // Small dead-zone so tiny jitters don't toggle the header.
+  // Küçük titremeler çubuğu zıplatmasın.
   if (Math.abs(delta) < 6) return;
 
   isHidden.value = delta > 0;
@@ -209,7 +307,30 @@ const onKeydown = (event: KeyboardEvent) => {
   if (event.key === "Escape") closeMenu();
 };
 
+// ref DEĞİL: Vue, ref'e konan MediaQueryList'i reactive proxy'ye sarar ve
+// addEventListener'ın `this` bağlaması bozulur.
+let menuModeQuery: MediaQueryList | null = null;
+
+const onMenuModeChange = (event: MediaQueryListEvent | MediaQueryList) => {
+  isMenuMode.value = event.matches;
+
+  if (event.matches || !isMenuOpen.value) return;
+
+  // Masaüstüne genişlerken panel display:none olur. Açılış tween'i yarıda
+  // kalmışsa inline scale/opacity panelde asılı kalır → temizle.
+  killMenuAnimation();
+  setScrollLock(false);
+  isMenuOpen.value = false;
+  gsap.set([panel.value, ...getPanelItems()], { clearProps: "transform,opacity" });
+};
+
 onMounted(() => {
+  if (navRoot.value) animationContext = gsap.context(() => {}, navRoot.value);
+
+  menuModeQuery = window.matchMedia(MENU_MODE_QUERY);
+  onMenuModeChange(menuModeQuery);
+  menuModeQuery.addEventListener("change", onMenuModeChange);
+
   lastScrollY = window.scrollY;
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -217,8 +338,13 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  menuTimeline?.kill();
+  animationContext?.revert();
+  menuModeQuery?.removeEventListener("change", onMenuModeChange);
   window.removeEventListener("scroll", onScroll);
   window.removeEventListener("keydown", onKeydown);
+
+  if (import.meta.client) document.documentElement.style.overflow = "";
 });
 
 watch(
@@ -231,6 +357,7 @@ watch(
 
 <template>
   <header class="site-header" :class="headerClass">
+    <!-- SOL MARKA — navbar'dan bağımsız, scroll'da gizlenmez. -->
     <div class="site-header__inner">
       <NuxtLink
         class="site-header__brand site-header__brand--ghost"
@@ -239,169 +366,120 @@ watch(
       >
         <BrandMark />
       </NuxtLink>
-
-      <!-- TEK BAR — grid [1fr | K | 1fr]. Sol grup ve sağ grup eşit (1fr) pay alır,
-           her biri KENDİ İÇİNDE sıkı; K iki grup arasında TAM ORTADA. -->
-      <nav
-        id="site-primary-nav"
-        class="site-header__bar"
-        :aria-label="primaryNavLabel"
-      >
-        <!-- SOL GRUP: Ürünler · Referanslar · Hakkımızda (sıkı, K'ye yaslı) -->
-        <div class="site-header__group site-header__group--left">
-          <template v-for="item in navLeft" :key="item.to">
-            <span
-              v-if="item.disabled"
-              class="site-header__nav-link site-header__nav-link--disabled"
-              aria-disabled="true"
-            >
-              {{ item.label }}
-            </span>
-            <NuxtLink
-              v-else
-              class="site-header__nav-link"
-              :class="{ 'is-active': isActive(item.to) }"
-              :to="item.to"
-              :aria-current="isActive(item.to) ? 'page' : undefined"
-            >
-              {{ item.label }}
-            </NuxtLink>
-          </template>
-        </div>
-
-        <!-- ORTA: K = Home -->
-        <NuxtLink
-          class="site-header__nav-mark"
-          to="/"
-          :class="{ 'is-active': isActive('/') }"
-          :aria-label="brandLabel"
-          :aria-current="isActive('/') ? 'page' : undefined"
-          @click="onBrandHome"
-        >
-          <span aria-hidden="true" />
-        </NuxtLink>
-
-        <!-- SAĞ GRUP: İletişim · tema · dil · (mobil) menü (sıkı, K'ye yaslı) -->
-        <div class="site-header__group site-header__group--right">
-          <template v-for="item in navRight" :key="item.to">
-            <span
-              v-if="item.disabled"
-              class="site-header__nav-link site-header__nav-link--disabled"
-              aria-disabled="true"
-            >
-              {{ item.label }}
-            </span>
-            <NuxtLink
-              v-else
-              class="site-header__nav-link"
-              :class="{ 'is-active': isActive(item.to) }"
-              :to="item.to"
-              :aria-current="isActive(item.to) ? 'page' : undefined"
-            >
-              {{ item.label }}
-            </NuxtLink>
-          </template>
-
-          <!-- Tema segmenti: GÜNEŞ + AY iki ayrı buton, aktif olan vurgulu. -->
-          <div class="site-header__segment site-header__segment--theme" role="group" :aria-label="themeLabel">
-            <button
-              class="site-header__segment-button"
-              :class="{ 'is-active': !isNight }"
-              type="button"
-              :aria-pressed="!isNight"
-              :aria-label="getThemeSwitchLabel('light')"
-              @click="switchThemeWithTransition('light', $event)"
-            >
-              <svg class="site-header__theme-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <!-- Güneş -->
-                <circle cx="12" cy="12" r="4.2" />
-                <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                  <line x1="12" y1="2.6" x2="12" y2="5" />
-                  <line x1="12" y1="19" x2="12" y2="21.4" />
-                  <line x1="2.6" y1="12" x2="5" y2="12" />
-                  <line x1="19" y1="12" x2="21.4" y2="12" />
-                  <line x1="5.2" y1="5.2" x2="6.9" y2="6.9" />
-                  <line x1="17.1" y1="17.1" x2="18.8" y2="18.8" />
-                  <line x1="5.2" y1="18.8" x2="6.9" y2="17.1" />
-                  <line x1="17.1" y1="6.9" x2="18.8" y2="5.2" />
-                </g>
-              </svg>
-            </button>
-            <button
-              class="site-header__segment-button"
-              :class="{ 'is-active': isNight }"
-              type="button"
-              :aria-pressed="isNight"
-              :aria-label="getThemeSwitchLabel('dark')"
-              @click="switchThemeWithTransition('dark', $event)"
-            >
-              <svg class="site-header__theme-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <!-- Ay -->
-                <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Dil segmenti: TR + EN iki ayrı buton, aktif olan vurgulu. -->
-          <div class="site-header__segment site-header__segment--lang" role="group" :aria-label="languageLabel">
-            <button
-              v-for="code in locales"
-              :key="code"
-              class="site-header__segment-button site-header__segment-button--text"
-              :class="{ 'is-active': locale === code }"
-              type="button"
-              :aria-pressed="locale === code"
-              :aria-label="getLanguageSwitchLabel(code)"
-              @click="setLocale(code)"
-            >
-              {{ localeLabels[code] }}
-            </button>
-          </div>
-
-          <button
-            ref="menuButtonRef"
-            class="site-header__icon-button site-header__menu"
-            type="button"
-            :aria-label="menuLabel"
-            :aria-expanded="isMenuOpen"
-            aria-controls="site-mobile-menu"
-            @click="toggleMenu"
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-        </div>
-      </nav>
     </div>
 
-    <div
-      id="site-mobile-menu"
-      class="site-header__mobile-panel"
-      :aria-hidden="!isMenuOpen"
-      :inert="!isMenuOpen"
-    >
-      <nav class="site-header__mobile-nav" :aria-label="mobileNavLabel">
-        <template v-for="item in navItems" :key="item.to">
-          <span
-            v-if="item.disabled"
-            class="site-header__mobile-link site-header__mobile-link--disabled"
-            aria-disabled="true"
-          >
-            {{ item.label }}
-          </span>
-          <NuxtLink
-            v-else
-            class="site-header__mobile-link"
-            :class="{ 'is-active': isActive(item.to) }"
-            :to="item.to"
-            :aria-current="isActive(item.to) ? 'page' : undefined"
-            @click="closeMenu"
-          >
-            {{ item.label }}
-          </NuxtLink>
-        </template>
-      </nav>
+    <div ref="navRoot" class="site-nav">
+      <div class="site-nav__shell">
+        <nav class="site-nav__bar" :aria-label="primaryNavLabel">
+          <div class="site-nav__group site-nav__group--left">
+            <!-- Linkler panele taşındığı ara ölçülerde çubuğun sol tarafını
+                 doldurur; damla ile aynı paneli açar. Geniş ekranda gizli. -->
+            <button
+              class="site-nav__menu-toggle"
+              type="button"
+              :aria-expanded="isMenuOpen"
+              aria-controls="site-nav-panel"
+              :aria-label="menuToggleLabel"
+              @click="toggleMenu"
+            >
+              <span class="site-nav__menu-icon" aria-hidden="true">
+                <span />
+                <span />
+              </span>
+              {{ menuWord }}
+            </button>
+
+            <NuxtLink
+              v-for="item in navLeft"
+              :key="item.to"
+              class="site-nav__link"
+              :class="{ 'is-active': isActive(item.to) }"
+              :to="item.to"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
+            >
+              <span class="site-nav__link-text">{{ item.label }}</span>
+              <span class="site-nav__link-sizer" aria-hidden="true">
+                <span v-for="code in locales" :key="code">{{ item.labels[code] }}</span>
+              </span>
+            </NuxtLink>
+          </div>
+
+          <!-- ORTA: çubuktan aşağı sarkan damla. Oyuk (mouth) + fillet'ler
+               salt CSS; ölçüler site-header.css'teki --nav-* değişkenlerinden. -->
+          <div class="site-nav__slot">
+            <div class="site-nav__node">
+              <NuxtLink
+                class="site-nav__logo"
+                to="/"
+                :aria-label="logoLabel"
+                :aria-expanded="isMenuMode ? isMenuOpen : undefined"
+                :aria-controls="isMenuMode ? 'site-nav-panel' : undefined"
+                :aria-current="!isMenuMode && isActive('/') ? 'page' : undefined"
+                @click="onLogoClick"
+              >
+                <span class="site-nav__logo-mark">
+                  <EgeLogo />
+                </span>
+              </NuxtLink>
+            </div>
+          </div>
+
+          <div class="site-nav__group site-nav__group--right">
+            <NuxtLink
+              v-for="item in navRight"
+              :key="item.to"
+              class="site-nav__link"
+              :class="{ 'is-active': isActive(item.to) }"
+              :to="item.to"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
+            >
+              <span class="site-nav__link-text">{{ item.label }}</span>
+              <span class="site-nav__link-sizer" aria-hidden="true">
+                <span v-for="code in locales" :key="code">{{ item.labels[code] }}</span>
+              </span>
+            </NuxtLink>
+
+            <span class="site-nav__divider" aria-hidden="true" />
+
+            <SiteNavControls />
+          </div>
+        </nav>
+      </div>
+
+      <div
+        class="site-nav__scrim"
+        :class="{ 'is-open': isMenuOpen }"
+        aria-hidden="true"
+        @click="closeMenu"
+      />
+
+      <div ref="panelWrap" class="site-nav__panel-wrap" :class="{ 'is-open': isMenuOpen }">
+        <div
+          id="site-nav-panel"
+          ref="panel"
+          class="site-nav__panel"
+          :aria-hidden="!isMenuOpen"
+          :inert="!isMenuOpen"
+        >
+          <nav class="site-nav__panel-nav" :aria-label="panelNavLabel">
+            <NuxtLink
+              v-for="item in navItems"
+              :key="item.to"
+              class="site-nav__panel-link"
+              :class="{ 'is-active': isActive(item.to) }"
+              :to="item.to"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
+              @click="closeMenu"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </nav>
+
+          <div class="site-nav__panel-row">
+            <SiteNavControls />
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -409,6 +487,7 @@ watch(
     <!-- Symbol + KARDOOR: blends against the whole page like the cursor. -->
     <div
       class="brand-blend-layer brand-blend-layer--ink"
+      :class="{ 'is-dimmed': isMenuOpen }"
       aria-hidden="true"
     >
       <div class="brand-blend-layer__inner">
@@ -421,6 +500,7 @@ watch(
     <!-- EGE only: rendered normally on top so it keeps its blue. -->
     <div
       class="brand-blend-layer brand-blend-layer--ege"
+      :class="{ 'is-dimmed': isMenuOpen }"
       aria-hidden="true"
     >
       <div class="brand-blend-layer__inner">

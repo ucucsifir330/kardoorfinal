@@ -1161,17 +1161,6 @@ onBeforeUnmount(() => {
   outline-color: #080B18 !important;
 }
 
-:global(.app-shell--references:not(.app-shell--day) .site-header) {
-  --header-control-active: linear-gradient(135deg, #F4F6FF 0%, #C3CCFF 100%) !important;
-  --header-link-active: #050714;
-}
-
-:global(.app-shell--references:not(.app-shell--day) .site-header__nav-link.is-active),
-:global(.app-shell--references:not(.app-shell--day) .site-header__mobile-link.is-active) {
-  background: linear-gradient(135deg, #F4F6FF 0%, #C3CCFF 100%) !important;
-  color: #050714 !important;
-}
-
 :global(.app-shell--references:not(.app-shell--day) .footer-form .form-row input) {
   border-color: rgba(244, 246, 255, 0.22);
   color: #F4F6FF;
