@@ -31,6 +31,48 @@ export default defineNuxtPlugin((nuxtApp) => {
   // the smoother regardless of emulated pointer type.
   const isTouchDevice = isCoarsePointer && window.innerWidth <= 1024;
 
+  /**
+   * KARŞILAŞTIRMA ANAHTARI — smooth scroll hissini yan yana görmek için.
+   *
+   *   ?nosmoother=1   ScrollSmoother kurulmaz (native scroll)
+   *   ?nosmoother=0   zorla açık
+   *   (parametresiz)  son seçim hatırlanır
+   *
+   * Ölçüldü (masaüstü Chrome, dev): hero pin bandında native p95 36.5→15.6 ms,
+   * jank'lı kare %25→%5. Katalog/footer'da fark yok. Kapı snap'leri iki modda da
+   * birebir aynı çalışıyor. Kaybedilen tek şey sinematik yumuşama hissi — bu
+   * anahtar tam olarak onu gözle karşılaştırmak için var.
+   *
+   * GEÇİCİ: motor kararı verilince bu blok ve karşı yol silinecek.
+   */
+  const SMOOTHER_TERCIH_ANAHTARI = "kardoor:nosmoother";
+  const nosmootherParam = new URLSearchParams(window.location.search).get("nosmoother");
+
+  if (nosmootherParam !== null) {
+    try {
+      if (nosmootherParam === "0") localStorage.removeItem(SMOOTHER_TERCIH_ANAHTARI);
+      else localStorage.setItem(SMOOTHER_TERCIH_ANAHTARI, "1");
+    } catch {
+      // localStorage kapalıysa (gizli sekme vb.) sorun değil — URL yine çalışır.
+    }
+  }
+
+  let forceNative = nosmootherParam !== null && nosmootherParam !== "0";
+  if (nosmootherParam === null) {
+    try {
+      forceNative = localStorage.getItem(SMOOTHER_TERCIH_ANAHTARI) === "1";
+    } catch {
+      forceNative = false;
+    }
+  }
+
+  document.documentElement.classList.toggle("is-native-scroll", forceNative);
+  if (forceNative) {
+    console.info(
+      "[kardoor] ScrollSmoother KAPALI (native scroll). Geri açmak için: ?nosmoother=0"
+    );
+  }
+
   // While the page is actively scrolling, drop expensive backdrop-filter blur
   // (it re-samples everything behind it every frame). Restored shortly after
   // the scroll settles. CSS keys off html.is-scrolling. Bu HER cihazda kurulur:
@@ -57,7 +99,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   gsap.ticker.lagSmoothing(0);
 
   // Touch devices use native scrolling (ScrollSmoother smoothing is desktop-only here).
-  if (isTouchDevice) {
+  if (isTouchDevice || forceNative) {
     nuxtApp.hook("app:mounted", setupScrollingMarker);
     return {
       provide: {
