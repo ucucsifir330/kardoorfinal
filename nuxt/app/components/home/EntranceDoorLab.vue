@@ -726,12 +726,7 @@ onMounted(() => {
    * `cancel()`: sadece wheel'de preventDefault; klavyede çağıran karar verir.
    */
   const driveEntrance = (direction: 1 | -1, strength: number, cancel: () => void) => {
-    // Eskiden burada `|| !getSmoother()` vardı: ScrollSmoother yoksa sahne hiç
-    // sürülmüyordu. Oysa settleToProgress'in native dalı (gsap.to(window,
-    // {scrollTo})) çalışır durumda — ölçüldü, kapı snap'leri iki modda da
-    // birebir aynı (5270/5435/5600/5765/5929). Şart kaldırıldı ki
-    // ?nosmoother=1 karşılaştırmasında sahne ölü kalmasın.
-    if (!trigger) return;
+    if (!trigger || !getSmoother()) return;
 
     if (isAutoSettling) {
       cancel();
