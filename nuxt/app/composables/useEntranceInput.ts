@@ -36,16 +36,37 @@ export type EntranceDrive = (
 ) => void;
 
 export interface EntranceInputOptions {
-  /** Bandı belirleyen eleman (hero section). */
-  trigger: HTMLElement;
+  /**
+   * Bandı belirleyen eleman. Verilirse kendi ScrollTrigger'ını kurar.
+   * Sahnenin ZATEN bir pin trigger'ı varsa `band` kullan — ikinci bir
+   * trigger kurmak gereksiz ölçüm maliyeti demektir.
+   */
+  trigger?: HTMLElement;
+  /**
+   * Hazır bant kaynağı. Sahne kendi ScrollTrigger'ını yönetiyorsa onun
+   * `onToggle`'ından `setActive` çağrılır; composable trigger kurmaz.
+   */
+  band?: {
+    /** Kurulum anındaki durum (onToggle yalnız geçişte ateşler). */
+    initialActive: boolean;
+  };
   /** Sahnenin karar fonksiyonu. */
   drive: EntranceDrive;
   /**
-   * Bandın bittiği nokta. ScrollTrigger `start`/`end` sözdizimi.
-   * Varsayılan: pin bandının tamamı.
+   * Bandın başı/sonu. ScrollTrigger `start`/`end` sözdizimi.
+   * Yalnız `trigger` verildiğinde kullanılır.
    */
   start?: string;
   end?: string | (() => string);
+  /**
+   * Wheel'i capture fazında yakala. Sahnenin altındaki başka handler'lar
+   * olayı görmeden kesmesi gerekiyorsa true.
+   */
+  capture?: boolean;
+  /** Klavye desteği (varsayılan açık). */
+  keyboard?: boolean;
+  /** Bu şiddetin altındaki tekerlek hareketlerini yok say. */
+  minStrength?: number;
 }
 
 /** Klavye tuşu → yön eşlemesi. */
@@ -62,14 +83,27 @@ const KEY_DIRECTIONS: Record<string, EntranceDirection> = {
 const KEY_STRENGTH = 40;
 
 export const useEntranceInput = (options: EntranceInputOptions) => {
-  const { trigger, drive, start = "top top", end } = options;
+  const {
+    trigger,
+    band,
+    drive,
+    start = "top top",
+    end,
+    capture = false,
+    keyboard = true,
+    minStrength = 0
+  } = options;
 
   let attached = false;
   let bandTrigger: ScrollTrigger | null = null;
 
   const onWheel = (event: WheelEvent) => {
-    if (event.deltaY === 0) return;
-    drive(event.deltaY > 0 ? 1 : -1, Math.abs(event.deltaY), () => event.preventDefault());
+    const strength = Math.abs(event.deltaY);
+    if (strength === 0 || strength < minStrength) return;
+    drive(event.deltaY > 0 ? 1 : -1, strength, () => {
+      event.preventDefault();
+      if (capture) event.stopImmediatePropagation();
+    });
   };
 
   const onKeydown = (event: KeyboardEvent) => {
@@ -92,26 +126,36 @@ export const useEntranceInput = (options: EntranceInputOptions) => {
     attached = true;
     // passive:false ŞART: sahne bandında tekerleği iptal edebilmemiz gerekiyor.
     // Bandın dışında hiç bağlı olmadığı için maliyeti sayfaya yayılmaz.
-    window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("keydown", onKeydown);
+    window.addEventListener("wheel", onWheel, { passive: false, capture });
+    if (keyboard) window.addEventListener("keydown", onKeydown);
   };
 
   const detach = () => {
     if (!attached) return;
     attached = false;
-    window.removeEventListener("wheel", onWheel);
-    window.removeEventListener("keydown", onKeydown);
+    window.removeEventListener("wheel", onWheel, { capture });
+    if (keyboard) window.removeEventListener("keydown", onKeydown);
   };
 
-  /** Bandı kur ve mevcut duruma göre bir kez senkronla. */
+  /** Sahne kendi trigger'ını yönetiyorsa onun onToggle'ından çağrılır. */
+  const setActive = (active: boolean) => (active ? attach() : detach());
+
+  /** Bandı kur (ya da hazır bandın ilk durumuna göre senkronla). */
   const start_ = () => {
+    if (band) {
+      setActive(band.initialActive);
+      return;
+    }
+
+    if (!trigger) return;
+
     bandTrigger = ScrollTrigger.create({
       trigger,
       start,
       end: end ?? (() => `+=${Math.round(window.innerHeight * 9)}`),
       // onToggle yalnız GEÇİŞTE ateşler; kurulum anında zaten bant içindeysek
       // ilk toggle gelmez. Mevcut durumu aşağıda bir kez senkronluyoruz.
-      onToggle: (self) => (self.isActive ? attach() : detach())
+      onToggle: (self) => setActive(self.isActive)
     });
 
     if (bandTrigger.isActive) attach();
@@ -123,5 +167,5 @@ export const useEntranceInput = (options: EntranceInputOptions) => {
     bandTrigger = null;
   };
 
-  return { start: start_, destroy, isAttached: () => attached };
+  return { start: start_, setActive, destroy, isAttached: () => attached };
 };
