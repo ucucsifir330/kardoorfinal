@@ -34,7 +34,7 @@ export default defineNuxtConfig({
       removeDisabledRoutes(pages);
     }
   },
-  modules: ["@nuxt/image"],
+  modules: ["@nuxt/image", "@vercel/speed-insights"],
   components: [{ path: "~/components", pathPrefix: false }],
   css: ["~/assets/styles/main.css"],
   app: {
