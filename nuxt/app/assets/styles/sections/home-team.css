@@ -1,6 +1,6 @@
 .ada-team-section {
-  --team-section-bg: var(--catalog-stage-surface-bg, #14151d);
-  --team-section-text: #eae8e8;
+  --team-section-bg: var(--catalog-stage-surface-bg, var(--slab));
+  --team-section-text: var(--slab-fg);
   --cta-stage-width: min(100vw, 1920px);
   --cta-line-stroke: 2.4px;
   --manifesto-copy-width: clamp(760px, 84vw, 1360px);
@@ -38,7 +38,7 @@
 .ada-manifesto-text {
   max-width: var(--manifesto-copy-width);
   margin: 0;
-  color: #eae8e8;
+  color: var(--slab-fg);
   font-family: "Instrument Serif", Georgia, serif;
   font-size: clamp(44px, 5vw, 96px);
   font-weight: 400;
@@ -88,7 +88,7 @@
 
 
 .ada-manifesto-cta {
-  --ada-cta-text-color: #eae8e8;
+  --ada-cta-text-color: var(--slab-fg);
 
   display: inline-flex;
   align-items: center;
@@ -99,8 +99,8 @@
   overflow: hidden;
   border-radius: 999px;
   padding: 0 clamp(18px, 1.45vw, 26px) 0 clamp(22px, 1.8vw, 34px);
-  background: #14151d;
-  color: #eae8e8;
+  background: var(--slab);
+  color: var(--slab-fg);
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(0.88rem, 0.95vw, 1rem);
   font-weight: 600;
@@ -111,10 +111,10 @@
 }
 
 .ada-manifesto-cta:hover {
-  --ada-cta-text-color: #14151d;
+  --ada-cta-text-color: var(--ink);
 
-  background: #eae8e8;
-  color: #14151d;
+  background: var(--slab-fg);
+  color: var(--slab);
 }
 
 .ada-manifesto-cta-text {
@@ -192,7 +192,7 @@
 .reveal-char {
   display: inline-block;
   opacity: 0.18;
-  color: #eae8e8;
+  color: var(--slab-fg);
   transition: opacity 80ms linear;
   will-change: opacity;
 }
@@ -292,7 +292,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  color: #eae8e8;
+  color: var(--slab-fg);
   transform-origin: center center;
   transition: transform 420ms cubic-bezier(0.165, 0.84, 0.44, 1),
     opacity 420ms ease;
@@ -355,7 +355,7 @@ span.ada-brand-logo {
   margin: 0;
   padding: 0;
   overflow: visible;
-  color: #eae8e8;
+  color: var(--slab-fg);
   font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(52px, 6vw, 124px);
   font-weight: 500;
@@ -390,8 +390,8 @@ span.ada-brand-logo {
 }
 
 .app-shell--day .ada-team-section {
-  --team-section-bg: var(--catalog-stage-surface-bg, #eae8e8);
-  --team-section-text: #14151d;
+  --team-section-bg: var(--catalog-stage-surface-bg, var(--paper));
+  --team-section-text: var(--ink);
 }
 
 .app-shell--day .ada-scroll-line-wrapper {
@@ -401,20 +401,20 @@ span.ada-brand-logo {
 .app-shell--day .ada-manifesto-text,
 .app-shell--day .reveal-char,
 .app-shell--day .ada-giant-title {
-  color: #14151d;
+  color: var(--ink);
 }
 
 .app-shell--day .ada-split-quote small {
-  color: rgba(20, 21, 29, 0.62);
+  color: var(--ink-soft);
 }
 
 .app-shell--day .ada-loop-item {
-  color: rgba(20, 21, 29, 0.92);
+  color: var(--ink);
 }
 
 
 .app-shell--day .ada-manifesto-container {
-  background: var(--team-section-bg, var(--catalog-stage-surface-bg, #eae8e8));
+  background: var(--team-section-bg, var(--catalog-stage-surface-bg, var(--paper)));
 }
 
 .app-shell--day .ada-manifesto-cta {
@@ -439,7 +439,7 @@ span.ada-brand-logo {
 .app-shell--day span.ada-brand-logo,
 .app-shell--day .ada-brand-logo-microsoft,
 .app-shell--day .ada-brand-logo-svg {
-  color: #14151d;
+  color: var(--ink);
   filter: none;
   opacity: 1;
 }

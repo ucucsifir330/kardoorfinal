@@ -271,6 +271,10 @@ const sectionRef = ref<HTMLElement | null>(null);
 const zoomRef = ref<HTMLElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+const heroHeadingRef = ref<HTMLElement | null>(null);
+const heroSubtitleRef = ref<HTMLElement | null>(null);
+const heroActionsRef = ref<HTMLElement | null>(null);
+const heroCueRef = ref<HTMLElement | null>(null);
 const configureHeadingRef = ref<HTMLElement | null>(null);
 const configureCopyRef = ref<HTMLElement | null>(null);
 const configureCopyLastWordRef = ref<HTMLElement | null>(null);
@@ -291,14 +295,18 @@ const showroomDepthRef = ref(1 + SHOWROOM_DEPTH); // delik ardındaki derinlik (
 // Sprite ilk kez SONUÇLANANA kadar (başarı ya da hata) showroom gizli tutulur.
 const isDoorPainted = ref(false);
 const isShowroomActive = ref(false); // yalnız body sınıfı için (hub'ı gizler)
+const isPageContentVisible = useState<boolean>("kardoor-page-content-visible", () => true);
 const { $smoother } = useNuxtApp();
 
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
 let teardown: (() => void) | undefined;
+let heroSupportingTween: ReturnType<typeof gsap.to> | undefined;
 let configureHeadingTween: ReturnType<typeof gsap.to> | undefined;
 let configureCopyTween: ReturnType<typeof gsap.to> | undefined;
 let configureCopyLastWordTween: ReturnType<typeof gsap.to> | undefined;
+let isHeroSupportingIntroPrepared = false;
+let hasPlayedHeroSupportingIntro = false;
 let hasPlayedConfigureHeadingIntro = false;
 let hasPlayedConfigureCopyIntro = false;
 let hasPlayedConfigureCopyLastWordIntro = false;
@@ -361,6 +369,59 @@ const placeDoor = () => {
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const getHeroSupportingTargets = () => {
+  const heading = heroHeadingRef.value;
+  const subtitle = heroSubtitleRef.value;
+  const actions = heroActionsRef.value;
+  const cue = heroCueRef.value;
+  return heading && subtitle && actions && cue ? [heading, subtitle, actions, cue] : [];
+};
+
+const prepareHeroSupportingIntro = () => {
+  if (isHeroSupportingIntroPrepared || prefersReducedMotion()) return;
+
+  const targets = getHeroSupportingTargets();
+  if (targets.length === 0) return;
+
+  gsap.set(targets, {
+    filter: "blur(20px)",
+    opacity: 0,
+    scale: 0.9
+  });
+  isHeroSupportingIntroPrepared = true;
+};
+
+const playHeroSupportingIntro = () => {
+  const targets = getHeroSupportingTargets();
+  if (targets.length === 0 || hasPlayedHeroSupportingIntro) return;
+
+  hasPlayedHeroSupportingIntro = true;
+
+  if (prefersReducedMotion()) {
+    gsap.set(targets, { clearProps: "filter,opacity,scale" });
+    return;
+  }
+
+  prepareHeroSupportingIntro();
+  heroSupportingTween?.kill();
+  heroSupportingTween = gsap.to(targets, {
+    filter: "blur(0px)",
+    opacity: 1,
+    scale: 1,
+    duration: 1.5,
+    ease: "power2.out",
+    overwrite: "auto",
+    clearProps: "filter,opacity,scale",
+    onComplete: () => {
+      heroSupportingTween = undefined;
+    }
+  });
+};
+
+watch(isPageContentVisible, (isVisible) => {
+  if (isVisible) playHeroSupportingIntro();
+});
 
 const playConfigureHeadingIntro = () => {
   const heading = configureHeadingRef.value;
@@ -573,6 +634,8 @@ onMounted(() => {
   const section = sectionRef.value;
   if (!section || !canvasRef.value) return;
 
+  prepareHeroSupportingIntro();
+  if (isPageContentVisible.value) playHeroSupportingIntro();
   placeDoor();
   let previousProgress = 0;
   let scrollTween: ReturnType<typeof gsap.to> | undefined;
@@ -877,6 +940,12 @@ onMounted(() => {
 
   teardown = () => {
     scrollTween?.kill();
+    heroSupportingTween?.kill();
+    heroSupportingTween = undefined;
+    const heroSupportingTargets = getHeroSupportingTargets();
+    if (heroSupportingTargets.length) {
+      gsap.set(heroSupportingTargets, { clearProps: "filter,opacity,scale" });
+    }
     configureHeadingTween?.kill();
     configureCopyTween?.kill();
     configureCopyLastWordTween?.kill();
@@ -1017,16 +1086,16 @@ onBeforeUnmount(() => {
     <!-- HERO COPY — scroll başlayınca kaybolur (--hero-copy-* JS'ten). -->
     <div class="entrance-lab__copy-mask">
       <div class="entrance-lab__copy">
-        <h1 class="entrance-lab__heading">
+        <h1 ref="heroHeadingRef" class="entrance-lab__heading">
           <span class="entrance-lab__heading-line">{{ copy.line1 }}</span>
           <span class="entrance-lab__heading-line entrance-lab__heading-line--accent">
             <em>{{ copy.accent }}</em> {{ copy.line2 }}
           </span>
         </h1>
-        <p class="entrance-lab__subtitle">
+        <p ref="heroSubtitleRef" class="entrance-lab__subtitle">
           {{ copy.subtitleLead }}{{ copy.subtitleAccent ? " " : "" }}<em v-if="copy.subtitleAccent">{{ copy.subtitleAccent }}</em>
         </p>
-        <div class="entrance-lab__cta-row">
+        <div ref="heroActionsRef" class="entrance-lab__cta-row">
           <AdaCtaButton :label="copy.ctaLabel" href="/catalog" variant="filled" icon-position="none" />
           <a class="entrance-lab__cta-arrow" href="/catalog" :aria-label="copy.ctaLabel">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1039,7 +1108,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- KAYDIR ipucu — scroll başlayınca kaybolur (--hero-cue-opacity). -->
-    <div class="entrance-lab__cue" aria-hidden="true">
+    <div ref="heroCueRef" class="entrance-lab__cue" aria-hidden="true">
       <span class="entrance-lab__cue-label">{{ copy.scrollCue }}</span>
       <span class="entrance-lab__scroll-device">
         <span class="entrance-lab__scroll-motion" />

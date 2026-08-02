@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import gsap from "gsap";
-import { useNuxtApp, useRoute } from "#imports";
+import { useNuxtApp, useRoute, useState } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 /**
@@ -37,8 +37,10 @@ const isMenuOpen = ref(false);
 const isMenuMode = ref(false);
 
 const navRoot = ref<HTMLElement | null>(null);
+const navBarRevealRef = ref<HTMLElement | null>(null);
 const panelWrap = ref<HTMLElement | null>(null);
 const panel = ref<HTMLElement | null>(null);
+const isPageContentVisible = useState<boolean>("kardoor-page-content-visible", () => true);
 
 /**
  * Her öğe İKİ dildeki etiketini de taşır. Şablon, görünen etiketin altına
@@ -116,9 +118,56 @@ const logoLabel = computed(() =>
 
 let animationContext: ReturnType<typeof gsap.context> | null = null;
 let menuTimeline: ReturnType<typeof gsap.timeline> | null = null;
+let pageIntroTween: ReturnType<typeof gsap.to> | null = null;
+let isPageIntroPrepared = false;
+let hasPlayedPageIntro = false;
 
 const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const getPageIntroTargets = () =>
+  navBarRevealRef.value ? [navBarRevealRef.value] : [];
+
+const preparePageIntro = () => {
+  if (isPageIntroPrepared || prefersReducedMotion()) return;
+
+  const targets = getPageIntroTargets();
+  if (targets.length === 0) return;
+
+  gsap.set(targets, {
+    filter: "blur(20px)",
+    opacity: 0,
+    scale: 0.9
+  });
+  isPageIntroPrepared = true;
+};
+
+const playPageIntro = () => {
+  const targets = getPageIntroTargets();
+  if (targets.length === 0 || hasPlayedPageIntro) return;
+
+  hasPlayedPageIntro = true;
+
+  if (prefersReducedMotion()) {
+    gsap.set(targets, { clearProps: "filter,opacity,scale" });
+    return;
+  }
+
+  preparePageIntro();
+  pageIntroTween?.kill();
+  pageIntroTween = gsap.to(targets, {
+    filter: "blur(0px)",
+    opacity: 1,
+    scale: 1,
+    duration: 1.5,
+    ease: "power2.out",
+    overwrite: "auto",
+    clearProps: "filter,opacity,scale",
+    onComplete: () => {
+      pageIntroTween = null;
+    }
+  });
+};
 
 const getLogoElement = () =>
   navRoot.value?.querySelector<HTMLElement>(".site-nav__logo") ?? null;
@@ -327,6 +376,9 @@ const onMenuModeChange = (event: MediaQueryListEvent | MediaQueryList) => {
 onMounted(() => {
   if (navRoot.value) animationContext = gsap.context(() => {}, navRoot.value);
 
+  preparePageIntro();
+  if (isPageContentVisible.value) playPageIntro();
+
   menuModeQuery = window.matchMedia(MENU_MODE_QUERY);
   onMenuModeChange(menuModeQuery);
   menuModeQuery.addEventListener("change", onMenuModeChange);
@@ -338,6 +390,11 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  pageIntroTween?.kill();
+  const pageIntroTargets = getPageIntroTargets();
+  if (pageIntroTargets.length) {
+    gsap.set(pageIntroTargets, { clearProps: "filter,opacity,scale" });
+  }
   menuTimeline?.kill();
   animationContext?.revert();
   menuModeQuery?.removeEventListener("change", onMenuModeChange);
@@ -353,6 +410,10 @@ watch(
     closeMenu();
   }
 );
+
+watch(isPageContentVisible, (isVisible) => {
+  if (isVisible) playPageIntro();
+});
 </script>
 
 <template>
@@ -370,7 +431,7 @@ watch(
 
     <div ref="navRoot" class="site-nav">
       <div class="site-nav__shell">
-        <nav class="site-nav__bar" :aria-label="primaryNavLabel">
+        <nav ref="navBarRevealRef" class="site-nav__bar" :aria-label="primaryNavLabel">
           <div class="site-nav__group site-nav__group--left">
             <!-- Linkler panele taşındığı ara ölçülerde çubuğun sol tarafını
                  doldurur; damla ile aynı paneli açar. Geniş ekranda gizli. -->

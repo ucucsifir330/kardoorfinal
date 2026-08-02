@@ -224,14 +224,19 @@ const backdropText = computed(() => {
 
       <Transition name="sl-info" mode="out-in">
         <div v-if="activeDoor" :key="activeDoor.id" class="showroom-lab__info-block">
-          <h2 class="showroom-lab__name">
-            <span class="showroom-lab__name-lead">{{ activeDoor.nameDisplay.lead }}</span>
-            <em class="showroom-lab__name-tail">{{ activeDoor.nameDisplay.tail }}</em>
-          </h2>
-          <p class="showroom-lab__series">{{ activeDoor.series }}</p>
-          <div class="showroom-lab__divider" />
-          <p class="showroom-lab__spec">{{ activeDoor.spec }}</p>
-          <p class="showroom-lab__meta">{{ activeDoor.meta }}</p>
+          <div class="showroom-lab__identity">
+            <h2 class="showroom-lab__name">
+              <span class="showroom-lab__name-lead">{{ activeDoor.nameDisplay.lead }}</span>
+              <em class="showroom-lab__name-tail">{{ activeDoor.nameDisplay.tail }}</em>
+            </h2>
+            <p class="showroom-lab__series">{{ activeDoor.series }}</p>
+          </div>
+
+          <div class="showroom-lab__details">
+            <div class="showroom-lab__divider" />
+            <p class="showroom-lab__spec">{{ activeDoor.spec }}</p>
+            <p class="showroom-lab__meta">{{ activeDoor.meta }}</p>
+          </div>
 
           <div class="showroom-lab__actions">
             <AdaCtaButton :label="ui.detail" href="#" />

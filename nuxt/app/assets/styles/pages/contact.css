@@ -35,22 +35,22 @@
 }
 
 .app-shell--day .contact-page {
-  --contact-bg: #f5f1e8;
-  --contact-ink: #111417;
-  --contact-muted: rgba(17, 20, 23, 0.68);
-  --contact-soft: rgba(17, 20, 23, 0.48);
-  --contact-line: rgba(17, 20, 23, 0.24);
-  --contact-line-strong: rgba(17, 20, 23, 0.68);
-  --contact-focus: #d71920;
-  --contact-check: #d71920;
-  --contact-submit-hover-bg: #111417;
-  --contact-submit-hover-color: #f5f1e8;
+  --contact-bg: var(--paper);
+  --contact-ink: var(--ink);
+  --contact-muted: var(--ink-body);
+  --contact-soft: var(--ink-soft);
+  --contact-line: var(--hairline);
+  --contact-line-strong: var(--ink-soft);
+  --contact-focus: var(--brand-700);
+  --contact-check: var(--brand-700);
+  --contact-submit-hover-bg: var(--brand-700);
+  --contact-submit-hover-color: var(--brand-100);
   --contact-page-bg:
     radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.76), transparent 26rem),
-    linear-gradient(180deg, #faf7ef 0%, var(--contact-bg) 58%, #eee8db 100%);
-  --contact-map-surface: #e9e4d9;
+    linear-gradient(180deg, var(--surface) 0%, var(--contact-bg) 58%, var(--surface-2) 100%);
+  --contact-map-surface: var(--surface-2);
   --contact-map-shadow: rgba(81, 69, 53, 0.18);
-  --contact-map-inset: rgba(17, 20, 23, 0.08);
+  --contact-map-inset: var(--hairline);
   --contact-map-filter: grayscale(0.76) contrast(0.96) brightness(1.08) saturate(0.56);
   --contact-map-opacity: 0.86;
   --contact-map-overlay:
@@ -637,7 +637,7 @@
 
 .app-shell--day:has(.contact-page) .footer-wrapper,
 .app-shell--day:has(.contact-page) .footer-wrapper::before {
-  background: #eee8db !important;
+  background: var(--surface-2) !important;
 }
 
 @media (max-width: 1280px) {

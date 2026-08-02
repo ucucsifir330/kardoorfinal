@@ -18,14 +18,15 @@
 }
 
 .btn-primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #020406;
+  border-color: var(--brand-500);
+  background: var(--brand-500);
+  color: var(--brand-100);
 }
 
 .btn-secondary {
-  background: var(--panel-soft);
-  color: var(--text);
+  background: transparent;
+  border-color: var(--hairline);
+  color: var(--brand-700);
 }
 
 /* Hover — only on real pointer devices */

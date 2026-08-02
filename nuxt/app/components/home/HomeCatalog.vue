@@ -18,12 +18,12 @@
           y1="0"
           y2="80"
         >
-          <stop offset="0" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
-          <stop offset="0.06" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.34" />
-          <stop offset="0.16" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
-          <stop offset="0.84" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
-          <stop offset="0.94" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.34" />
-          <stop offset="1" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
+          <stop offset="0" stop-color="var(--catalog-stage-line-fill, #22318C)" stop-opacity="0" />
+          <stop offset="0.06" stop-color="var(--catalog-stage-line-fill, #22318C)" stop-opacity="0.34" />
+          <stop offset="0.16" stop-color="var(--catalog-stage-line-fill, #22318C)" stop-opacity="1" />
+          <stop offset="0.84" stop-color="var(--catalog-stage-line-fill, #22318C)" stop-opacity="1" />
+          <stop offset="0.94" stop-color="var(--catalog-stage-line-fill, #22318C)" stop-opacity="0.34" />
+          <stop offset="1" stop-color="var(--catalog-stage-line-fill, #22318C)" stop-opacity="0" />
         </linearGradient>
       </defs>
       <path ref="catalogLinePathRef" class="catalog-structural-line-path" />
@@ -46,6 +46,10 @@
           :class="{
             'is-liquid-active': activeLiquidCard === `block-${block.index}`,
             'is-liquid-expanded': liquidMenuExpanded[`block-${block.index}`],
+            'is-liquid-icon-hovered':
+              activeLiquidCard === `block-${block.index}` &&
+              !liquidMenuExpanded[`block-${block.index}`] &&
+              !liquidIconHoverSuppressed[`block-${block.index}`],
           }"
         >
           <div class="catalog-row-info">
@@ -137,39 +141,6 @@
                     @error="handleCatalogImageError($event, item.localImage)"
                   >
 
-                  <div
-                    :class="[
-                      likeWrapClass,
-                      { 'is-menu-open': activeWishlistKey === `${block.index}-${item.id}` }
-                    ]"
-                  >
-                    <button
-                      type="button"
-                      :class="[likeButtonClass, { 'is-liked': item.liked }]"
-                      :aria-label="item.liked ? catalogCopy.favorite.removeAria : catalogCopy.favorite.addAria"
-                      @click.stop.prevent="handleWishlistClick(item.productIndex, `${block.index}-${item.id}`)"
-                      @keydown.enter.stop.prevent="handleWishlistClick(item.productIndex, `${block.index}-${item.id}`)"
-                      @keydown.space.stop.prevent="handleWishlistClick(item.productIndex, `${block.index}-${item.id}`)"
-                    >
-                      <svg :class="heartClass" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                      </svg>
-                    </button>
-
-                    <div
-                      :class="[
-                        wishlistPanelClass,
-                        { 'is-click-open': activeWishlistKey === `${block.index}-${item.id}` }
-                      ]"
-                      role="menu"
-                      @mousedown.stop
-                      @click.stop
-                    >
-                      <button type="button" role="menuitem" :class="wishlistItemClass">{{ item.liked ? catalogCopy.favorite.remove : catalogCopy.favorite.add }}</button>
-                      <button type="button" role="menuitem" :class="wishlistItemClass">{{ catalogCopy.favorite.lists }}</button>
-                      <button type="button" role="menuitem" :class="wishlistItemClass">{{ catalogCopy.favorite.newList }}</button>
-                    </div>
-                  </div>
                 </div>
 
                 <div class="catalog-product-bottom">
@@ -275,10 +246,8 @@ const {
   visibleRows,
   activeProduct,
   activeProductIndex,
-  activeWishlistKey,
   getCatalogPreviewProducts,
   toggleLike,
-  handleWishlistClick,
   openProductModal,
   closeProductModal,
   showPreviousProduct,
@@ -302,11 +271,7 @@ const catalogCopies: Record<string, any> = {
     },
     favorite: {
       add: "Favorilere ekle",
-      remove: "Favorilerden kaldır",
-      addAria: "Favorilere ekle",
-      removeAria: "Favorilerden çıkar",
-      lists: "Favori listelerim",
-      newList: "Yeni favori listesi"
+      remove: "Favorilerden kaldır"
     },
     blocks: {
       1: {
@@ -445,11 +410,7 @@ const catalogCopies: Record<string, any> = {
     },
     favorite: {
       add: "Add to favourites",
-      remove: "Remove from favourites",
-      addAria: "Add to favourites",
-      removeAria: "Remove from favourites",
-      lists: "My favourite lists",
-      newList: "New favourite list"
+      remove: "Remove from favourites"
     },
     blocks: {
       1: {
@@ -651,6 +612,7 @@ let catalogLineRevealAllowed = false;
 // --- LIQUID MENU STATE & LOGIC ---
 const activeLiquidCard = ref<string | null>(null);
 const liquidMenuExpanded = ref<Record<string, boolean>>({});
+const liquidIconHoverSuppressed = ref<Record<string, boolean>>({});
 const blobPaths = ref<Record<string, SVGPathElement>>({});
 const blobContainers = ref<Record<string, SVGSVGElement>>({});
 const hamburgers = ref<Record<string, HTMLElement>>({});
@@ -781,6 +743,7 @@ const handleLiquidEnter = (id: string, e: MouseEvent) => {
     return;
   }
 
+  liquidIconHoverSuppressed.value[id] = false;
   activeLiquidCard.value = id;
   const container = blobContainers.value[id];
 
@@ -821,6 +784,8 @@ const handleLiquidMenuClick = (e: MouseEvent, id: string) => {
 };
 
 const handleLiquidLeave = (id: string) => {
+  liquidIconHoverSuppressed.value[id] = false;
+
   if (activeLiquidCard.value === id) {
     activeLiquidCard.value = null;
     if (liquidRaf) {
@@ -836,13 +801,22 @@ const toggleLiquidMenu = (id: string) => {
   liquidMenuExpanded.value[id] = !liquidMenuExpanded.value[id];
 
   if (liquidMenuExpanded.value[id]) {
+    liquidIconHoverSuppressed.value[id] = false;
     activeLiquidCard.value = id;
     if (liquidRaf) {
       cancelAnimationFrame(liquidRaf);
       liquidRaf = null;
     }
     resetLiquidShape(id);
+    return;
   }
+
+  // Referanstaki gibi kapanış tıklamasından sonra imleç hâlâ kontrolün
+  // üstündeyken ikon çizgilere döner. Hover ancak imleç çıkıp yeniden
+  // girdiğinde tekrar çarpıya dönüşür.
+  liquidIconHoverSuppressed.value[id] = true;
+  activeLiquidCard.value = null;
+  resetLiquidShape(id);
 };
 // --- END LIQUID MENU LOGIC ---
 
@@ -1209,103 +1183,4 @@ onBeforeUnmount(() => {
   resetCatalogModalState();
 });
 
-/* ---------------------------------------------------------------------------
- * TAILWIND MIGRASYONU — wishlist / like parcasi
- *
- * Bu parcanin kurallari home-catalog.css'te ALTI ayri yere dagilmisti
- * (satir 2, 167, 953, 1322, 2539, 2618) ve cogu !important'liydi; hangisinin
- * kazandigi belirsizdi. Hepsi burada tek yerde toplandi.
- *
- * Orijinal sinif adlari KORUNUYOR — themes/*.css renk degiskenleri ve
- * html.is-safari kurallari bu adlari hedefliyor.
- * ------------------------------------------------------------------------- */
-
-// .catalog-like-wrap + .home-page .catalog-like-wrap (mobil override dahil)
-const likeWrapClass = [
-  'catalog-like-wrap pointer-events-none absolute z-10',
-  'top-[10px] right-[10px] h-[28px] w-[28px]',
-  'max-[760px]:top-[8px] max-[760px]:right-[8px] max-[760px]:h-[30px] max-[760px]:w-[30px]'
-].join(' ');
-
-// .catalog-like + .home-page .catalog-like + hover
-const likeButtonClass = [
-  'catalog-like pointer-events-auto absolute inset-0 z-10 flex items-center justify-center',
-  // rounded-full (9999px) SVG icinde tasip devasa deger uretiyor; orijinal 50%.
-  'h-[28px] w-[28px] cursor-pointer rounded-[50%] border-0 p-0',
-  'bg-[#f3f4f6] text-[#242929] [box-shadow:0_1px_3px_rgba(0,0,0,0.1)]',
-  '[transition:transform_0.9s_cubic-bezier(0.19,1,0.22,1),color_0.65s_ease]',
-  'hover:scale-[1.055]',
-  'max-[760px]:h-[30px] max-[760px]:w-[30px]'
-].join(' ');
-
-// .catalog-heart + .home-page .catalog-heart + .is-liked durumu
-// (.is-liked rengi scoped style'da — parent state selector'u gerekiyor)
-const heartClass = [
-  'catalog-heart h-[14px] w-[14px] fill-current stroke-current',
-  '[stroke-width:2] [stroke-linecap:round] [stroke-linejoin:round]',
-  '[transition:transform_0.3s_ease,color_0.3s_ease,fill_0.3s_ease]'
-].join(' ');
-
-// .catalog-wishlist-panel + konum override'i + mobilde gizleme
-const wishlistPanelClass = [
-  'catalog-wishlist-panel invisible pointer-events-none absolute z-[18] block',
-  'top-0 right-[38px] w-[174px] py-[10px]',
-  'bg-[var(--catalog-wishlist-panel-bg)]',
-  'border-r-4 border-r-[var(--catalog-wishlist-panel-border)]',
-  '[box-shadow:var(--catalog-wishlist-panel-shadow)]',
-  'translate-y-[-6px] opacity-0',
-  '[transition:opacity_0.22s_ease,transform_0.22s_ease,visibility_0s_linear_0.22s]',
-  'max-[760px]:hidden'
-].join(' ');
-
-const wishlistItemClass = [
-  'block w-full cursor-pointer border-0 bg-transparent px-[14px] py-2 text-left',
-  // NOT: font-size/line-height BILEREK burada degil, scoped style'da.
-  // main.css'te "button,input,textarea { font: inherit }" reset'i var; bu
-  // shorthand font-size'i da sifirliyor ve Tailwind'in tek-sinifli
-  // utility'siyle ayni ozgullukte oldugu icin sonra geldiginden kazaniyordu.
-  'text-[var(--catalog-wishlist-button-color)]',
-  'hover:text-[var(--catalog-wishlist-button-hover-color)]',
-  'hover:bg-[var(--catalog-wishlist-button-hover-bg)]'
-].join(' ');
 </script>
-
-<style scoped>
-/* main.css'teki "button,input,textarea { font: inherit }" reset'ini yenmek
-   icin iki-sinifli secici gerekiyor (Tailwind utility'si tek sinif). */
-.catalog-wishlist-panel button {
-  font-size: 14px;
-  line-height: 1.25;
-}
-
-/* Tailwind'e girmeyen kisim: parent-state'e bagli secicilerdir.
-   Utility sinifi "atam liked ise ben kirmizi ol" diyemez. */
-.catalog-like.is-liked {
-  color: #ef4444;
-}
-
-.catalog-like.is-liked .catalog-heart {
-  color: #ef4444;
-  fill: #ef4444;
-  transform: scale(1.1);
-}
-
-/* Panel acilis durumlari — hover/focus parent'tan geliyor. */
-.catalog-like-wrap:hover .catalog-wishlist-panel {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-  transition-delay: 0.42s, 0.42s, 0s;
-}
-
-.catalog-like-wrap:focus-within .catalog-wishlist-panel,
-.catalog-wishlist-panel.is-click-open,
-.catalog-wishlist-panel:hover {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-  transition-delay: 0s;
-}
-</style>

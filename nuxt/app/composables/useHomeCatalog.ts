@@ -174,13 +174,9 @@ const catalogProducts: ProductVariant[] = doorProducts.map((product) => ({
   liked: false
 }));
 
-const isMobileCatalogViewport = () =>
-  typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches;
-
 export const useHomeCatalog = () => {
   const products = ref<ProductVariant[]>(catalogProducts.map((product) => ({ ...product })));
   const visibleRows = ref<number[]>([1]);
-  const activeWishlistKey = ref<string | null>(null);
   const activeProductIndex = ref<number | null>(null);
 
   const getCatalogPreviewProducts = (block: CatalogBlock) =>
@@ -194,18 +190,6 @@ export const useHomeCatalog = () => {
     products.value[index].liked = !products.value[index].liked;
   };
 
-  const handleWishlistClick = (index: number, key: string) => {
-    if (isMobileCatalogViewport()) {
-      toggleLike(index);
-      activeWishlistKey.value = null;
-      return;
-    }
-
-    const willOpen = activeWishlistKey.value !== key;
-    toggleLike(index);
-    activeWishlistKey.value = willOpen ? key : null;
-  };
-
   const activeProduct = computed(() => {
     if (activeProductIndex.value === null) return null;
     return products.value[activeProductIndex.value] || null;
@@ -213,7 +197,6 @@ export const useHomeCatalog = () => {
 
   const openProductModal = (index: number) => {
     activeProductIndex.value = index;
-    activeWishlistKey.value = null;
 
     if (typeof document !== "undefined") {
       document.body.style.overflow = "hidden";
@@ -252,7 +235,6 @@ export const useHomeCatalog = () => {
 
   const resetCatalogModalState = () => {
     closeProductModal();
-    activeWishlistKey.value = null;
   };
 
   return {
@@ -261,10 +243,8 @@ export const useHomeCatalog = () => {
     visibleRows,
     activeProduct,
     activeProductIndex,
-    activeWishlistKey,
     getCatalogPreviewProducts,
     toggleLike,
-    handleWishlistClick,
     openProductModal,
     closeProductModal,
     showPreviousProduct,

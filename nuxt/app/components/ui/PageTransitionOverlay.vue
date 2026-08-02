@@ -169,7 +169,7 @@ defineExpose({
 }
 
 :global(.app-shell--day .page-transition-overlay) {
-  --page-transition-panel-bg: #16101F;
+  --page-transition-panel-bg: var(--slab);
 }
 
 .page-transition-overlay__panel {

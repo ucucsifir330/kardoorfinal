@@ -271,6 +271,10 @@ body.entrance-mobile-locked {
   hyphens: auto;
 }
 
+.entrance-mobile__configure-heading span + span {
+  color: var(--accent);
+}
+
 .entrance-mobile__configure-copy {
   margin: 0;
   font-size: clamp(14px, 3.9vw, 17px);

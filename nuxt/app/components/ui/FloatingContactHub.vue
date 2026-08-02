@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useRoute } from "#imports";
+import { gsap } from "gsap";
+import { useRoute, useState } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 const route = useRoute();
@@ -8,12 +9,59 @@ const { locale } = useKardoorLocale();
 
 const isOpen = ref(false);
 const hubRef = ref<HTMLElement | null>(null);
+const triggerRevealRef = ref<HTMLButtonElement | null>(null);
 // Hub yalnızca hero'lu sayfalarda görünür: ana sayfa.
 const isHomeRoute = computed(() => route.path === "/");
+const isPageContentVisible = useState<boolean>("kardoor-page-content-visible", () => true);
 const contactActionClass =
   "floating-contact__action pointer-events-auto flex min-h-[66px] flex-col items-center justify-center gap-[7px] rounded-[18px] px-[6px] py-[9px] text-[11px] font-bold leading-none tracking-[0] no-underline [transition:background_.24s_var(--ease-soft),transform_.24s_var(--ease-soft)] hover:[transform:translateX(-2px)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent-blue)]";
 
 let syncFrame = 0;
+let pageIntroTween: ReturnType<typeof gsap.to> | null = null;
+let isPageIntroPrepared = false;
+let hasPlayedPageIntro = false;
+
+const prefersReducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const preparePageIntro = () => {
+  const trigger = triggerRevealRef.value;
+  if (!trigger || isPageIntroPrepared || prefersReducedMotion()) return;
+
+  gsap.set(trigger, {
+    filter: "blur(20px)",
+    opacity: 0,
+    scale: 0.9
+  });
+  isPageIntroPrepared = true;
+};
+
+const playPageIntro = () => {
+  const trigger = triggerRevealRef.value;
+  if (!trigger || hasPlayedPageIntro || !isHomeRoute.value) return;
+
+  hasPlayedPageIntro = true;
+
+  if (prefersReducedMotion()) {
+    gsap.set(trigger, { clearProps: "filter,opacity,scale" });
+    return;
+  }
+
+  preparePageIntro();
+  pageIntroTween?.kill();
+  pageIntroTween = gsap.to(trigger, {
+    filter: "blur(0px)",
+    opacity: 1,
+    scale: 1,
+    duration: 1.5,
+    ease: "power2.out",
+    overwrite: "auto",
+    clearProps: "filter,opacity,scale",
+    onComplete: () => {
+      pageIntroTween = null;
+    }
+  });
+};
 
 const copy = computed(() => {
   if (locale.value === "en") {
@@ -100,12 +148,18 @@ const requestHeroMotionSync = () => {
 };
 
 onMounted(() => {
+  preparePageIntro();
+  if (isPageContentVisible.value) playPageIntro();
   window.addEventListener("pointerdown", onPointerDown, { passive: true });
   window.addEventListener("keydown", onKeydown);
   requestHeroMotionSync();
 });
 
 onBeforeUnmount(() => {
+  pageIntroTween?.kill();
+  if (triggerRevealRef.value) {
+    gsap.set(triggerRevealRef.value, { clearProps: "filter,opacity,scale" });
+  }
   window.removeEventListener("pointerdown", onPointerDown);
   window.removeEventListener("keydown", onKeydown);
 
@@ -119,9 +173,15 @@ watch(
   async () => {
     closeHub();
     await nextTick();
+    preparePageIntro();
+    if (isPageContentVisible.value) playPageIntro();
     requestHeroMotionSync();
   }
 );
+
+watch(isPageContentVisible, (isVisible) => {
+  if (isVisible) playPageIntro();
+});
 </script>
 
 <template>
@@ -184,6 +244,7 @@ watch(
     </div>
 
     <button
+      ref="triggerRevealRef"
       class="floating-contact__trigger pointer-events-auto relative inline-flex min-h-[var(--contact-size)] min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-[999px] border border-[var(--contact-line)] py-2 pr-2 pl-[19px] isolate [font:inherit] [transform:translateZ(0)] [transition:box-shadow_.28s_var(--ease-soft),transform_.28s_var(--ease-soft),border-color_.28s_var(--ease-soft)] hover:[transform:translateY(-2px)] hover:[border-color:rgba(255,255,255,0.78)] group-[.is-open]/contact:[transform:translateY(-2px)] group-[.is-open]/contact:[border-color:rgba(255,255,255,0.78)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent-blue)] [@media(max-width:720px)]:pl-2"
       type="button"
       :aria-label="copy.toggle"
@@ -233,13 +294,13 @@ body.entrance-lab-showroom-on .floating-contact {
   --contact-size: 68px;
   --contact-bottom: clamp(18px, 2.3vw, 34px);
   --contact-right: clamp(18px, 2.45vw, 42px);
-  --contact-glass: rgba(255, 255, 255, 0.54);
-  --contact-glass-strong: rgba(255, 255, 255, 0.72);
-  --contact-ink: rgba(5, 12, 18, 0.94);
-  --contact-muted: rgba(5, 12, 18, 0.58);
-  --contact-line: rgba(255, 255, 255, 0.58);
+  --contact-glass: rgba(251, 249, 245, 0.54);
+  --contact-glass-strong: rgba(251, 249, 245, 0.72);
+  --contact-ink: var(--ink);
+  --contact-muted: var(--ink-soft);
+  --contact-line: var(--hairline);
   --contact-shadow: rgba(0, 0, 0, 0.18);
-  --contact-blue: #006cff;
+  --contact-blue: var(--brand-500);
   --floating-contact-opacity: 1;
   --floating-contact-y: 0px;
   --floating-contact-pointer: auto;
@@ -288,7 +349,7 @@ body.entrance-lab-showroom-on .floating-contact {
 .floating-contact__trigger-icon {
   background:
     radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.34), transparent 38%),
-    linear-gradient(135deg, #071018, #14202b 54%, var(--contact-blue));
+    linear-gradient(135deg, var(--slab), var(--slab-line) 54%, var(--contact-blue));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 10px 24px rgba(0, 0, 0, 0.18);
@@ -304,8 +365,8 @@ body.entrance-lab-showroom-on .floating-contact {
 
 .floating-contact__action {
   color: var(--contact-ink);
-  background: rgba(255, 255, 255, 0.24);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  background: rgba(251, 249, 245, 0.24);
+  box-shadow: inset 0 1px 0 rgba(251, 249, 245, 0.38);
 }
 
 .floating-contact__action:hover {

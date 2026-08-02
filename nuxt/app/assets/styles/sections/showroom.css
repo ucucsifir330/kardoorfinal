@@ -37,15 +37,15 @@
    Selector SADECE entrance-lab section'ına bağlı — html[data-ambience] gibi
    üst elementler bunu yanlışlıkla tetiklemesin (night'ta da light kalıyordu). */
 .entrance-lab[data-ambience="day"] .showroom-lab {
-  --sl-bg-1: #f3f1ea;
-  --sl-bg-2: #d9d6cd;
-  --sl-vignette-a: rgba(255, 255, 255, 0.4);
-  --sl-vignette-b: rgba(120, 116, 104, 0.22);
-  --sl-text: #14151d;
-  --sl-text-soft: rgba(20, 21, 29, 0.66);
-  --sl-text-faint: rgba(20, 21, 29, 0.46);
-  --sl-line: rgba(20, 21, 29, 0.18);
-  --sl-backdrop: rgba(20, 21, 29, 0.06);
+  --sl-bg-1: var(--paper);
+  --sl-bg-2: var(--hairline);
+  --sl-vignette-a: rgba(251, 249, 245, 0.4);
+  --sl-vignette-b: rgba(138, 128, 115, 0.22);
+  --sl-text: var(--ink);
+  --sl-text-soft: var(--ink-body);
+  --sl-text-faint: var(--ink-soft);
+  --sl-line: var(--hairline);
+  --sl-backdrop: rgba(22, 19, 15, 0.06);
 }
 
 /* Atmosfer — merkeze doğru hafif aydınlanma (tema değişkeniyle). */
@@ -139,6 +139,38 @@ html.is-safari .showroom-lab__backdrop-text {
   height: 100%;
   display: grid;
   place-items: center;
+}
+
+/* Kenarda kalan komşu kapıları sahne zeminine yedir; orbit geometrisine veya
+   ürün opaklığına dokunmadan sert viewport kesimini yumuşatır. */
+.showroom-lab__stage::before,
+.showroom-lab__stage::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  z-index: 60;
+  width: clamp(32px, 3.8vw, 72px);
+  pointer-events: none;
+}
+
+.showroom-lab__stage::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--sl-bg-1) 72%, transparent) 0%,
+    color-mix(in srgb, var(--sl-bg-1) 36%, transparent) 38%,
+    transparent 100%
+  );
+}
+
+.showroom-lab__stage::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--sl-bg-1) 72%, transparent) 0%,
+    color-mix(in srgb, var(--sl-bg-1) 36%, transparent) 38%,
+    transparent 100%
+  );
 }
 
 .showroom-lab__carousel {
@@ -243,7 +275,7 @@ html.is-safari .showroom-lab__slot {
   padding: clamp(108px, 15vh, 164px) clamp(24px, 3vw, 64px) clamp(42px, 6vh, 76px);
   display: flex;
   flex-direction: column;
-  gap: clamp(38px, 5vh, 66px);
+  gap: clamp(38px, 4.2vh, 56px);
   isolation: isolate;
   overflow: visible;
 }
@@ -267,7 +299,25 @@ html.is-safari .showroom-lab__slot {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: clamp(12px, 1.45vw, 20px);
+  width: min(100%, 410px);
+  gap: clamp(28px, 3.4vh, 42px);
+}
+
+.showroom-lab__identity,
+.showroom-lab__details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.showroom-lab__identity {
+  gap: clamp(16px, 1.6vw, 24px);
+}
+
+.showroom-lab__details {
+  width: min(100%, 344px);
+  gap: clamp(12px, 1.15vw, 16px);
 }
 
 .showroom-lab__counter {
@@ -302,7 +352,7 @@ html.is-safari .showroom-lab__slot {
   inset: 0;
   transform-origin: left center;
   transform: scaleX(var(--counter-progress, 0));
-  background: #8EA2FF;
+  background: var(--accent);
   transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -325,21 +375,25 @@ html.is-safari .showroom-lab__slot {
 .showroom-lab__name {
   margin: 0;
   font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
-  font-size: clamp(42px, 4.6vw, 82px);
-  line-height: 0.98;
+  max-width: 100%;
+  font-size: clamp(38px, 3.4vw, 60px);
+  line-height: 0.96;
   font-weight: 500;
+  letter-spacing: -0.025em;
   color: var(--sl-text);
+  text-wrap: balance;
 }
 
 .showroom-lab__name-lead {
   display: block;
+  white-space: nowrap;
 }
 
 .showroom-lab__name-tail {
   display: block;
-  margin-top: 0.08em;
+  margin-top: 0.12em;
   font-style: normal;
-  color: #8EA2FF;
+  color: var(--accent);
 }
 
 .showroom-lab__series {
@@ -354,21 +408,22 @@ html.is-safari .showroom-lab__slot {
 .showroom-lab__divider {
   width: 56px;
   height: 1px;
-  margin: clamp(0px, 0.28vw, 4px) 0 clamp(8px, 1vw, 16px);
+  margin: 0 0 clamp(4px, 0.55vw, 8px);
   background: var(--sl-line);
 }
 
 .showroom-lab__spec {
   margin: 0;
-  max-width: 32ch;
-  font-size: clamp(15px, 1.18vw, 20px);
-  line-height: 1.58;
+  max-width: 30ch;
+  font-size: clamp(15px, 1.05vw, 18px);
+  line-height: 1.52;
   color: var(--sl-text-soft);
 }
 
 .showroom-lab__meta {
   margin: 0;
-  white-space: nowrap;
+  max-width: 34ch;
+  white-space: normal;
   font-size: clamp(12px, 0.86vw, 14px);
   line-height: 1.5;
   letter-spacing: 0.03em;
@@ -377,36 +432,41 @@ html.is-safari .showroom-lab__slot {
 
 /* CTA butonları — animasyonlu AdaCtaButton (Detaylar/Teklif Al). */
 .showroom-lab__actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: clamp(16px, 1.6vw, 24px);
-  margin-top: clamp(22px, 3vw, 42px);
+  width: min(100%, 344px);
+  gap: clamp(10px, 0.8vw, 12px);
 }
 
-.showroom-lab__actions .ada-cta-button {
+.showroom-lab__info .showroom-lab__actions .ada-cta-button {
+  width: 100%;
+  min-width: 0;
+  height: clamp(48px, 2.72vw, 52px);
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-weight: 600;
 }
 
 .entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {
-  --ada-cta-bg: #16101F;
-  --ada-cta-fg: #F4F6FF;
-  --ada-cta-border: #16101F;
-  --ada-cta-hover-bg: #21172D;
-  --ada-cta-hover-fg: #F4F6FF;
-  --ada-cta-hover-border: #21172D;
-  --ada-cta-fill-surface: #21172D;
+  /* Detaylar, Teklif Al hover'ındaki koyu yüzeyi devralır. */
+  --ada-cta-bg: var(--brand-700);
+  --ada-cta-fg: var(--brand-100);
+  --ada-cta-border: var(--brand-700);
+  --ada-cta-hover-bg: var(--brand-700);
+  --ada-cta-hover-fg: var(--brand-100);
+  --ada-cta-hover-border: var(--brand-700);
+  --ada-cta-fill-surface: var(--brand-700);
 }
 
 .entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button--outline {
+  /* Secondary — kenar hairline, metin/ok 700. Dolgu YOK. */
   --ada-cta-bg: transparent;
-  --ada-cta-fg: #16101F;
-  --ada-cta-border: #16101F;
-  --ada-cta-hover-fg: #F4F6FF;
+  --ada-cta-fg: var(--brand-700);
+  --ada-cta-border: var(--hairline);
+  --ada-cta-hover-fg: var(--brand-100);
   --ada-cta-hover-bg: transparent;
-  --ada-cta-hover-border: #16101F;
-  --ada-cta-fill-surface: #16101F;
+  --ada-cta-hover-border: var(--brand-500);
+  --ada-cta-fill-surface: var(--brand-500);
 }
 
 .entrance-lab[data-ambience="night"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {
@@ -426,7 +486,7 @@ html.is-safari .showroom-lab__slot {
   grid-template-columns: repeat(var(--door-rail-count, 5), minmax(24px, 1fr));
   gap: clamp(10px, 1vw, 16px);
   width: min(100%, clamp(220px, 22vw, 360px));
-  margin-top: clamp(12px, 2.4vh, 28px);
+  margin-top: auto;
 }
 
 .showroom-lab__door-rail-segment {
@@ -461,12 +521,12 @@ html.is-safari .showroom-lab__slot {
 .showroom-lab__door-rail-segment::after {
   transform: translateY(-50%) scaleX(var(--door-rail-fill, 0));
   transform-origin: left center;
-  background: #8EA2FF;
+  background: var(--accent);
   transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .showroom-lab__door-rail-segment:focus-visible {
-  outline: 2px solid #8EA2FF;
+  outline: 2px solid var(--accent);
   outline-offset: 8px;
 }
 
@@ -508,6 +568,10 @@ html.is-safari .showroom-lab__slot {
     grid-row: 1;
     align-self: stretch;
   }
+  .showroom-lab__stage::before,
+  .showroom-lab__stage::after {
+    width: 24px;
+  }
   .showroom-lab__slot {
     width: clamp(150px, 42vw, 220px);
     height: clamp(240px, 64vw, 310px);
@@ -530,7 +594,13 @@ html.is-safari .showroom-lab__slot {
     inset: 0;
   }
   .showroom-lab__info-block {
-    gap: clamp(8px, 2.5vw, 14px);
+    gap: clamp(18px, 4vw, 28px);
+  }
+  .showroom-lab__identity {
+    gap: clamp(10px, 2.5vw, 16px);
+  }
+  .showroom-lab__details {
+    gap: clamp(8px, 2.5vw, 12px);
   }
   .showroom-lab__counter-current {
     font-size: clamp(16px, 4.6vw, 22px);
@@ -541,12 +611,13 @@ html.is-safari .showroom-lab__slot {
   .showroom-lab__name {
     font-size: clamp(34px, 9.4vw, 56px);
     line-height: 0.98;
+    letter-spacing: -0.02em;
   }
   .showroom-lab__series {
     font-size: clamp(14px, 3.8vw, 17px);
   }
   .showroom-lab__divider {
-    margin: 0 0 clamp(4px, 1.5vw, 10px);
+    margin: 0 0 clamp(4px, 1.5vw, 8px);
   }
   .showroom-lab__spec {
     max-width: 34ch;
@@ -561,7 +632,6 @@ html.is-safari .showroom-lab__slot {
   }
   .showroom-lab__actions {
     gap: 12px;
-    margin-top: clamp(12px, 3vw, 22px);
   }
   .showroom-lab__door-rail {
     width: min(100%, 280px);
@@ -580,7 +650,7 @@ html.is-safari .showroom-lab__slot {
   .showroom-lab__info {
     width: 100%;
   }
-  .showroom-lab__actions .ada-cta-button {
+  .showroom-lab__info .showroom-lab__actions .ada-cta-button {
     min-height: 44px;
   }
 }

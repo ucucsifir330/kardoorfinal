@@ -28,7 +28,7 @@
   display: inline-flex;
   align-items: center;
   height: 1em;
-  color: #3a83ff;
+  color: var(--brand-500);
   font-size: 1em;
   line-height: 1;
 }
