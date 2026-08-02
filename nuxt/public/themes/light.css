@@ -3,12 +3,6 @@
   --title-pill-transition-smooth: 4s cubic-bezier(0.16, 1, 0.3, 1);
   --word-transition-smooth: 4s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-tilt: 0.2s linear;
-  --catalog-wishlist-panel-bg: rgba(247, 247, 247, 0.96);
-  --catalog-wishlist-panel-border: #14151D;
-  --catalog-wishlist-panel-shadow: 0 14px 34px rgba(20, 21, 29, 0.12);
-  --catalog-wishlist-button-color: #4b4f55;
-  --catalog-wishlist-button-hover-color: #14151D;
-  --catalog-wishlist-button-hover-bg: rgba(20, 21, 29, 0.055);
   --catalog-product-modal-backdrop: rgba(20, 21, 29, 0.48);
   --catalog-stage-line-filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
   --catalog-product-scrollbar: rgba(36, 41, 41, 0.45) rgba(36, 41, 41, 0.08);
@@ -177,7 +171,7 @@ body {
 
   .track-inner {
     gap: 16px !important;
-  }
+  }
 }
 
 /* Mobile final notes: carousel centering, catalog line, chips, CTA, footer. */
