@@ -726,7 +726,14 @@ onMounted(() => {
    * `cancel()`: sadece wheel'de preventDefault; klavyede çağıran karar verir.
    */
   const driveEntrance = (direction: 1 | -1, strength: number, cancel: () => void) => {
-    if (!trigger || !getSmoother()) return;
+    // `|| !getSmoother()` KALDIRILDI: ScrollSmoother yoksa sahne hiç
+    // sürülmüyordu. Ama smoother yalnız masaüstünde kuruluyor (bkz.
+    // scroll.client.ts → isTouchDevice), yani coarse-pointer'lı ≤1024px bir
+    // cihazda bu bileşen mount olursa kapı seçimi ölü kalıyordu.
+    // settleToProgress'in native dalı (gsap.to(window,{scrollTo})) zaten
+    // çalışıyor — ölçüldü, snap'ler iki modda birebir aynı
+    // (5270/5435/5600/5765/5929, deltalar 165/165/165/164).
+    if (!trigger) return;
 
     if (isAutoSettling) {
       cancel();
