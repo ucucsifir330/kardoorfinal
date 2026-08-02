@@ -12,7 +12,7 @@
   overflow: hidden;
   isolation: isolate;
   background: var(--company-page-bg);
-  color: #fff;
+  color: var(--slab-fg);
 }
 
 .company-timeline__left {
@@ -96,7 +96,7 @@
   top: 0;
   z-index: 2;
   border-radius: 2px;
-  background: #fff;
+  background: var(--slab-fg);
 }
 
 .company-timeline__years {
@@ -126,7 +126,7 @@
   padding: 0;
   border: 0;
   border-radius: 0;
-  color: #fff;
+  color: var(--slab-fg);
   background: transparent;
   font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   font-size: 1rem;
@@ -203,7 +203,7 @@
   height: 22px;
   flex: 0 0 auto;
   margin-right: 20px;
-  background: #fff;
+  background: var(--slab-fg);
 }
 
 .company-timeline__subtitle p {
@@ -236,12 +236,12 @@
   z-index: 10;
   display: flex;
   align-items: center;
-  color: #fff;
+  color: var(--slab-fg);
 }
 
 .company-timeline__number {
   margin-right: 12px;
-  color: #fff;
+  color: var(--slab-fg);
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: 3.625rem;
   font-weight: 300;
@@ -265,14 +265,14 @@
 }
 
 .company-timeline__experience-copy strong {
-  color: #fff;
+  color: var(--slab-fg);
   font-weight: 700;
 }
 
 .app-shell--day .company-timeline {
   --company-page-bg: #f8f6ef;
   background: linear-gradient(180deg, #f8f5ee 0%, #ede8dd 56%, var(--company-page-bg) 100%);
-  color: #111417;
+  color: var(--ink);
 }
 
 body:has(.company-timeline),
@@ -322,21 +322,21 @@ body:has(.app-shell--day .company-timeline) main {
 }
 
 .app-shell--day .company-timeline__track::before {
-  background: rgba(17, 20, 23, 0.16);
+  background: var(--hairline);
 }
 
 .app-shell--day .company-timeline__track::after,
 .app-shell--day .company-timeline__subtitle span {
-  background: #111417;
+  background: var(--slab);
 }
 
 .app-shell--day .company-timeline__years li {
-  color: #111417;
+  color: var(--ink);
   opacity: 0.34;
 }
 
 .app-shell--day .company-timeline__years button {
-  color: #111417;
+  color: var(--ink);
 }
 
 .app-shell--day .company-timeline__years li.is-active {
@@ -344,7 +344,7 @@ body:has(.app-shell--day .company-timeline) main {
 }
 
 .app-shell--day .company-timeline__subtitle p {
-  color: rgba(17, 20, 23, 0.72);
+  color: var(--ink-body);
 }
 
 .app-shell--day .company-timeline__card {
@@ -353,15 +353,15 @@ body:has(.app-shell--day .company-timeline) main {
 
 .app-shell--day .company-timeline__experience,
 .app-shell--day .company-timeline__number {
-  color: #111417;
+  color: var(--ink);
 }
 
 .app-shell--day .company-timeline__experience-copy span {
-  color: rgba(17, 20, 23, 0.52);
+  color: var(--ink-soft);
 }
 
 .app-shell--day .company-timeline__experience-copy strong {
-  color: #111417;
+  color: var(--ink);
 }
 
 @media (max-width: 1180px) {
@@ -453,7 +453,7 @@ body:has(.app-shell--day .company-timeline) main {
   }
 
   .app-shell--day .company-timeline__mobile-card {
-    border-bottom-color: rgba(17, 20, 23, 0.1);
+    border-bottom-color: var(--hairline);
   }
 
   .app-shell--day .company-timeline__mobile-card img {

@@ -7,7 +7,7 @@
 }
 
 .footer-dome {
-  background-color: #2C2C31;
+  background-color: var(--slab);
   --dome-radius: 680px;
   border-top-left-radius: 50% var(--dome-radius);
   border-top-right-radius: 50% var(--dome-radius);
@@ -28,10 +28,10 @@
   /* Inset/debossed shadow that follows the K glyph (see #kInnerShadow). */
   filter: url(#kInnerShadow);
   /* EgeLogo fill="currentColor" kullanir — renk BURADAN gelir.
-     Palet: WelcomeScreen'deki K ile AYNI (#E6E7EB).
+     Koyu blok uzerinde durdugu icin --slab-fg.
      Onceden color verilmemisti; gunduzde sayfa metin rengini (koyu) miras
      alip koyu footer uzerinde gorunmez oluyordu. */
-  color: #E6E7EB;
+  color: var(--slab-fg);
 }
 
 .footer-logo-filter {
@@ -47,8 +47,8 @@
 
 .social-btn {
   border-radius: 50%;
-  background-color: #2C2C31;
-  color: #E6E7EB;
+  background-color: var(--slab-line);
+  color: var(--slab-fg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -62,8 +62,8 @@
 
 .social-btn:hover {
   transform: scale(1.08);
-  background-color: #E6E7EB;
-  color: #2C2C31;
+  background-color: var(--slab-fg);
+  color: var(--slab);
 }
 
 .social-btn svg {
@@ -115,7 +115,7 @@
 .flip-text-link {
   position: relative;
   display: inline-block;
-  /* !important GEREKLI: ".footer-column a { color: #E6E7EB }" ayni ozgullukte
+  /* !important GEREKLI: ".footer-column a { color: --slab-fg }" ayni ozgullukte
      ve dosyada SONRA geliyor. Onsuz metin hem <a>'da hem ::before'da cizilip
      ust uste biniyor; hover'da ::before donerken alttaki sabit metin kaliyor. */
   color: transparent !important;
@@ -124,7 +124,7 @@
   overflow: hidden;
   perspective: 700px;
   white-space: nowrap;
-  background-image: linear-gradient(#E6E7EB, #E6E7EB);
+  background-image: linear-gradient(var(--slab-fg), var(--slab-fg));
   background-repeat: no-repeat;
   background-position: left bottom;
   background-size: 0% 1px;
@@ -137,7 +137,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  color: #E6E7EB;
+  color: var(--slab-fg);
   backface-visibility: hidden;
   transform-origin: 50% 50%;
   transition:
@@ -190,7 +190,7 @@
 
 .footer-heading {
   margin: 0 0 42px;
-  color: #E6E7EB;
+  color: var(--slab-fg);
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(46px, 3.65vw, 56px);
   line-height: 0.94;
@@ -226,7 +226,7 @@
 
 .location-label {
   margin: 0 0 18px;
-  color: rgba(230, 231, 235, 0.58);
+  color: rgba(237, 234, 245, 0.58);
   font-size: 17px;
   line-height: 1.2;
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
@@ -245,7 +245,7 @@
   gap: 12px;
   cursor: pointer;
   position: relative;
-  color: #E6E7EB;
+  color: var(--slab-fg);
   font-size: 17px;
   line-height: 1;
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
@@ -262,7 +262,7 @@
   height: 20px;
   flex: 0 0 20px;
   border-radius: 5px;
-  border: 1px solid rgba(230, 231, 235, 0.76);
+  border: 1px solid rgba(237, 234, 245, 0.76);
   display: grid;
   place-content: center;
   position: relative;
@@ -274,7 +274,7 @@
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: #E6E7EB;
+  background: var(--slab-fg);
   transform: scale(0);
   transform-origin: center;
   transition: transform 160ms var(--expo-out);
@@ -285,8 +285,8 @@
 }
 
 .location-option input:focus-visible + .radio-ui {
-  border-color: #E6E7EB;
-  outline: 2px solid rgba(230, 231, 235, 0.28);
+  border-color: var(--slab-fg);
+  outline: 2px solid rgba(237, 234, 245, 0.28);
   outline-offset: 3px;
 }
 
@@ -300,10 +300,10 @@
   width: 100%;
   height: 2.15rem;
   border: 0;
-  border-bottom: 1px solid rgba(230, 231, 235, 0.76);
+  border-bottom: 1px solid rgba(237, 234, 245, 0.76);
   border-radius: 0;
   background: transparent;
-  color: #E6E7EB;
+  color: var(--slab-fg);
   padding: 0 0 0.6rem;
   outline: none;
   box-sizing: border-box;
@@ -315,7 +315,7 @@
 }
 
 .form-row input::placeholder {
-  color: rgba(230, 231, 235, 0.42);
+  color: rgba(237, 234, 245, 0.42);
 }
 
 .footer-form .form-row input:focus,
@@ -341,7 +341,7 @@
   border-radius: 999px;
   border: 2px solid currentColor;
   background: transparent;
-  color: #E6E7EB;
+  color: var(--slab-fg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -355,7 +355,7 @@
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: #E6E7EB;
+  background: var(--slab-fg);
   pointer-events: none;
   opacity: 0;
   transform: translate3d(-103%, 0, 0);
@@ -377,12 +377,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   .submit-btn:hover {
-    color: #2C2C31;
+    color: var(--slab);
   }
 }
 
 .footer-info {
-  color: #E6E7EB;
+  color: var(--slab-fg);
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   z-index: 2;
 }
@@ -400,14 +400,14 @@
 }
 
 .footer-kicker {
-  color: rgba(230, 231, 235, 0.48);
+  color: rgba(237, 234, 245, 0.48);
   font-size: 16px;
   line-height: 1;
   margin-bottom: 40px;
 }
 
 .footer-column a {
-  color: #E6E7EB;
+  color: var(--slab-fg);
   text-decoration: none;
   font-size: 28px;
   line-height: 1.45;
@@ -428,14 +428,14 @@
 .location-card {
   min-height: 235px;
   padding-left: 24px;
-  border-left: 1px solid rgba(230, 231, 235, 0.14);
+  border-left: 1px solid rgba(237, 234, 245, 0.14);
   display: flex;
   flex-direction: column;
 }
 
 .location-card h3 {
   margin: 0 0 24px;
-  color: #E6E7EB;
+  color: var(--slab-fg);
   font-size: 28px;
   line-height: 1;
   font-weight: 700;
@@ -445,14 +445,14 @@
 .location-card p {
   margin: 0 0 34px;
   min-height: 60px;
-  color: rgba(230, 231, 235, 0.78);
+  color: rgba(237, 234, 245, 0.78);
   font-size: 16px;
   line-height: 1.25;
 }
 
 .location-card__phone {
   display: block;
-  color: #E6E7EB;
+  color: var(--slab-fg);
   font-size: 22px;
   line-height: 1;
   font-weight: 700;
@@ -464,7 +464,7 @@
 .location-card__phone-label {
   display: block;
   margin-bottom: 8px;
-  color: rgba(230, 231, 235, 0.48);
+  color: rgba(237, 234, 245, 0.48);
   font-size: 13px;
   line-height: 1;
   font-weight: 700;
@@ -481,13 +481,13 @@
   grid-template-columns: 64px 1fr;
   column-gap: 18px;
   row-gap: 4px;
-  color: rgba(230, 231, 235, 0.78);
+  color: rgba(237, 234, 245, 0.78);
   font-size: 16px;
   line-height: 1.15;
 }
 
 .hours span:nth-child(odd) {
-  color: rgba(230, 231, 235, 0.42);
+  color: rgba(237, 234, 245, 0.42);
 }
 
 .footer-wordmark {
@@ -504,7 +504,7 @@
   font-size: clamp(96px, 17.2vw, 340px);
   line-height: 0.8;
   letter-spacing: -0.02em;
-  color: #FFFFFF;
+  color: var(--slab-fg);
   user-select: none;
   overflow: visible;
   clip-path: inset(-0.18em 0 0 0);
@@ -577,11 +577,11 @@
 .footer-bottom > div:first-child {
   display: flex;
   flex-direction: column;
-  color: rgba(44, 44, 49, 0.6);
+  color: var(--ink-soft);
 }
 
 .footer-bottom > div:first-child strong {
-  color: #2C2C31;
+  color: var(--ink);
   font-weight: 700;
 }
 
@@ -599,14 +599,14 @@
   align-items: baseline;
   justify-self: end;
   gap: 7px;
-  color: #2C2C31;
+  color: var(--ink);
   text-align: right;
   white-space: nowrap;
   text-decoration: none;
 }
 
 .footer-agency__lead {
-  color: rgba(44, 44, 49, 0.52);
+  color: var(--ink-soft);
   font-size: 11px;
   font-weight: 400;
   line-height: 1;
@@ -614,7 +614,7 @@
 }
 
 .footer-agency__brand {
-  color: #2C2C31;
+  color: var(--ink);
   font-size: 18px;
   font-weight: 600;
   line-height: 1;
@@ -635,15 +635,18 @@
   background: #07000D;
 }
 
+/* Dome, wrapper'in uzerinde ayri bir katman olarak okunmali; ikisi de --slab
+   olsaydi kubbe zeminde kaybolurdu. Derinlik ayni aileden, bir irtifa asagidan
+   aliniyor. */
 .app-shell--references .footer-wrapper {
-  background: #0E0716;
+  background: var(--brand-900);
 }
 
 .app-shell--day .footer-dome {
-  background: #16101F;
-  background-color: #16101F;
-  box-shadow: inset 0 0 0 2px #16101F, 0 0 0 2px #16101F;
-  outline-color: #16101F;
+  background: var(--slab);
+  background-color: var(--slab);
+  box-shadow: inset 0 0 0 2px var(--slab), 0 0 0 2px var(--slab);
+  outline-color: var(--slab);
 }
 
 .app-shell--day.app-shell--references,
@@ -653,9 +656,9 @@
 }
 
 .app-shell--references .footer-dome {
-  background-color: #16101F;
-  box-shadow: inset 0 0 0 2px #16101F, 0 0 0 2px #16101F;
-  outline: 1px solid #16101F;
+  background-color: var(--slab);
+  box-shadow: inset 0 0 0 2px var(--slab), 0 0 0 2px var(--slab);
+  outline: 1px solid var(--slab);
   outline-offset: -1px;
 }
 
@@ -666,7 +669,7 @@
 
 .footer-bottom,
 .footer-bottom a {
-  color: #2C2C31;
+  color: var(--ink);
 }
 
 .footer-bottom .flip-text-link {
@@ -676,19 +679,19 @@
 
 .footer-bottom .flip-text-link::before,
 .footer-bottom .flip-text-link::after {
-  color: #2C2C31;
+  color: var(--ink);
 }
 
 .footer-bottom .footer-agency {
-  color: #2C2C31;
+  color: var(--ink);
 }
 
 .footer-bottom .footer-agency__lead {
-  color: rgba(44, 44, 49, 0.52);
+  color: var(--ink-soft);
 }
 
 .footer-bottom .footer-agency__brand {
-  color: #2C2C31;
+  color: var(--ink);
 }
 
 /* Keep the contact CTA as the first footer layer and move directory links below it. */
@@ -721,10 +724,10 @@
   margin: clamp(8px, 1.4vw, 24px) 0 clamp(40px, 6vw, 90px);
   background: linear-gradient(
     180deg,
-    rgba(230, 231, 235, 0) 0%,
-    rgba(230, 231, 235, 0.22) 12%,
-    rgba(230, 231, 235, 0.22) 88%,
-    rgba(230, 231, 235, 0) 100%
+    rgba(237, 234, 245, 0) 0%,
+    rgba(237, 234, 245, 0.22) 12%,
+    rgba(237, 234, 245, 0.22) 88%,
+    rgba(237, 234, 245, 0) 100%
   );
 }
 
@@ -831,7 +834,7 @@
   position: absolute;
   right: var(--footer-social-right, 56px);
   z-index: 6;
-  background: #2C2C31;
+  background: var(--slab-line);
   width: clamp(54px, 3.45vw, 68px);
   height: clamp(54px, 3.45vw, 68px);
   border-radius: 999px;
@@ -950,8 +953,8 @@
     padding: 0 26px;
     gap: 12px;
     border: 0;
-    background: #E6E7EB;
-    color: #2C2C31;
+    background: var(--slab-fg);
+    color: var(--slab);
     font-size: 14px;
     font-weight: 700;
   }
@@ -1003,7 +1006,7 @@
     position: static;
     width: 48px;
     height: 48px;
-    background: rgba(230, 231, 235, 0.05);
+    background: rgba(237, 234, 245, 0.05);
   }
 
   .footer-socials > .social-btn svg {
@@ -1032,7 +1035,7 @@
     width: 100%;
     text-align: center;
     padding-top: 34px;
-    border-top: 1px solid rgba(230, 231, 235, 0.12);
+    border-top: 1px solid rgba(237, 234, 245, 0.12);
   }
 
   .footer-kicker {
@@ -1076,8 +1079,8 @@
     align-items: center;
     text-align: center;
     background: transparent;
-    border-top: 1px solid rgba(230, 231, 235, 0.12);
-    color: rgba(230, 231, 235, 0.72);
+    border-top: 1px solid rgba(237, 234, 245, 0.12);
+    color: rgba(237, 234, 245, 0.72);
     font-size: 11px;
     line-height: 1.45;
   }
@@ -1108,15 +1111,15 @@
   }
 
   .footer-bottom > div:first-child strong {
-    color: #E6E7EB;
+    color: var(--slab-fg);
   }
 
   div#__nuxt .footer-wrapper .footer-bottom .footer-agency__lead {
-    color: rgba(230, 231, 235, 0.58);
+    color: rgba(237, 234, 245, 0.58);
   }
 
   div#__nuxt .footer-wrapper .footer-bottom .footer-agency__brand {
-    color: #E6E7EB;
+    color: var(--slab-fg);
   }
 
   .footer-wordmark {

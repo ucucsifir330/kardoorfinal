@@ -1,12 +1,12 @@
 .catalog-lib {
-  --clg-text: #2d2d2d;
-  --clg-text-muted: rgba(45, 45, 45, 0.62);
-  --clg-surface: #f6f1ec;
-  --clg-surface-strong: #ffffff;
-  --clg-surface-raised: #c3c3c3;
-  --clg-hairline: rgba(45, 45, 45, 0.14);
+  --clg-text: var(--ink);
+  --clg-text-muted: var(--ink-soft);
+  --clg-surface: var(--paper);
+  --clg-surface-strong: var(--surface);
+  --clg-surface-raised: var(--surface-2);
+  --clg-hairline: var(--hairline);
   --clg-shadow: 0 24px 38px rgba(45, 45, 45, 0.16);
-  --clg-focus: 2px solid #2d2d2d;
+  --clg-focus: 2px solid var(--ink);
   --clg-motion: 200ms;
 
   min-height: 100dvh;
@@ -277,12 +277,12 @@
 
 .catalog-lib-dock,
 .catalog-lib-filter {
-  --clg-text: #2d2d2d;
-  --clg-text-muted: rgba(45, 45, 45, 0.62);
-  --clg-surface: #f6f1ec;
-  --clg-surface-strong: #ffffff;
-  --clg-hairline: rgba(45, 45, 45, 0.14);
-  --clg-focus: 2px solid #2d2d2d;
+  --clg-text: var(--ink);
+  --clg-text-muted: var(--ink-soft);
+  --clg-surface: var(--paper);
+  --clg-surface-strong: var(--surface);
+  --clg-hairline: var(--hairline);
+  --clg-focus: 2px solid var(--ink);
   --clg-motion: 200ms;
 
   font-family: "General Sans", var(--font-body);

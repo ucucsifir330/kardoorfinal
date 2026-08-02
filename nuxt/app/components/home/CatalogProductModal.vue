@@ -60,7 +60,7 @@ const closeClass = [
   'rounded-[999px] border border-[rgba(0,0,0,0.045)] bg-[rgba(255,255,255,0.82)]',
   'text-[24px] leading-none text-[#111] [box-shadow:0_18px_44px_rgba(0,0,0,0.13)]',
   '[transition:transform_0.2s_ease,background_0.2s_ease,box-shadow_0.2s_ease]',
-  'hover:rotate-90 hover:bg-white',
+  'hover:rotate-90 hover:bg-[var(--surface)]',
   'max-[760px]:top-[calc(14px+env(safe-area-inset-top))] max-[760px]:right-[14px] max-[760px]:z-[3020]',
   'max-[760px]:h-[36px] max-[760px]:w-[36px] max-[760px]:text-[22px]',
   'max-[760px]:border-[rgba(255,255,255,0.14)] max-[760px]:bg-[rgba(0,0,0,0.42)]',

@@ -58,7 +58,7 @@ body {
 
 
 .reveal-word { display: inline-block; white-space: nowrap; }
-.reveal-char { display: inline; color: #EAE8E8; opacity: 0.18; will-change: opacity; }
+.reveal-char { display: inline; color: var(--slab-fg); opacity: 0.18; will-change: opacity; }
 
 .reveal-word.brand-gradient-word .reveal-char {
   background: linear-gradient(115deg, #8ee7ff 0%, #4fc3f7 18%, #1e9be0 36%, #1477c9 54%, #0b4f9c 72%, #4fc3f7 88%, #8ee7ff 100%);
@@ -75,25 +75,25 @@ body {
   100% { background-position: 100% 50%; }
 }
 .close-icon {
-  width: clamp(58px, 4.2vw, 68px); height: clamp(58px, 4.2vw, 68px); background: #EAE8E8; border-radius: 50%;
+  width: clamp(58px, 4.2vw, 68px); height: clamp(58px, 4.2vw, 68px); background: var(--slab-fg); border-radius: 50%;
   display: flex; align-items: center; justify-content: center; transition: transform 0.55s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
-.close-icon svg { width: 18px; height: 18px; stroke: #13141c; }
+.close-icon svg { width: 18px; height: 18px; stroke: var(--slab); }
 
 @media (max-width: 1024px) {
   .close-icon { width: 54px; height: 54px; }
 }
 
 .reveal-char {
-  color: #14151D !important;
+  color: var(--ink) !important;
 }
 
 .close-icon {
-  background: #14151D !important;
+  background: var(--slab) !important;
 }
 
 .close-icon svg {
-  stroke: #EAE8E8 !important;
+  stroke: var(--slab-fg) !important;
 }
 
 .top-row {
@@ -139,7 +139,7 @@ body {
     padding: 0 18px !important;
     display: block !important;
     pointer-events: none !important;
-  }
+  }
 
   .top-row {
     align-items: center !important;
@@ -177,18 +177,18 @@ body {
 
   .track-inner {
     gap: 16px !important;
-  }
+  }
 }
 
 /* Mobile final notes: carousel centering, catalog line, chips, CTA, footer. */
 @media (max-width: 760px) {
 
   .footer-wrapper {
-  background: #EAE8E8 !important;
+  background: var(--paper) !important;
 }
 
   .footer-dome {
-  background: #242429 !important;
+  background: var(--slab) !important;
 }
 
   .footer-logo {
@@ -210,8 +210,8 @@ body {
 }
 
   .submit-btn {
-  background: #E8E8EB !important;
-  color: #242429 !important;
+  background: var(--slab-fg) !important;
+  color: var(--slab) !important;
   box-shadow: none !important;
 }
 
@@ -220,12 +220,12 @@ body {
 }
 
   .footer-info-left .footer-column:nth-child(2) .footer-kicker {
-  color: #E6E7EB !important;
+  color: var(--slab-fg) !important;
 }
 
   .footer-kicker {
   line-height: 1.2 !important;
-  color: rgba(230, 231, 235, 0.82) !important;
+  color: rgba(237, 234, 245, 0.82) !important;
 }
 
   .footer-column a {
@@ -239,7 +239,7 @@ body {
 
   .location-card h3::after {
   content: "v";
-  color: rgba(230, 231, 235, 0.78);
+  color: rgba(237, 234, 245, 0.78);
 }
 
   .footer-bottom {
@@ -293,26 +293,26 @@ body {
   .close-icon {
     width: 42px !important;
     height: 42px !important;
-    background: #EAE8E8 !important;
+    background: var(--slab-fg) !important;
   }
 
   .close-icon svg {
-    stroke: #13141C !important;
+    stroke: var(--slab) !important;
   }
 }
 
 /* Mineral Executive palette pass. */
 :root {
-  --bg-color: #111417;
-  --text-primary: #111417;
-  --text-secondary: #66706C;
-  --entrance-handoff-bg: #EAE8E8;
-  --catalog-stage-bg: #111417;
-  --catalog-stage-surface-bg: #F4F1EA;
-  --catalog-stage-main-bg: #F4F1EA;
-  --catalog-stage-sticky-bg: #F4F1EA;
-  --catalog-stage-line-track: rgba(17, 20, 23, 0.16);
-  --catalog-stage-line-fill: #B88A44;
+  --bg-color: var(--paper);
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-soft);
+  --entrance-handoff-bg: var(--paper);
+  --catalog-stage-bg: var(--paper);
+  --catalog-stage-surface-bg: var(--paper);
+  --catalog-stage-main-bg: var(--paper);
+  --catalog-stage-sticky-bg: var(--paper);
+  --catalog-stage-line-track: var(--hairline);
+  --catalog-stage-line-fill: var(--brand-700);
   --catalog-product-scrollbar-track: rgba(17, 20, 23, 0.08);
   --catalog-product-scrollbar-thumb: rgba(62, 111, 115, 0.42);
   --catalog-product-scrollbar-thumb-hover: rgba(62, 111, 115, 0.68);
@@ -322,14 +322,14 @@ html,
 body,
 .app-shell,
 .app-shell--day {
-  background-color: #F4F1EA !important;
+  background-color: var(--paper) !important;
 }
 
 .gradient-mask {
   background: linear-gradient(
     to right,
-    #F4F1EA 60%,
-    rgba(244, 241, 234, 0) 100%
+    var(--paper) 60%,
+    rgba(242, 238, 230, 0) 100%
   ) !important;
 }
 
@@ -365,7 +365,7 @@ body,
 }
 
 .footer-socials > .social-btn {
-  background: #2C2C31 !important;
+  background: var(--slab-line) !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
@@ -378,8 +378,8 @@ body,
 
 .footer-socials > .social-btn {
   justify-content: center !important;
-  background-color: #2C2C31 !important;
-  color: #E6E7EB !important;
+  background-color: var(--slab-line) !important;
+  color: var(--slab-fg) !important;
 }
 
 @media (max-width: 760px) {

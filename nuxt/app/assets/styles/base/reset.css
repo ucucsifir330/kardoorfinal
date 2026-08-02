@@ -39,6 +39,9 @@ button,
 input,
 textarea {
   font: inherit;
+  /* Tarayici varsayilani saf siyah; sistemde saf siyah yok
+     (PALETTE-light.md, uygulama kurali 5). */
+  color: var(--text);
 }
 
 button {

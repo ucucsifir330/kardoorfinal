@@ -128,14 +128,14 @@ const resetHoverDirection = (event: PointerEvent) => {
 
 <style scoped>
 .ada-cta-button {
-  --ada-cta-bg: #14151d;
-  --ada-cta-fg: #eae8e8;
-  --ada-cta-border: #14151d;
+  --ada-cta-bg: var(--brand-500);
+  --ada-cta-fg: var(--brand-100);
+  --ada-cta-border: var(--brand-500);
   --ada-cta-hover-bg: var(--ada-cta-bg);
   --ada-cta-hover-fg: var(--ada-cta-fg);
   --ada-cta-hover-border: var(--ada-cta-border);
   --ada-cta-text-color: var(--ada-cta-fg);
-  --ada-cta-fill-surface: #14151d;
+  --ada-cta-fill-surface: var(--brand-700);
 
   position: relative;
   width: max-content;
@@ -193,12 +193,12 @@ const resetHoverDirection = (event: PointerEvent) => {
 
 .ada-cta-button--outline {
   --ada-cta-bg: transparent;
-  --ada-cta-fg: #14151d;
-  --ada-cta-border: rgba(20, 21, 29, 0.38);
+  --ada-cta-fg: var(--brand-700);
+  --ada-cta-border: var(--hairline);
   --ada-cta-hover-bg: transparent;
-  --ada-cta-hover-fg: #eae8e8;
-  --ada-cta-hover-border: #14151d;
-  --ada-cta-fill-surface: #14151d;
+  --ada-cta-hover-fg: var(--brand-100);
+  --ada-cta-hover-border: var(--brand-700);
+  --ada-cta-fill-surface: var(--brand-700);
 }
 
 .ada-cta-button--icon-left {

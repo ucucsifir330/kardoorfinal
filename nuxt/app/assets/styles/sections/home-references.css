@@ -49,12 +49,14 @@
 }
 
 .home-references-flip {
-  --references-bg: #16101F;
-  --references-ink: #f8f3df;
-  --references-muted: rgba(248, 243, 223, 0.62);
-  --references-soft: rgba(248, 243, 223, 0.18);
-  --references-line: rgba(248, 243, 223, 0.28);
-  --references-accent: #3a83ff;
+  --references-bg: var(--slab);
+  --references-ink: var(--slab-fg);
+  --references-muted: var(--slab-soft);
+  --references-soft: rgba(237, 234, 245, 0.18);
+  --references-line: var(--slab-line);
+  /* koyu blok uzerinde vurgu 300'e gider — 700 zeminle birlesiyor
+     (PALETTE-light.md, uygulama kurali 3). */
+  --references-accent: var(--brand-300);
   --references-top-radius: clamp(2.75rem, 5.8vw, 6.75rem);
   position: relative;
   z-index: 20;
@@ -127,7 +129,10 @@
 .home-references-flip__specimen--marble {
   width: clamp(270px, 28vw, 540px);
   top: clamp(126px, 18vh, 206px);
-  left: max(18px, calc(50% - 690px));
+  left: min(
+    40px,
+    calc((100% - clamp(760px, 58vw, 1040px)) / 2 - clamp(270px, 28vw, 540px) - 48px)
+  );
   opacity: 0.82;
   animation: home-references-specimen-drift-marble 18s var(--ease-soft) infinite;
   transform:
@@ -141,7 +146,10 @@
 
 .home-references-flip__specimen--torus {
   width: clamp(220px, 22vw, 430px);
-  right: max(-64px, calc(50% - 780px));
+  right: min(
+    80px,
+    calc((100% - clamp(760px, 58vw, 1040px)) / 2 - clamp(220px, 22vw, 430px) - 64px)
+  );
   bottom: clamp(112px, 12vh, 152px);
   opacity: 0.76;
   animation: home-references-specimen-drift-torus 20s var(--ease-soft) -5s infinite;
@@ -260,6 +268,10 @@
 .home-references-flip__intro h2 span {
   display: block;
   white-space: nowrap;
+}
+
+.home-references-flip__intro h2 span:last-child {
+  color: var(--brand-300);
 }
 
 .home-references-flip__intro p {

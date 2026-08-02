@@ -25,6 +25,35 @@
   --accent-blue: var(--accent);
   --warm: #a77a55;
 
+  /* --- ACIK TEMA PALETI (PALETTE-light.md) ---------------------------------
+     Tek hue, uc irtifa. Vurgu her zaman zeminin ters yonune gider:
+       300 -> yalnizca koyu blok uzerinde
+       500 -> yalnizca primary CTA dolgusu, sayfa basina TEK dolu yuzey
+       700 -> acik zemin uzerinde vurgu / hover / aktif
+     Bu blok temadan bagimsiz tanimlanir; hangi temanin hangisini kullandigi
+     asagidaki .app-shell--day / --night eslemelerinde belirlenir. */
+  --brand-100: #EEF0FF;
+  --brand-300: #8B9BFA;
+  --brand-500: #2B4BF2;
+  --brand-700: #22318C;
+  --brand-900: #0E1338;
+
+  /* acik zemin */
+  --paper:     #F2EEE6;
+  --surface:   #FBF9F5;
+  --surface-2: #F1EDE5;
+  --hairline:  #DDD6C9;
+  --ink:       #16130F;
+  --ink-soft:  #8A8073;
+  --ink-body:  #3A352D;
+
+  /* koyu blok — acik temanin ICINDE yasayan editoryal blok.
+     Gercek dark mode ile ilgisi yok, .app-shell--night'a karisMAZ. */
+  --slab:      #1A1533;
+  --slab-fg:   #EDEAF5;
+  --slab-soft: #9990B8;
+  --slab-line: #2E2750;
+
   /* Sayfa ust bosluklari icin (contact/company). Navbar olculeri
      components/site-header.css'te — tek kaynak orasi. */
   --header: 82px;
@@ -76,19 +105,27 @@
 }
 
 .app-shell--day {
-  --bg: #f8f6ef;
-  --panel: #ffffff;
-  --panel-soft: rgba(255, 255, 255, 0.76);
-  --line: rgba(7, 16, 24, 0.14);
-  --line-strong: rgba(7, 16, 24, 0.28);
-  --text: #071018;
-  --muted: rgba(7, 16, 24, 0.68);
-  --soft: rgba(7, 16, 24, 0.46);
-  --ambience-bg: #f8f6ef;
-  --ambience-text: #071018;
-  --ambience-muted: rgba(7, 16, 24, 0.68);
-  --ambience-soft: rgba(7, 16, 24, 0.42);
-  --ambience-line: rgba(7, 16, 24, 0.16);
+  --bg: var(--paper);
+  --panel: var(--surface);
+  --panel-soft: rgba(251, 249, 245, 0.76);
+  --line: var(--hairline);
+  /* daha guclu ayrac icin ayri bir gri uretilmedi — palette ikincil metin
+     rengi bu gorevi de tasiyor (bkz. PALETTE-light.md, hairline satiri). */
+  --line-strong: var(--ink-soft);
+  --text: var(--ink);
+  --muted: var(--ink-body);
+  --soft: var(--ink-soft);
+  /* KRITIK: --accent taban degeri #8EA2FF (300 irtifasi) ve gece paleti icin.
+     Acik zeminde 300 kullanmak yasak — kontrast ~2:1'e dusuyor, vurgu degil
+     soluk metin olarak okunuyor (PALETTE-light.md, uygulama kurali 2).
+     Ikili basligin 2. satiri bu degiskenden besleniyor. */
+  --accent: var(--brand-700);
+  --accent-soft: var(--brand-500);
+  --ambience-bg: var(--paper);
+  --ambience-text: var(--ink);
+  --ambience-muted: var(--ink-body);
+  --ambience-soft: var(--ink-soft);
+  --ambience-line: var(--hairline);
   --ambience-glass: rgba(255, 255, 255, 0.62);
   --ambience-overlay: rgba(255, 255, 255, 0.2);
   --ambience-shadow: rgba(0, 0, 0, 0.16);
@@ -96,33 +133,29 @@
   --ambience-glow: rgba(44, 227, 255, 0.26);
   --ambience-hero-filter: brightness(1) saturate(0.94) contrast(1.02);
   --ambience-copy-shadow: 0 1px 16px rgba(255, 255, 255, 0.36);
-  --header-brand-text: #071018;
+  --header-brand-text: var(--ink);
   --header-brand-shadow: 0 12px 26px rgba(255, 255, 255, 0.18);
 
   /* --- public/themes/light.css'ten tasindi (2026-07-29).
      Tema dosyalari yalnizca DEGISKEN atamali; duzen kurali yazmamali. --- */
-  --bg-color: #111417;
-  --text-primary: #111417;
-  --text-secondary: #66706C;
-  --entrance-handoff-bg: #EAE8E8;
-  --catalog-stage-bg: #111417;
-  --catalog-stage-surface-bg: #F4F1EA;
-  --catalog-stage-main-bg: #F4F1EA;
-  --catalog-stage-sticky-bg: #F4F1EA;
-  --catalog-stage-line-track: rgba(17, 20, 23, 0.16);
-  --catalog-stage-line-fill: #B88A44;
+  --bg-color: var(--paper);
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-soft);
+  --entrance-handoff-bg: var(--paper);
+  --catalog-stage-bg: var(--paper);
+  --catalog-stage-surface-bg: var(--paper);
+  --catalog-stage-main-bg: var(--paper);
+  --catalog-stage-sticky-bg: var(--paper);
+  --catalog-stage-line-track: var(--hairline);
+  /* Ilerleme cizgisi acik zeminde duruyor -> 700. Onceki amber (#B88A44)
+     tek-hue sisteme yabanci tek renkti. */
+  --catalog-stage-line-fill: var(--brand-700);
   --catalog-stage-line-filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
   --catalog-product-scrollbar: rgba(36, 41, 41, 0.45) rgba(36, 41, 41, 0.08);
-  --catalog-product-scrollbar-track: rgba(17, 20, 23, 0.08);
+  --catalog-product-scrollbar-track: var(--hairline);
   --catalog-product-scrollbar-thumb: rgba(62, 111, 115, 0.42);
   --catalog-product-scrollbar-thumb-hover: rgba(62, 111, 115, 0.68);
   --catalog-product-modal-backdrop: rgba(20, 21, 29, 0.48);
-  --catalog-wishlist-panel-bg: rgba(247, 247, 247, 0.96);
-  --catalog-wishlist-panel-border: #14151D;
-  --catalog-wishlist-panel-shadow: 0 14px 34px rgba(20, 21, 29, 0.12);
-  --catalog-wishlist-button-color: #4b4f55;
-  --catalog-wishlist-button-hover-color: #14151D;
-  --catalog-wishlist-button-hover-bg: rgba(20, 21, 29, 0.055);
 
 }
 
@@ -160,12 +193,6 @@
   --catalog-stage-line-filter: none;
   --catalog-product-scrollbar: rgba(244, 246, 255, 0.45) rgba(244, 246, 255, 0.08);
   --catalog-product-modal-backdrop: rgba(0, 0, 0, 0.62);
-  --catalog-wishlist-panel-bg: rgba(28, 29, 38, 0.96);
-  --catalog-wishlist-panel-border: #F4F6FF;
-  --catalog-wishlist-panel-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
-  --catalog-wishlist-button-color: rgba(244, 246, 255, 0.74);
-  --catalog-wishlist-button-hover-color: #ffffff;
-  --catalog-wishlist-button-hover-bg: rgba(244, 246, 255, 0.075);
 
 }
 
