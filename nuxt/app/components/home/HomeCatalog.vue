@@ -864,13 +864,26 @@ const checkCatalogRows = () => {
   // Viewport-based reveal (was keyed off the tall .catalog-main, which revealed
   // every row at once). Only reveal rows that are at/near the viewport so the
   // door images load in batches as you scroll down.
+  //
+  // TÜM satırlar açıldıysa aşağıda ölçülecek bir şey kalmaz — çık.
+  // Ölçüldü (DevTools trace, showroom orbit bandında kaydırırken): bu
+  // fonksiyon forced reflow listesinde 729ms ile en pahalı ikinci kalemdi.
+  // Sebep, döngünün her scroll karesinde 7 satırın HEPSİNDE
+  // getBoundingClientRect() çağırması — satırlar çoktan açılmış olsa bile.
+  // Açılma tek yönlü bir durum (visibleRows'a giren çıkmaz), yani iş
+  // bittikten sonraki her ölçüm boşa layout tetikliyordu.
+  if (visibleRows.value.length >= catalogBlocks.length) return;
+
   const vh = window.innerHeight;
   const revealLine = vh * 1.85;
 
   rowRefs.value.forEach((el) => {
-    const rect = el.getBoundingClientRect();
     const rowIndex = parseInt(el.getAttribute("data-row-index") || "0");
 
+    // Zaten açık satırın rect'ini okuma: reflow'un asıl maliyeti burada.
+    if (visibleRows.value.includes(rowIndex)) return;
+
+    const rect = el.getBoundingClientRect();
     if (rect.top < revealLine && rect.bottom > -vh * 0.1) {
       revealCatalogRow(rowIndex);
     }
