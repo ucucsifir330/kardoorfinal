@@ -238,6 +238,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { ComponentPublicInstance } from "vue";
 import { useCatalogCopy } from "~/composables/useCatalogCopy";
+import { useLiquidMenu } from "~/composables/useLiquidMenu";
 
 const {
   catalogBlocks,
@@ -323,203 +324,21 @@ let catalogHeadingLineConnected = false;
 let catalogLineRefreshTimer = 0;
 let catalogLineRevealAllowed = false;
 
-// --- LIQUID MENU STATE & LOGIC ---
-const activeLiquidCard = ref<string | null>(null);
-const liquidMenuExpanded = ref<Record<string, boolean>>({});
-const blobPaths = ref<Record<string, SVGPathElement>>({});
-const blobContainers = ref<Record<string, SVGSVGElement>>({});
-const hamburgers = ref<Record<string, HTMLElement>>({});
-
-const setBlobPathRef = (el: any, id: string) => { if (el) blobPaths.value[id] = el as SVGPathElement; };
-const setBlobContainerRef = (el: any, id: string) => { if (el) blobContainers.value[id] = el as SVGSVGElement; };
-const setHamburgerRef = (el: any, id: string) => { if (el) hamburgers.value[id] = el as HTMLElement; };
-
-let liquidRaf: number | null = null;
-let l_x = 0, l_y = 0;
-let l_pull = 0;
-let l_curveX = 60, l_curveY = 0;
-let l_targetX = 0;
-let l_xIter = 0, l_yIter = 0;
-let l_height = 190;
-const blobBaseWidth = 60;
-const blobHoverWidth = 34;
-const blobRestPath = (height: number) => `M${blobBaseWidth},${height} H0 V0 h${blobBaseWidth} V${height} z`;
-const clampLiquidPull = (value: number) => Math.min(Math.max(value, 0), 1);
-
-const resetLiquidShape = (id: string) => {
-  const path = blobPaths.value[id];
-  const container = blobContainers.value[id];
-  const hamburger = hamburgers.value[id];
-  const height = container?.getBoundingClientRect().height || l_height;
-
-  l_pull = 0;
-  if (path) path.setAttribute('d', blobRestPath(height));
-  if (container) container.style.width = `${blobBaseWidth}px`;
-  if (hamburger) {
-    hamburger.style.setProperty('--hamburger-shift', '0px');
-    hamburger.style.setProperty('--hamburger-lift', '0px');
-  }
-};
-
-const easeOutExpo = (currentIteration: number, startValue: number, changeInValue: number, totalIterations: number) => {
-  return changeInValue * (-Math.pow(2, -10 * currentIteration / totalIterations) + 1) + startValue;
-};
-
-const updateLiquidSvg = () => {
-  if (!activeLiquidCard.value) {
-    liquidRaf = null;
-    return;
-  }
-
-  const id = activeLiquidCard.value;
-  const path = blobPaths.value[id];
-  const container = blobContainers.value[id];
-  const hamburger = hamburgers.value[id];
-
-  if (!path || !container || !hamburger) {
-    liquidRaf = requestAnimationFrame(updateLiquidSvg);
-    return;
-  }
-
-  if (liquidMenuExpanded.value[id]) {
-    resetLiquidShape(id);
-    liquidRaf = null;
-    return;
-  }
-
-  l_targetX = blobBaseWidth + blobHoverWidth * l_pull;
-
-  if (Math.abs(l_curveX - l_targetX) < 1) l_xIter = 0;
-  else l_xIter++;
-
-  // Vertical tension physics
-  if (Math.abs(l_curveY - l_y) < 1) l_yIter = 0;
-  else l_yIter++;
-
-  l_curveX = easeOutExpo(l_xIter, l_curveX, l_targetX - l_curveX, 100);
-  l_curveY = easeOutExpo(l_yIter, l_curveY, l_y - l_curveY, 100);
-
-  const anchorDistance = Math.min(76, Math.max(62, l_height * 0.34));
-  const curviness = anchorDistance * 0.56;
-  const safeCurveY = Math.min(Math.max(l_curveY, anchorDistance), l_height - anchorDistance);
-  const shoulderTop = safeCurveY - anchorDistance;
-  const shoulderBottom = safeCurveY + anchorDistance;
-
-  const newCurve = `M0,0H${blobBaseWidth}V${shoulderTop}C${blobBaseWidth},${shoulderTop + curviness} ${l_curveX},${safeCurveY - curviness} ${l_curveX},${safeCurveY}C${l_curveX},${safeCurveY + curviness} ${blobBaseWidth},${shoulderBottom - curviness} ${blobBaseWidth},${shoulderBottom}V${l_height}H0Z`;
-
-  path.setAttribute('d', newCurve);
-  container.style.width = `${Math.max(blobBaseWidth, l_curveX)}px`;
-  const curvePull = clampLiquidPull((l_curveX - blobBaseWidth) / blobHoverWidth);
-  const hamburgerShift = curvePull * 11;
-  const hamburgerLift = curvePull * -0.8;
-  hamburger.style.setProperty('--hamburger-shift', `${hamburgerShift}px`);
-  hamburger.style.setProperty('--hamburger-lift', `${hamburgerLift}px`);
-
-  liquidRaf = requestAnimationFrame(updateLiquidSvg);
-};
-
-const handleLiquidMouseMove = (e: MouseEvent, id: string) => {
-  if (liquidMenuExpanded.value[id]) {
-    resetLiquidShape(id);
-    return;
-  }
-
-  const target = e.currentTarget as HTMLElement;
-  const container = blobContainers.value[id];
-  const hamburger = hamburgers.value[id];
-  if (!container) return;
-  const blobRect = container.getBoundingClientRect();
-  const centerX = hamburger
-    ? hamburger.getBoundingClientRect().left + hamburger.getBoundingClientRect().width / 2
-    : target.getBoundingClientRect().left + target.getBoundingClientRect().width / 2;
-  l_x = e.clientX - centerX;
-  l_pull = clampLiquidPull(l_x / 72);
-  l_y = Math.max(0, Math.min(blobRect.height, e.clientY - blobRect.top));
-  l_height = blobRect.height;
-
-  if (activeLiquidCard.value !== id) {
-    activeLiquidCard.value = id;
-    l_curveY = l_y;
-    l_xIter = 0;
-    l_yIter = 0;
-    l_curveX = blobBaseWidth;
-  }
-
-  if (!liquidRaf) {
-    liquidRaf = requestAnimationFrame(updateLiquidSvg);
-  }
-};
-
-const handleLiquidEnter = (id: string, e: MouseEvent) => {
-  if (liquidMenuExpanded.value[id]) {
-    resetLiquidShape(id);
-    return;
-  }
-
-  activeLiquidCard.value = id;
-  const container = blobContainers.value[id];
-
-  if (container) {
-    const rect = container.getBoundingClientRect();
-    l_height = rect.height;
-    l_y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
-    l_curveY = l_y;
-  }
-
-  l_xIter = 0;
-  l_yIter = 0;
-  l_pull = 0;
-  l_curveX = blobBaseWidth;
-
-  if (!liquidRaf) {
-    liquidRaf = requestAnimationFrame(updateLiquidSvg);
-  }
-};
-
-const handleLiquidCardMouseMove = (e: MouseEvent, id: string) => {
-  const target = e.target as HTMLElement;
-  if (target.closest(".liquid-menu, .hamburger")) return;
-
-  const card = e.currentTarget as HTMLElement;
-  const rect = card.getBoundingClientRect();
-  const distanceFromRight = rect.right - e.clientX;
-
-  if (distanceFromRight > 320) {
-    liquidMenuExpanded.value[id] = false;
-  }
-};
-
-const handleLiquidMenuClick = (e: MouseEvent, id: string) => {
-  const target = e.target as HTMLElement;
-  if (target.closest(".liquid-menu-inner")) return;
-  toggleLiquidMenu(id);
-};
-
-const handleLiquidLeave = (id: string) => {
-  if (activeLiquidCard.value === id) {
-    activeLiquidCard.value = null;
-    if (liquidRaf) {
-      cancelAnimationFrame(liquidRaf);
-      liquidRaf = null;
-    }
-
-    resetLiquidShape(id);
-  }
-};
-
-const toggleLiquidMenu = (id: string) => {
-  liquidMenuExpanded.value[id] = !liquidMenuExpanded.value[id];
-
-  if (liquidMenuExpanded.value[id]) {
-    activeLiquidCard.value = id;
-    if (liquidRaf) {
-      cancelAnimationFrame(liquidRaf);
-      liquidRaf = null;
-    }
-    resetLiquidShape(id);
-  }
-};
-// --- END LIQUID MENU LOGIC ---
+// Sıvı menü (kart kenarındaki damla şerit + hamburger) kendi sahibinde:
+// bkz. useLiquidMenu. Kendi rAF döngüsü, easing'i ve fizik durumu var;
+// katalog verisiyle hiç konuşmuyor.
+const {
+  activeCard: activeLiquidCard,
+  expanded: liquidMenuExpanded,
+  setBlobPathRef,
+  setBlobContainerRef,
+  setHamburgerRef,
+  onZoneMouseMove: handleLiquidMouseMove,
+  onZoneEnter: handleLiquidEnter,
+  onZoneLeave: handleLiquidLeave,
+  onZoneClick: handleLiquidMenuClick,
+  onCardMouseMove: handleLiquidCardMouseMove
+} = useLiquidMenu();
 
 
 const setMainRef = (el: Element | ComponentPublicInstance | null) => {
