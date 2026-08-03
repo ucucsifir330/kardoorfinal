@@ -1,379 +1,892 @@
-# Son Codex Değişiklikleri
+# Son Commit Sonrası Unstaged Değişiklikler — Dosya Bazında Detaylı Döküm
 
-> Tarih: 1 Ağustos 2026
+> Tarih: 3 Ağustos 2026
 >
-> Kaynak: `cleanup2` çalışma ağacındaki commit kapsamı
+> Karşılaştırma tabanı: `eb4dfa2 feat(ui): integrate navbar and showroom entrance`
 >
-> Kapsam: 17 takip edilen dosyada değişiklik ve 1 yeni Vue bileşeni; bu not dosyası sayıya dahil değildir
+> Kaynak: `git diff HEAD`
 
-## Kısa Özet
+## Çalışma Ağacı Özeti
 
-Mevcut değişiklik seti üç ana işi kapsıyor:
+Bu doküman hazırlanırken son commit sonrasındaki kod farkı:
 
-1. Deneysel navbar tasarımının gerçek `SiteHeader` yapısına taşınması ve eski navbar lab dosyalarının kaldırılması.
-2. Ana sayfa girişinde kapının arkasında showroom'un ilk kareden itibaren görünmesi; zoom sırasında derinlik/parallax hissinin eklenmesi.
-3. Showroom kapılarının ölçü, taban hizası ve yan kapı görünürlüğünün daha tutarlı hâle getirilmesi.
+- 28 değiştirilmiş, takip edilen kod dosyası
+- 828 eklenen satır
+- 690 silinen satır
+- Staged değişiklik yok
+- Takip edilmeyen dosya yok
 
-Bunlara ek olarak tema geçişi performansı, header token sahipliği, sayfa özelindeki eski aktif-link override'ları ve browser audit seçicisi güncellendi.
+Bu not güncellendikten sonra `docs/lastchangescodexe.md` de unstaged olduğu için
+çalışma ağacında toplam 29 değiştirilmiş takip edilen dosya görünür.
 
-Takip edilen dosyalardaki diff toplamı:
-
-- 17 takip edilen dosya
-- 1.634 eklenen satır
-- 1.935 silinen satır
-- 2 silinen dosya
-- 1 yeni, takip edilmeyen Vue bileşeni
-
-## 1. Navbar ve Header Yeniden Kurulumu
-
-### `nuxt/app/components/layout/SiteHeader.vue`
-
-Header'ın navbar bölümü kapsamlı biçimde yeniden kuruldu.
-
-- Sol taraftaki `EGE KARDOOR` markası navbar'dan bağımsız bırakıldı ve scroll sırasında sabit kalmaya devam ediyor.
-- Ortadaki navbar, üst kenara yapışan koyu bir çubuk ve merkezinden aşağı sarkan dairesel K logosu yapısına geçirildi.
-- Eski `/doors` ve pasif “Ürünler” bağlantısı yerine aktif `/catalog` “Koleksiyonlar / Collections” bağlantısı eklendi.
-- Navigasyon etiketleri TR ve EN değerlerini birlikte taşıyor. Görünmeyen ölçüm katmanı sayesinde dil değişiminde navbar genişliği ve merkez logosu kaymıyor.
-- Aktif ve hover link durumu, metnin altında soldan açılan ince çizgiyle gösteriliyor.
-- `1120px` altında ana linkler açılır panele taşınıyor ve çubukta “Menü” düğmesi gösteriliyor.
-- `880px` altında tema/dil kontrolleri de panel içine taşınıyor; üst çubuk daha yalın hâle geliyor.
-- `680px` altında navbar tam genişliğe geçiyor ve soldaki ayrı marka gizleniyor.
-- Merkez K logosu masaüstünde ana sayfa bağlantısı, dar ekranda ise menü açma/kapatma kontrolü olarak çalışıyor.
-- Menü paneli, K logosunun merkezinden büyüyüp küçülen GSAP animasyonuyla açılıp kapanıyor.
-- Menü açıldığında ScrollSmoother varsa duraklatılıyor; yoksa native scroll `overflow` üzerinden kilitleniyor.
-- Menü kapanırken odak tekrar logo kontrolüne taşınıyor; panel kapalıyken `inert` kullanılıyor.
-- `Escape`, route değişimi ve desktop genişliğine geri dönüş menüyü güvenli biçimde kapatıyor.
-- `prefers-reduced-motion` durumunda hareketli panel animasyonu atlanıyor.
-- Aşağı scroll'da navbar gizleniyor, yukarı scroll'da geri geliyor; menü açıkken veya sayfanın üstündeyken gizlenmiyor.
-- Panel açıkken body'ye teleport edilen marka kopyaları doğrudan `is-dimmed` sınıfıyla gizleniyor.
-
-### `nuxt/app/components/layout/SiteNavControls.vue` — yeni dosya
-
-Tema ve dil segmentleri `SiteHeader.vue` içinden ayrılarak tekrar kullanılabilir bir bileşene taşındı.
-
-- Aynı bileşen hem masaüstü navbar grubunda hem açılır panelde kullanılıyor.
-- `useShowroomAmbience` ve `useKardoorLocale` global state kullandığı için iki görünüm senkron kalıyor.
-- Tema ve dil grupları için TR/EN erişilebilirlik etiketleri bulunuyor.
-- Tema geçişi, tıklanan noktadan büyüyen dairesel View Transition animasyonuyla yapılıyor.
-- View Transitions API desteklenmiyorsa veya azaltılmış hareket tercih ediliyorsa tema doğrudan değiştiriliyor.
-- Tema animasyon süresi önceki 650 ms değerinden 520 ms'ye düşürülmüş durumda.
-
-### `nuxt/app/assets/styles/components/site-header.css`
-
-Eski glass/pill header CSS'i, yeni üretim navbar geometrisine göre baştan düzenlendi.
-
-- Header marka değerleri ve navbar değerleri kendi sahiplik alanlarında toplandı.
-- Yeni `.site-nav__*` sınıf sistemi eklendi.
-- Koyu navbar çubuğu, alt köşe radius'ları, üst kenardaki concave flare'ler ve merkezdeki K damlası CSS ile oluşturuldu.
-- Damla/oyuk geometrisi, logo ölçüsüne bağlı custom property hesaplarıyla responsive çalışıyor.
-- Masaüstü, ara laptop, tablet ve telefon için ayrı davranış katmanları tanımlandı.
-- Dil değişiminde yerleşim kaymasını engelleyen görünmez link ölçüm yapısı stillendi.
-- Tema/dil kontrolleri için kayan aktif thumb yapısı eklendi.
-- Açılır panel, scrim, panel linkleri ve menü ikonunun açık/kapalı durumları eklendi.
-- Tam ekran scrim'den `backdrop-filter` kaldırıldı; kapalı durum `visibility:hidden` ile compositing dışına çıkarıldı.
-- Navbar shell kendi compositing katmanına alındı; geniş gölgenin tema/sayfa/scroll geçişlerinde sürekli yeniden çizilmesi azaltıldı.
-- Panel açıkken teleport marka katmanını gizlemek için `:has()` yerine doğrudan sınıf kullanıldı.
-- Reduced-motion durumunda ilgili CSS transition'ları kapatıldı.
-
-### `nuxt/app/assets/styles/base/tokens.css`
-
-Header'a özel çok sayıdaki eski glass, link, kontrol, ölçü ve segment tokenı global token dosyasından kaldırıldı.
-
-- `--header` sayfa üst boşluğu amacıyla globalde tutuldu.
-- Marka metni ve gölgesi için kullanılan temel tokenlar korundu.
-- Navbar ölçüleri ve görsel değişkenlerinin tek sahibi artık `site-header.css`.
-
-### `nuxt/app/assets/styles/base/transitions.css`
-
-Tema değiştirme sırasında View Transitions API'nin varsayılan tam ekran cross-fade'i kapatıldı.
-
-- Eski ve yeni root snapshot'larında varsayılan animasyon kaldırıldı.
-- Katmanların blend modu normale çekildi.
-- Eski tema altta, yeni tema üstte sabitlenerek yalnızca dairesel `clip-path` animasyonunun çalışması sağlandı.
-- Amaç, ağır sayfalarda iki tam ekran opacity ve clip-path animasyonunun aynı anda oluşturduğu takılmayı azaltmak.
-
-### `nuxt/app/assets/styles/main.css`
-
-Scroll sırasında efektleri geçici olarak azaltan global listeden header pseudo-element seçicileri çıkarıldı.
-
-- `.site-header__bar::before`
-- `.site-header__mobile-panel::before`
-
-Bu eski sınıflar yeni navbar mimarisinde kullanılmıyor.
-
-### Sayfa özelindeki eski header override'ları
-
-Aşağıdaki dosyalardan eski header aktif-link gradient override'ları kaldırıldı:
-
-- `nuxt/app/assets/styles/pages/contact.css`
-- `nuxt/app/pages/references.vue`
-
-Yeni navbar aktif durumu artık ortak `site-header.css` kurallarıyla yönetiliyor; contact ve references sayfaları header görünümünü ayrıca ezmiyor.
-
-### Kaldırılan navbar lab dosyaları
-
-- `nuxt/app/components/lab/NavLab.vue`
-- `nuxt/app/pages/navbar-lab.vue`
-
-Bu iki deneysel dosya silindi. Lab'da doğrulanan koyu çubuk, merkez damla, tema/dil segmentleri ve mobil panel yaklaşımı gerçek `SiteHeader` yapısına taşındığı için ayrı demo sayfası artık tutulmuyor.
-
-## 2. Entrance / Kapıdan Showroom'a Geçiş
-
-### `nuxt/app/components/home/EntranceDoorLab.vue`
-
-Desktop giriş sahnesinde showroom artık sonradan fade-in olmuyor; ilk kareden itibaren hero'nun arkasında hazır duruyor.
-
-- Hero kapı görselindeki şeffaf boşluktan düz siyah zemin yerine gerçek showroom görülüyor.
-- Showroom, zoom ilerledikçe `1.14 → 1` ölçeğine iniyor; öndeki hero katmanının büyümesiyle birlikte derinlik/parallax etkisi oluşuyor.
-- Showroom transform origin'i kapı boşluğunun merkezine bağlandı; zoom sırasında deliğin içindeki görüntünün kayması azaltıldı.
-- Eski `showroomFadeRef` kaldırıldı ve yerine `showroomDepthRef` eklendi.
-- Showroom baştan görünür olsa da eski eşik aşılana kadar `inert` ve `pointer-events:none` ile etkileşime kapalı tutuluyor.
-- Kapı sprite'ı ilk kez yüklenme sonucuna ulaşana kadar showroom gizli tutuluyor; böylece boş canvas'ın şeffaf kapı deliğinden sahnenin erken sızması önleniyor.
-- Sprite yüklemesi başarısız olsa bile `finally` ile showroom kilidi kaldırılıyor; sahne kalıcı olarak gizli kalmıyor.
-- Kapıdan dışarıdan bakılan loş iç mekân hissi için ayrı bir dim overlay eklendi; zoom ilerledikçe opacity sıfıra iniyor.
-- Maliyetli `filter: brightness()` yerine compositor dostu opacity katmanı kullanılıyor.
-- Floating contact hub'ı kontrol eden aktif showroom eşiği korunuyor.
-- Hero alt başlığının üst boşluğu desktop kurallarında 10 px artırıldı.
-
-### `nuxt/app/assets/styles/sections/entrance-lab.css`
-
-Vue tarafındaki yeni showroom derinliği için gerekli katman ve state stilleri eklendi.
-
-- Showroom katmanı baştan görünür hâle getirildi.
-- Eski opacity/visibility tabanlı showroom fade kuralları kaldırıldı.
-- `--showroom-depth` ve kapı merkezinden gelen transform-origin kullanılmaya başlandı.
-- `is-interactive` durumu ile pointer-event kontrolü eklendi.
-- `is-revealed` durumu ile showroom görünürlüğü kapı sprite'ının ilk yüklenme sonucuna bağlandı.
-- Koyu ve aydınlık ambience için ayrı dim overlay arka planları tanımlandı.
-- Katman sırası ve açıklama blokları yeni geçiş mimarisine göre güncellendi.
-
-### `nuxt/app/components/home/EntranceDoorMobile.vue`
-
-Mobil giriş de desktop ile aynı “showroom kapının arkasında baştan hazır” yaklaşımına geçirildi.
-
-- Showroom fade ve visibility eşiği kaldırıldı; sahne sürekli görünür.
-- Mobilde showroom `1.12 → 1` ölçek parallax'ı kullanıyor.
-- Transform origin kapı deliğinin merkezine bağlandı.
-- Kullanıcı giriş aşamasını tamamlayana kadar showroom `inert` tutuluyor.
-- Mobil kapı sprite'ı bir `Image` probe ile ön yükleniyor; yükleme tamamlanmadan showroom görünür yapılmıyor.
-- Yükleme başarılı veya hatalı sonuçlandığında entrance yeniden render edilerek sahnenin kalıcı biçimde gizli kalması engelleniyor.
-
-### `nuxt/app/assets/styles/sections/entrance-mobile.css`
-
-Mobil showroom'un başlangıç görünürlüğü ile çalışma zamanı davranışının sahipliği netleştirildi.
-
-- CSS'teki başlangıç `visibility` ve `opacity` değerlerinin yalnız JS devreye girene kadar geçerli olduğu belgelendi.
-- Sabit `scale(1.06)` ve merkez transform-origin kuralları kaldırıldı; transform ve origin tamamen `EntranceDoorMobile.vue` içindeki ölçüm/render akışına bırakıldı.
-- Böylece CSS ile inline mobil entrance değerlerinin birbirini ezmesi engellendi.
-
-## 3. Showroom Kapı Yerleşimi
-
-### `nuxt/app/components/home/ShowroomLab.vue`
-
-Showroom orbitindeki yan kapıların viewport kenarındaki görünürlük oranı daha tutarlı hâle getirildi.
-
-- Yan kapı ölçeği `0.72` ortak sabitine bağlandı.
-- Hedef görünürlük oranı `%75` olarak tanımlandı; kapının yaklaşık `%25`i ekran kenarının dışında kalıyor.
-- Sabit piksel ofset yerine viewport, stage genişliği, slot yüksekliği ve tahmini görünür kapı genişliğinden hesaplanan responsive ofset kullanılıyor.
-- Her kapı slotuna `baselineShift` ve görsel URL'sinden üretilen alfa maskesi aktarılıyor.
-
-### `nuxt/app/assets/styles/sections/showroom.css`
-
-Kapı görsellerinin taban hizası ve arka plan tipografisiyle ilişkisi düzeltildi.
-
-- Slot'un tamamına opacity uygulamak yerine opacity kapı görseli ve gölge seviyesinde yönetiliyor.
-- Kapının alfa siluetini kullanan maskeli bir zemin katmanı eklendi; arkadaki büyük kayan yazı yalnızca ürün siluetinin altında kesiliyor.
-- Kapı görseli shell içinde mutlak konumlandırıldı ve merkez-alt noktasına sabitlendi.
-- `--door-baseline-shift` ile kaynak görsellerdeki farklı transparan alt boşlukları dengeleniyor.
-- Kapı gölgesi slot opacity'sine bağlandı.
-
-### `nuxt/app/composables/useShowroomDoors.ts`
-
-Showroom kapı verisine `baselineShift` alanı eklendi.
-
-Beş temsilci kapının ölçek ve taban kaydırma kalibrasyonları güncellendi:
-
-| Seri | Görsel | fitScale | baselineShift |
-|---|---:|---:|---:|
-| Alüminyum Sistemler | 41 | 1.152 | 7.5 |
-| Doğal Yüzeyler | 57 | 1 | -1.2 |
-| Camlı Modeller | 17 | 1.055 | 1.6 |
-| PVC Laminoks | 117 | 1.057 | 2.7 |
-| Mimari Özel | 142 | 1.013 | 0.2 |
-
-Amaç, görünür alfa yüksekliğini yaklaşık ortak `%92` seviyesine getirmek ve kapıların zemine aynı hizada basıyormuş gibi görünmesini sağlamak.
-
-## 4. Runtime Browser Audit
-
-### `nuxt/tests/audit/runtime-browser-audit.mjs`
-
-Audit'in hover hedefi eski `.site-header__nav-link` sınıfından yeni `.site-nav__link` sınıfına geçirildi.
-
-## Silinen, Değiştirilen ve Yeni Dosyaların Tam Listesi
-
-### Değiştirilen
-
-- `nuxt/app/assets/styles/base/tokens.css`
-- `nuxt/app/assets/styles/base/transitions.css`
-- `nuxt/app/assets/styles/components/site-header.css`
-- `nuxt/app/assets/styles/main.css`
-- `nuxt/app/assets/styles/pages/contact.css`
-- `nuxt/app/assets/styles/sections/entrance-lab.css`
-- `nuxt/app/assets/styles/sections/entrance-mobile.css`
-- `nuxt/app/assets/styles/sections/entrance-mobile.css` *(bkz. Ek E6 — asıl not
-  yazıldıktan sonra değişti)*
-- `nuxt/app/assets/styles/sections/showroom.css`
-- `nuxt/app/components/home/EntranceDoorLab.vue`
-- `nuxt/app/components/home/EntranceDoorMobile.vue`
-- `nuxt/app/components/home/ShowroomLab.vue`
-- `nuxt/app/components/layout/SiteHeader.vue`
-- `nuxt/app/composables/useShowroomDoors.ts`
-- `nuxt/app/pages/references.vue`
-- `nuxt/tests/audit/runtime-browser-audit.mjs`
-
-### Silinen
-
-- `nuxt/app/components/lab/NavLab.vue`
-- `nuxt/app/pages/navbar-lab.vue`
-
-### Yeni ve takip edilmeyen
-
-- `nuxt/app/components/layout/SiteNavControls.vue`
-
-## Doğrulama Durumu
-
-Bu not hazırlanırken mevcut diff okunup dosya bazında özetlendi. Kod değişiklikleri yeniden çalıştırılmadı ve bu dokümantasyon görevi için typecheck/test yürütülmedi. Bu nedenle yukarıdaki maddeler uygulanan kodun açıklamasıdır; tarayıcıda görsel doğrulama veya test sonucu iddiası değildir.
+Git, yerel değişikliklerin hangi kullanıcı veya Codex oturumu tarafından
+yazıldığını kanıtlamaz. Bu nedenle aşağıdaki belge, mevcut unstaged diff'in teknik
+açıklamasıdır; tek tek satırların yazarı hakkında kesin kayıt değildir.
 
 ---
 
-# Ek: İnceleme Notları ve Sonradan Yapılan Düzeltmeler
+## 1. `nuxt/app/app.vue`
 
-> Bu bölüm, yukarıdaki notun yazılmasından sonra yapılan kod incelemesinde
-> ortaya çıkan eksikleri, riskleri ve uygulanan düzeltmeleri içerir.
+**Diff:** 5 ekleme, 1 silme
 
-## E1. Doğrulama Durumu — Düzeltme
+### Ne değişti?
 
-Yukarıdaki "typecheck/test yürütülmedi" ifadesi eksik. Doğrusu:
+- Nuxt importlarına `useState` eklendi.
+- `kardoor-page-content-visible` adında global, boolean bir state oluşturuldu.
+- Bu state'in başlangıç değeri references rotasında `true`, startup ekranı kullanan
+  diğer rotalarda `false` olacak şekilde bağlandı.
+- Sayfa geçişi başlamadan hemen önce state `false` yapılıyor.
+- Transition overlay yeni sayfayı açtıktan sonra state `true` yapılıyor.
+- İlk startup animasyonu tamamlandığında da state `true` yapılıyor.
 
-- `npm run build` bu ortamda **çalıştırılamıyor**. `node_modules` eksik kurulu
-  (8 paket) ve mevcut kurulum macOS native binding'leri taşıyor; Linux sandbox
-  bunları yükleyemiyor. Yani "çalıştırılmadı" değil, "çalıştırılamadı".
-- `vue-tsc` sonucu bu nedenle **güvenilir değil**, geçti sayılmamalı.
-- Sadece `stylelint`, `entrance-lab.css` ve `entrance-mobile.css` üzerinde
-  temiz geçti.
-- **Tarayıcı doğrulaması sıfırdır.** Aşağıdaki entrance/showroom davranışları
-  gerçek cihazda hiç izlenmedi.
+### Kullanıcıya etkisi
 
-## E2. Entrance Bölümünde Adı Geçmeyen Değişiklikler
+Header, ana sayfa hero içeriği ve floating contact kontrolü artık page transition
+perdesiyle eşzamanlı görünmüyor; perde açıldıktan sonra kendi reveal animasyonlarını
+başlatabiliyor.
 
-- Yeni sabit: `SHOWROOM_DEPTH = 0.14` (`EntranceDoorLab.vue`).
-- Yeni custom property'ler: `--showroom-depth`, `--showroom-dim`.
-- `SHOWROOM_START` ve `SHOWROOM_COVER` artık **yalnızca** body-class eşiği
-  (FloatingContactHub'ın gizlenmesi) için kullanılıyor. Dosya başındaki faz
-  haritasının anlamı bu yüzden değişti; showroom'un "0.273–0.56 arası fade-in"
-  satırı artık geçerli değil.
-- Sınıf adı değişti: `.entrance-lab__showroom.is-active` → `.is-interactive`.
-  Dışarıdan eski seçiciyi arayan kod/test bulamaz.
+---
 
-## E3. Riskler (asıl notta hiç yok)
+## 2. `nuxt/app/assets/styles/base/reset.css`
 
-### Performans
-Showroom artık `p=0`'dan itibaren boyanıyor (eskiden `opacity:0` +
-`visibility:hidden`). İçindeki kapı görselleri `loading="lazy"`; katman baştan
-görünür olduğu için daha erken decode edilecekler. **`/` sayfasının LCP'si
-ölçülmeli** — bu değişikliğin tek gerçek maliyeti burası.
+**Diff:** 3 ekleme
 
-Ayrıca `.entrance-lab__showroom` (`will-change: transform`) ve dim overlay
-(`will-change: opacity`) artık kalıcı olarak promote edilmiş iki tam-viewport
-compositor katmanı. Kabul edilebilir, ama bedava değil.
+### Ne değişti?
 
-### `inert` tarayıcı desteği
-Safari 15.5+ / Firefox 112+ / Chrome 102+. Daha eski tarayıcıda geriye yalnızca
-`pointer-events:none` kalır; **klavye odağı hero'nun arkasındaki gizli linklere
-gidebilir.**
+- `button`, `input` ve `textarea` ortak reset kuralına `color: var(--text)` eklendi.
+- Tarayıcının varsayılan saf siyah form kontrolü rengi yerine aktif tema metin
+  rengi kullanılıyor.
 
-Ayrıca Vue `inert`'i boolean attribute olarak işlediği için `:inert="false"`
-attribute'u tamamen kaldırır. Düz HTML'de `inert="false"` yine inert olurdu —
-bu bilinçli bir varsayım, Vue'ya bağımlı.
+### Kullanıcıya etkisi
 
-## E4. Race Condition: Sprite Yüklenmeden Delikten Sahne Sızması — DÜZELTİLDİ
+Form kontrolleri özellikle açık temada sayfanın yeni ink paletiyle tutarlı görünüyor.
 
-**En önemli bulgu.** Showroom'un baştan görünür olması bu hatayı ortaya çıkardı:
+---
 
-Kapı sprite'ı asenkron yükleniyor. O tamamlanana kadar:
-- Masaüstünde `<canvas>` **boş** (`showProgress` `meta` yokken erken dönüyor),
-- Mobilde `background-image` div'i **şeffaf**.
+## 3. `nuxt/app/assets/styles/base/tokens.css`
 
-Hero'nun kapı deliği de şeffaf olduğu için, bu pencerede **kapı hiç çizilmeden
-delikten showroom görünüyordu.** Masaüstü sprite'ı 917 KB; yavaş bağlantıda
-belirgin bir sıçrama. Eskiden orada düz siyah vardı, bu yüzden fark edilmiyordu
-— yani hata yeni değil, benim değişikliğim onu *görünür* yaptı.
+**Diff:** 66 ekleme, 37 silme
 
-Uygulanan düzeltme:
-- `isDoorPainted` bayrağı eklendi (her iki bileşende).
-- Masaüstü: `door.load(...).catch(...).finally(() => isDoorPainted = true)`.
-  Showroom `.is-revealed` sınıfı gelene kadar `visibility: hidden`.
-- Mobil: aynı URL ile `new Image()` ön-yüklemesi (CSS aynı URL'i cache'ten alır,
-  ikinci indirme yok); `onload`/`onerror` ikisi de bayrağı açar.
-  `watch(isDoorPainted, ...)` ile `renderEntrance` yeniden koşturuluyor.
-- **`finally` / `onerror` bilinçli:** sprite 404 verirse showroom sonsuza dek
-  kilitli kalmasın, sahne yine açılsın.
+### Ne değişti?
 
-Yan fayda: `is-revealed` her zaman `placeDoor()`'dan sonra geldiği için
-`--zoom-origin-*` o an kesin ölçülmüş oluyor. Bu da ikinci bir ilk-kare
-sorununu kapatıyor (aşağıda).
+Yeni açık tema paleti merkezi tokenlar olarak eklendi:
 
-## E5. Race Condition: İlk Karede Yanlış `transform-origin` — DÜZELTİLDİ
+- Brand tonları: `--brand-100`, `--brand-200`, `--brand-300`, `--brand-500`,
+  `--brand-700`, `--brand-800`, `--brand-900`
+- Açık yüzeyler: `--paper`, `--surface`, `--surface-2`, `--hairline`
+- Metinler: `--ink`, `--ink-soft`, `--ink-body`
+- Koyu editoryal yüzey: `--slab`, `--slab-fg`, `--slab-soft`, `--slab-line`
 
-`.entrance-lab__showroom` ölçek merkezi olarak `--zoom-origin-*` kullanıyor, ama
-bu değişkeni yalnızca `placeDoor()` yazıyor ve o `onMounted`'da çalışıyor. İlk
-paint ile mount arasındaki pencerede fallback `50% 50%` geçerli oluyordu; kapı
-deliği ise ~`%52 / %55`'te. Showroom baştan görünür olduğu için bu, delikten
-görünen kesitte bir **sıçrama** demekti.
+Gündüz tema eşlemelerinde:
 
-E4'teki `is-revealed` gecikmesi bunu da kapatıyor: showroom görünür olduğunda
-`placeDoor()` kesinlikle çalışmış oluyor. Ayrı bir düzeltme gerekmedi.
+- `--bg`, `--panel`, `--line`, `--text`, `--muted` ve `--soft` yeni tokenlara
+  bağlandı.
+- Açık zemindeki ana vurgu `--brand-700`, primary CTA vurgusu `--brand-500`
+  olacak şekilde `--accent` ve `--accent-soft` güncellendi.
+- Ambience ve header marka metni açık tema tokenlarına geçirildi.
+- Katalog yüzeyleri paper tonuna, metinler ink tonlarına, structural line brand
+  700'e bağlandı.
+- Eski amber katalog ilerleme rengi kaldırıldı.
+- Artık kullanılmayan katalog wishlist paneli ve wishlist butonu tokenları hem
+  day hem night bloklarından silindi.
 
-## E6. Eski Kalıntı: `entrance-mobile.css` — DÜZELTİLDİ
+### Kullanıcıya etkisi
 
-`.entrance-mobile__showroom` hâlâ `transform: scale(1.06)` ve
-`transform-origin: center` taşıyordu; oysa ikisini de JS her karede inline
-eziyor. Masaüstü CSS'i bu geçişte temizlenmiş, mobil temizlenmemişti — yani
-yeni davranış eski kuralların üzerine yamanmıştı ve CSS artık yanlış bilgi
-veriyordu.
+Açık tema tek bir sıcak mineral yüzey ve mor-mavi brand ailesinden besleniyor.
+Sayfalar arasında farklı hardcoded gri, beyaz, siyah ve amber tonların görünme
+ihtimali azaltılıyor.
 
-Bu iki satır kaldırıldı; `visibility`/`opacity` ise **bilinçli olarak** kaldı
-(JS devreye girene kadarki doğru başlangıç durumu bu). Sahiplik açıklama
-bloğuyla yazıldı.
+### Risk notu
 
-`entrance-mobile.css` bu nedenle artık değişen dosyalar listesine **eklenmelidir**
-— asıl notta yoktu, çünkü o an dosya gerçekten değişmemişti.
+Bu dosya global token kaynağı olduğu için değişiklik yalnız tek bir componenti
+değil, bu değişkenleri kullanan tüm sayfaları etkileyebilir.
 
-## E7. Düzeltilmeyen, Bilinen Sorun: `useDoorSprite.load()` Yarış Durumu
+---
 
-`nuxt/app/composables/useDoorSprite.ts` — **bu oturumda dokunulmadı, önceden
-var olan bir sorun.** Kayıt için:
+## 4. `nuxt/app/assets/styles/components/buttons.css`
 
-- `load()` içinde in-flight koruması veya iptal yok. Hızlı ardışık tema
-  değişiminde iki `load()` yarışır; `meta`/`image`'ı **en son çözülen** atar.
-  İki sprite farklı boyutta (917 KB / 769 KB) olduğu için hızlı çift geçişte
-  yanlış temanın kapısı çizili kalabilir.
-- `dispose()` sırasında uçuşta bir `load()` varsa, `dispose` `ctx`'i null
-  yaptıktan sonra bekleyen `load` devam edip `meta`/`image`/`ready = true`
-  atıyor — yani sökülmüş composable'ın state'ini diriltiyor.
+**Diff:** 6 ekleme, 5 silme
 
-Çözüm önerisi: `load()` başında artan bir `loadId` alıp `await`lerden sonra
-"hâlâ güncel miyim" kontrolü yapmak (`EntranceDoorLab.vue` içindeki
-`settleToProgress`/`activeSettleId` deseninin aynısı).
+### Ne değişti?
 
-Not: tema geçişinde **flaş yok** — `drawNow` yalnızca yeni görsel çözüldükten
-sonra çağrıldığı için canvas o ana kadar eski kareyi tutuyor. Sorun görsel
-değil, state tutarlılığı.
+- `.btn-primary` border ve arka planı `--brand-500`, metni `--brand-100` oldu.
+- `.btn-secondary` dolu panel yüzeyinden şeffaf zemine geçirildi.
+- Secondary butona `--hairline` border ve `--brand-700` metin rengi verildi.
 
-## E8. Reddedilen Yaklaşım (tekrar denenmesin)
+### Kullanıcıya etkisi
 
-Kapı boşluğunun arkasına CSS gradient'leriyle sahte bir "iç mekân" katmanı
-(`entrance-lab__portal` + ışık taşması) boyanmıştı; **kaldırıldı.** İstenen şey
-uydurma derinlik değil, gerçek sayfanın delikten görünmesiydi. Portal yaklaşımı
-hem konsepti karşılamıyordu hem de showroom'a geçişte ikinci bir cross-fade
-beat'i yaratıyordu.
+Primary ve secondary aksiyon hiyerarşisi daha net: primary dolu brand yüzeyi,
+secondary ise şeffaf ve ince kenarlı kontrol olarak okunuyor.
+
+---
+
+## 5. `nuxt/app/assets/styles/components/site-header.css`
+
+**Diff:** 17 ekleme, 17 silme
+
+### Ne değişti?
+
+- Navbar'ın hardcoded siyah/beyaz renkleri slab tokenlarına bağlandı.
+- Bar zemini `--slab`, metin `--slab-fg`, ikincil metin `--slab-soft` kullanıyor.
+- Segment thumb ve aktif segment metni de slab ailesine taşındı.
+- Navbar logosunun maksimum clamp değeri 90px'ten 80px'e indirildi.
+- Metin aralığı, flare, alt radius, yatay/dikey padding ve grup gap değerleri
+  hafifçe küçültüldü.
+- Segment yüksekliği, navbar fontu ve tema/dil segment genişlikleri azaltıldı.
+
+### Kullanıcıya etkisi
+
+Desktop navbar daha kompakt ve kontrollü görünüyor; merkezin K damlası, linkler ve
+tema/dil segmentleri daha az yatay alan tüketiyor.
+
+---
+
+## 6. `nuxt/app/assets/styles/pages/catalog-library.css`
+
+**Diff:** 13 ekleme, 13 silme
+
+### Ne değişti?
+
+- Catalog library'nin yerel metin, muted metin, ana yüzey, güçlü yüzey, raised
+  yüzey, hairline ve focus renkleri yeni global tokenlara bağlandı.
+- Aynı token eşlemesi dock ve filter katmanlarına da uygulandı.
+
+### Kullanıcıya etkisi
+
+Katalog kütüphanesi ile ana sayfa katalog bölümü aynı açık tema renk sistemini
+kullanıyor; dock ve filtre alanları ayrı bir gri/beyaz sistem gibi görünmüyor.
+
+---
+
+## 7. `nuxt/app/assets/styles/pages/company.css`
+
+**Diff:** 17 ekleme, 17 silme
+
+### Ne değişti?
+
+- Koyu timeline üzerindeki beyaz metin ve işaretler `--slab-fg` tokenına taşındı.
+- Gündüz timeline metni `--ink`, ikincil açıklama `--ink-body`, zayıf metin
+  `--ink-soft` kullanıyor.
+- Timeline track, aktif çizgi, yıl butonları, sayı ve deneyim metinleri tokenlara
+  bağlandı.
+- Mobil kartların alt border rengi `--hairline` oldu.
+
+### Kullanıcıya etkisi
+
+Company timeline hem açık hem koyu yüzeyde yeni paletle aynı kontrast hiyerarşisini
+koruyor.
+
+---
+
+## 8. `nuxt/app/assets/styles/pages/contact.css`
+
+**Diff:** 14 ekleme, 14 silme
+
+### Ne değişti?
+
+- Gündüz contact zemini `--paper`, ana metin `--ink`, açıklama `--ink-body`, zayıf
+  metin `--ink-soft` oldu.
+- Borderlar `--hairline` ve `--ink-soft` tokenlarına taşındı.
+- Focus ve checkbox vurgusundaki kırmızı kaldırılıp `--brand-700` kullanıldı.
+- Submit hover yüzeyi brand 700, metni brand 100 oldu.
+- Sayfa gradient'i `--surface`, `--paper`, `--surface-2` ile yeniden eşlendi.
+- Harita yüzeyi/inset rengi ve contact sayfasındaki footer zemini yeni tokenlara
+  geçirildi.
+
+### Kullanıcıya etkisi
+
+İletişim formu site genelindeki açık tema ve brand rengiyle aynı dili kullanıyor;
+eski kırmızı focus/check vurgusu artık görünmüyor.
+
+---
+
+## 9. `nuxt/app/assets/styles/sections/entrance-lab.css`
+
+**Diff:** 41 ekleme, 22 silme
+
+### Ne değişti?
+
+- Gündüz entrance metinleri hardcoded lacivert yerine `--ink` kullanıyor.
+- Konfigüratör içeriği `top` ile yukarı taşındı ve viewport'a bağlı kontrollü bir
+  yüksekliğe alındı.
+- İç düzen `space-between` kullanacak şekilde değişti; heading, copy ve CTA
+  arasındaki dağılım yeniden kuruldu.
+- Konfigüratör heading'i yaklaşık 68–126px aralığından 58–104px aralığına
+  küçültüldü; line-height 1.04 oldu.
+- Heading'in ikinci satırı `--accent` rengine geçirildi.
+- Açıklama metni yaklaşık 23–30px'ten 19–22px'e küçültüldü; line-height 1.4 ve
+  `text-wrap: pretty` eklendi.
+- CTA grubunun eski büyük üst margin'i kaldırıldı; gap küçültüldü.
+- Konfigüratör CTA yüksekliği, padding'i, ikon aralığı ve fontu küçültüldü.
+- “Çok Yakında” hover rengi ortak accent tokenına bağlandı.
+- Hero CTA satırının üst boşluğu artırıldı.
+- Gündüz hero ana CTA'sı brand 700 zemin ve brand 100 metin kullanıyor.
+- Yanındaki ok butonunun border, metin ve shadow tonları açık tema tokenlarına
+  geçirildi.
+
+### Kullanıcıya etkisi
+
+Konfigüratör çağrı bölümü daha küçük, daha dengeli ve viewport içinde daha kontrollü
+bir kompozisyona sahip. Hero CTA'ları içerikten biraz daha ayrık görünüyor.
+
+---
+
+## 10. `nuxt/app/assets/styles/sections/entrance-mobile.css`
+
+**Diff:** 4 ekleme
+
+### Ne değişti?
+
+- Mobil konfigüratör heading'inin ikinci satırına `--accent` rengi eklendi.
+
+### Kullanıcıya etkisi
+
+Desktop'taki iki renkli konfigüratör başlık hiyerarşisi mobilde de korunuyor.
+
+---
+
+## 11. `nuxt/app/assets/styles/sections/home-catalog.css`
+
+**Diff:** 68 ekleme, 114 silme
+
+### Ne değişti?
+
+Renk ve yüzey tarafında:
+
+- Ana katalog zemini, kartlar, görsel yüzeyleri, metinler, yardımcı metinler,
+  borderlar ve liquid menü yüzeyleri paper/surface/ink tokenlarına bağlandı.
+- Hardcoded beyaz, lacivert ve gri fallback'lerin önemli kısmı kaldırıldı.
+
+Desktop grid tarafında:
+
+- Katalog başlığı büyütüldü.
+- 1181px üstünde heading için daha büyük clamp ve 10px dikey offset eklendi.
+- Beş sütunlu ürün grid'i 1800px yerine 1181px üstünde devreye giriyor.
+- Sekizden sonraki katalog ürünleri de 1181px üstünde görünür oluyor.
+- Satır maksimum genişliği 2080px ile sınırlandı.
+
+Liquid menü tarafında:
+
+- Hamburger çizgilerine transform ve opacity transition'ları eklendi.
+- Hover veya expanded durumda üst/alt çizgi dönerek X oluşturuyor, orta çizgi
+  küçülüp kayboluyor.
+- Liquid menü ve action satırlarının border/metin renkleri tokenlara taşındı.
+
+Wishlist kaldırma tarafında:
+
+- Dark theme wishlist butonu, kalp, liked, active ve hover override'ları silindi.
+- Safari scroll sırasında wishlist shadow/transition kapatan eski seçiciler silindi.
+- Dosyada kalmış eksik `.catalog-like-wrap:hover` satırı kaldırıldı.
+
+### Kullanıcıya etkisi
+
+Katalog geniş desktop ekranları beklemeden beş sütuna çıkıyor. Liquid menü ikonu
+hover'da daha açık şekilde X'e dönüşüyor. Ürün kartlarında wishlist kalbi/paneli
+artık bulunmuyor.
+
+---
+
+## 12. `nuxt/app/assets/styles/sections/home-footer.css`
+
+**Diff:** 69 ekleme, 66 silme
+
+### Ne değişti?
+
+- Footer dome zemini `--slab`, logo/metinler `--slab-fg`, iç yüzeyler
+  `--slab-line` tokenlarına taşındı.
+- Sosyal buton normal ve hover renkleri slab ailesine bağlandı.
+- Flip link çizgisi ve iki yüzündeki metin rengi tokenlaştırıldı.
+- Footer başlığı, lokasyon seçimi, radio kontrolü, form inputları, placeholder,
+  submit butonu, bilgi kolonları, telefonlar ve çalışma saatleri slab tokenlarına
+  geçirildi.
+- Açık alt footer metinleri `--ink` ve `--ink-soft` kullanıyor.
+- References rotasındaki footer wrapper `--brand-900`, dome ise `--slab` kullanıyor;
+  iki koyu katman arasında derinlik korunuyor.
+- Mobil footer border ve metin alpha değerleri slab-fg RGB ailesine uyarlandı.
+
+### Kullanıcıya etkisi
+
+Footer eski farklı gri/siyah değerler yerine tek koyu editoryal palette çalışıyor.
+References sayfasında wrapper ile dome birbirine karışmadan iki ayrı koyu seviye
+olarak okunuyor.
+
+---
+
+## 13. `nuxt/app/assets/styles/sections/home-references.css`
+
+**Diff:** 20 ekleme, 8 silme
+
+### Ne değişti?
+
+- References bölüm zemini, ana metni, muted metni ve çizgileri slab tokenlarına
+  bağlandı.
+- Koyu zemin üzerindeki vurgu `--brand-300` oldu.
+- Intro heading'in son satırına brand 300 rengi verildi.
+- Sol marble ve sağ torus dekorlarının yatay konumu sabit viewport hesapları yerine
+  ana içerik genişliğini dikkate alan `min()`/`calc()` formülleriyle değiştirildi.
+
+### Kullanıcıya etkisi
+
+Başlık vurgusu koyu zeminde daha okunaklı. Dekoratif objeler geniş ekranlarda ana
+metne yaklaşmadan, içerik kolonuna göre daha kontrollü konumlanıyor.
+
+---
+
+## 14. `nuxt/app/assets/styles/sections/home-team.css`
+
+**Diff:** 19 ekleme, 19 silme
+
+### Ne değişti?
+
+- Team/manifesto bölümünün koyu yüzeyi ve metinleri slab tokenlarına bağlandı.
+- Manifesto CTA normal ve hover renkleri slab/ink tokenlarıyla eşlendi.
+- Reveal karakterleri, büyük başlık ve marka logoları yeni metin tokenlarını
+  kullanıyor.
+- Gündüz team zemini paper, metinleri ink, ikincil metinleri ink-soft oldu.
+
+### Kullanıcıya etkisi
+
+Manifesto/team alanı açık ve koyu tema arasında ayrı hardcoded renkler yerine ortak
+palette geçiyor.
+
+---
+
+## 15. `nuxt/app/assets/styles/sections/showroom.css`
+
+**Diff:** 115 ekleme, 45 silme
+
+### Ne değişti?
+
+Gündüz showroom paleti:
+
+- Arka plan, vignette, ana/ikincil/zayıf metin ve çizgiler yeni açık tema tokenlarına
+  geçirildi.
+
+Sahne:
+
+- Stage'in iki kenarına pseudo-element gradient maskeleri eklendi.
+- Bu maskeler, orbitte kenarda kalan komşu kapıların viewport sınırında sert
+  kesilmesini yumuşatıyor.
+- Mobilde maske genişliği 24px'e indiriliyor.
+
+Bilgi paneli:
+
+- Panelin dikey gap'i küçültüldü ve maksimum genişliği 410px oldu.
+- Yeni `.showroom-lab__identity` ve `.showroom-lab__details` gruplarına ayrı width
+  ve gap kuralları eklendi.
+- Kapı adı 42–82px'ten yaklaşık 38–60px'e küçültüldü; letter-spacing sıkılaştırıldı,
+  `text-wrap: balance` eklendi.
+- Adın ilk satırına nowrap, vurgu satırına accent rengi verildi.
+- Teknik açıklama ve metadata genişlik/font/line-height değerleri küçültüldü.
+
+CTA ve navigasyon:
+
+- Aksiyonlar flex yerine iki eşit sütunlu grid oldu.
+- Her CTA panel sütununu tamamen dolduruyor ve ortak yüksekliğe sahip.
+- Gündüz primary CTA brand 700/100 kullanıyor.
+- Secondary CTA şeffaf/hairline görünümde; hover dolgusu brand 500.
+- Alt door rail `margin-top: auto` ile panelin altına yaslandı.
+- Counter, rail fill ve focus rengi ortak accent tokenına bağlandı.
+
+### Kullanıcıya etkisi
+
+Showroom bilgi paneli daha düzenli iki blok hâlinde okunuyor. İki CTA aynı genişlikte
+duruyor, metinler kapı görselleriyle daha dengeli ölçekleniyor ve yan kapıların ekran
+kenarında kesilmesi daha yumuşak görünüyor.
+
+---
+
+## 16. `nuxt/app/components/home/AdaCtaButton.vue`
+
+**Diff:** 9 ekleme, 9 silme
+
+### Ne değişti?
+
+- Filled varyantın hardcoded koyu zemin, açık metin ve fill yüzeyi brand tokenlarına
+  geçirildi.
+- Normal filled CTA brand 500/100 kullanıyor; directional hover fill brand 700.
+- Outline varyant metni brand 700, borderı hairline oldu.
+- Outline hover metni brand 100, hover border/fill brand 700 kullanıyor.
+
+### Kullanıcıya etkisi
+
+Bu ortak CTA'yı kullanan hero, showroom ve diğer bölümlerde renkler yeni brand
+sistemine uyuyor; directional hover davranışı korunuyor.
+
+---
+
+## 17. `nuxt/app/components/home/CatalogProductModal.vue`
+
+**Diff:** 1 ekleme, 1 silme
+
+### Ne değişti?
+
+- Modal kapatma butonunun hover arka planı `white` yerine `var(--surface)` oldu.
+
+### Kullanıcıya etkisi
+
+Kapatma butonu açık temadaki sıcak yüzey rengiyle uyumlu görünüyor.
+
+---
+
+## 18. `nuxt/app/components/home/EntranceDoorLab.vue`
+
+**Diff:** 73 ekleme, 4 silme
+
+### Ne değişti?
+
+- Hero heading, subtitle, CTA grubu ve scroll cue için dört ayrı template ref'i
+  eklendi.
+- `kardoor-page-content-visible` global state'i bu componentte okunuyor.
+- Hero destekleyici içerikleri için GSAP hazırlama ve oynatma fonksiyonları eklendi.
+- Başlangıç durumu `blur(20px)`, `opacity: 0`, `scale: 0.9`.
+- Reveal animasyonu 1.5 saniye, `power2.out` ease ile normal duruma getiriyor.
+- Animasyon yalnız bir kez oynuyor.
+- `prefers-reduced-motion` durumunda animasyon atlanıp geçici stiller temizleniyor.
+- Global visibility state `true` olduğunda reveal tetikleniyor.
+- Component zaten görünür state ile mount olursa animasyon mount sırasında başlıyor.
+- Teardown sırasında tween öldürülüyor ve inline filter/opacity/scale temizleniyor.
+- Template'teki h1, subtitle, CTA row ve scroll cue yeni ref'lere bağlandı.
+
+### Kullanıcıya etkisi
+
+Page transition perdesi açıldıktan sonra hero metinleri, aksiyonlar ve scroll işareti
+yumuşak blur/scale reveal ile birlikte görünür oluyor.
+
+### Risk notu
+
+Bu dosya GSAP, ScrollTrigger ve entrance scroll akışının yüksek riskli sahibidir.
+Yeni tween doğrudan ScrollTrigger mimarisini değiştirmiyor ancak aynı componentte
+ek bir görsel animasyon yaşam döngüsü oluşturuyor.
+
+---
+
+## 19. `nuxt/app/components/home/HomeCatalog.vue`
+
+**Diff:** 64 ekleme, 189 silme
+
+### Ne değişti?
+
+Wishlist kaldırma:
+
+- Ürün kartı görselinin üzerindeki kalp butonu tamamen kaldırıldı.
+- Hover/click ile açılan wishlist paneli ve üç panel aksiyonu kaldırıldı.
+- Wishlist aria etiketleri ve “listelerim/yeni liste” TR/EN metinleri silindi.
+- `activeWishlistKey` ve `handleWishlistClick` composable destructure'ından çıkarıldı.
+- Dosya sonundaki wishlist Tailwind class sabitleri ve scoped parent-state CSS'i
+  kaldırıldı.
+- Modal componentine gönderilen `toggleLike` korunuyor; ürün modalındaki favori
+  davranışı bu diffte kaldırılmadı.
+
+Liquid menü davranışı:
+
+- `liquidIconHoverSuppressed` state'i eklendi.
+- Hover başladığında suppression temizleniyor.
+- Pointer satırdan çıktığında suppression sıfırlanıyor.
+- Menü açıldığında aktif card ve ikon state'i normal şekilde korunuyor.
+- Menü kapanınca imleç hâlâ kontrol üzerindeyse ikon hemen tekrar X olmuyor;
+  çizgilere dönüyor ve ancak pointer çıkıp yeniden girdiğinde X oluyor.
+- Satıra `is-liquid-icon-hovered` class koşulu eklendi.
+
+Renk:
+
+- Structural SVG line fallback rengi eski koyu değerden brand 700 hex karşılığına
+  geçirildi.
+
+### Kullanıcıya etkisi
+
+Ana sayfa ürün kartları daha sade; kart üzerinde favori kalbi ve wishlist popup'ı
+yok. Liquid menü ikonu açma/kapatma sonrası daha anlaşılır bir çizgi/X durumu
+gösteriyor.
+
+---
+
+## 20. `nuxt/app/components/home/HomeReviews.vue`
+
+**Diff:** 9 ekleme, 9 silme
+
+### Ne değişti?
+
+- Ana başlık metni `--ink` oldu.
+- Rotating pill zemini `--brand-700`, iç metin ve cursor `--brand-100` oldu.
+- Pill shadow'un mavi tonu yeni brand rengine uyarlandı.
+- Review kart zemini `--surface`, borderı `--hairline` oldu.
+- Hover borderı brand 700'e geçirildi; açık glow sıcak surface RGB tonuyla eşlendi.
+- Author divider hairline, rating rengi brand 700 oldu.
+
+### Kullanıcıya etkisi
+
+Yorumlar bölümü açık tema paletiyle uyumlu; eski parlak mavi pill ve sarı yıldız
+rengi yerine aynı brand ailesi kullanılıyor.
+
+---
+
+## 21. `nuxt/app/components/home/ShowroomLab.vue`
+
+**Diff:** 13 ekleme, 8 silme
+
+### Ne değişti?
+
+- Kapı adı ve seri bilgisi `.showroom-lab__identity` wrapper'ına alındı.
+- Divider, teknik açıklama ve metadata `.showroom-lab__details` wrapper'ına alındı.
+- CTA grubu bu iki bilgi bloğunun altında bağımsız bırakıldı.
+
+### Kullanıcıya etkisi
+
+CSS artık showroom başlık/seri grubu ile teknik detay grubuna ayrı ölçü ve boşluk
+verebiliyor; bilgi hiyerarşisi daha kontrollü kuruluyor.
+
+---
+
+## 22. `nuxt/app/components/layout/SiteHeader.vue`
+
+**Diff:** 63 ekleme, 2 silme
+
+### Ne değişti?
+
+- `useState` import edildi ve `kardoor-page-content-visible` state'i okunuyor.
+- Navbar bar elementi için `navBarRevealRef` eklendi.
+- Navbar reveal'i için ayrı GSAP tween, prepared ve played state'leri eklendi.
+- Navbar başlangıçta `blur(20px)`, `opacity: 0`, `scale: 0.9` durumuna hazırlanıyor.
+- Global content state görünür olduğunda 1.5 saniyelik `power2.out` animasyon oynuyor.
+- Reduced-motion kullanıcısında animasyon uygulanmıyor.
+- Component mount olurken mevcut visibility değerine göre reveal başlatılıyor.
+- State değişimi watch ile izleniyor.
+- Unmount sırasında tween öldürülüyor ve inline stiller temizleniyor.
+- Template'teki `<nav>` elementi yeni reveal ref'ine bağlandı.
+
+### Kullanıcıya etkisi
+
+Navbar transition overlay'in altında önceden görünmek yerine sayfa açıldıktan sonra
+blur/scale reveal ile geliyor.
+
+### Risk notu
+
+Mevcut mobil menü GSAP timeline'ı korunuyor; yeni reveal tween'i bundan ayrı ancak
+aynı navbar elementinin yaşam döngüsünde çalışıyor.
+
+---
+
+## 23. `nuxt/app/components/ui/BrandMark.vue`
+
+**Diff:** 1 ekleme, 1 silme
+
+### Ne değişti?
+
+- Marka işaretinin hardcoded mavi rengi `--brand-500` tokenına geçirildi.
+
+### Kullanıcıya etkisi
+
+BrandMark yeni global brand paletiyle senkron çalışıyor.
+
+---
+
+## 24. `nuxt/app/components/ui/FloatingContactHub.vue`
+
+**Diff:** 86 ekleme, 25 silme
+
+### Ne değişti?
+
+Reveal animasyonu:
+
+- GSAP ve `useState` import edildi.
+- Floating trigger için `triggerRevealRef` eklendi.
+- Global `kardoor-page-content-visible` state'i okunuyor.
+- Ana sayfada trigger başlangıçta blur/opacity/scale ile hazırlanıyor.
+- State görünür olduğunda 1.5 saniyelik `power2.out` reveal oynuyor.
+- Animasyon yalnız home rotasında ve yalnız bir kez oynuyor.
+- Reduced-motion durumunda geçici stiller doğrudan temizleniyor.
+- Route değişimi ve global visibility değişimi reveal akışıyla senkronize edildi.
+- Unmount sırasında tween öldürülüp inline stiller temizleniyor.
+
+Renk sistemi:
+
+- Cam yüzey RGB değeri sıcak `surface` ailesine yaklaştırıldı.
+- Ana/metin muted renkleri `--ink` ve `--ink-soft` oldu.
+- Çizgi `--hairline`, mavi vurgu `--brand-500` kullanıyor.
+- Trigger ikon gradient'i `--slab`, `--slab-line` ve brand rengine bağlandı.
+- Action yüzeyleri sıcak açık RGB tonuna geçirildi.
+
+### Kullanıcıya etkisi
+
+Floating contact kontrolü hero ile birlikte yumuşak reveal oluyor ve açık temada
+diğer yüzeylerle aynı sıcak mineral palette görünüyor.
+
+---
+
+## 25. `nuxt/app/components/ui/PageTransitionOverlay.vue`
+
+**Diff:** 1 ekleme, 1 silme
+
+### Ne değişti?
+
+- Gündüz page transition panel zemini hardcoded `#16101F` yerine `--slab` oldu.
+
+### Kullanıcıya etkisi
+
+Geçiş perdesi footer/references gibi koyu editoryal yüzeylerle aynı tokenı kullanıyor.
+
+---
+
+## 26. `nuxt/app/composables/useHomeCatalog.ts`
+
+**Diff:** 20 silme
+
+### Ne değişti?
+
+- Mobil katalog viewport kontrol fonksiyonu silindi.
+- `activeWishlistKey` state'i kaldırıldı.
+- `handleWishlistClick` fonksiyonu kaldırıldı.
+- Modal açılırken wishlist panelini kapatan state sıfırlaması silindi.
+- Catalog state reset fonksiyonundaki wishlist temizliği kaldırıldı.
+- Composable return değerlerinden `activeWishlistKey` ve `handleWishlistClick`
+  çıkarıldı.
+- Ürünlerin `liked` alanı ve genel `toggleLike` fonksiyonu korunuyor.
+
+### Kullanıcıya etkisi
+
+Kart üstü wishlist paneli için artık state tutulmuyor. Modalın mevcut like/favorite
+mekanizması çalışmaya devam edebilecek yapıda bırakılıyor.
+
+---
+
+## 27. `nuxt/public/themes/dark.css`
+
+**Diff:** 6 silme
+
+### Ne değişti?
+
+- Dark tema altındaki wishlist panel background, border, shadow, normal metin,
+  hover metin ve hover background değişkenleri kaldırıldı.
+
+### Kullanıcıya etkisi
+
+Kart wishlist arayüzü kaldırıldığı için artık kullanılmayan dark tema değişkenleri
+yüklenmiyor.
+
+### Risk notu
+
+Bu dosya aktif runtime tema override katmanıdır; diff yalnız kullanılmayan wishlist
+değişkenlerini siliyor.
+
+---
+
+## 28. `nuxt/public/themes/light.css`
+
+**Diff:** 31 ekleme, 37 silme
+
+### Ne değişti?
+
+- Light tema wishlist panel değişkenleri kaldırıldı.
+- Reveal karakterleri, close icon zemini ve icon stroke'u slab/ink tokenlarına
+  geçirildi.
+- Mobil footer wrapper, dome, submit butonu, kicker ve lokasyon göstergesi yeni
+  paper/slab tokenlarına bağlandı.
+- Root altındaki katalog yüzey, metin, line ve progress değişkenleri tokens.css ile
+  aynı paper/ink/brand eşlemesine geçirildi.
+- `html`, `body`, app-shell ve day shell arka planı `--paper` oldu.
+- Gradient mask paper RGB tonuna uyarlandı.
+- Footer sosyal butonları `--slab-line` ve `--slab-fg` kullanıyor.
+
+### Kullanıcıya etkisi
+
+Light runtime override katmanı, yeni global açık tema tokenlarıyla aynı renkleri
+kullanıyor; eski mineral palette kalan footer/reveal parçaları azaltılıyor.
+
+### Risk notu
+
+Bu dosya aktif runtime tema override katmanıdır. İçindeki `!important` kuralları
+component-level stilleri ezebildiği için görsel doğrulama gerektirir.
+
+---
+
+## Çapraz-Dosya Bulguları
+
+Bu bölüm tek bir dosyanın diff'inden görünmeyen, birden fazla dosya birlikte
+okunduğunda ortaya çıkan tekrarları, riskleri ve kalan işleri kaydeder.
+
+### 1. Aynı page-intro reveal deseni üç componentte tekrar ediyor
+
+Aşağıdaki üç component yaklaşık aynı reveal yaşam döngüsünü kendi içinde tekrar
+uyguluyor:
+
+- `nuxt/app/components/layout/SiteHeader.vue`
+- `nuxt/app/components/home/EntranceDoorLab.vue`
+- `nuxt/app/components/ui/FloatingContactHub.vue`
+
+Tekrarlanan parçalar:
+
+- `prefersReducedMotion()` kontrolü
+- `prepare*()` fonksiyonu
+- `play*()` fonksiyonu
+- `is*Prepared` ve `hasPlayed*` flag'leri
+- Tween referansının tutulması ve `kill()` edilmesi
+- `filter`, `opacity` ve transform temizliği
+- `watch(isPageContentVisible)` bağlantısı
+- Mount ve unmount yaşam döngüsü
+
+Bu, üç ayrı özellikten çok aynı animasyon deseninin üç yerel kopyasıdır. İleride
+animasyon süresi, ease, reduced-motion davranışı veya cleanup değişirse üç dosyanın
+birlikte güncellenmesi gerekir.
+
+Olası iyileştirme: `usePageIntroReveal(targets, { onlyWhen })` benzeri bir composable
+ile ortak lifecycle ve cleanup tek yerde tutulabilir. Componentler yalnız hedef
+getter'ını ve route/uygunluk koşulunu verir. Bu refactor mevcut diffte uygulanmadı.
+
+### 2. `clearProps: "scale"` kalıcı transform bırakmıyor; aktif tween penceresi yine de önemli
+
+İlk incelemede `clearProps: "filter,opacity,scale"` sonrasında inline transform'un
+bir kısmının kalabileceği ve CSS transform'larını kalıcı biçimde ezebileceği riski
+öne sürüldü. Yerel GSAP `CSSPlugin` kaynağı kontrol edildiğinde bu kalıcı risk
+doğrulanmadı:
+
+- `scale`, GSAP'in transform property kümesinde bulunuyor.
+- `clearProps` transform ailesinden herhangi bir property gördüğünde
+  `clearTransforms` işaretini açıyor.
+- Tamamlanma anında inline `transform`, bağımsız `scale/rotate/translate` değerleri
+  ve GSAP transform cache'i temizleniyor.
+
+Bu nedenle `clearProps: "scale"` değerini yalnız `clearProps: "transform"` ile
+değiştirmek cleanup sonucunu pratikte değiştirmiyor. Reveal tamamlandıktan sonra:
+
+- Floating contact trigger'ın CSS hover lift'i tekrar devreye girer.
+- Entrance cue'nun `translateX(-50%)` CSS kuralı tekrar sahipliği alır.
+
+Ancak tween'in aktif olduğu yaklaşık 1.5 saniye boyunca GSAP inline transform'u
+yönetir. Bu geçici pencerede:
+
+- Floating contact hover transform'u reveal scale'i tarafından ezilebilir.
+- Cue'nun CSS transform'u GSAP'in parse ettiği değere dönüşür; reveal sırasında
+  resize olursa merkezleme geçici olarak ölçüm anındaki transform değerine bağlı
+  kalabilir.
+
+Bu geçici çakışmayı tamamen kaldırmak istenirse `clearProps` adını değiştirmekten
+ziyade reveal'i layout/hover transform'unu taşımayan ayrı bir wrapper üzerinde
+oynatmak daha güvenli olur. Hover ve resize ile görsel doğrulama yine gereklidir.
+
+### 3. Entrance cue scroll opacity'si reveal boyunca ikinci plana düşüyor
+
+`.entrance-lab__cue` normalde opacity değerini `--hero-cue-opacity` custom
+property'sinden alıyor. Scroll akışı bu değişkeni güncelleyerek cue'yu söndürüyor.
+
+Hero reveal tween'i aynı elemente doğrudan inline `opacity` yazdığı için ilk 1.5
+saniye içinde kullanıcı scroll ederse custom property güncellense bile görünür
+opacity GSAP tarafından yönetilmeye devam ediyor. Reveal bittiğinde inline opacity
+temizleniyor ve scroll değişkeni yeniden etkili oluyor.
+
+Bu kalıcı bir kırılma değil, kısa süreli iki animasyon sahibinin aynı CSS property
+üzerinde çakışmasıdır. Cue reveal'i opacity kullanmadan yapmak veya cue'yu ayrı bir
+wrapper üzerinden reveal etmek olası çözümlerdir.
+
+### 4. Hero reveal hedefleri all-or-nothing toplanıyor
+
+`EntranceDoorLab.vue` içindeki `getHeroSupportingTargets()` şu dört ref'in tamamı
+varsa array döndürüyor:
+
+- heading
+- subtitle
+- actions
+- cue
+
+Ref'lerden biri null ise fonksiyon boş array döndürüyor ve reveal sessizce hiç
+çalışmıyor. Bugünkü template'te dört hedef de koşulsuz render edildiği için mevcut
+durumda hata oluşmuyor. İleride hedeflerden biri `v-if`, lazy render veya farklı
+responsive template arkasına taşınırsa diğer üç hedef de animasyonsuz kalabilir.
+
+Daha dayanıklı yaklaşım, ref değerlerini array içinde filtreleyip mevcut hedefleri
+animasyona almaktır.
+
+### 5. Ortak `useState` initializer değerleri tutarlı değil
+
+State sahibi ve tüketiciler aynı key için farklı initializer kullanıyor:
+
+- `app.vue`: `() => isReferencesRoute.value`
+- `SiteHeader.vue`: `() => true`
+- `EntranceDoorLab.vue`: `() => true`
+- `FloatingContactHub.vue`: `() => true`
+
+Nuxt `useState` aynı key için ilk çalışan initializer'ı kullanır. Mevcut component
+ağacında root `app.vue` önce çalıştığı için beklenen değer kazanıyor; ancak davranış
+mount sırasına örtük olarak bağlı.
+
+Tüketici default'larını yalnız `false` yapmak fail-closed davranışı sağlar fakat
+references ilk yüklemesinde root açıkça `true` atamazsa içeriğin kapalı kalması gibi
+başka bir edge case üretebilir. Daha güvenli çözüm, state oluşturma ve ilk route
+değerini tek bir composable/root sahibi içinde merkezileştirmek; tüketicilerin
+yalnız mevcut state'i okumasıdır.
+
+### 6. Floating contact gizli rotalarda da reveal için hazırlanıyor
+
+`FloatingContactHub.vue` root elementi `v-show="isHomeRoute"` kullandığı için
+component `/company`, `/contact` veya `/catalog` rotalarında unmount olmaz; yalnız
+CSS ile gizlenir.
+
+`playPageIntro()` home kontrolü yapıyor fakat `preparePageIntro()` yapmıyor. Bu
+nedenle gizli trigger home dışındaki rotalarda da `opacity: 0`, `blur(20px)` ve
+`scale: 0.9` inline başlangıç değerlerini alabilir. Home'a dönüldüğünde play akışı
+elementi toparladığı için mevcut kullanımda görünür kırılma oluşmuyor; yine de
+prepare/play uygunluk koşulları asimetrik.
+
+Composable'a geçilirse veya yerel kod korunursa `onlyWhen/isHomeRoute` koşulunun
+prepare ve play aşamalarında aynı şekilde uygulanması daha niyetli olur.
+
+### 7. Catalog modal içinde silinen wishlist'e ait yorum kalmış
+
+`CatalogProductModal.vue` scoped style açıklamasında “Aynı tuzak wishlist'te de
+vardı” ifadesi hâlâ bulunuyor. Çalışan kodu etkilemiyor fakat kart wishlist'i
+kaldırıldığı için tarihsel/eskimiş bir yorum olarak kalmış durumda.
+
+### 8. Tokenlaştırma tamamlanmış değil
+
+`nuxt/app` altında aşağıdaki komutla yapılan kaba sayım:
+
+```bash
+rg -o --no-filename '#[0-9A-Fa-f]{3,8}\b' nuxt/app
+```
+
+şu sonucu veriyor:
+
+- 326 hardcoded hex kullanımı
+- Büyük/küçük harf normalize edildiğinde 95 benzersiz hex değer
+
+Bu sayı yorumları, SVG/template değerlerini, bilinçli fallback'leri ve aynı rengin
+tekrarlarını da içerir; dolayısıyla 326 doğrudan “326 hata” anlamına gelmez. Yine de
+mevcut diff'in tokenlaştırmayı ilerlettiğini fakat tamamlamadığını gösteren kaba bir
+kalan iş ölçüsüdür. Yeni bir token refactor'ı ayrı kapsam ve görsel doğrulama
+gerektirir.
+
+### 9. Header filter containing-block riski mevcut DOM yapısında gerçekleşmiyor
+
+CSS `filter`, uygulandığı elementte containing block oluşturabilir ve içindeki
+`position: fixed` çocukların viewport davranışını değiştirebilir. Reveal filter'ı
+`.site-nav__bar` elementine uygulanıyor.
+
+Mevcut template'te mobil menü katmanları:
+
+- `.site-nav__scrim`
+- `.site-nav__panel-wrap`
+
+`<nav class="site-nav__bar">` elementinin çocuğu değil, onun bulunduğu shell'in
+ardından gelen kardeşlerdir. Bu nedenle navbar reveal filter'ı mobil fixed panelin
+containing block'unu değiştirmiyor. SiteHeader için bu spesifik risk mevcut DOM
+yapısında gerçekleşmiyor.
+
+---
+
+## Bu Dokümantasyon Görevinde Değiştirilen Dosya
+
+- `docs/lastchangescodexe.md`
+
+Bu görev sırasında yukarıdaki 28 uygulama dosyasının hiçbirine yeni düzenleme
+yapılmadı. Yalnızca mevcut diff okunup bu Markdown belgesi güncellendi.
+
+## Doğrulama Durumu
+
+- `git status --short`, kod diff stat'ı, numstat, staged ve untracked kontrolleri
+  yeniden çalıştırıldı.
+- Dokümantasyon dosyasına özel `git diff --check` çalıştırıldı ve hata vermedi.
+- `npm run typecheck` yeniden çalıştırıldı; `nuxt typecheck` hata vermeden exit 0
+  ile tamamlandı.
+- Browser hover/resize doğrulaması çalıştırılmadı.
+- Bu belge diff üzerinden okunan uygulama niyetini açıklar; görsel kabul testi veya
+  runtime davranış garantisi değildir.

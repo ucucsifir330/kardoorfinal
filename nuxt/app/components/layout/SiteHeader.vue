@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import gsap from "gsap";
 import { useNuxtApp, useRoute } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
+import { useContentReveal } from "~/composables/useContentReveal";
 
 /**
  * Site header — iki bağımsız parça:
@@ -37,8 +38,11 @@ const isMenuOpen = ref(false);
 const isMenuMode = ref(false);
 
 const navRoot = ref<HTMLElement | null>(null);
+const navBarRevealRef = ref<HTMLElement | null>(null);
 const panelWrap = ref<HTMLElement | null>(null);
 const panel = ref<HTMLElement | null>(null);
+// Navbar, perde açıldıktan sonra hero ile aynı anda belirir (bkz. useContentReveal).
+useContentReveal({ targets: () => [navBarRevealRef.value] });
 
 /**
  * Her öğe İKİ dildeki etiketini de taşır. Şablon, görünen etiketin altına
@@ -353,6 +357,7 @@ watch(
     closeMenu();
   }
 );
+
 </script>
 
 <template>
@@ -370,7 +375,7 @@ watch(
 
     <div ref="navRoot" class="site-nav">
       <div class="site-nav__shell">
-        <nav class="site-nav__bar" :aria-label="primaryNavLabel">
+        <nav ref="navBarRevealRef" class="site-nav__bar" :aria-label="primaryNavLabel">
           <div class="site-nav__group site-nav__group--left">
             <!-- Linkler panele taşındığı ara ölçülerde çubuğun sol tarafını
                  doldurur; damla ile aynı paneli açar. Geniş ekranda gizli. -->

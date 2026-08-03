@@ -26,6 +26,7 @@ import { useDoorSprite } from "~/composables/useDoorSprite";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import { useEntranceCopy } from "~/composables/useEntranceCopy";
 import { useEntranceInput } from "~/composables/useEntranceInput";
+import { useContentReveal } from "~/composables/useContentReveal";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 import ShowroomLab from "~/components/home/ShowroomLab.vue";
 
@@ -257,6 +258,11 @@ const sectionRef = ref<HTMLElement | null>(null);
 const zoomRef = ref<HTMLElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+// Perde açıldıktan sonra birlikte reveal olan hero parçaları (bkz. useContentReveal).
+const heroHeadingRef = ref<HTMLElement | null>(null);
+const heroSubtitleRef = ref<HTMLElement | null>(null);
+const heroActionsRef = ref<HTMLElement | null>(null);
+const heroCueRef = ref<HTMLElement | null>(null);
 const configureHeadingRef = ref<HTMLElement | null>(null);
 const configureCopyRef = ref<HTMLElement | null>(null);
 const configureCopyLastWordRef = ref<HTMLElement | null>(null);
@@ -278,6 +284,17 @@ const showroomDepthRef = ref(1 + SHOWROOM_DEPTH); // delik ardındaki derinlik (
 const isDoorPainted = ref(false);
 const isShowroomActive = ref(false); // yalnız body sınıfı için (hub'ı gizler)
 const { $smoother } = useNuxtApp();
+
+// Perde açılınca hero başlığı, alt başlık, CTA'lar ve kaydırma ipucu birlikte
+// belirir. Kapı sahnesinin kendi scroll animasyonlarından bağımsızdır.
+useContentReveal({
+  targets: () => [
+    heroHeadingRef.value,
+    heroSubtitleRef.value,
+    heroActionsRef.value,
+    heroCueRef.value
+  ]
+});
 
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
@@ -1032,16 +1049,16 @@ onBeforeUnmount(() => {
     <!-- HERO COPY — scroll başlayınca kaybolur (--hero-copy-* JS'ten). -->
     <div class="entrance-lab__copy-mask">
       <div class="entrance-lab__copy">
-        <h1 class="entrance-lab__heading">
+        <h1 ref="heroHeadingRef" class="entrance-lab__heading">
           <span class="entrance-lab__heading-line">{{ copy.line1 }}</span>
           <span class="entrance-lab__heading-line entrance-lab__heading-line--accent">
             <em>{{ copy.accent }}</em> {{ copy.line2 }}
           </span>
         </h1>
-        <p class="entrance-lab__subtitle">
+        <p ref="heroSubtitleRef" class="entrance-lab__subtitle">
           {{ copy.subtitleLead }}{{ copy.subtitleAccent ? " " : "" }}<em v-if="copy.subtitleAccent">{{ copy.subtitleAccent }}</em>
         </p>
-        <div class="entrance-lab__cta-row">
+        <div ref="heroActionsRef" class="entrance-lab__cta-row">
           <AdaCtaButton :label="copy.ctaLabel" href="/catalog" variant="filled" icon-position="none" />
           <a class="entrance-lab__cta-arrow" href="/catalog" :aria-label="copy.ctaLabel">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1054,7 +1071,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- KAYDIR ipucu — scroll başlayınca kaybolur (--hero-cue-opacity). -->
-    <div class="entrance-lab__cue" aria-hidden="true">
+    <div ref="heroCueRef" class="entrance-lab__cue" aria-hidden="true">
       <span class="entrance-lab__cue-label">{{ scrollCue }}</span>
       <span class="entrance-lab__scroll-device">
         <span class="entrance-lab__scroll-motion" />

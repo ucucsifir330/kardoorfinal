@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type PageTransitionOverlay from "~/components/ui/PageTransitionOverlay.vue";
 import { computed, nextTick, onBeforeUnmount, ref } from "vue";
-import { useRoute, useRouter } from "#imports";
+import { useRoute, useRouter, useState } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 
 const route = useRoute();
@@ -10,6 +10,7 @@ const { mode } = useShowroomAmbience();
 const { locale } = useKardoorLocale();
 const isReferencesRoute = computed(() => route.path === "/references");
 const shouldMountStartupScreens = ref(!isReferencesRoute.value);
+const isPageContentVisible = useState<boolean>("kardoor-page-content-visible", () => isReferencesRoute.value);
 const transitionOverlay = ref<InstanceType<typeof PageTransitionOverlay> | null>(null);
 const transitionRoutes = new Set(["/", "/references", "/company", "/contact"]);
 
@@ -34,6 +35,7 @@ const removeRouteGuard = import.meta.client
         isTransitionRoute(toPath);
 
       if (shouldRunPageTransition) {
+        isPageContentVisible.value = false;
         shouldMountStartupScreens.value = false;
         await nextTick();
         await transitionOverlay.value?.cover();
@@ -49,6 +51,7 @@ const removeRouteAfterHook = import.meta.client
 
       await nextTick();
       await transitionOverlay.value?.reveal();
+      isPageContentVisible.value = true;
       shouldRunPageTransition = false;
     })
   : undefined;
@@ -60,6 +63,7 @@ const handleStartupComplete = async () => {
   shouldMountStartupScreens.value = false;
   await nextTick();
   await transitionOverlay.value?.reveal();
+  isPageContentVisible.value = true;
 };
 
 const shellClasses = computed(() => [

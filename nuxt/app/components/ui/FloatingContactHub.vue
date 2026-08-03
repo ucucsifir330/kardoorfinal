@@ -1,15 +1,29 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { gsap } from "gsap";
 import { useRoute } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
+import { useContentReveal } from "~/composables/useContentReveal";
 
 const route = useRoute();
 const { locale } = useKardoorLocale();
 
 const isOpen = ref(false);
 const hubRef = ref<HTMLElement | null>(null);
+const triggerRevealRef = ref<HTMLButtonElement | null>(null);
 // Hub yalnızca hero'lu sayfalarda görünür: ana sayfa.
 const isHomeRoute = computed(() => route.path === "/");
+// Hub tetiği, perde açıldıktan sonra hero ile birlikte belirir — yalnız ana
+// sayfada, çünkü diğer rotalarda zaten görünmüyor (bkz. useContentReveal).
+const {
+  isPageContentVisible,
+  play: playContentReveal,
+  prepare: prepareContentReveal,
+  reset: resetContentReveal
+} = useContentReveal({
+  targets: () => [triggerRevealRef.value],
+  enabled: () => isHomeRoute.value
+});
 const contactActionClass =
   "floating-contact__action pointer-events-auto flex min-h-[66px] flex-col items-center justify-center gap-[7px] rounded-[18px] px-[6px] py-[9px] text-[11px] font-bold leading-none tracking-[0] no-underline [transition:background_.24s_var(--ease-soft),transform_.24s_var(--ease-soft)] hover:[transform:translateX(-2px)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent-blue)]";
 
@@ -119,6 +133,12 @@ watch(
   async () => {
     closeHub();
     await nextTick();
+    // Ana sayfaya geri dönüldüğünde tetik yeniden bağlanır: "bir kez oynar"
+    // kilidi açılmalı, yoksa hub blur'lu takılı kalır. Perde zaten açıksa
+    // reveal burada başlar (watch yeni rotada tekrar tetiklenmez).
+    resetContentReveal();
+    prepareContentReveal();
+    if (isPageContentVisible.value) playContentReveal();
     requestHeroMotionSync();
   }
 );
@@ -184,6 +204,7 @@ watch(
     </div>
 
     <button
+      ref="triggerRevealRef"
       class="floating-contact__trigger pointer-events-auto relative inline-flex min-h-[var(--contact-size)] min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-[999px] border border-[var(--contact-line)] py-2 pr-2 pl-[19px] isolate [font:inherit] [transform:translateZ(0)] [transition:box-shadow_.28s_var(--ease-soft),transform_.28s_var(--ease-soft),border-color_.28s_var(--ease-soft)] hover:[transform:translateY(-2px)] hover:[border-color:rgba(255,255,255,0.78)] group-[.is-open]/contact:[transform:translateY(-2px)] group-[.is-open]/contact:[border-color:rgba(255,255,255,0.78)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent-blue)] [@media(max-width:720px)]:pl-2"
       type="button"
       :aria-label="copy.toggle"
@@ -233,13 +254,13 @@ body.entrance-lab-showroom-on .floating-contact {
   --contact-size: 68px;
   --contact-bottom: clamp(18px, 2.3vw, 34px);
   --contact-right: clamp(18px, 2.45vw, 42px);
-  --contact-glass: rgba(255, 255, 255, 0.54);
-  --contact-glass-strong: rgba(255, 255, 255, 0.72);
-  --contact-ink: rgba(5, 12, 18, 0.94);
-  --contact-muted: rgba(5, 12, 18, 0.58);
-  --contact-line: rgba(255, 255, 255, 0.58);
+  --contact-glass: rgba(251, 249, 245, 0.54);
+  --contact-glass-strong: rgba(251, 249, 245, 0.72);
+  --contact-ink: var(--ink);
+  --contact-muted: var(--ink-soft);
+  --contact-line: var(--hairline);
   --contact-shadow: rgba(0, 0, 0, 0.18);
-  --contact-blue: #006cff;
+  --contact-blue: var(--brand-500);
   --floating-contact-opacity: 1;
   --floating-contact-y: 0px;
   --floating-contact-pointer: auto;
@@ -288,7 +309,7 @@ body.entrance-lab-showroom-on .floating-contact {
 .floating-contact__trigger-icon {
   background:
     radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.34), transparent 38%),
-    linear-gradient(135deg, #071018, #14202b 54%, var(--contact-blue));
+    linear-gradient(135deg, var(--slab), var(--slab-line) 54%, var(--contact-blue));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 10px 24px rgba(0, 0, 0, 0.18);
@@ -304,8 +325,8 @@ body.entrance-lab-showroom-on .floating-contact {
 
 .floating-contact__action {
   color: var(--contact-ink);
-  background: rgba(255, 255, 255, 0.24);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  background: rgba(251, 249, 245, 0.24);
+  box-shadow: inset 0 1px 0 rgba(251, 249, 245, 0.38);
 }
 
 .floating-contact__action:hover {

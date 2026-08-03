@@ -231,33 +231,33 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
    ═══════════════════════════════════════════════════════════════════════ */
 
 .site-nav {
-  --nav-bar: #050505;
-  --nav-ink: #f4f4f5;
-  --nav-ink-dim: rgba(244, 244, 245, 0.58);
+  --nav-bar: var(--slab);
+  --nav-ink: var(--slab-fg);
+  --nav-ink-dim: var(--slab-soft);
   --nav-seg-bg: rgba(255, 255, 255, 0.09);
-  --nav-seg-thumb: #fff;
-  --nav-seg-ink-active: #0a0a0a;
+  --nav-seg-thumb: var(--slab-fg);
+  --nav-seg-ink-active: var(--slab);
   --nav-divider: rgba(255, 255, 255, 0.15);
 
   /* Ölçüler akışkan: dar laptop'ta çubuk kendiliğinden toparlanır, böylece
      sol markayla çakışmadan mümkün olan en geniş aralıkta tam nav kalır. */
-  --nav-logo: clamp(68px, 5vw, 90px);
+  --nav-logo: clamp(68px, 4.5vw, 80px);
   --nav-overlap: calc(var(--nav-logo) * 0.667);
   --nav-mouth: calc(var(--nav-logo) * 0.943);
   --nav-fillet: 3px;
 
-  --nav-text-gap: clamp(18px, 2vw, 40px);
+  --nav-text-gap: clamp(18px, 1.8vw, 36px);
   --nav-slot: calc(var(--nav-logo) + 2 * var(--nav-text-gap));
 
-  --nav-flare: clamp(26px, 2.8vw, 40px);
-  --nav-radius: clamp(26px, 2.8vw, 40px);
+  --nav-flare: clamp(26px, 2.5vw, 36px);
+  --nav-radius: clamp(26px, 2.5vw, 36px);
 
-  --nav-pad-y: clamp(12px, 1.1vw, 15px);
-  --nav-pad-x: clamp(14px, 1.8vw, 30px);
-  --nav-gap-left: clamp(18px, 1.9vw, 34px);
-  --nav-gap-right: clamp(11px, 1.3vw, 22px);
-  --nav-seg-h: clamp(30px, 2.7vw, 38px);
-  --nav-font: clamp(13px, 1.05vw, 16px);
+  --nav-pad-y: clamp(11px, 1vw, 13px);
+  --nav-pad-x: clamp(14px, 1.6vw, 26px);
+  --nav-gap-left: clamp(18px, 1.7vw, 30px);
+  --nav-gap-right: clamp(11px, 1.2vw, 20px);
+  --nav-seg-h: clamp(30px, 2.4vw, 34px);
+  --nav-font: clamp(13px, 0.95vw, 15px);
 }
 
 .site-nav__shell {
@@ -620,7 +620,7 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
 }
 
 .site-nav__seg--theme .site-nav__seg-btn {
-  width: clamp(34px, 3.1vw, 40px);
+  width: clamp(34px, 2.8vw, 36px);
 }
 
 .site-nav__seg--theme svg {
@@ -629,7 +629,7 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
 }
 
 .site-nav__seg-btn--text {
-  width: clamp(42px, 3.9vw, 50px);
+  width: clamp(42px, 3.5vw, 46px);
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.04em;
