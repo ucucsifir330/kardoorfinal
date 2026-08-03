@@ -37,7 +37,20 @@ let hasMinimumHoldPassed = false;
 const MINIMUM_HOLD_MS = 900;
 const MAX_WAIT_MS = 8000;
 
-const { progress, isComplete } = useStartupProgress();
+const { progress, isComplete, hasTasks } = useStartupProgress();
+
+/**
+ * Hero'suz sayfalarda (alt sayfalar, lab) hiç görev kaydolmaz; isComplete
+ * sonsuza dek false kalır ve perde 8 saniyelik MAX_WAIT'e asılırdı. Görev
+ * listesi bu süre dolduğunda hâlâ boşsa "bekleyecek şey yok" say.
+ *
+ * Süre MINIMUM_HOLD'dan uzun ve BİLEREK 2500ms: ana sayfada görevler hero
+ * mount olunca kaydolur (~1.5-2s, dev'de daha geç). Daha kısa bir değer,
+ * görevler kaydolmadan perdeyi açıp yüklemeyi bekleme amacını boşa çıkarır.
+ */
+const NO_TASK_GRACE_MS = 2500;
+let hasNoTaskGracePassed = false;
+let noTaskGraceTimer = 0;
 
 const prefersReducedMotion = () =>
   import.meta.client && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -68,6 +81,11 @@ onMounted(async () => {
     maybeFinish();
   }, MINIMUM_HOLD_MS);
 
+  noTaskGraceTimer = window.setTimeout(() => {
+    hasNoTaskGracePassed = true;
+    maybeFinish();
+  }, NO_TASK_GRACE_MS);
+
   await nextTick();
   playLoader();
   maybeFinish();
@@ -75,7 +93,11 @@ onMounted(async () => {
 
 /** Hem gerçek işler bitmiş hem de en kısa gösterim süresi dolmuşsa çık. */
 const maybeFinish = () => {
-  if (!hasMinimumHoldPassed || !isComplete.value) return;
+  if (!hasMinimumHoldPassed) return;
+
+  const nothingToWaitFor = !hasTasks.value && hasNoTaskGracePassed;
+  if (!isComplete.value && !nothingToWaitFor) return;
+
   startExit();
 };
 
@@ -88,6 +110,7 @@ const clearTimers = () => {
   window.clearTimeout(fallbackTimer);
   window.clearTimeout(exitTimer);
   window.clearTimeout(minimumHoldTimer);
+  window.clearTimeout(noTaskGraceTimer);
 };
 
 const stopLoaderTimeline = () => {

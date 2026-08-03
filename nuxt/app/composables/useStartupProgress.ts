@@ -57,7 +57,11 @@ export const useStartupProgress = () => {
     () => state.value.total > 0 && state.value.done >= state.value.total
   );
 
-  return { track, progress, isComplete };
+  // Hero'suz sayfalarda (alt sayfalar, lab) hiç görev kaydolmaz; perde bunu
+  // "hiç bitmedi" değil "bekleyecek şey yok" diye okuyabilsin.
+  const hasTasks = computed(() => state.value.total > 0);
+
+  return { track, progress, isComplete, hasTasks };
 };
 
 /**
