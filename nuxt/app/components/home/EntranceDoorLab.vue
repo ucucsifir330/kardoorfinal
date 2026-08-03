@@ -27,6 +27,11 @@ import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import { useEntranceCopy } from "~/composables/useEntranceCopy";
 import { useEntranceInput } from "~/composables/useEntranceInput";
 import { useContentReveal } from "~/composables/useContentReveal";
+import {
+  useStartupProgress,
+  whenFontsReady,
+  whenImageReady
+} from "~/composables/useStartupProgress";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 import ShowroomLab from "~/components/home/ShowroomLab.vue";
 
@@ -295,6 +300,8 @@ useContentReveal({
     heroCueRef.value
   ]
 });
+
+const { track: trackStartup } = useStartupProgress();
 
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
@@ -830,7 +837,7 @@ onMounted(() => {
 
   // finally: yükleme BAŞARISIZ olsa bile showroom açılır. Aksi halde sprite
   // 404'lerse delik sonsuza dek kapalı kalır ve sahne hiç görünmez.
-  door
+  const doorLoad = door
     .load(doorMeta.value)
     .catch((error) => {
       console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
@@ -838,6 +845,13 @@ onMounted(() => {
     .finally(() => {
       isDoorPainted.value = true;
     });
+
+  // Açılış perdesi bu üç işi bekler — sabit süre yerine gerçek yükleme.
+  // Hero görseli LCP adayı, sprite kapı deliğini dolduran katman, fontlar
+  // ise perde açılınca metnin yeniden akmasını önler.
+  trackStartup("hero-image", whenImageReady(heroSrc.value));
+  trackStartup("door-sprite", doorLoad);
+  trackStartup("fonts", whenFontsReady());
 
   entranceInput.start();
 

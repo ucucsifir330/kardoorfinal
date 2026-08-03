@@ -86,6 +86,25 @@ export default defineNuxtConfig({
         },
         { id: "kardoor-theme", rel: "stylesheet", href: "/themes/light.css" }
       ],
+      style: [
+        {
+          // Perde altındaki içeriği İLK BOYAMADA gizle.
+          //
+          // Aynı kural transitions.css'te de var ama o harici dosya; indirilene
+          // kadar hero kabuğu + navbar bir kare opak görünüyordu (650ms
+          // ölçüldü). WelcomeScreen SSR'da hiç basılmadığı için o karede sayfa
+          // açıkta kalıyor. Kritik yol olduğundan burada inline.
+          key: "kardoor-startup-veil",
+          innerHTML:
+            ".app-shell--content-hidden>*:not(.welcome-screen):not(.page-transition-overlay)" +
+            "{visibility:hidden;pointer-events:none}" +
+            // showroom kendi .is-revealed kuralıyla visibility:visible yazıp
+            // miras alınan gizlemeyi eziyor; perde varken o iptal edilir.
+            ".app-shell--content-hidden .entrance-lab__showroom.is-revealed" +
+            "{visibility:hidden}",
+          tagPosition: "head"
+        }
+      ],
       script: [
         {
           // LCP hero'sunu erken keşfet: doğru varyant viewport oranına, doğru

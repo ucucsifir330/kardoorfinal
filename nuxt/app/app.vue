@@ -61,15 +61,26 @@ const handleStartupComplete = async () => {
 
   await transitionOverlay.value?.primeCovered();
   shouldMountStartupScreens.value = false;
+
+  // İçerik perde AÇILMADAN ÖNCE görünür olmalı. Sırayı ters kurmak (önce
+  // reveal, sonra visible) perdenin açıldığı ~1.4s boyunca sayfayı boş
+  // bırakıyordu: loader gitmiş, panel kalkıyor, altında hiçbir şey yok.
+  // Perde zaten üstünü örttüğü için burada görünür yapmak sızıntı üretmez.
+  isPageContentVisible.value = true;
   await nextTick();
   await transitionOverlay.value?.reveal();
-  isPageContentVisible.value = true;
 };
 
 const shellClasses = computed(() => [
   `app-shell--${mode.value}`,
   {
-    "app-shell--references": isReferencesRoute.value
+    "app-shell--references": isReferencesRoute.value,
+    // Perde altındaki içerik SSR'da da gizli başlar. Bu sınıf olmadan sunucu
+    // hero kabuğunu ve navbar'ı OPAK basıyordu; WelcomeScreen ise `v-if` ile
+    // yalnız istemcide mount olduğu için, JS yüklenene kadar (~650ms ölçüldü)
+    // sayfa açıkta kalıyor, sonra hidrasyonla birden loader beliriyordu.
+    // Kullanıcı "hero → karartma → loader → hero" sırası görüyordu.
+    "app-shell--content-hidden": !isPageContentVisible.value
   }
 ]);
 
