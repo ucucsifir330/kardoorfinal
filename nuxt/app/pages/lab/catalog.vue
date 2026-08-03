@@ -15,11 +15,11 @@
  * Prod build'de sayfa ana sayfaya yönlenir — lab yalnız geliştirmede yaşar.
  */
 import { navigateTo } from "#imports";
-// Açık import — yeni klasör eklenince Nuxt'un auto-import manifest'i
-// bayatlayıp "Failed to resolve component" üretebiliyor (bilinen tuzak,
-// bkz. memory: HomeCatalogTransition'da da yaşandı). Lab geçici olduğu
-// için auto-import'a hiç girmiyoruz.
-import CatalogLab from "~/components/lab/CatalogLab.vue";
+// Lab artık PRODUCTION bileşeninin test bankı: değiştirme fazında lab
+// sürümü HomeCatalog.vue'nun içeriği OLDU (ayrı kopya aynı commit'te
+// silindi — "iki sahip birlikte yaşamaz" kuralı). Burada açık import,
+// auto-import manifest bayatlama tuzağına karşı.
+import CatalogLab from "~/components/home/HomeCatalog.vue";
 
 if (!import.meta.dev) {
   navigateTo("/", { redirectCode: 302 });

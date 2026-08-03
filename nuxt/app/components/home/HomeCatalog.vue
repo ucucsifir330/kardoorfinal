@@ -600,7 +600,6 @@ const catalogLinePathRef = ref<SVGPathElement | null>(null);
 const catalogLineGradientRef = ref<SVGLinearGradientElement | null>(null);
 
 let catalogRowsFrame = 0;
-let catalogObserver: IntersectionObserver | null = null;
 let catalogLineST: ScrollTrigger | null = null;
 let catalogLinePathLength = 0;
 let catalogHeadingLineConnected = false;
@@ -861,17 +860,24 @@ const checkCatalogRows = () => {
   // scroll event'inin İÇİNDE rect okuyordu, her kaydırma tick'i forced reflow'du.
   isCatalogScrolled.value = mainRef.value.getBoundingClientRect().top < -5;
 
-  // Viewport-based reveal (was keyed off the tall .catalog-main, which revealed
-  // every row at once). Only reveal rows that are at/near the viewport so the
-  // door images load in batches as you scroll down.
+  // Satır açma TEK YÖNLÜ: üst kenarı reveal çizgisini geçen her satır açılır
+  // ve açık kalır. Eski koşulda `bottom > -vh*0.1` de aranıyordu — hızlı
+  // kaydırmada rAF satırın viewport'tan geçişini kaçırırsa satır sonsuza dek
+  // boş kalıyordu (ölçüldü: sıçramalı scroll'da 4-5. satırlar boş).
+  // "Geçilmiş satır açık olmalı" zaten istenen davranış; alt kenar şartı
+  // hiçbir şey korumuyordu.
+  //
+  // Açık satırın rect'i OKUNMAZ: forced-reflow trace'inde bu döngü 729ms ile
+  // en pahalı ikinci kalemdi. Açılma tek yönlü olduğu için açık satırı tekrar
+  // ölçmek saf kayıptı.
   const vh = window.innerHeight;
   const revealLine = vh * 1.85;
 
   rowRefs.value.forEach((el) => {
-    const rect = el.getBoundingClientRect();
     const rowIndex = parseInt(el.getAttribute("data-row-index") || "0");
+    if (visibleRows.value.includes(rowIndex)) return;
 
-    if (rect.top < revealLine && rect.bottom > -vh * 0.1) {
+    if (el.getBoundingClientRect().top < revealLine) {
       revealCatalogRow(rowIndex);
     }
   });
@@ -1064,38 +1070,14 @@ const scheduleCatalogLineRefresh = () => {
   }, 180);
 };
 
-const initCatalogObserver = () => {
-  const rootEl = mainRef.value;
-
-  if (!rootEl) return;
-
-  if (catalogObserver) {
-    catalogObserver.disconnect();
-  }
-
-  catalogObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const rowIndex = parseInt(entry.target.getAttribute("data-row-index") || "0");
-
-        revealCatalogRow(rowIndex);
-        catalogObserver?.unobserve(entry.target);
-      }
-    });
-  }, {
-    // Observe against the VIEWPORT (not the tall .catalog-main container). With
-    // root=main every row counted as intersecting at once, so all 7 rows + ~68
-    // door images mounted/loaded together on first paint. Viewport root reveals
-    // rows — and loads their door images — progressively as you scroll down.
-    root: null,
-    rootMargin: "0px 0px 85% 0px",
-    threshold: 0.01
-  });
-
-  rowRefs.value.forEach((el) => {
-    catalogObserver?.observe(el);
-  });
-
+// Satır açmanın TEK sahibi scroll listener + rAF (checkCatalogRows).
+// Eski sürümde bir de IntersectionObserver vardı — aynı satırları o da
+// açmaya çalışıyordu. İki sorun: (1) aynı property'yi iki motor yönetiyordu,
+// (2) IO ScrollSmoother altında zaten TETİKLENMİYOR (sayfa transform ile
+// kayıyor, viewport kesişimi oluşmuyor — ölçüldü: sıçramalı scroll'da IO
+// hiçbir satırı açmadı, HomeManifesto'da da aynı tespit kayıtlı). Ölü
+// motoru taşımadık.
+const startRowReveal = () => {
   revealCatalogRow(1);
   requestCatalogRowCheck();
 };
@@ -1125,7 +1107,7 @@ onMounted(() => {
     isCatalogScrolled.value = false;
 
     requestAnimationFrame(() => {
-      initCatalogObserver();
+      startRowReveal();
       refreshCatalogLine();
     });
   });
@@ -1147,10 +1129,6 @@ onBeforeUnmount(() => {
   if (catalogRowsFrame) {
     cancelAnimationFrame(catalogRowsFrame);
     catalogRowsFrame = 0;
-  }
-
-  if (catalogObserver) {
-    catalogObserver.disconnect();
   }
 
   if (catalogLineST) {
