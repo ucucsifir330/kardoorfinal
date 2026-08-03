@@ -234,11 +234,11 @@
 
 <script setup lang="ts">
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { ComponentPublicInstance } from "vue";
 import { useCatalogCopy } from "~/composables/useCatalogCopy";
 import { useLiquidMenu } from "~/composables/useLiquidMenu";
+import { useCatalogStructuralLine } from "~/composables/useCatalogStructuralLine";
 
 const {
   catalogBlocks,
@@ -313,16 +313,17 @@ const catalogSectionRef = ref<HTMLElement | null>(null);
 const catalogTitleRef = ref<HTMLElement | null>(null);
 const mainRef = ref<HTMLElement | null>(null);
 const rowRefs = ref<HTMLElement[]>([]);
-const catalogLineSvgRef = ref<SVGSVGElement | null>(null);
-const catalogLinePathRef = ref<SVGPathElement | null>(null);
-const catalogLineGradientRef = ref<SVGLinearGradientElement | null>(null);
+// Yapı çizgisi kendi sahibinde: geometri, ScrollTrigger, font-hazır
+// gecikmesi ve resize debounce'u orada (bkz. useCatalogStructuralLine).
+// Bileşen yalnız "satır açıldı, yeniden ölç" der.
+const {
+  svgRef: catalogLineSvgRef,
+  pathRef: catalogLinePathRef,
+  gradientRef: catalogLineGradientRef,
+  scheduleRefresh: scheduleCatalogLineRefresh
+} = useCatalogStructuralLine({ section: catalogSectionRef, rows: rowRefs });
 
 let catalogRowsFrame = 0;
-let catalogLineST: ScrollTrigger | null = null;
-let catalogLinePathLength = 0;
-let catalogHeadingLineConnected = false;
-let catalogLineRefreshTimer = 0;
-let catalogLineRevealAllowed = false;
 
 // Sıvı menü (kart kenarındaki damla şerit + hamburger) kendi sahibinde:
 // bkz. useLiquidMenu. Kendi rAF döngüsü, easing'i ve fizik durumu var;
@@ -482,129 +483,6 @@ const handleCatalogImageError = (event: Event, fallbackSrc?: string) => {
   image.src = fallbackSrc;
 };
 
-const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
-
-const updateCatalogLineGeometry = () => {
-  const section = catalogSectionRef.value;
-  const svg = catalogLineSvgRef.value;
-  const path = catalogLinePathRef.value;
-  const gradient = catalogLineGradientRef.value;
-
-  if (!section || !svg || !path) return;
-
-  const sectionRect = section.getBoundingClientRect();
-  const firstRowRect = rowRefs.value[0]?.getBoundingClientRect();
-  const finalRowRect = rowRefs.value[rowRefs.value.length - 1]?.getBoundingClientRect();
-  const width = sectionRect.width;
-  const height = sectionRect.height;
-  const lineX = Math.min(Math.max(window.innerWidth * 0.021875, 18), 42);
-  const startY = firstRowRect
-    ? firstRowRect.top - sectionRect.top + Math.min(Math.max(window.innerHeight * 0.012, 8), 16)
-    : Math.min(Math.max(window.innerHeight * 0.14, 120), 170);
-  const endY = finalRowRect
-    ? Math.max(startY, finalRowRect.bottom - sectionRect.top)
-    : height;
-
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  if (gradient) {
-    gradient.setAttribute("x1", `${lineX}`);
-    gradient.setAttribute("x2", `${lineX}`);
-    gradient.setAttribute("y1", `${startY}`);
-    gradient.setAttribute("y2", `${endY}`);
-  }
-  path.setAttribute(
-    "d",
-    `M ${lineX} ${startY} V ${endY}`
-  );
-
-  catalogLinePathLength = path.getTotalLength();
-  path.style.strokeDasharray = `${catalogLinePathLength}`;
-  path.style.strokeDashoffset = `${catalogLinePathLength}`;
-};
-
-const drawCatalogLine = (progress: number) => {
-  const path = catalogLinePathRef.value;
-  if (!path || !catalogLinePathLength) return;
-
-  const value = clampProgress(progress);
-  path.style.strokeDashoffset = `${catalogLinePathLength * (1 - value)}`;
-
-  if (value >= 0.965 && !catalogHeadingLineConnected) {
-    catalogHeadingLineConnected = true;
-    window.dispatchEvent(new CustomEvent("kardoor:heading-line-connected"));
-  } else if (value < 0.82 && catalogHeadingLineConnected) {
-    catalogHeadingLineConnected = false;
-    window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
-  }
-};
-
-// Drive the structural line from a GSAP ScrollTrigger so it samples the exact
-// same smoothed playhead as ScrollSmoother. The old engine read the raw
-// (un-smoothed) window.scrollY on a manual rAF loop, so the line raced the
-// lagged content and felt janky. start/end mirror the previous math:
-//   progress 0 at sectionTop - 0.2vh  -> trigger top at 20% of the viewport
-//   progress 1 at sectionBottom - 0.28vh -> trigger bottom at 28% of the viewport
-const buildCatalogLineTrigger = () => {
-  const section = catalogSectionRef.value;
-  if (!section) return;
-
-  catalogLineST?.kill();
-  catalogLineST = ScrollTrigger.create({
-    trigger: section,
-    start: "top 20%",
-    end: "bottom 28%",
-    onUpdate: (self) => drawCatalogLine(self.progress),
-    onRefresh: (self) => drawCatalogLine(self.progress),
-    onLeave: () => drawCatalogLine(1),
-    onLeaveBack: () => drawCatalogLine(0)
-  });
-};
-
-const refreshCatalogLine = () => {
-  updateCatalogLineGeometry();
-
-  if (catalogLineST) {
-    catalogLineST.refresh();
-  } else {
-    buildCatalogLineTrigger();
-  }
-
-  if (catalogLineST) drawCatalogLine(catalogLineST.progress);
-
-  // Reveal only after the line is allowed to show (fonts ready). Every reveal
-  // pass keeps it visible; because the path stays hidden until the first
-  // settled geometry, early reveal-driven geometry changes (rows mounting via
-  // v-if, which grow the container and shift startY/endY) are applied while the
-  // line is invisible — so no visible jump / bounce.
-  if (catalogLineRevealAllowed) {
-    catalogLineSvgRef.value?.classList.add("is-line-ready");
-  }
-};
-
-// Called once the layout is stable enough to start showing the line (fonts
-// loaded). We wait one more beat past any pending reveal-driven refresh
-// (scheduleCatalogLineRefresh uses a 180ms debounce) so the initial batch of
-// rows has mounted and grown the container before the path becomes visible.
-// Otherwise the line shows, then a trailing reveal-refresh shifts startY/endY
-// and it visibly jumps once.
-const allowCatalogLineReveal = () => {
-  window.setTimeout(() => {
-    catalogLineRevealAllowed = true;
-    nextTick(() => {
-      window.requestAnimationFrame(refreshCatalogLine);
-    });
-  }, 220);
-};
-
-const scheduleCatalogLineRefresh = () => {
-  window.clearTimeout(catalogLineRefreshTimer);
-  catalogLineRefreshTimer = window.setTimeout(() => {
-    catalogLineRefreshTimer = 0;
-    nextTick(() => {
-      window.requestAnimationFrame(refreshCatalogLine);
-    });
-  }, 180);
-};
 
 // Satır açmanın TEK sahibi scroll listener + rAF (checkCatalogRows).
 // Eski sürümde bir de IntersectionObserver vardı — aynı satırları o da
@@ -629,11 +507,6 @@ const onCatalogResize = () => {
   if (window.innerWidth === lastCatalogWidth) return; // yükseklik-only → yoksay
   lastCatalogWidth = window.innerWidth;
   checkMobile();
-  window.clearTimeout(catalogLineRefreshTimer);
-  catalogLineRefreshTimer = window.setTimeout(() => {
-    catalogLineRefreshTimer = 0;
-    refreshCatalogLine();
-  }, 160);
 };
 
 onMounted(() => {
@@ -642,19 +515,8 @@ onMounted(() => {
   nextTick(() => {
     isCatalogScrolled.value = false;
 
-    requestAnimationFrame(() => {
-      startRowReveal();
-      refreshCatalogLine();
-    });
+    requestAnimationFrame(startRowReveal);
   });
-
-  if (document.fonts?.ready) {
-    document.fonts.ready.then(allowCatalogLineReveal).catch(allowCatalogLineReveal);
-  } else {
-    // Fonts API unavailable: allow reveal after the next frame so geometry still
-    // has a chance to settle.
-    requestAnimationFrame(allowCatalogLineReveal);
-  }
 
   window.addEventListener("resize", onCatalogResize, { passive: true });
   window.addEventListener("scroll", handleCatalogScroll, { passive: true });
@@ -667,18 +529,9 @@ onBeforeUnmount(() => {
     catalogRowsFrame = 0;
   }
 
-  if (catalogLineST) {
-    catalogLineST.kill();
-    catalogLineST = null;
-  }
-
-  window.clearTimeout(catalogLineRefreshTimer);
-  catalogLineRefreshTimer = 0;
-
   window.removeEventListener("resize", onCatalogResize);
   window.removeEventListener("scroll", handleCatalogScroll);
   window.removeEventListener("keydown", handleProductModalKeydown);
-  window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
   resetCatalogModalState();
 });
 
