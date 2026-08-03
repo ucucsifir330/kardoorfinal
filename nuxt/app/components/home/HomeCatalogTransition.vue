@@ -97,7 +97,12 @@ onMounted(() => {
     if (fonts?.ready) {
       fonts.ready.then(() => {
         requestHeight();
-        ScrollTrigger.refresh();
+        // GLOBAL refresh burada YOK: font yüklemesi tüm sayfanın ölçüsünü
+        // etkiler, o yüzden sahibi scroll platformu (scroll.client.ts zaten
+        // fonts.ready sonrası bir kez global refresh atıyor). Buradan ikinci
+        // kez çağırmak aynı ölçümü tekrarlayıp hero pin'ini yeniden kuruyordu.
+        // Bu bölüm yalnız KENDİ pin'ini tazeler.
+        pinTrigger?.refresh();
       });
     }
 

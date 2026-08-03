@@ -151,7 +151,13 @@ const kurManifestoAnimasyonu = () => {
     });
 
     // Trigger geç kurulduğu için konum bilgisi güncel değil; bir kez ölçtür.
-    ScrollTrigger.refresh();
+    //
+    // YALNIZ KENDİ trigger'ı — global ScrollTrigger.refresh() DEĞİL. Bu
+    // kurulum kullanıcı bölüme yaklaşırken çalışıyor; global refresh o anda
+    // hero'nun pin'ini ve komşu bölümlerin geometrisini de yeniden ölçüyordu.
+    // Aynı kural HomeReferences'ta da yazılı: bir bölüm kendi ölçüsünü
+    // tazeler, komşularının pin'ine dokunmaz.
+    quoteScrollTrigger.refresh();
 
     // onEnter yalnızca GEÇİŞTE ateşler. Kurulum anında kullanıcı başlangıç
     // noktasını geçmişse hiç tetiklenmez ve harfler opacity:0 kalırdı.
