@@ -27,6 +27,7 @@ import { useCatalogStructuralLine } from "~/composables/useCatalogStructuralLine
 import { useMagneticHover } from "~/composables/useMagneticHover";
 
 const {
+  products,
   catalogBlocks,
   getCatalogPreviewProducts,
   activeProduct,
@@ -36,7 +37,6 @@ const {
   closeProductModal,
   showPreviousProduct,
   showNextProduct,
-  handleProductModalKeydown,
   resetCatalogModalState
 } = useHomeCatalog();
 const { catalogCopy } = useCatalogCopy();
@@ -135,10 +135,22 @@ const thumb = (url?: string) => {
   return ikUrl(url, KART_GORSEL_W);
 };
 
-/** Aynı görselin 1x/2x sürümleri — retina ekranda bulanıklaşmasın. */
+/**
+ * `w` tanımlayıcılı srcset — `1x/2x` DEĞİL.
+ *
+ * Yoğunluk tanımlayıcısıyla (`2x`) DPR 1.25 gibi ARA değerlerde tarayıcı
+ * yukarı yuvarlayıp 2x dalını seçiyordu: 220px'lik karta 440px iniyordu,
+ * 23 KB yerine 87.6 KB — 68 kartta ~4.4 MB fazladan (ölçüldü).
+ *
+ * `w` + `sizes` ile tarayıcı gerçek CSS genişliğini DPR ile çarpıp en
+ * yakın adayı seçiyor: DPR 1.25'te 275px gerekiyor → 330 dalı yeterli,
+ * 440'a çıkmıyor. Retina (DPR 2) ekranda ise 440'ı kendisi seçiyor.
+ */
 const thumbSrcset = (url?: string) => {
   if (!url || !url.includes("ik.imagekit.io")) return undefined;
-  return `${ikUrl(url, KART_GORSEL_W)} 1x, ${ikUrl(url, KART_GORSEL_W * 2)} 2x`;
+  return [220, 330, 440]
+    .map((w) => `${ikUrl(url, w)} ${w}w`)
+    .join(", ");
 };
 
 // ── GİRİŞ ANİMASYONU ───────────────────────────────────────────────────
@@ -178,6 +190,22 @@ const imageHover = { scale: 1.045, y: -3, transition: cardSpring };
  * ScrollSmoother'ın taşıdığı kap, IO'nun kökü olarak verilir. Kesişim
  * viewport'a göre değil bu kaba göre hesaplanır.
  */
+/**
+ * Modal açıkken önceki/sonraki ürünün görseli.
+ *
+ * Ok tuşuyla gezinirken önbellekte olmayan görsel yavaş ağda 728–838 ms
+ * sonra beliriyordu (ölçüldü). Bunları şimdiden indirtiyoruz; sıra mantığı
+ * burada, modal yalnız listeyi alıyor.
+ */
+const neighbourImages = computed(() => {
+  const i = activeProductIndex.value;
+  const liste = products.value;
+  if (i === null || !liste.length) return [];
+  const oncekiIdx = (i - 1 + liste.length) % liste.length;
+  const sonrakiIdx = (i + 1) % liste.length;
+  return [liste[sonrakiIdx]?.image, liste[oncekiIdx]?.image].filter(Boolean) as string[];
+});
+
 /**
  * Kartı klavyeyle açma.
  *
@@ -352,6 +380,7 @@ const inViewOptions = {
                     :layout-id="`door-${item.code}`"
                     :src="thumb(item.image)"
                     :srcset="thumbSrcset(item.image)"
+                    sizes="220px"
                     :alt="catalogCopy.productImageAlt"
                     class="catalog-product-image"
                     loading="lazy"
@@ -446,6 +475,7 @@ const inViewOptions = {
     :series="activeSeries"
     :collection="activeCollection"
     :system="activeSystem"
+    :neighbour-images="neighbourImages"
     @close="closeProductModal"
     @prev="showPreviousProduct"
     @next="showNextProduct"

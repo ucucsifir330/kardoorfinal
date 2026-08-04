@@ -42,6 +42,8 @@ const props = withDefaults(defineProps<{
   series: string;
   collection: string;
   system: string;
+  /** Önceki/sonraki ürünün görsel URL'leri — önceden indirmek için. */
+  neighbourImages?: string[];
   /**
    * Hangi açılış oynasın. VERİLMEZSE cihaza göre otomatik:
    * masaüstü → g-sahne, mobil → m-olcek. Lab değiştiricisi bunu ezer.
@@ -98,27 +100,54 @@ const acik = computed(() => props.product !== null);
 /**
  * Modal görselinin ImageKit dönüşümü.
  *
- * Ham `product.image` kullanılıyordu: kaynak dosya 1413x2226 iniyordu ama
- * panelde 294px genişlikte gösteriliyor — 4.81 kat fazla piksel (ölçüldü).
- * Vitrin modalı görselin kalitesiyle yaşıyor, o yüzden karttan cömert
- * davranıyoruz ama sınırsız değil.
+ * Ham `product.image` kullanılıyordu: 1413x2226 dosya 294px'lik alanda
+ * gösteriliyordu. Ama ilk düzeltmem (`w-560` + `srcset` 2x) DAHA KÖTÜ
+ * oldu — ölçüldü:
  *
- * 560px taban: panel görsel kolonu en geniş kırılımda (1180px panel, iki
- * kolon) ~520px'e çıkıyor. `srcset` ile retina 2x sürümü de veriliyor,
- * seçimi tarayıcı yapıyor.
+ *   • DPR 1.25'te tarayıcı 2x dalını seçiyor → `w-1120`, 158.3 KB
+ *   • Ok tuşuyla gezinirken ürün başına 500–750 ms bekleme
+ *   • Kart `w-440`'ı zaten indirmişken modal BAŞKA bir URL istiyordu,
+ *     yani önbellekten hiçbir şey gelmiyordu
+ *
+ * `srcset` KALDIRILDI. Modal görseli `object-fit: contain` ile sığdırılıyor
+ * ve en geniş kırılımda bile ~294px gösteriliyor; 2x dalı yalnızca dosyayı
+ * beş katına çıkarıyordu, görünür bir netlik kazandırmadan.
+ *
+ * Genişlik kartla AYNI (`w-440`, q-82): kart görseli zaten önbellekte
+ * olduğu için modal onu anında gösteriyor, ağ isteği hiç doğmuyor.
+ * 440px, 294px'lik alan için DPR 1.5'e kadar net kalıyor.
  */
-const MODAL_GORSEL_W = 560;
+const MODAL_GORSEL_W = 440;
 
-const modalGorsel = computed(() => {
-  const url = props.product?.image as string | undefined;
-  if (!url) return { src: "", srcset: undefined as string | undefined };
-  if (!url.includes("ik.imagekit.io")) return { src: url, srcset: undefined };
-  const kes = (w: number) => `${url.split("?")[0]}?tr=w-${w},q-88`;
-  return {
-    src: kes(MODAL_GORSEL_W),
-    srcset: `${kes(MODAL_GORSEL_W)} 1x, ${kes(MODAL_GORSEL_W * 2)} 2x`
-  };
-});
+const gorselUrl = (url?: string) => {
+  if (!url) return "";
+  if (!url.includes("ik.imagekit.io")) return url;
+  return `${url.split("?")[0]}?tr=w-${MODAL_GORSEL_W},q-82`;
+};
+
+const modalGorsel = computed(() => gorselUrl(props.product?.image as string | undefined));
+
+/**
+ * Komşu ürünlerin görselini önceden indir.
+ *
+ * Ölçüldü: yavaş ağda önbellekte olmayan ürüne geçerken görsel 728–838 ms
+ * sonra beliriyordu — ok tuşuna basıp boş kutuya bakıyorsun. Önbellekteki
+ * ürünlerde aynı geçiş ~110 ms.
+ *
+ * Komşuların URL'sini ebeveyn veriyor (`neighbourImages`): liste ve sıra
+ * mantığı orada, modal yalnız "şu ikisini şimdiden çek" diyor. Prop boşsa
+ * sessizce atlanıyor — bu bir iyileştirme, davranış şartı değil.
+ */
+const onbellege = new Set<string>();
+
+const onceden = (url?: string) => {
+  const tam = gorselUrl(url);
+  if (!tam || onbellege.has(tam)) return;
+  onbellege.add(tam);
+  const im = new Image();
+  im.decoding = "async";
+  im.src = tam;
+};
 
 /* --- Hareket --------------------------------------------------------------
    Perde sade solar; panel aşağıdan yükselir. Spring bilerek düşük bounce:
@@ -379,11 +408,21 @@ watch(acik, async (aciMi) => {
 });
 
 /** Modal AÇIKKEN ürün değişirse geçişi oynat; açılışta gsapAc zaten çalışıyor. */
-watch(() => props.product?.code, (yeni, eski) => {
+watch(() => props.product?.code, (yeniKod, eskiKod) => {
   if (!import.meta.client || !acik.value) return;
-  if (!yeni || !eski || yeni === eski) return;
+  if (!yeniKod || !eskiKod || yeniKod === eskiKod) return;
   requestAnimationFrame(urunDegisti);
 });
+
+/** Açılışta ve her ürün değişiminde komşuları önceden indir. */
+watch(
+  () => [acik.value, props.neighbourImages] as const,
+  ([aciMi]) => {
+    if (!import.meta.client || !aciMi) return;
+    for (const url of props.neighbourImages ?? []) onceden(url);
+  },
+  { immediate: true, deep: true }
+);
 
 onBeforeUnmount(() => {
   if (!import.meta.client) return;
@@ -428,8 +467,7 @@ onBeforeUnmount(() => {
         <motion.section ref="panelRef" class="kmodal__panel" v-bind="panelMotion">
           <div class="kmodal__visual">
             <img
-              :src="modalGorsel.src"
-              :srcset="modalGorsel.srcset"
+              :src="modalGorsel"
               :alt="product.finish"
               class="kmodal__image"
               decoding="async"
