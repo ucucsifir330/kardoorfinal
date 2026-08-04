@@ -17,13 +17,59 @@
  * false). Motion'a `root` olarak scroll kabı veriliyor — kesişimi ona
  * göre hesaplasın.
  */
-import { computed } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { motion } from "motion-v";
 import { useHomeCatalog } from "~/composables/useHomeCatalog";
 import { useCatalogCopy } from "~/composables/useCatalogCopy";
+import { useLiquidMenu } from "~/composables/useLiquidMenu";
+import CatalogProductModal from "~/components/home/CatalogProductModal.vue";
+import { useCatalogStructuralLine } from "~/composables/useCatalogStructuralLine";
+import { useMagneticHover } from "~/composables/useMagneticHover";
 
-const { catalogBlocks, getCatalogPreviewProducts } = useHomeCatalog();
+const {
+  catalogBlocks,
+  getCatalogPreviewProducts,
+  activeProduct,
+  activeProductIndex,
+  toggleLike,
+  openProductModal,
+  closeProductModal,
+  showPreviousProduct,
+  showNextProduct,
+  handleProductModalKeydown,
+  resetCatalogModalState
+} = useHomeCatalog();
 const { catalogCopy } = useCatalogCopy();
+
+// Yapı çizgisi: bölümün ve satırların geometrisini okur, scroll ile çizilir.
+const sectionRef = ref<HTMLElement | null>(null);
+const rowRefs = ref<HTMLElement[]>([]);
+const setRowRef = (el: any) => {
+  if (el && !rowRefs.value.includes(el)) rowRefs.value.push(el);
+};
+
+const {
+  svgRef: lineSvgRef,
+  pathRef: linePathRef,
+  gradientRef: lineGradientRef
+} = useCatalogStructuralLine({ section: sectionRef, rows: rowRefs });
+
+// "Tümü" bağlantısının mıknatıs etkisi.
+const magnet = useMagneticHover();
+
+// Kart kenarındaki damla şerit + hamburger. Fizik, rAF döngüsü ve olay
+// işleyicileri kendi sahibinde (bkz. useLiquidMenu).
+const {
+  expanded: liquidExpanded,
+  setBlobPathRef,
+  setBlobContainerRef,
+  setHamburgerRef,
+  onZoneMouseMove,
+  onZoneEnter,
+  onZoneLeave,
+  onZoneClick,
+  onCardMouseMove
+} = useLiquidMenu();
 
 const localizedBlocks = computed(() =>
   catalogBlocks.map((block: any) => ({
@@ -31,6 +77,37 @@ const localizedBlocks = computed(() =>
     ...(catalogCopy.value.blocks[block.index] ?? {})
   }))
 );
+
+// Modal, ürünün serisini/koleksiyonunu SEÇİLİ DİLDE göstermeli. Ürün
+// verisi dilden bağımsız; eşleme kod önekiyle yapılır (AL-001 → Alüminyum).
+const activeBlock = computed(() => {
+  const product = activeProduct.value;
+  if (!product?.code) return null;
+  return localizedBlocks.value.find((b: any) =>
+    product.code.startsWith(`${b.productPrefix}-`)
+  ) ?? null;
+});
+
+const activeSeries = computed(
+  () => activeBlock.value?.cardTitle ?? activeProduct.value?.series ?? ""
+);
+const activeCollection = computed(
+  () => activeBlock.value?.seriesLabel ?? activeProduct.value?.collection ?? ""
+);
+const activeCategory = computed(
+  () => activeBlock.value?.description ?? activeProduct.value?.category ?? ""
+);
+const activeSystem = computed(() =>
+  activeBlock.value
+    ? `${activeBlock.value.cardTitle} / ${catalogCopy.value.modal.systemFallback}`
+    : activeProduct.value?.system ?? ""
+);
+
+/** ImageKit görseli düşerse yerel kopyaya geç. */
+const handleImageError = (event: Event, fallbackSrc?: string) => {
+  const img = event.target as HTMLImageElement;
+  if (fallbackSrc && img.src !== fallbackSrc) img.src = fallbackSrc;
+};
 
 /** Grid küçük görsel istiyor; kaynak dosyalar ~1400x2300. */
 const thumb = (url?: string) => {
@@ -52,6 +129,17 @@ const CARD_STAGGER = 0.08;
  * ScrollSmoother'ın taşıdığı kap, IO'nun kökü olarak verilir. Kesişim
  * viewport'a göre değil bu kaba göre hesaplanır.
  */
+// Modal açıkken Esc kapatır, oklar ürünler arası gezer.
+onMounted(() => {
+  window.addEventListener("keydown", handleProductModalKeydown);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleProductModalKeydown);
+  // Modal açıkken sayfadan çıkılırsa body overflow kilidi kalmasın.
+  resetCatalogModalState();
+});
+
 const inViewOptions = {
   once: true,
   // amount: kartın bu kadarı görününce tetikle. ScrollSmoother transform'u
@@ -62,8 +150,36 @@ const inViewOptions = {
 </script>
 
 <template>
-  <section class="catalog-section">
+  <section ref="sectionRef" class="catalog-section">
     <div class="catalog-stage-backdrop" aria-hidden="true"></div>
+
+    <svg
+      ref="lineSvgRef"
+      class="catalog-structural-lines"
+      aria-hidden="true"
+      focusable="false"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <linearGradient
+          id="catalog-structural-line-gradient"
+          ref="lineGradientRef"
+          gradientUnits="userSpaceOnUse"
+          x1="0"
+          x2="0"
+          y1="0"
+          y2="80"
+        >
+          <stop offset="0" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
+          <stop offset="0.06" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.34" />
+          <stop offset="0.16" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
+          <stop offset="0.84" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
+          <stop offset="0.94" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.34" />
+          <stop offset="1" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path ref="linePathRef" class="catalog-structural-line-path" />
+    </svg>
 
     <div class="catalog-shell">
       <main class="catalog-main">
@@ -74,8 +190,10 @@ const inViewOptions = {
         <div
           v-for="block in localizedBlocks"
           :key="block.index"
+          :ref="setRowRef"
           :data-row-index="block.index"
           class="catalog-row"
+          :class="{ 'is-liquid-expanded': liquidExpanded[`block-${block.index}`] }"
         >
           <div class="catalog-row-info">
             <motion.div
@@ -108,7 +226,12 @@ const inViewOptions = {
                 </div>
               </div>
 
-              <a class="catalog-all-models" href="/catalog">
+              <a
+                class="catalog-all-models catalog-magnetic-link"
+                href="/catalog"
+                @mousemove="magnet.onMove"
+                @mouseleave="magnet.onLeave"
+              >
                 <span class="catalog-tag-part">
                   <span class="catalog-tag-label catalog-tag-label--short">{{ catalogCopy.allShort }}</span>
                   <span class="catalog-tag-label catalog-tag-label--full">{{ catalogCopy.allFull }}</span>
@@ -118,7 +241,10 @@ const inViewOptions = {
             </motion.div>
           </div>
 
-          <div class="catalog-card liquid-card">
+          <div
+            class="catalog-card liquid-card"
+            @mousemove="onCardMouseMove($event, `block-${block.index}`)"
+          >
             <div class="catalog-card-header">
               <h3 class="catalog-card-title">
                 {{ block.cardTitle }} <span>{{ block.seriesLabel }}</span>
@@ -138,6 +264,7 @@ const inViewOptions = {
                 :while-in-view="enterTo"
                 :in-view-options="inViewOptions"
                 :transition="{ ...enterTransition, delay: index * CARD_STAGGER }"
+                @click="openProductModal(item.productIndex)"
               >
                 <div class="catalog-product-image-wrap">
                   <img
@@ -146,6 +273,7 @@ const inViewOptions = {
                     class="catalog-product-image"
                     loading="lazy"
                     decoding="async"
+                    @error="handleImageError($event, item.localImage)"
                   >
                 </div>
 
@@ -168,9 +296,68 @@ const inViewOptions = {
                 </div>
               </motion.article>
             </div>
+
+            <div
+              class="liquid-menu"
+              :class="{ 'is-expanded': liquidExpanded[`block-${block.index}`] }"
+            >
+              <div class="liquid-edge-control">
+                <svg
+                  class="liquid-blob"
+                  :ref="el => setBlobContainerRef(el, `block-${block.index}`)"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    class="liquid-blob-path"
+                    :ref="el => setBlobPathRef(el, `block-${block.index}`)"
+                  />
+                </svg>
+
+                <div
+                  class="liquid-hover-zone"
+                  @mousemove="onZoneMouseMove($event, `block-${block.index}`)"
+                  @mouseenter="onZoneEnter(`block-${block.index}`, $event)"
+                  @mouseleave="onZoneLeave(`block-${block.index}`)"
+                  @click.stop="onZoneClick($event, `block-${block.index}`)"
+                >
+                  <div
+                    class="hamburger"
+                    :ref="el => setHamburgerRef(el, `block-${block.index}`)"
+                  >
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="liquid-menu-inner" @click.stop>
+                <ul class="liquid-actions">
+                  <li><NuxtLink to="/catalog">{{ catalogCopy.actions.viewSeries }}</NuxtLink></li>
+                  <li>{{ catalogCopy.actions.downloadCatalog }}</li>
+                  <li>{{ catalogCopy.actions.requestOffer }}</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </main>
     </div>
   </section>
+
+  <CatalogProductModal
+    v-if="activeProduct"
+    :product="activeProduct"
+    :product-index="activeProductIndex"
+    :copy="catalogCopy"
+    :series="activeSeries"
+    :collection="activeCollection"
+    :category="activeCategory"
+    :system="activeSystem"
+    @close="closeProductModal"
+    @prev="showPreviousProduct"
+    @next="showNextProduct"
+    @toggle-like="toggleLike"
+    @image-error="handleImageError"
+  />
 </template>
