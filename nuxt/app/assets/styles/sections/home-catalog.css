@@ -1686,3 +1686,15 @@ html.is-safari.is-scrolling .home-page .catalog-code-line {
    propları yapıyor (bkz. CatalogLab.vue). Eski `animation: ... forwards`
    kuralı inline stili eziyordu — CSS animasyonu her zaman kazanır, bu
    yüzden Motion'ın hover ve layout geçişleri hiç görünmüyordu. */
+
+/* ── KART ODAK HALKASI ────────────────────────────────────────────────────
+   Kartlar `tabindex="0"` ile odaklanabilir ama görünür odak stili yoktu:
+   tarayıcı varsayılanına (0.8px auto) kalmıştı ve kartın açık zemininde
+   neredeyse görünmüyordu. Klavyeyle gezinen kullanıcı hangi kapının
+   üstünde olduğunu göremiyordu.
+   `:focus-visible` seçili — fareyle tıklayanda halka çıkmıyor. */
+.catalog-product:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: 2px;
+}

@@ -157,6 +157,23 @@ const imageHover = { scale: 1.045, y: -3, transition: cardSpring };
  * viewport'a göre değil bu kaba göre hesaplanır.
  */
 /**
+ * Kartı klavyeyle açma.
+ *
+ * Kartlar `<article tabindex="0">` idi: Tab ile odaklanılabiliyorlardı ama
+ * Enter/Space hiçbir şey yapmıyordu — yalnız `@click` bağlıydı (ölçüldü:
+ * her iki tuş da modalı açmadı). Yani klavye kullanıcısı 68 ürünün
+ * hiçbirini açamıyordu. `role="button"` ile birlikte bu handler, yerel
+ * bir <button>'ın verdiği davranışı geri getiriyor.
+ *
+ * Space'te `preventDefault`: yoksa tarayıcı sayfayı bir ekran aşağı kaydırır.
+ */
+const onCardKeydown = (event: KeyboardEvent, productIndex: number) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  openProductModal(productIndex);
+};
+
+/**
  * Klavye gezinmesini MODAL'IN KENDİSİ yönetiyor (CatalogModalLab).
  *
  * Burada da `handleProductModalKeydown` window'a bağlıydı: iki dinleyici aynı
@@ -301,7 +318,10 @@ const inViewOptions = {
                 :variants="{ hover: cardHover }"
                 while-hover="hover"
                 :while-press="{ scale: 0.985 }"
+                role="button"
+                :aria-label="`${item.finish} ${block.cardTitle} ${item.code}`"
                 @click="openProductModal(item.productIndex)"
+                @keydown="onCardKeydown($event, item.productIndex)"
               >
                 <div class="catalog-product-image-wrap">
                   <!-- layoutId: modaldaki görselle AYNI kimlik. Tıklanınca

@@ -448,9 +448,13 @@ onBeforeUnmount(() => {
 
               <div class="kmodal__block">
                 <h3>{{ copy.modal.filesTitle }}</h3>
+                <!-- Gerçek dosya URL'si henüz yok. `href="#"` YAZILMAZ:
+                     tıklanınca sayfayı başa atıyor, ekran okuyucuya da
+                     "gidilebilir bağlantı" diye yalan söylüyor. Dosyalar
+                     bağlanınca burası <a :href="..." download> olur. -->
                 <div class="kmodal__files">
-                  <a href="#">{{ copy.modal.files.specSheet }}</a>
-                  <a href="#">{{ copy.modal.files.drawing }}</a>
+                  <button type="button" disabled>{{ copy.modal.files.specSheet }}</button>
+                  <button type="button" disabled>{{ copy.modal.files.drawing }}</button>
                 </div>
               </div>
             </motion.div>
@@ -502,6 +506,12 @@ onBeforeUnmount(() => {
   border-radius: 4px 4px clamp(28px, 2.6vw, 42px);
   background: var(--surface);
   box-shadow: 0 42px 130px rgba(0, 0, 0, 0.16);
+
+  /* İkincil metin rengi. `--ink-soft` (#8A8073) bu panel zemininde küçük
+     metinde 3.69:1 veriyordu — WCAG AA 4.5 istiyor, dört yerde kalıyordu
+     (kicker, meta, dt etiketleri, h3 başlıkları). Aynı sıcak hue'nun daha
+     koyu tonu: 4.92:1. Global token'a dokunmuyoruz, sızıntı olmasın. */
+  --kmodal-ink-ikincil: #746C61;
 }
 
 /* --- Sol: görsel --------------------------------------------------------- */
@@ -559,7 +569,7 @@ onBeforeUnmount(() => {
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  color: var(--kmodal-ink-ikincil);
 }
 
 .kmodal__code {
@@ -581,7 +591,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  color: var(--kmodal-ink-ikincil);
 }
 
 .kmodal__meta span {
@@ -612,7 +622,7 @@ onBeforeUnmount(() => {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  color: var(--kmodal-ink-ikincil);
 }
 
 .kmodal__block dl {
@@ -632,7 +642,7 @@ onBeforeUnmount(() => {
 
 .kmodal__block dt {
   font-size: 13px;
-  color: var(--ink-soft);
+  color: var(--kmodal-ink-ikincil);
 }
 
 .kmodal__block dd {
@@ -648,10 +658,13 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
-.kmodal__files a {
+.kmodal__files a,
+.kmodal__files button {
   display: inline-flex;
   align-items: center;
-  min-height: 38px;
+  /* 38px değildi: dokunma hedefi tabanı 44px. */
+  min-height: 44px;
+  font: inherit;
   padding: 0 16px;
   border: 1px solid var(--hairline);
   border-radius: 999px;
@@ -661,9 +674,18 @@ onBeforeUnmount(() => {
   transition: border-color 0.22s ease, background 0.22s ease;
 }
 
-.kmodal__files a:hover {
+.kmodal__files a:hover,
+.kmodal__files button:not(:disabled):hover {
   border-color: var(--brand-500);
   background: var(--surface-2);
+}
+
+/* Dosya henüz bağlanmadı: tıklanabilir görünmesin ama okunabilir kalsın.
+   `opacity` düşürmüyoruz — kontrastı AA'nın altına indiriyordu. */
+.kmodal__files button:disabled {
+  border-style: dashed;
+  color: var(--kmodal-ink-ikincil);
+  cursor: not-allowed;
 }
 
 .kmodal__actions {
@@ -735,8 +757,24 @@ onBeforeUnmount(() => {
 .kmodal__close {
   top: 24px;
   right: 28px;
-  width: 42px;
-  height: 42px;
+  /* 42px değildi: dokunma hedefi tabanı 44px (WCAG 2.5.8 / Apple HIG). */
+  width: 44px;
+  height: 44px;
+}
+
+/* ── ODAK HALKASI ─────────────────────────────────────────────────────────
+   Hiç tanımlı değildi: kapatma butonunda `outline: none` vardı, geri kalanı
+   tarayıcı varsayılanına kalmıştı (ölçüldü: 0.8px auto). Klavye kullanıcısı
+   modalda nerede olduğunu göremiyordu — odak tuzağı kurulmuşken bu eksik
+   kalması anlamsız. `:focus-visible` seçili: fareyle tıklayanda çıkmıyor. */
+.kmodal__close:focus-visible,
+.kmodal__nav:focus-visible,
+.kmodal__cta:focus-visible,
+.kmodal__link:focus-visible,
+.kmodal__files a:focus-visible,
+.kmodal__files button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
 }
 
 .kmodal__close:hover {
