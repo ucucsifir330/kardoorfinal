@@ -45,13 +45,52 @@ const removeRouteGuard = import.meta.client
     })
   : undefined;
 
+/**
+ * Perdenin açılabilmesi için yeni sayfanın gerçekten yerinde olmasını bekler.
+ *
+ * Neden gerekli: ana sayfanın hero'su `<ClientOnly>` içinde. Sunucu
+ * render'ında yerini SSR kabuğu tutuyor, ama ROTA GEÇİŞİNDE o kabuk
+ * basılmıyor — geçiş tamamen istemcide oluyor. Perde `afterEach`'te hemen
+ * açılınca hero henüz mount olmamış oluyordu ve altında boş bir şerit
+ * görünüyordu (ölçüldü: perde opacity 0 olduğunda heroH null, bir kare
+ * sonra hero 725px/818 bottom ile geliyordu).
+ *
+ * İki kare bekliyoruz: birincisi Vue'nun DOM'u yazması, ikincisi tarayıcının
+ * düzeni hesaplaması için. Sayfa hâlâ gelmediyse zaman aşımı devreye girer —
+ * perde asla asılı kalmaz.
+ */
+const PAGE_SETTLE_TIMEOUT_MS = 600;
+
+const waitForPageContent = () =>
+  new Promise<void>((resolve) => {
+    const started = performance.now();
+
+    const check = () => {
+      const main = document.querySelector("main");
+      const hasContent = (main?.getBoundingClientRect().height ?? 0) > 0;
+
+      if (hasContent || performance.now() - started > PAGE_SETTLE_TIMEOUT_MS) {
+        // Bir kare daha: içerik DOM'da ama düzeni henüz oturmamış olabilir.
+        requestAnimationFrame(() => resolve());
+        return;
+      }
+
+      requestAnimationFrame(check);
+    };
+
+    requestAnimationFrame(check);
+  });
+
 const removeRouteAfterHook = import.meta.client
   ? router.afterEach(async () => {
       if (!shouldRunPageTransition) return;
 
       await nextTick();
-      await transitionOverlay.value?.reveal();
+      // İçerik perde ALTINDA görünür olsun: perde zaten üstünü örtüyor,
+      // sızıntı üretmez ama açıldığında altı dolu olur.
       isPageContentVisible.value = true;
+      await waitForPageContent();
+      await transitionOverlay.value?.reveal();
       shouldRunPageTransition = false;
     })
   : undefined;
