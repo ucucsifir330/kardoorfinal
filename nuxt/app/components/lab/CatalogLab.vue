@@ -17,7 +17,7 @@
  * false). Motion'a `root` olarak scroll kabı veriliyor — kesişimi ona
  * göre hesaplasın.
  */
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 import { motion } from "motion-v";
 import { useHomeCatalog } from "~/composables/useHomeCatalog";
 import { useCatalogCopy } from "~/composables/useCatalogCopy";
@@ -32,7 +32,6 @@ const {
   getCatalogPreviewProducts,
   activeProduct,
   activeProductIndex,
-  toggleLike,
   openProductModal,
   closeProductModal,
   showPreviousProduct,
@@ -94,9 +93,6 @@ const activeSeries = computed(
 );
 const activeCollection = computed(
   () => activeBlock.value?.seriesLabel ?? activeProduct.value?.collection ?? ""
-);
-const activeCategory = computed(
-  () => activeBlock.value?.description ?? activeProduct.value?.category ?? ""
 );
 /**
  * Sistem adı. Blok başlığını BAŞA EKLEMİYORUZ: o zaten seri adı ve modalın
@@ -181,7 +177,7 @@ const cardHover = {
 
 /**
  * Görsel: kart hover'ında büyür. Eskiden CSS'teydi ama `!important`
- * transform kuralı Motion'ın layoutId geçişini de eziyordu — iki sistem
+ * transform kuralı Motion'ın yazdığı satır içi stili eziyordu — iki sistem
  * aynı property'yi yönetemez.
  */
 const imageHover = { scale: 1.045, y: -3, transition: cardSpring };
@@ -374,10 +370,11 @@ const inViewOptions = {
                 @keydown="onCardKeydown($event, item.productIndex)"
               >
                 <div class="catalog-product-image-wrap">
-                  <!-- layoutId: modaldaki görselle AYNI kimlik. Tıklanınca
-                       Motion aradaki geçişi kendisi kurar. -->
+                  <!-- `layout-id` YOK: eşi olacak modal görseli `<Teleport>`
+                       ile gövdeye taşınıyor, düzen ağacı koptuğu için Motion
+                       geçişi zaten kuramıyordu. Eşsiz bir layoutId taşımak
+                       her kartta boşuna ölçüm yaptırıyordu. -->
                   <motion.img
-                    :layout-id="`door-${item.code}`"
                     :src="thumb(item.image)"
                     :srcset="thumbSrcset(item.image)"
                     sizes="220px"

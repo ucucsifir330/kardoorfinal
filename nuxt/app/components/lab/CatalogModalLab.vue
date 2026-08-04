@@ -12,29 +12,22 @@
  *     ScrollSmoother yüzünden transform taşıyor
  *
  * Bu sürümde:
- *   • Düzen iki kolon (sol görsel, sağ bilgi) — istenen yapı korundu
- *   • Açılış: perde solar, panel aşağıdan yükselir (motion-v spring)
- *   • İçerik sadeleşti: kod/seri/yüzey + açıklama + iki aksiyon.
- *     Dosya bağlantıları, özellik kartları ve renk seçenekleri çıkarıldı —
- *     bunlar ürün DETAY sayfasının işi, vitrin modalının değil.
+ *   • Düzen iki kolon (sol görsel, sağ bilgi)
+ *   • Açılış cihaza göre: masaüstü GSAP "sahne", mobil Motion "ölçek"
+ *   • İçerik: kod/seri/yüzey + açıklama + teknik bilgi + dosyalar + iki
+ *     aksiyon. Özellik kartları ve renk seçenekleri YOK — onlar ürün DETAY
+ *     sayfasının işi, vitrin modalının değil.
  *   • Stiller scoped CSS'te, utility yığını yok
+ *   • Odak tuzağı + arka plan kilidi + komşu görsel ön yüklemesi var
  *
- * `fixed` sorunu: bileşen `<Teleport to="body">` kullanıyor. Bu sürümde
- * layoutId YOK (panel yükseliyor, görsel uçmuyor) — dolayısıyla Teleport
- * güvenli, kart ile modal arasında düzen bağı gerekmiyor.
+ * `fixed` sorunu: bileşen `<Teleport to="body">` kullanıyor. layoutId YOK
+ * (panel yükseliyor, görsel uçmuyor) — dolayısıyla Teleport güvenli, kart
+ * ile modal arasında düzen bağı gerekmiyor.
  */
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useNuxtApp } from "#imports";
 import { motion, AnimatePresence } from "motion-v";
 import { gsap } from "gsap";
-
-/**
- * İki hareket kaldı — karar verildi:
- *   g-sahne  masaüstü, GSAP: panel yatayda genişler, görsel derinlikten çıkar
- *   m-olcek  mobil, Motion: merkezden büyür
- * Karşılaştırma için kurulan diğer dört varyant silindi.
- */
-type HareketAdi = "g-sahne" | "m-olcek";
 
 const props = withDefaults(defineProps<{
   product: Record<string, any> | null;
@@ -44,11 +37,6 @@ const props = withDefaults(defineProps<{
   system: string;
   /** Önceki/sonraki ürünün görsel URL'leri — önceden indirmek için. */
   neighbourImages?: string[];
-  /**
-   * Hangi açılış oynasın. VERİLMEZSE cihaza göre otomatik:
-   * masaüstü → g-sahne, mobil → m-olcek. Lab değiştiricisi bunu ezer.
-   */
-  hareket?: HareketAdi;
 }>(), {});
 
 /**
@@ -58,7 +46,7 @@ const props = withDefaults(defineProps<{
 const MOBIL_ESIK = 860;
 
 /**
- * Cihaza göre hareket seçimi.
+ * Açılış hareketi CİHAZA göre seçilir.
  *
  * Masaüstünde GSAP "sahne açılır": panel yatayda genişliyor, görsel
  * derinlikten çıkıyor. Geniş ekranda sinematik duruyor.
@@ -67,8 +55,6 @@ const MOBIL_ESIK = 860;
  * ekran — yatay genişleme (scaleX 0.82) dar ekranda sıkışık görünüyor.
  * Ayrıca GSAP timeline'ı mobilde gereksiz maliyet; Motion WAAPI'ye
  * derlendiği için ana iş parçacığının dışında oynuyor.
- *
- * `hareket` prop'u verilirse o kazanır — lab değiştiricisi böyle çalışıyor.
  */
 const mobilMi = ref(false);
 
@@ -81,13 +67,9 @@ if (import.meta.client) {
   window.addEventListener("resize", guncelleCihaz, { passive: true });
 }
 
-/** Prop verilmediyse cihaza göre otomatik seç. */
-const etkinHareket = computed<HareketAdi>(() =>
-  props.hareket ?? (mobilMi.value ? "m-olcek" : "g-sahne")
-);
-
-/** GSAP modu mu? Motion propları o zaman devre dışı kalır. */
-const gsapMi = computed(() => etkinHareket.value.startsWith("g-"));
+/** Masaüstü GSAP ile açılır; mobil Motion ile. Motion propları GSAP
+    modunda devre dışı kalır — iki sistem aynı property'yi yönetemez. */
+const gsapMi = computed(() => !mobilMi.value);
 
 const emit = defineEmits<{
   close: [];
@@ -160,23 +142,17 @@ const perdeMotion = {
 };
 
 /**
- * Üç açılış hareketi — lab'de yan yana karşılaştırılıyor.
- * Karar verildikten sonra kazanan kalır, diğerleri silinir.
+ * Mobil açılışı: merkezden büyür. Spring bilerek düşük bounce — kapı
+ * vitrin nesnesi, zıplaması markayı hafifletir.
  */
-const HAREKETLER = {
-  /** Mobil: merkezden büyür. Spring bilerek düşük bounce — kapı vitrin
-      nesnesi, zıplaması markayı hafifletir. */
-  "m-olcek": {
-    initial: { scale: 0.94, opacity: 0 },
-    animate: { scale: 1, opacity: 1 },
-    exit: { scale: 0.97, opacity: 0 },
-    transition: { type: "spring" as const, visualDuration: 0.4, bounce: 0.14 }
-  }
+const MOBIL_ACILIS = {
+  initial: { scale: 0.94, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0.97, opacity: 0 },
+  transition: { type: "spring" as const, visualDuration: 0.4, bounce: 0.14 }
 } as const;
 
-const panelMotion = computed(() =>
-  gsapMi.value ? {} : HAREKETLER[etkinHareket.value as keyof typeof HAREKETLER]
-);
+const panelMotion = computed(() => (gsapMi.value ? {} : MOBIL_ACILIS));
 
 /** İçerik: başlık → açıklama → aksiyonlar sırayla girer. */
 const icerikKap = {
@@ -196,12 +172,11 @@ const icerikOge = {
   }
 };
 
-
-/* ── GSAP VARYANTLARI ──────────────────────────────────────────────────────
+/* ── GSAP AÇILIŞI (masaüstü) ───────────────────────────────────────────────
    Motion'ın veremediği şey ÖRTÜŞEN zamanlama: aşağıdaki pozisyon
-   parametreleri ("-=0.44") bir adımı öncekinin bitişinden ÖNCE başlatıyor,
-   parçalar birbirinin içine giriyor. Motion'ın staggerChildren'ı düz sıra
-   verir. Ayrıca `back`/`expo` gibi karakterli easing'ler burada var. */
+   parametreleri ("-=0.7" gibi) bir adımı öncekinin bitişinden ÖNCE
+   başlatıyor, parçalar birbirinin içine giriyor. Motion'ın
+   staggerChildren'ı yalnız düz sıra verebiliyor. */
 const perdeRef = ref<any>(null);
 const panelRef = ref<any>(null);
 let gsapTl: gsap.core.Timeline | null = null;
@@ -630,9 +605,6 @@ onBeforeUnmount(() => {
   margin-right: -14px;
 }
 
-/* Scrollbar kuralları AŞAĞIDAKİ global blokta — buraya yazılamıyor,
-   nedeni orada anlatıldı. */
-
 .kmodal__kicker {
   margin: 0 0 clamp(6px, 1vmin, 10px);
   font-size: 11px;
@@ -727,7 +699,6 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
-.kmodal__files a,
 .kmodal__files button {
   display: inline-flex;
   align-items: center;
@@ -743,7 +714,6 @@ onBeforeUnmount(() => {
   transition: border-color 0.22s ease, background 0.22s ease;
 }
 
-.kmodal__files a:hover,
 .kmodal__files button:not(:disabled):hover {
   border-color: var(--brand-500);
   background: var(--surface-2);
@@ -840,7 +810,6 @@ onBeforeUnmount(() => {
 .kmodal__nav:focus-visible,
 .kmodal__cta:focus-visible,
 .kmodal__link:focus-visible,
-.kmodal__files a:focus-visible,
 .kmodal__files button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
@@ -848,13 +817,6 @@ onBeforeUnmount(() => {
 
 .kmodal__close:hover {
   transform: rotate(90deg);
-}
-
-.kmodal__nav {
-  top: 50%;
-  width: 48px;
-  height: 48px;
-  margin-top: -24px;
 }
 
 /* Oklar panelin DIŞINDA durmalı. Sabit `24px` kenar payı geniş ekranda
@@ -869,6 +831,11 @@ onBeforeUnmount(() => {
 .kmodal__nav {
   --kmodal-yan-bosluk: calc((100vw - min(100vw - 2 * clamp(24px, 3vw, 48px), 1180px)) / 2);
   --kmodal-ok-yeri: max(10px, calc(var(--kmodal-yan-bosluk) / 2 - 24px));
+
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
 }
 
 .kmodal__nav--prev { left: var(--kmodal-ok-yeri); }
@@ -878,7 +845,6 @@ onBeforeUnmount(() => {
   background: var(--surface-2);
 }
 
-/* --- Mobil: tek kolon ---------------------------------------------------- */
 /* ── TABLET / KÜÇÜK LAPTOP (861–1180px) ───────────────────────────────────
    Burası boştu: panel iki kolon kalıyor ama iki kolon da dar düşüyordu.
    Görsele daha az, bilgiye daha çok pay veriyoruz — sağdaki metin sarmalı
