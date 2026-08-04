@@ -113,10 +113,32 @@ const handleImageError = (event: Event, fallbackSrc?: string) => {
   if (fallbackSrc && img.src !== fallbackSrc) img.src = fallbackSrc;
 };
 
-/** Grid küçük görsel istiyor; kaynak dosyalar ~1400x2300. */
+/**
+ * Kart görselinin ImageKit dönüşümü.
+ *
+ * Ölçüldü: kart görseli en büyük kırılımda bile ~219px genişlikte
+ * gösteriliyor (kutu yüksekliği tavanı 312px, en geniş kapı oranı 0.70).
+ * Sabit `w-360` ise DPR 1'de gösterilenin ~3.8 katı piksel indiriyordu —
+ * 68 görselde birden, Lighthouse'un "properly size images" maddesi.
+ *
+ * Artık `srcset` ile yoğunluk seçenekleri veriliyor: DPR 1 ekran 220px,
+ * DPR 2 ekran 440px iniyor. Tarayıcı hangisinin gerektiğine kendisi karar
+ * veriyor, biz cihaz tahmini yapmıyoruz.
+ */
+const KART_GORSEL_W = 220;
+
+const ikUrl = (url: string, genislik: number) =>
+  `${url.split("?")[0]}?tr=w-${genislik},q-82`;
+
 const thumb = (url?: string) => {
   if (!url || !url.includes("ik.imagekit.io")) return url || "";
-  return `${url.split("?")[0]}?tr=w-360,q-82`;
+  return ikUrl(url, KART_GORSEL_W);
+};
+
+/** Aynı görselin 1x/2x sürümleri — retina ekranda bulanıklaşmasın. */
+const thumbSrcset = (url?: string) => {
+  if (!url || !url.includes("ik.imagekit.io")) return undefined;
+  return `${ikUrl(url, KART_GORSEL_W)} 1x, ${ikUrl(url, KART_GORSEL_W * 2)} 2x`;
 };
 
 // ── GİRİŞ ANİMASYONU ───────────────────────────────────────────────────
@@ -329,6 +351,7 @@ const inViewOptions = {
                   <motion.img
                     :layout-id="`door-${item.code}`"
                     :src="thumb(item.image)"
+                    :srcset="thumbSrcset(item.image)"
                     :alt="catalogCopy.productImageAlt"
                     class="catalog-product-image"
                     loading="lazy"

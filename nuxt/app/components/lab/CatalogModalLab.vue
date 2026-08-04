@@ -95,6 +95,31 @@ const emit = defineEmits<{
 
 const acik = computed(() => props.product !== null);
 
+/**
+ * Modal görselinin ImageKit dönüşümü.
+ *
+ * Ham `product.image` kullanılıyordu: kaynak dosya 1413x2226 iniyordu ama
+ * panelde 294px genişlikte gösteriliyor — 4.81 kat fazla piksel (ölçüldü).
+ * Vitrin modalı görselin kalitesiyle yaşıyor, o yüzden karttan cömert
+ * davranıyoruz ama sınırsız değil.
+ *
+ * 560px taban: panel görsel kolonu en geniş kırılımda (1180px panel, iki
+ * kolon) ~520px'e çıkıyor. `srcset` ile retina 2x sürümü de veriliyor,
+ * seçimi tarayıcı yapıyor.
+ */
+const MODAL_GORSEL_W = 560;
+
+const modalGorsel = computed(() => {
+  const url = props.product?.image as string | undefined;
+  if (!url) return { src: "", srcset: undefined as string | undefined };
+  if (!url.includes("ik.imagekit.io")) return { src: url, srcset: undefined };
+  const kes = (w: number) => `${url.split("?")[0]}?tr=w-${w},q-88`;
+  return {
+    src: kes(MODAL_GORSEL_W),
+    srcset: `${kes(MODAL_GORSEL_W)} 1x, ${kes(MODAL_GORSEL_W * 2)} 2x`
+  };
+});
+
 /* --- Hareket --------------------------------------------------------------
    Perde sade solar; panel aşağıdan yükselir. Spring bilerek düşük bounce:
    kapı vitrin nesnesi, zıplaması markayı hafifletir. */
@@ -402,7 +427,13 @@ onBeforeUnmount(() => {
 
         <motion.section ref="panelRef" class="kmodal__panel" v-bind="panelMotion">
           <div class="kmodal__visual">
-            <img :src="product.image" :alt="product.finish" class="kmodal__image">
+            <img
+              :src="modalGorsel.src"
+              :srcset="modalGorsel.srcset"
+              :alt="product.finish"
+              class="kmodal__image"
+              decoding="async"
+            >
           </div>
 
           <motion.div
