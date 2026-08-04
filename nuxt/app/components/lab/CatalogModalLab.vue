@@ -24,6 +24,7 @@
  * güvenli, kart ile modal arasında düzen bağı gerekmiyor.
  */
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { useNuxtApp } from "#imports";
 import { motion, AnimatePresence } from "motion-v";
 import { gsap } from "gsap";
 
@@ -296,6 +297,29 @@ const odagiTut = (event: KeyboardEvent) => {
   }
 };
 
+/* ── ARKA PLAN KİLİDİ ─────────────────────────────────────────────────────
+   `body { overflow: hidden }` TEK BAŞINA YETMİYOR: sayfa gövde scroll'uyla
+   değil, ScrollSmoother'ın `#smooth-content` üstündeki transform'uyla
+   kayıyor. Modal açıkken tekerlek arkadaki kataloğu kaydırıyordu — panel
+   Teleport sayesinde yerinde durduğu için modal kayıyormuş gibi görünüyordu
+   (ölçüldü: modal açıkken scroll 2500 → 3000, panel sabit).
+
+   Bu yüzden smoother'ı da duraklatıyoruz. Dokunmatik cihazda `$smoother`
+   null döner — orada `body overflow` zaten yeterli, çünkü native scroll. */
+const { $smoother } = useNuxtApp();
+
+const smootherAl = () => ($smoother as undefined | (() => any))?.() ?? null;
+
+const arkaPlaniKilitle = (kilitli: boolean) => {
+  // Kilit `<html>` üzerinde olmak zorunda: ölçüldü, `body { overflow:
+  // hidden }` uygulanmasına rağmen `window.scrollY` 2500'den 3100'e çıktı
+  // — scroll kabı gövde değil, kök eleman.
+  document.documentElement.style.overflow = kilitli ? "hidden" : "";
+  document.body.style.overflow = kilitli ? "hidden" : "";
+  // Smoother varsa (masaüstü) transform'u da dursun; dokunmatikte null döner.
+  smootherAl()?.paused(kilitli);
+};
+
 /* --- Klavye + gövde kilidi ------------------------------------------------ */
 const onKeydown = (event: KeyboardEvent) => {
   if (!acik.value) return;
@@ -310,7 +334,7 @@ watch(acik, async (aciMi) => {
 
   if (aciMi) {
     oncekiOdak = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = "hidden";
+    arkaPlaniKilitle(true);
     window.addEventListener("keydown", onKeydown);
     await nextTick();
     requestAnimationFrame(() => {
@@ -321,7 +345,7 @@ watch(acik, async (aciMi) => {
       requestAnimationFrame(() => odaklanabilirler()[0]?.focus());
     });
   } else {
-    document.body.style.overflow = "";
+    arkaPlaniKilitle(false);
     window.removeEventListener("keydown", onKeydown);
     // Odak, modalı açan karta dönsün — sayfanın en başına değil.
     oncekiOdak?.focus();
@@ -341,7 +365,8 @@ onBeforeUnmount(() => {
   gsapTl?.kill();
   gecisTl?.kill();
   window.removeEventListener("resize", guncelleCihaz);
-  document.body.style.overflow = "";
+  // Modal acikken sayfadan cikilirsa smoother duraklamis kalmasin.
+  arkaPlaniKilitle(false);
   window.removeEventListener("keydown", onKeydown);
 });
 </script>
@@ -505,7 +530,12 @@ onBeforeUnmount(() => {
 .kmodal__content {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* `justify-content: center` DEĞİL: içerik taşınca flex ortalaması taşmayı
+     iki uca eşit dağıtıyor ve ÜST TARAF ERİŞİLEMEZ oluyor — kolon açılışta
+     scrollTop 60 ile geliyordu, kicker top:-58px'te görünmez kalıyordu
+     (ölçüldü). `center` yerine `safe center`: sığdığında ortalar, taşınca
+     üstten hizalar. */
+  justify-content: safe center;
   min-height: 0;
   overflow-y: auto;
   /* DİKKAT: burada `scrollbar-width`/`scrollbar-color` BİLEREK YOK.
@@ -525,7 +555,7 @@ onBeforeUnmount(() => {
    nedeni orada anlatıldı. */
 
 .kmodal__kicker {
-  margin: 0 0 10px;
+  margin: 0 0 clamp(6px, 1vmin, 10px);
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -535,7 +565,11 @@ onBeforeUnmount(() => {
 .kmodal__code {
   margin: 0;
   font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
-  font-size: clamp(44px, 4.4vw, 76px);
+  /* Ölçek YALNIZ genişliğe bağlı olamaz: 1440x620 gibi kısa-geniş laptop
+     ekranlarında 4.4vw = 63px başlık + geniş boşluklar kolonu taşırıyordu
+     (ölçüldü: 622px'te 78px taşma). `vmin` yüksekliği de hesaba katıyor,
+     alçak ekranda başlık kendiliğinden küçülüyor. */
+  font-size: clamp(40px, 5.6vmin, 76px);
   font-weight: 500;
   line-height: 0.94;
   letter-spacing: -0.02em;
@@ -543,7 +577,7 @@ onBeforeUnmount(() => {
 }
 
 .kmodal__meta {
-  margin: 16px 0 0;
+  margin: clamp(10px, 1.6vmin, 16px) 0 0;
   font-size: 12px;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -555,7 +589,7 @@ onBeforeUnmount(() => {
 }
 
 .kmodal__desc {
-  margin: 24px 0 0;
+  margin: clamp(14px, 2.4vmin, 24px) 0 0;
   max-width: 46ch;
   font-size: clamp(16px, 1.15vw, 19px);
   line-height: 1.5;
@@ -566,14 +600,14 @@ onBeforeUnmount(() => {
    zaten dar, ikiye bölünce dt/dd satırları sarmalanıyordu. */
 .kmodal__details {
   display: grid;
-  gap: 19px;
-  margin-top: 25px;
-  padding-top: 21px;
+  gap: clamp(13px, 1.9vmin, 19px);
+  margin-top: clamp(16px, 2.5vmin, 25px);
+  padding-top: clamp(14px, 2.1vmin, 21px);
   border-top: 1px solid var(--hairline);
 }
 
 .kmodal__block h3 {
-  margin: 0 0 12px;
+  margin: 0 0 clamp(8px, 1.2vmin, 12px);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -583,7 +617,7 @@ onBeforeUnmount(() => {
 
 .kmodal__block dl {
   display: grid;
-  gap: 10px;
+  gap: clamp(7px, 1vmin, 10px);
   margin: 0;
 }
 
@@ -636,7 +670,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 32px;
+  margin-top: clamp(18px, 3.2vmin, 32px);
 }
 
 .kmodal__cta,
@@ -716,14 +750,85 @@ onBeforeUnmount(() => {
   margin-top: -24px;
 }
 
-.kmodal__nav--prev { left: 24px; }
-.kmodal__nav--next { right: 24px; }
+/* Oklar panelin DIŞINDA durmalı. Sabit `24px` kenar payı geniş ekranda
+   çalışıyordu ama panel kenara yaklaşınca ok panelin üstüne biniyor ve
+   kapı görselini kapatıyordu (ölçüldü: 1024px'te sol ok 24–68, panel 31'de
+   başlıyor).
+
+   `--kmodal-yan-bosluk`: panelin bir yanında kalan boşluk. Panel
+   `min(100vw - 2*sayfa-payı, 1180px)` genişliğinde ve ortalanmış, yani
+   boşluk = (100vw - panel) / 2. Ok o boşluğun ortasına oturuyor; boşluk
+   dar kaldığında `max()` tabanı devreye girip ok kenara yapışıyor. */
+.kmodal__nav {
+  --kmodal-yan-bosluk: calc((100vw - min(100vw - 2 * clamp(24px, 3vw, 48px), 1180px)) / 2);
+  --kmodal-ok-yeri: max(10px, calc(var(--kmodal-yan-bosluk) / 2 - 24px));
+}
+
+.kmodal__nav--prev { left: var(--kmodal-ok-yeri); }
+.kmodal__nav--next { right: var(--kmodal-ok-yeri); }
 
 .kmodal__nav:hover {
   background: var(--surface-2);
 }
 
 /* --- Mobil: tek kolon ---------------------------------------------------- */
+/* ── TABLET / KÜÇÜK LAPTOP (861–1180px) ───────────────────────────────────
+   Burası boştu: panel iki kolon kalıyor ama iki kolon da dar düşüyordu.
+   Görsele daha az, bilgiye daha çok pay veriyoruz — sağdaki metin sarmalı
+   asıl sıkışan taraftı. */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .kmodal__panel {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+    gap: clamp(24px, 3vw, 40px);
+    padding: clamp(24px, 3vw, 40px);
+  }
+
+  /* Etiket sütunu daralsın: 88px taban dar kolonda değerleri sıkıştırıyordu. */
+  .kmodal__block dl > div {
+    grid-template-columns: minmax(72px, 0.32fr) 1fr;
+    gap: 4px 12px;
+  }
+
+  /* Bu aralıkta panel neredeyse tüm ekranı kaplıyor (ölçüldü: 1024px'te
+     panel 31–993), yanda ok için yer YOK — dışarı koymaya çalışmak okları
+     kapı görselinin üstüne bindiriyordu. Onun yerine oklar panelin İÇİNE,
+     görselin alt-sol köşesine ikili grup olarak iniyor. */
+  .kmodal__nav {
+    top: auto;
+    bottom: clamp(24px, 3vw, 40px);
+    width: 44px;
+    height: 44px;
+    margin-top: 0;
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.10);
+  }
+
+  .kmodal__nav--prev {
+    left: clamp(24px, 3vw, 40px);
+    right: auto;
+  }
+
+  .kmodal__nav--next {
+    left: calc(clamp(24px, 3vw, 40px) + 52px);
+    right: auto;
+  }
+}
+
+/* ── ALÇAK EKRAN (yükseklik ≤ 700px) ──────────────────────────────────────
+   1440x620 gibi kısa-geniş laptop'larda kolon taşıyordu (ölçüldü: 78px).
+   Genişlik yeterli olduğu için media query yalnız YÜKSEKLİĞE bakıyor. */
+@media (min-width: 861px) and (max-height: 700px) {
+  .kmodal__panel {
+    max-height: 94vh;
+    padding: clamp(20px, 2.4vw, 34px);
+  }
+
+  /* NOT: burada açıklamayı `-webkit-line-clamp: 2` ile kırpıyorduk —
+     metin "...özel mimari..." diye kesiliyordu. Ölçüldü: kırpma
+     kaldırıldığında 700px yükseklikte kolon taşması yine 0. Yukarıdaki
+     `vmin` tabanlı tipografi/boşluk ölçeği yeri zaten açıyor, kırpma
+     gereksizdi. Cümleyi kesmek ürün metnini sakatlıyor; geri konmasın. */
+}
+
 @media (max-width: 860px) {
   .kmodal {
     padding: 0;
@@ -745,8 +850,13 @@ onBeforeUnmount(() => {
   }
 
   .kmodal__content {
+    /* Sağ kenar boşluğu masaüstündeki scrollbar payını (14px) telafi eden
+       negatif margin'i mobilde de dengelemeli, yoksa metin kenara yapışıyor. */
     padding: 24px 20px 32px;
-    max-height: 46dvh;
+    padding-right: 34px;
+    /* Sabit 46dvh değildi: bilgi tablosu geldikten sonra kısa telefonlarda
+       içerik boğuluyordu. Alt sınır tabloyu, üst sınır görseli koruyor. */
+    max-height: clamp(300px, 54dvh, 62dvh);
     border-top: 1px solid var(--hairline);
   }
 
@@ -754,10 +864,81 @@ onBeforeUnmount(() => {
     font-size: clamp(34px, 9vw, 46px);
   }
 
+  /* Oklar içerik panelinin üstünde durur — yüksekliği artık değişken
+     olduğu için sabit `46dvh` yerine görsel alanının içine sabitliyoruz. */
   .kmodal__nav {
     top: auto;
-    bottom: calc(46dvh + 20px);
+    bottom: auto;
     margin-top: 0;
+    /* Görsel alanı = panel yüksekliği eksi içerik kolonu. Ok'u onun
+       dikey ortasına değil, alt kenarına yakın koyuyoruz ki kapıyı
+       kapatmasın. */
+    top: clamp(180px, 26dvh, 300px);
+  }
+}
+
+/* ── YATAY TELEFON ────────────────────────────────────────────────────────
+   844x390 gibi yatay telefonlarda tek kolon düzeni kapıyı 90px'e eziyordu
+   (ölçüldü) — kapı vitrininde görselin yok olması kabul edilemez. Bu
+   ekranlarda genişlik bol, yükseklik kıt: iki kolona geri dönüyoruz. */
+@media (max-width: 860px) and (orientation: landscape) and (max-height: 520px) {
+  .kmodal__panel {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 20px;
+    padding: 16px;
+  }
+
+  .kmodal__visual {
+    border-radius: 2px 2px 20px;
+  }
+
+  .kmodal__content {
+    max-height: none;
+    padding: 0 20px 0 0;
+    border-top: 0;
+  }
+
+  /* Başlık yükseklikten pay çalıyor. */
+  .kmodal__code {
+    font-size: clamp(28px, 7vmin, 40px);
+  }
+
+  /* Açıklama bu yükseklikte lüks; bilgi tablosu ve CTA öncelikli. */
+  .kmodal__desc {
+    display: none;
+  }
+
+  /* Oklar görselin alt köşesine, panelin içine. */
+  .kmodal__nav {
+    top: auto;
+    bottom: 14px;
+    width: 38px;
+    height: 38px;
+    margin-top: 0;
+  }
+
+  .kmodal__nav--prev { left: 14px; right: auto; }
+  .kmodal__nav--next { left: 60px; right: auto; }
+}
+
+/* Çok dar telefon (≤380px): iki CTA yan yana sığmıyordu, alt alta. */
+@media (max-width: 380px) {
+  .kmodal__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .kmodal__cta,
+  .kmodal__link {
+    justify-content: center;
+  }
+
+  /* Etiket/değer yan yana sığmıyor: değer alta geçsin. */
+  .kmodal__block dl > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }
 
