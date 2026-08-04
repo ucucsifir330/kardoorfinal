@@ -22,7 +22,7 @@ import { motion } from "motion-v";
 import { useHomeCatalog } from "~/composables/useHomeCatalog";
 import { useCatalogCopy } from "~/composables/useCatalogCopy";
 import { useLiquidMenu } from "~/composables/useLiquidMenu";
-import CatalogModalLab from "~/components/lab/CatalogModalLab.vue";
+import CatalogProductModal from "~/components/home/CatalogProductModal.vue";
 import { useCatalogStructuralLine } from "~/composables/useCatalogStructuralLine";
 import { useMagneticHover } from "~/composables/useMagneticHover";
 
@@ -127,29 +127,6 @@ const enterTransition = { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const };
 const CARD_STAGGER = 0.08;
 
 /**
- * Kart hover'ı SPRING ile: CSS geçişi imleç hızla girip çıkınca baştan
- * başlıyor, spring mevcut hızdan devam ediyor — fiziksel his. Ayrıca
- * WAAPI'ye derlendiği için ana iş parçacığının dışında oynuyor.
- *
- * bounce düşük (0.15): kapı kartı zıplamamalı, sadece "canlı" durmalı.
- */
-const cardSpring = { type: "spring" as const, bounce: 0.15, duration: 0.4 };
-
-/** Kart: hafifçe yükselir. Gölge de burada — CSS'te değil. */
-const cardHover = {
-  y: -6,
-  boxShadow: "0 8px 18px rgba(0, 0, 0, 0.08)",
-  transition: cardSpring
-};
-
-/**
- * Görsel: kart hover'ında büyür. Eskiden CSS'teydi ama `!important`
- * transform kuralı Motion'ın layoutId geçişini de eziyordu — iki sistem
- * aynı property'yi yönetemez.
- */
-const imageHover = { scale: 1.045, y: -3, transition: cardSpring };
-
-/**
  * ScrollSmoother'ın taşıdığı kap, IO'nun kökü olarak verilir. Kesişim
  * viewport'a göre değil bu kaba göre hesaplanır.
  */
@@ -250,7 +227,6 @@ const inViewOptions = {
                       <span class="catalog-tag-line"></span>
                     </span>
                   </template>
-
                 </div>
               </div>
 
@@ -292,25 +268,17 @@ const inViewOptions = {
                 :while-in-view="enterTo"
                 :in-view-options="inViewOptions"
                 :transition="{ ...enterTransition, delay: index * CARD_STAGGER }"
-                :variants="{ hover: cardHover }"
-                while-hover="hover"
-                :while-press="{ scale: 0.985 }"
                 @click="openProductModal(item.productIndex)"
               >
                 <div class="catalog-product-image-wrap">
-                  <!-- layoutId: modaldaki görselle AYNI kimlik. Tıklanınca
-                       Motion aradaki geçişi kendisi kurar. -->
-                  <motion.img
-                    :layout-id="`door-${item.code}`"
+                  <img
                     :src="thumb(item.image)"
                     :alt="catalogCopy.productImageAlt"
                     class="catalog-product-image"
                     loading="lazy"
                     decoding="async"
-                    :variants="{ hover: imageHover }"
-                    :transition="{ type: 'spring', bounce: 0.18, duration: 0.55 }"
                     @error="handleImageError($event, item.localImage)"
-                  />
+                  >
                 </div>
 
                 <div class="catalog-product-bottom">
@@ -381,23 +349,19 @@ const inViewOptions = {
     </div>
   </section>
 
-  <!-- AnimatePresence modalın İÇİNDE (Teleport'un altında): burada
-       sarmak "non-element root node" uyarısı veriyor, çünkü Teleport
-       içeriği body'ye taşıyor ve Vue canlandırılabilir bir kök göremiyor. -->
-  <!-- v-if YOK: bileşen hep mount kalır, görünürlüğü içerideki
-       AnimatePresence yönetir. Dıştaki v-if bileşeni komple kaldırıyordu,
-       o yüzden çıkış animasyonu hiç oynayamıyordu (Teleport içindeki
-       AnimatePresence kaldırma kararını göremiyor). -->
-  <!-- Modal LAB sürümü: iki kolon, panel yükselir, sade içerik.
-       Eski CatalogProductModal.vue production'da duruyor, dokunulmadı
-       (yedek: backups/CatalogProductModal.vue.eski-2026-08-04.bak). -->
-  <CatalogModalLab
+  <CatalogProductModal
+    v-if="activeProduct"
     :product="activeProduct"
+    :product-index="activeProductIndex"
     :copy="catalogCopy"
     :series="activeSeries"
     :collection="activeCollection"
+    :category="activeCategory"
+    :system="activeSystem"
     @close="closeProductModal"
     @prev="showPreviousProduct"
     @next="showNextProduct"
+    @toggle-like="toggleLike"
+    @image-error="handleImageError"
   />
 </template>
