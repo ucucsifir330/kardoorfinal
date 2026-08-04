@@ -233,12 +233,12 @@
   </template>
 
 <script setup lang="ts">
-import { gsap } from "gsap";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import type { ComponentPublicInstance } from "vue";
 import { useCatalogCopy } from "~/composables/useCatalogCopy";
 import { useLiquidMenu } from "~/composables/useLiquidMenu";
 import { useCatalogStructuralLine } from "~/composables/useCatalogStructuralLine";
+import { useMagneticHover } from "~/composables/useMagneticHover";
 
 const {
   catalogBlocks,
@@ -429,49 +429,12 @@ const handleCatalogScroll = () => {
   requestCatalogRowCheck();
 };
 
-const handleCatalogMagnetMove = (event: MouseEvent) => {
-  const zone = event.currentTarget as HTMLElement;
-  const target = zone.querySelector<HTMLElement>(".catalog-tag-part, .catalog-learn-more__circle") || zone;
-  const rect = zone.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-  const dx = event.clientX - centerX;
-  const dy = event.clientY - centerY;
-  const radius = Math.min(Math.max(Math.max(rect.width, rect.height) / 2, 58), 86);
-  const distance = Math.hypot(dx, dy);
-
-  if (distance > radius) {
-    handleCatalogMagnetLeave(event);
-    return;
-  }
-
-  const pull = 1 - distance / radius;
-
-  gsap.to(target, {
-    x: dx * 0.28 * pull,
-    y: dy * 0.28 * pull,
-    rotate: dx * 0.045 * pull,
-    scale: 1 + pull * 0.045,
-    duration: 0.85,
-    ease: "power3.out",
-    overwrite: "auto"
-  });
-};
-
-const handleCatalogMagnetLeave = (event: MouseEvent) => {
-  const zone = event.currentTarget as HTMLElement;
-  const target = zone.querySelector<HTMLElement>(".catalog-tag-part, .catalog-learn-more__circle") || zone;
-
-  gsap.to(target, {
-    x: 0,
-    y: 0,
-    rotate: 0,
-    scale: 1,
-    duration: 0.36,
-    ease: "elastic.out(1, 0.45)",
-    overwrite: true
-  });
-};
+// "Tümü" bağlantısının mıknatıs etkisi kendi sahibinde (useMagneticHover):
+// katalogla ilişkisi yok, herhangi bir bağlantıda kullanılabilir.
+const {
+  onMove: handleCatalogMagnetMove,
+  onLeave: handleCatalogMagnetLeave
+} = useMagneticHover();
 
 const handleCatalogImageError = (event: Event, fallbackSrc?: string) => {
   if (!fallbackSrc) return;
