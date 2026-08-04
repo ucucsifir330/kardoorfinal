@@ -44,6 +44,8 @@ const panelClass = [
   'product-modal-panel relative grid overflow-hidden',
   'grid-cols-[minmax(420px,0.95fr)_minmax(500px,1.05fr)] gap-[clamp(42px,5vw,78px)]',
   'w-[min(100%,1380px)] min-h-[min(780px,84vh)] max-h-[calc(100dvh-clamp(48px,6vw,96px))]',
+  // Grid satırları kabın payını aşmasın; çocuklar min-h-0 ile küçülebiliyor.
+  'grid-rows-[minmax(0,1fr)]',
   'p-[clamp(42px,4.2vw,68px)]',
   'border border-[rgba(18,18,18,0.065)] bg-[rgba(255,255,255,0.92)]',
   '[box-shadow:0_42px_130px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.72)]',
@@ -80,13 +82,20 @@ const nextClass = `${navBase} product-modal-next max-[760px]:right-[12px]`;
 
 /* --- Gorsel -------------------------------------------------------------- */
 const visualClass = [
-  'product-modal-visual relative flex min-w-0 flex-col justify-center',
+  // min-h-0 ŞART: grid/flex çocuğunun varsayılan `min-height: auto` değeri
+  // içeriğin altına küçülmesini engelliyor. Onsuz görsel kolonu 969px'e
+  // çıkıp panelin max-h'ini deliyordu (ölçüldü: 674px ekranda 34 eleman
+  // viewport dışına taşıyordu).
+  'product-modal-visual relative flex min-w-0 min-h-0 flex-col justify-center',
   'max-[760px]:row-start-1 max-[760px]:h-full max-[760px]:w-full max-[760px]:overflow-hidden max-[760px]:p-0'
 ].join(' ');
 
 const visualFrameClass = [
   'product-modal-visual-frame flex items-center justify-center overflow-hidden',
-  'min-h-[clamp(520px,65vh,680px)] border border-[rgba(0,0,0,0.05)]',
+  // min-height DEĞİL: sabit 520px, kısa ekranlarda (674px viewport) modalın
+  // kendi max-h'ini aşıyordu — görsel + metin toplamı 969px'e çıkıp alt
+  // bilgiler kesiliyordu. Şimdi kalan alana yayılıyor, tabanı korunuyor.
+  'h-full min-h-0 border border-[rgba(0,0,0,0.05)]',
   'bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(242,242,238,0.96)),#f4f4f1]',
   'max-[1080px]:min-h-[420px]',
   'max-[760px]:h-full max-[760px]:w-full max-[760px]:min-h-0 max-[760px]:rounded-none',
@@ -94,7 +103,7 @@ const visualFrameClass = [
 ].join(' ');
 
 const imageClass = [
-  'product-modal-image block w-auto max-w-[92%] max-h-[66vh] object-contain',
+  'product-modal-image block w-auto max-w-[92%] max-h-[min(66vh,100%)] object-contain',
   '[filter:drop-shadow(0_34px_42px_rgba(0,0,0,0.20))]',
   'max-[1080px]:max-h-[420px]',
   'max-[760px]:h-full max-[760px]:w-full max-[760px]:max-h-none max-[760px]:max-w-full',
@@ -110,7 +119,14 @@ const captionClass = [
 
 /* --- Icerik -------------------------------------------------------------- */
 const contentClass = [
+  // justify-center DEĞİL: içerik kabın payını aştığında ortalama, üst ve alt
+  // uçları eşit taşırıyor — kaydırma açık olsa bile başa dönülemiyordu
+  // (ölçüldü: specs tablosu 696px'e taşıyordu, viewport 674px).
+  // justify-start + auto margin: sığıyorsa ortalı görünür, sığmıyorsa
+  // baştan başlar ve kaydırılır.
   'product-modal-content flex min-w-0 min-h-0 flex-col justify-center overflow-y-auto py-0',
+  // Çocuklar küçülmesin: kaydırma kabın işi, içeriğin sıkışması değil.
+  '[&>*]:shrink-0',
   '[scrollbar-width:thin]',
   'max-[760px]:row-start-2 max-[760px]:block max-[760px]:max-h-[52dvh]',
   'max-[760px]:px-5 max-[760px]:pt-5 max-[760px]:pb-7',
@@ -444,6 +460,22 @@ const finishesClass = [
 }
 
 .product-modal-specs div:hover { transform: translateY(-3px); }
+
+/* Sıra numarası kendi satırında dursun: span/strong bitişik yazıldığı için
+   "01Güçlendirilmiş gövde" diye okunuyordu. Numara küçük ve soluk bir
+   üst-etiket, başlık altında. */
+.product-modal-specs div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-modal-specs span {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: rgba(0, 0, 0, 0.42);
+}
 
 .product-modal-finishes button,
 .product-modal-finishes span {
