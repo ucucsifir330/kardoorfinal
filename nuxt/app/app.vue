@@ -114,12 +114,18 @@ const shellClasses = computed(() => [
   `app-shell--${mode.value}`,
   {
     "app-shell--references": isReferencesRoute.value,
-    // Perde altındaki içerik SSR'da da gizli başlar. Bu sınıf olmadan sunucu
-    // hero kabuğunu ve navbar'ı OPAK basıyordu; WelcomeScreen ise `v-if` ile
-    // yalnız istemcide mount olduğu için, JS yüklenene kadar (~650ms ölçüldü)
-    // sayfa açıkta kalıyor, sonra hidrasyonla birden loader beliriyordu.
-    // Kullanıcı "hero → karartma → loader → hero" sırası görüyordu.
-    "app-shell--content-hidden": !isPageContentVisible.value
+    // Gizleme YALNIZ AÇILIŞ PERDESİ (WelcomeScreen) için.
+    //
+    // Neden gerekli: SSR sayfayı opak basıyor ama WelcomeScreen'i basmıyor —
+    // o `v-if` ile yalnız istemcide mount oluyor. JS yüklenene kadar sayfa
+    // ham haliyle görünüyordu (ölçüldü: loader gelmeden 30 kare boyunca
+    // navbar+hero+katalog ekranda).
+    //
+    // Neden ROTA GEÇİŞİNDE YOK: orada mavi perde zaten üstü örtüyor, ayrıca
+    // gizlemeye gerek yok. `shouldMountStartupScreens` tam bu ayrımı taşıyor:
+    // yalnız ilk açılışta true, geçişte false.
+    "app-shell--content-hidden":
+      shouldMountStartupScreens.value && !isPageContentVisible.value
   }
 ]);
 
