@@ -15,11 +15,10 @@
  * Prod build'de sayfa ana sayfaya yönlenir — lab yalnız geliştirmede yaşar.
  */
 import { navigateTo } from "#imports";
-// Lab artık PRODUCTION bileşeninin test bankı: değiştirme fazında lab
-// sürümü HomeCatalog.vue'nun içeriği OLDU (ayrı kopya aynı commit'te
-// silindi — "iki sahip birlikte yaşamaz" kuralı). Burada açık import,
-// auto-import manifest bayatlama tuzağına karşı.
-import CatalogLab from "~/components/home/HomeCatalog.vue";
+// Lab AYRI dosya: production HomeCatalog.vue'ya hiç dokunmuyor.
+// Yeni sistem burada kuruluyor, beğenilince değiştirme fazı gelir.
+// Açık import — auto-import manifest bayatlama tuzağına karşı.
+import CatalogLab from "~/components/lab/CatalogLab.vue";
 
 if (!import.meta.dev) {
   navigateTo("/", { redirectCode: 302 });
