@@ -98,10 +98,13 @@ const activeCollection = computed(
 const activeCategory = computed(
   () => activeBlock.value?.description ?? activeProduct.value?.category ?? ""
 );
-const activeSystem = computed(() =>
-  activeBlock.value
-    ? `${activeBlock.value.cardTitle} / ${catalogCopy.value.modal.systemFallback}`
-    : activeProduct.value?.system ?? ""
+/**
+ * Sistem adı. Blok başlığını BAŞA EKLEMİYORUZ: o zaten seri adı ve modalın
+ * üst satırında görünüyordu — "Alüminyum Sistemler / Çelik / Alüminyum kapı
+ * sistemi" gibi kendini tekrar eden bir değer çıkıyordu (ölçüldü).
+ */
+const activeSystem = computed(
+  () => activeProduct.value?.system ?? catalogCopy.value.modal.systemFallback
 );
 
 /** ImageKit görseli düşerse yerel kopyaya geç. */
@@ -153,13 +156,16 @@ const imageHover = { scale: 1.045, y: -3, transition: cardSpring };
  * ScrollSmoother'ın taşıdığı kap, IO'nun kökü olarak verilir. Kesişim
  * viewport'a göre değil bu kaba göre hesaplanır.
  */
-// Modal açıkken Esc kapatır, oklar ürünler arası gezer.
-onMounted(() => {
-  window.addEventListener("keydown", handleProductModalKeydown);
-});
-
+/**
+ * Klavye gezinmesini MODAL'IN KENDİSİ yönetiyor (CatalogModalLab).
+ *
+ * Burada da `handleProductModalKeydown` window'a bağlıydı: iki dinleyici aynı
+ * tuşu işliyordu ve tek ArrowRight ürünü İKİ İLERİ atlıyordu (ölçüldü:
+ * AL-001 → AL-003). Eski modalın kendi klavye desteği yoktu, o yüzden bu
+ * bağlama oradan kalmış. Modal artık odak tuzağını da yönettiği için tek
+ * sahip olması şart.
+ */
 onBeforeUnmount(() => {
-  window.removeEventListener("keydown", handleProductModalKeydown);
   // Modal açıkken sayfadan çıkılırsa body overflow kilidi kalmasın.
   resetCatalogModalState();
 });
@@ -396,6 +402,7 @@ const inViewOptions = {
     :copy="catalogCopy"
     :series="activeSeries"
     :collection="activeCollection"
+    :system="activeSystem"
     @close="closeProductModal"
     @prev="showPreviousProduct"
     @next="showNextProduct"

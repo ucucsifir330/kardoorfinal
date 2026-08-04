@@ -40,6 +40,7 @@ const props = withDefaults(defineProps<{
   copy: Record<string, any>;
   series: string;
   collection: string;
+  system: string;
   /**
    * Hangi açılış oynasın. VERİLMEZSE cihaza göre otomatik:
    * masaüstü → g-sahne, mobil → m-olcek. Lab değiştiricisi bunu ezer.
@@ -166,6 +167,7 @@ const gsapHedefler = () => {
       panel.querySelector(".kmodal__code"),
       panel.querySelector(".kmodal__meta"),
       panel.querySelector(".kmodal__desc"),
+      panel.querySelector(".kmodal__details"),
       panel.querySelector(".kmodal__actions")
     ].filter(Boolean)
   };
@@ -232,33 +234,112 @@ const kapat = () => {
     .to(h.perde, { opacity: 0, duration: 0.2, ease: "power1.in" }, "-=0.16");
 };
 
+/* ── ÜRÜN DEĞİŞİMİ ────────────────────────────────────────────────────────
+   Ok tuşları/butonları ürünü değiştirince içerik ANINDA yer değiştiriyordu —
+   hangi kapıya geçtiğin belli olmuyordu. Şimdi görsel yön duyarlı kayıyor:
+   ileri gidersen sağdan, geri gelirsen soldan giriyor. */
+const gecisYonu = ref<1 | -1>(1);
+let gecisTl: gsap.core.Timeline | null = null;
+
+const urunDegisti = () => {
+  const h = gsapHedefler();
+  if (!h || azHareket()) return;
+
+  gecisTl?.kill();
+  const x = 34 * gecisYonu.value;
+
+  gecisTl = gsap.timeline();
+  gecisTl
+    .fromTo(h.gorsel, { x, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.44, ease: "power3.out" })
+    .fromTo(h.metinler, { y: 12, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.36, ease: "power2.out", stagger: 0.04 }, "-=0.32");
+};
+
+const oncekiUrun = () => {
+  gecisYonu.value = -1;
+  emit("prev");
+};
+
+const sonrakiUrun = () => {
+  gecisYonu.value = 1;
+  emit("next");
+};
+
+/* ── ODAK TUZAĞI ──────────────────────────────────────────────────────────
+   Modal açıkken Tab arkadaki sayfaya kaçıyordu: klavye kullanıcısı modaldan
+   çıkıp geri dönemiyordu. Kapanınca odak, modalı açan karta geri döner. */
+let oncekiOdak: HTMLElement | null = null;
+
+const odaklanabilirler = (): HTMLElement[] => {
+  const kap: HTMLElement | null = perdeRef.value?.$el ?? perdeRef.value;
+  if (!kap) return [];
+  return [...kap.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )].filter((el) => el.offsetParent !== null);
+};
+
+const odagiTut = (event: KeyboardEvent) => {
+  const liste = odaklanabilirler();
+  if (liste.length === 0) return;
+
+  const ilk = liste[0]!;
+  const son = liste[liste.length - 1]!;
+  const aktif = document.activeElement;
+
+  if (event.shiftKey && aktif === ilk) {
+    event.preventDefault();
+    son.focus();
+  } else if (!event.shiftKey && aktif === son) {
+    event.preventDefault();
+    ilk.focus();
+  }
+};
+
 /* --- Klavye + gövde kilidi ------------------------------------------------ */
 const onKeydown = (event: KeyboardEvent) => {
   if (!acik.value) return;
   if (event.key === "Escape") kapat();
-  if (event.key === "ArrowLeft") emit("prev");
-  if (event.key === "ArrowRight") emit("next");
+  if (event.key === "ArrowLeft") oncekiUrun();
+  if (event.key === "ArrowRight") sonrakiUrun();
+  if (event.key === "Tab") odagiTut(event);
 };
 
 watch(acik, async (aciMi) => {
   if (!import.meta.client) return;
 
   if (aciMi) {
+    oncekiOdak = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeydown);
-    if (gsapMi.value) {
-      await nextTick();
-      requestAnimationFrame(gsapAc);
-    }
+    await nextTick();
+    requestAnimationFrame(() => {
+      if (gsapMi.value) gsapAc();
+      // Odak BİR KARE SONRA modala girer. Aynı karede denenince panel henüz
+      // boyanmamış oluyordu: offsetParent null dönüyor, odaklanabilir liste
+      // boş çıkıyor ve odak kartta kalıyordu (ölçüldü).
+      requestAnimationFrame(() => odaklanabilirler()[0]?.focus());
+    });
   } else {
     document.body.style.overflow = "";
     window.removeEventListener("keydown", onKeydown);
+    // Odak, modalı açan karta dönsün — sayfanın en başına değil.
+    oncekiOdak?.focus();
+    oncekiOdak = null;
   }
+});
+
+/** Modal AÇIKKEN ürün değişirse geçişi oynat; açılışta gsapAc zaten çalışıyor. */
+watch(() => props.product?.code, (yeni, eski) => {
+  if (!import.meta.client || !acik.value) return;
+  if (!yeni || !eski || yeni === eski) return;
+  requestAnimationFrame(urunDegisti);
 });
 
 onBeforeUnmount(() => {
   if (!import.meta.client) return;
   gsapTl?.kill();
+  gecisTl?.kill();
   window.removeEventListener("resize", guncelleCihaz);
   document.body.style.overflow = "";
   window.removeEventListener("keydown", onKeydown);
@@ -286,11 +367,11 @@ onBeforeUnmount(() => {
           </svg>
         </button>
 
-        <button class="kmodal__nav kmodal__nav--prev" :aria-label="copy.modal.previous" @click="emit('prev')">
+        <button class="kmodal__nav kmodal__nav--prev" :aria-label="copy.modal.previous" @click="oncekiUrun">
           <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15,5 8,12 15,19" /></svg>
         </button>
 
-        <button class="kmodal__nav kmodal__nav--next" :aria-label="copy.modal.next" @click="emit('next')">
+        <button class="kmodal__nav kmodal__nav--next" :aria-label="copy.modal.next" @click="sonrakiUrun">
           <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9,5 16,12 9,19" /></svg>
         </button>
 
@@ -320,6 +401,34 @@ onBeforeUnmount(() => {
             <motion.p class="kmodal__desc" v-bind="gsapMi ? {} : { variants: icerikOge }">
               {{ copy.modal.description }}
             </motion.p>
+
+            <!-- Teknik bilgi: sadeleştirmede tamamen çıkarılmıştı ama sağ
+                 kolonun %59'u boş kalıyordu (ölçüldü). B2B ziyaretçi
+                 sistem/kullanım bilgisini modal içinde bekliyor.
+                 CTA'nın ÜSTÜNDE: önce karar bilgisi, sonra eylem. -->
+            <motion.div class="kmodal__details" v-bind="gsapMi ? {} : { variants: icerikOge }">
+              <div class="kmodal__block">
+                <h3>{{ copy.modal.infoTitle }}</h3>
+                <dl>
+                  <div>
+                    <dt>{{ copy.modal.fields.system }}</dt>
+                    <dd>{{ system || copy.modal.systemFallback }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ copy.modal.fields.usage }}</dt>
+                    <dd>{{ copy.modal.usage }}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div class="kmodal__block">
+                <h3>{{ copy.modal.filesTitle }}</h3>
+                <div class="kmodal__files">
+                  <a href="#">{{ copy.modal.files.specSheet }}</a>
+                  <a href="#">{{ copy.modal.files.drawing }}</a>
+                </div>
+              </div>
+            </motion.div>
 
             <motion.div class="kmodal__actions" v-bind="gsapMi ? {} : { variants: icerikOge }">
               <NuxtLink class="kmodal__cta" to="/contact">{{ copy.modal.quote }}</NuxtLink>
@@ -438,6 +547,76 @@ onBeforeUnmount(() => {
   font-size: clamp(16px, 1.15vw, 19px);
   line-height: 1.5;
   color: var(--ink-body);
+}
+
+/* Teknik bilgi bloğu. İki sütun değil TEK kolon içinde iki blok: sağ kolon
+   zaten dar, ikiye bölünce dt/dd satırları sarmalanıyordu. */
+.kmodal__details {
+  display: grid;
+  gap: 19px;
+  margin-top: 25px;
+  padding-top: 21px;
+  border-top: 1px solid var(--hairline);
+}
+
+.kmodal__block h3 {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.kmodal__block dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+/* Etiket sabit genişlikte, değer kalan alanı alır — değerler aynı hizada
+   başlasın diye. Dar ekranda tek sütuna düşer. */
+.kmodal__block dl > div {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.34fr) 1fr;
+  gap: 4px 18px;
+  align-items: baseline;
+}
+
+.kmodal__block dt {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.kmodal__block dd {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.kmodal__files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kmodal__files a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.22s ease, background 0.22s ease;
+}
+
+.kmodal__files a:hover {
+  border-color: var(--brand-500);
+  background: var(--surface-2);
 }
 
 .kmodal__actions {
