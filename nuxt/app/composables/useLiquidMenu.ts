@@ -53,6 +53,13 @@ const easeOutExpo = (
 export const useLiquidMenu = () => {
   const activeCard = ref<string | null>(null);
   const expanded = ref<Record<string, boolean>>({});
+  /**
+   * İkon hover'da X'e döner. Menü KAPANDIKTAN sonra imleç hâlâ kontrolün
+   * üstündeyse ikon hemen X'e dönmemeli — kullanıcı "kapattım" geri
+   * bildirimi alsın. Bu bayrak o durumu bastırır; pointer çıkıp yeniden
+   * girince temizlenir.
+   */
+  const iconHoverSuppressed = ref<Record<string, boolean>>({});
 
   const blobPaths = ref<Record<string, SVGPathElement>>({});
   const blobContainers = ref<Record<string, SVGSVGElement>>({});
@@ -208,6 +215,7 @@ export const useLiquidMenu = () => {
     }
 
     activeCard.value = id;
+    iconHoverSuppressed.value[id] = false;
     const container = blobContainers.value[id];
 
     if (container) {
@@ -229,12 +237,18 @@ export const useLiquidMenu = () => {
     if (activeCard.value !== id) return;
 
     activeCard.value = null;
+    iconHoverSuppressed.value[id] = false;
     stopLoop();
     resetShape(id);
   };
 
   const toggle = (id: string) => {
     expanded.value[id] = !expanded.value[id];
+
+    // Kapatıldı ve imleç hâlâ üstünde: ikon X'te takılı kalmasın.
+    if (!expanded.value[id] && activeCard.value === id) {
+      iconHoverSuppressed.value[id] = true;
+    }
 
     if (expanded.value[id]) {
       activeCard.value = id;
@@ -269,9 +283,14 @@ export const useLiquidMenu = () => {
 
   onBeforeUnmount(stopLoop);
 
+  /** Satıra `is-liquid-icon-hovered` verilmeli mi? */
+  const isIconHovered = (id: string) =>
+    activeCard.value === id && !expanded.value[id] && !iconHoverSuppressed.value[id];
+
   return {
     activeCard,
     expanded,
+    isIconHovered,
     setBlobPathRef,
     setBlobContainerRef,
     setHamburgerRef,

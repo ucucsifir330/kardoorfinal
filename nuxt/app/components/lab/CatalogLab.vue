@@ -61,6 +61,7 @@ const magnet = useMagneticHover();
 // işleyicileri kendi sahibinde (bkz. useLiquidMenu).
 const {
   expanded: liquidExpanded,
+  isIconHovered,
   setBlobPathRef,
   setBlobContainerRef,
   setHamburgerRef,
@@ -193,7 +194,10 @@ const inViewOptions = {
           :ref="setRowRef"
           :data-row-index="block.index"
           class="catalog-row"
-          :class="{ 'is-liquid-expanded': liquidExpanded[`block-${block.index}`] }"
+          :class="{
+            'is-liquid-expanded': liquidExpanded[`block-${block.index}`],
+            'is-liquid-icon-hovered': isIconHovered(`block-${block.index}`)
+          }"
         >
           <div class="catalog-row-info">
             <motion.div
