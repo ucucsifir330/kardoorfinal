@@ -508,8 +508,21 @@ onBeforeUnmount(() => {
   justify-content: center;
   min-height: 0;
   overflow-y: auto;
-  scrollbar-width: thin;
+  /* DİKKAT: burada `scrollbar-width`/`scrollbar-color` BİLEREK YOK.
+     Chrome bu standart özelliklerden birini görünce elemanı standart
+     scrollbar yoluna alıp `::-webkit-scrollbar` kurallarını tamamen yok
+     sayıyor — `!important` ile bile geçilemiyor (ölçüldü: çubuk 4px yerine
+     10px, `scrollbar-color` eklenince 15px kaldı).
+     Chrome/Safari inceltmeyi aşağıdaki webkit kurallarından alıyor;
+     Firefox kendi bloğunda, dosyanın sonunda. */
+  /* Çubuk metne değmesin. `padding` yerine `scrollbar-gutter` kullanmıyoruz:
+     çubuk yokken de yer ayırıp kolonu daraltıyordu. */
+  padding-right: 14px;
+  margin-right: -14px;
 }
+
+/* Scrollbar kuralları AŞAĞIDAKİ global blokta — buraya yazılamıyor,
+   nedeni orada anlatıldı. */
 
 .kmodal__kicker {
   margin: 0 0 10px;
@@ -752,6 +765,47 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .kmodal__close:hover {
     transform: none;
+  }
+}
+</style>
+
+<!--
+  Scrollbar kuralları GLOBAL blokta olmak zorunda.
+
+  Neden: modal `<Teleport to="body">` ile gövdeye taşınıyor ve
+  `::-webkit-scrollbar` bir pseudo-element. `<style scoped>` seçicinin
+  sonuna kendi data attribute'ünü ekleyemediği için düz yazım hiç
+  tutmuyordu; `:deep()` de Teleport zinciri koptuğu için tutmadı
+  (ikisi de ölçüldü: çubuk 10px kalmaya devam etti).
+
+  `.kmodal__content` yalnız bu bileşende geçen bir sınıf, global olması
+  sızıntı üretmiyor.
+-->
+<style>
+.kmodal__content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.kmodal__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kmodal__content::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+  border-radius: 999px;
+}
+
+.kmodal__content::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-soft);
+}
+
+/* Firefox: webkit pseudo-element'lerini bilmiyor, standart özelliklere
+   ihtiyacı var. `@supports not selector(::-webkit-scrollbar)` sayesinde bu
+   blok Chrome'a HİÇ ulaşmıyor — yukarıdaki çakışma orada tekrar doğmuyor. */
+@supports not selector(::-webkit-scrollbar) {
+  .kmodal__content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--hairline) transparent;
   }
 }
 </style>
