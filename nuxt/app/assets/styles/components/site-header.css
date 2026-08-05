@@ -887,16 +887,65 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
     display: none;
   }
 
-  /* Çubuk: düz, tam genişlik, içerik iki uca yaslı. */
+  /* Çubuk: kenardan kenara DEĞİL — referanstaki gibi kenarlardan içeride
+     duran, köşeleri yuvarlak YÜZEN KART. Açılınca panel aynı karttan
+     aşağı büyür (aşağıdaki panel bloğu). */
   .site-nav__bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    width: 100%;
-    padding: 0 16px;
+    width: calc(100% - 20px);
+    margin-top: max(10px, env(safe-area-inset-top));
+    padding: 0 8px 0 14px;
     min-height: 56px;
-    border-radius: 0;
+    border-radius: 18px;
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.30);
+  }
+
+  /* Menü açıkken çubuğun gölgesi PANELİN ÜSTÜNE düşüyor ve K satırının
+     altında bant gibi bir çizgi bırakıyordu — tek kart yanılsaması
+     bozuluyordu. Açıkken gölge panele geçer, çubuk gölgesiz kalır. */
+  .site-header--menu-open .site-nav__bar {
+    box-shadow: none;
+  }
+
+  /* Referansta çubukta yalnız marka + hamburger var: tema/dil anahtarları
+     PANELDE zaten duruyor, çubuktakiler gizlenir. */
+  .site-nav__group--right {
+    display: none;
+  }
+
+  /* "Menü" kelimesi yok — yalnız ikon. font-size:0 kelimeyi susturur,
+     ikon span'ları kendi boyutunu koruyor. */
+  .site-nav__menu-toggle {
+    font-size: 0;
+    gap: 0;
+    justify-content: center;
+  }
+
+  .site-nav__menu-icon span {
+    width: 20px;
+  }
+
+  /* ── AÇILAN PANEL: AYRI KUTU DEĞİL, AYNI KARTIN UZAMASI ─────────────
+     Panel çubukla AYNI genişlik, AYNI sol/sağ hiza, AYNI köşe yarıçapı ve
+     AYNI zemin rengini alır; çubuk (z-index üstte) panelin ilk satırı gibi
+     görünür — logo solda, X sağda, altında linkler, en altta tema/dil.
+     Renkler birebir aynı olduğu için bindikleri yerde ek yeri görünmez. */
+  .site-nav__panel-wrap {
+    top: max(10px, env(safe-area-inset-top));
+    width: calc(100vw - 20px);
+  }
+
+  .site-nav__panel {
+    padding: 68px 14px 14px;
+    border-radius: 18px;
+  }
+
+  .site-nav__panel-link {
+    text-align: left;
+    padding: 13px 14px;
   }
 }
 
@@ -916,11 +965,8 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
    damlası markayı zaten temsil ettiği için logoyu (ve masaüstü blend
    kopyalarını) burada gizliyoruz. */
 @media (max-width: 680px) {
-  .site-nav__bar {
-    width: 100%;
-    border-radius: 0;
-  }
-
+  /* Çubuk kuralları 880 bloğunda: yüzen kart orada tanımlı, burada onu
+     ezen "tam genişlik + köşesiz" kural KALDIRILDI. */
   .site-nav__bar::before,
   .site-nav__bar::after {
     display: none;
@@ -939,8 +985,10 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
     --header-pill-height: 42px;
   }
 
+  /* Panel genişliği ÇUBUKLA AYNI kalmalı (tek kart yanılsaması);
+     eski dar `min(320px, ...)` değeri kaldırıldı. */
   .site-nav__panel-wrap {
-    width: min(320px, calc(100vw - 28px));
+    width: calc(100vw - 20px);
   }
 }
 
