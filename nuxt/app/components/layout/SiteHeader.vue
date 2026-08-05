@@ -141,10 +141,25 @@ const killMenuAnimation = (items = getPanelItems()) => {
 };
 
 /** Panel, damlanın merkezinden büyüyüp yine oraya kapanır. */
-const setPanelOrigin = () => {
-  const logo = getLogoElement();
+/**
+ * ≤880px'te menü, K'den büyüyen bir kabarcık DEĞİL — çubuktan aşağı inen
+ * bir PERDE. Referanstan ölçüldü (supaste.com 430x932): nav ekranın
+ * tepesine yapışık, açılınca yüksekliği 50px → 506px büyüyor.
+ */
+const isPerdeModu = () =>
+  import.meta.client && window.matchMedia("(max-width: 880px)").matches;
 
-  if (!panel.value || !panelWrap.value || !logo) return;
+const setPanelOrigin = () => {
+  if (!panel.value || !panelWrap.value) return;
+
+  // Perde üst kenardan açılır; origin çubuğun üstü.
+  if (isPerdeModu()) {
+    gsap.set(panel.value, { transformOrigin: "50% 0%" });
+    return;
+  }
+
+  const logo = getLogoElement();
+  if (!logo) return;
 
   const logoRect = logo.getBoundingClientRect();
   const wrapRect = panelWrap.value.getBoundingClientRect();
@@ -187,8 +202,23 @@ const openMenu = () => {
 
   runInAnimationContext(() => {
     if (prefersReducedMotion()) {
-      gsap.set(panel.value, { scale: 1, opacity: 1 });
+      gsap.set(panel.value, { scale: 1, scaleY: 1, opacity: 1 });
       gsap.set(items, { y: 0, opacity: 1 });
+      return;
+    }
+
+    // PERDE (mobil): yalnız DİKEY açılım. Yatayda panel zaten çubukla aynı
+    // genişlikte; ölçeklenirse kenarlar oynar ve tek parça hissi bozulur.
+    if (isPerdeModu()) {
+      menuTimeline = gsap
+        .timeline({ defaults: { ease: "power4.out" } })
+        .fromTo(panel.value, { scaleY: 0 }, { scaleY: 1, duration: 0.52 }, 0)
+        .fromTo(
+          items,
+          { y: 12, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.3, stagger: 0.045, ease: "power3.out" },
+          0.16
+        );
       return;
     }
 
@@ -225,9 +255,21 @@ const closeMenu = () => {
 
   runInAnimationContext(() => {
     if (prefersReducedMotion()) {
-      gsap.set(panel.value, { scale: 0.08, opacity: 0 });
+      gsap.set(panel.value, isPerdeModu() ? { scaleY: 0 } : { scale: 0.08, opacity: 0 });
       gsap.set(items, { y: 14, opacity: 0 });
       finishClose();
+      return;
+    }
+
+    if (isPerdeModu()) {
+      menuTimeline = gsap
+        .timeline({ onComplete: finishClose })
+        .to(
+          items,
+          { y: -8, opacity: 0, duration: 0.16, stagger: { each: 0.02, from: "end" }, ease: "power2.in" },
+          0
+        )
+        .to(panel.value, { scaleY: 0, duration: 0.34, ease: "power3.in" }, 0.06);
       return;
     }
 
@@ -256,12 +298,9 @@ const toggleMenu = () => {
  *    yerine sayfanın en başına döner.
  */
 const onLogoClick = (event: MouseEvent) => {
-  if (isMenuMode.value) {
-    event.preventDefault();
-    toggleMenu();
-    return;
-  }
-
+  // K yalnız ANA SAYFAYA döner. Eskiden menü modunda paneli açıyordu:
+  // menünün iki ayrı tetikleyicisi olması (K + hamburger) kafa karıştırıyordu.
+  // Tek giriş noktası sağdaki hamburger.
   if (route.path !== "/") return; // başka sayfa → NuxtLink normal çalışsın
 
   event.preventDefault();
@@ -417,9 +456,7 @@ watch(
                 class="site-nav__logo"
                 to="/"
                 :aria-label="logoLabel"
-                :aria-expanded="isMenuMode ? isMenuOpen : undefined"
-                :aria-controls="isMenuMode ? 'site-nav-panel' : undefined"
-                :aria-current="!isMenuMode && isActive('/') ? 'page' : undefined"
+                :aria-current="isActive('/') ? 'page' : undefined"
                 @click="onLogoClick"
               >
                 <span class="site-nav__logo-mark">

@@ -793,7 +793,12 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
     --nav-slot: auto;
     --nav-pad-y: 0px;
     --nav-pad-x: 16px;
-    --nav-flare: 0px;
+    /* Flare = çubuğun yan uçlarındaki içbükey kıvrım (bar::before/::after).
+       Masaüstündeki imzanın aynısı; 0 yapınca çubuk düz kutuya dönüyordu.
+       Değer aynı zamanda çubuğun YAN BOŞLUĞU: flare'ler çubuğun dışına
+       oturduğu için çubuk iki yandan bu kadar içeride kalıyor.
+       18px'ti — kenara fazla yakındı, 26px ile nefes alıyor. */
+    --nav-flare: 26px;
     --nav-radius: 0px;
   }
 
@@ -821,17 +826,18 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
   /* Hamburger SOL grupta duruyor (şablon yapısı) ama görsel olarak sağa
      gitmeli: flex order ile grubu sona alıyoruz. Marka (slot) -1 ile
      başa geçiyor, sıra: marka → diller → hamburger. */
+  /* 1fr — auto — 1fr: K matematiksel olarak tam ortada kalır. */
   .site-nav__group--left {
     order: 3;
-    flex: 0 0 auto;
+    flex: 1 1 0;
     justify-content: flex-end;
   }
 
   .site-nav__group--right {
-    order: 2;
-    flex: 0 0 auto;
+    order: 1;
+    flex: 1 1 0;
+    justify-content: flex-start;
     gap: 10px;
-    margin-left: auto;
   }
 
   .site-nav__menu-toggle {
@@ -844,13 +850,14 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
 }
 
 @media (max-width: 880px) {
-  /* Orta yuva artık ortada değil: marka olarak SOLA geçiyor. */
+  /* K ORTADA — ama SARKAN DAMLA DEĞİL: çubuğun içinde, hizasında duran
+     düz marka. Damlanın oyuk/fillet geometrisi mobilde kapalı
+     (--nav-overlap/mouth/fillet = 0). */
   .site-nav__slot {
-    order: 1;
+    order: 2;
     width: auto;
     min-width: 0;
-    /* `margin-right: auto` YOK: sağdaki grup zaten `margin-left: auto`
-       ile boşluğu yiyor, ikisi birden olunca marka ortaya kayıyordu. */
+    margin: 0 auto;
   }
 
   .site-nav__node {
@@ -867,16 +874,17 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
   /* Logo: sarkan 60px damla değil, çubuğa oturan 32px kare marka. */
   .site-nav__logo {
     position: static;
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
+    /* 50px'lik çubukta 32px fazla geliyordu. */
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
     transform: none;
     box-shadow: none;
   }
 
   .site-nav__logo-mark {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 
   /* Damlanın oyuğunu çizen pseudo katmanlar susuyor. */
@@ -895,12 +903,19 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    width: calc(100% - 20px);
-    margin-top: max(10px, env(safe-area-inset-top));
-    padding: 0 8px 0 14px;
-    min-height: 56px;
-    border-radius: 18px;
-    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.30);
+    /* Flare'ler çubuğun DIŞ yanlarına oturuyor (right:100% / left:100%),
+       o yüzden çubuk tam genişlikte değil — iki yanda flare kadar pay
+       kalmalı, yoksa kıvrımlar ekran dışına taşar. */
+    width: calc(100% - 2 * var(--nav-flare));
+    margin-top: 0;
+    padding: max(0px, env(safe-area-inset-top)) 8px 0 14px;
+    /* 56px'ti — referans ölçüldü: supaste.com 430x932'de çubuk 50px.
+       Bizimki aşağı doğru fazla yer kaplıyordu. */
+    min-height: 50px;
+    /* Üst köşeler DÜZ: çubuk tepeye yapışık, kıvrımı flare veriyor.
+       Alt köşe 18px'ti; flare 26'ya çıkınca iki eğri üst üste binip uçlar
+       BOMBELİ duruyordu. 12px ile uç keskinleşiyor, kıvrımı flare taşıyor. */
+    border-radius: 0 0 12px 12px;
   }
 
   /* Menü açıkken çubuğun gölgesi PANELİN ÜSTÜNE düşüyor ve K satırının
@@ -910,9 +925,11 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
     box-shadow: none;
   }
 
-  /* Referansta çubukta yalnız marka + hamburger var: tema/dil anahtarları
-     PANELDE zaten duruyor, çubuktakiler gizlenir. */
-  .site-nav__group--right {
+  /* Çubukta yalnız K + hamburger var: tema/dil anahtarları panelde.
+     `display: none` DEĞİL — grup kutusu YER TUTMALI, yoksa 1fr—auto—1fr
+     dengesi bozulup K sola kayıyor (ölçüldü: K merkezi 48, ekran 215).
+     İçeriği gizliyoruz, kutuyu bırakıyoruz. */
+  .site-nav__group--right > * {
     display: none;
   }
 
@@ -933,19 +950,44 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
      AYNI zemin rengini alır; çubuk (z-index üstte) panelin ilk satırı gibi
      görünür — logo solda, X sağda, altında linkler, en altta tema/dil.
      Renkler birebir aynı olduğu için bindikleri yerde ek yeri görünmez. */
+  /* Panel çubukla AYNI hizada: çubuk flare payı kadar dar, panel de öyle. */
+  /* Panel ÇUBUKLA birebir aynı hizada (ölçüldü: çubuk 18–412 iken panel
+     10–420 çıkıyordu, iki yanda 8px çıkıntı görünüyordu). */
   .site-nav__panel-wrap {
-    top: max(10px, env(safe-area-inset-top));
-    width: calc(100vw - 20px);
+    top: 0;
+    left: var(--nav-flare);
+    right: var(--nav-flare);
+    /* `100vw` DEĞİL: scrollbar'ı da sayıyor, 394 yerine 410.4px veriyordu
+       ve panel sağdan 16px taşıyordu. `left`+`right` zaten iki kenarı
+       sabitliyor — genişliği tarayıcı türetsin. */
+    width: auto !important;
+    transform: none;
   }
 
   .site-nav__panel {
-    padding: 68px 14px 14px;
-    border-radius: 18px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .site-nav__panel {
+    /* Üst dolgu = çubuk yüksekliği + nefes payı; çubuk 50px'e indi. */
+    padding: 60px 14px 14px;
+    /* Üst köşeler düz (çubuk oradan devam ediyor), alt köşeler yuvarlak.
+       Çubukla AYNI yarıçap — tek parça görünmeli. */
+    border-radius: 0 0 12px 12px;
+    /* PERDE başlangıcı: kapalıyken dikeyde sıfır, üst kenardan açılır.
+       Masaüstündeki `scale(0.08)` kabarcık başlangıcı burada geçersiz. */
+    transform: scaleY(0);
+    transform-origin: 50% 0%;
+    opacity: 1;
   }
 
   .site-nav__panel-link {
     text-align: left;
-    padding: 13px 14px;
+    /* Panel aşağı doğru fazla uzuyordu. Dokunma hedefi hâlâ 44px üstü:
+       10 + 10 + ~26px satır yüksekliği. */
+    padding: 10px 14px;
+    font-size: 19px;
   }
 }
 
@@ -960,18 +1002,13 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
   }
 }
 
-/* Telefon: çubuk tam genişliğe oturur, flare'ler anlamını yitirir.
-   Aynı noktada sola sabit marka ile koyu çubuk çakışıyor; çubuktaki K
-   damlası markayı zaten temsil ettiği için logoyu (ve masaüstü blend
-   kopyalarını) burada gizliyoruz. */
+/* Telefon: sola sabit marka ile koyu çubuk aynı noktada çakışıyor;
+   çubuktaki K markayı zaten temsil ettiği için logoyu (ve masaüstü blend
+   kopyalarını) burada gizliyoruz.
+   FLARE'LER AÇIK: çubuğun yan uçlarındaki içbükey kıvrım masaüstündeki
+   imzanın aynısı, mobilde de kalıyor. Bir ara `display: none` yapmıştım —
+   çubuk kutu gibi görünüyordu. */
 @media (max-width: 680px) {
-  /* Çubuk kuralları 880 bloğunda: yüzen kart orada tanımlı, burada onu
-     ezen "tam genişlik + köşesiz" kural KALDIRILDI. */
-  .site-nav__bar::before,
-  .site-nav__bar::after {
-    display: none;
-  }
-
   .site-header__brand--ghost,
   .brand-blend-layer {
     display: none;
