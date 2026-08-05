@@ -551,11 +551,6 @@ onBeforeUnmount(() => {
   background: var(--surface);
   box-shadow: 0 42px 130px rgba(0, 0, 0, 0.16);
 
-  /* İkincil metin rengi. `--ink-soft` (#8A8073) bu panel zemininde küçük
-     metinde 3.69:1 veriyordu — WCAG AA 4.5 istiyor, dört yerde kalıyordu
-     (kicker, meta, dt etiketleri, h3 başlıkları). Aynı sıcak hue'nun daha
-     koyu tonu: 4.92:1. Global token'a dokunmuyoruz, sızıntı olmasın. */
-  --kmodal-ink-ikincil: #746C61;
 }
 
 /* --- Sol: görsel --------------------------------------------------------- */
@@ -610,7 +605,7 @@ onBeforeUnmount(() => {
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--kmodal-ink-ikincil);
+  color: var(--text-secondary);
 }
 
 .kmodal__code {
@@ -632,7 +627,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: var(--kmodal-ink-ikincil);
+  color: var(--text-secondary);
 }
 
 .kmodal__meta span {
@@ -663,7 +658,7 @@ onBeforeUnmount(() => {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--kmodal-ink-ikincil);
+  color: var(--text-secondary);
 }
 
 .kmodal__block dl {
@@ -683,7 +678,7 @@ onBeforeUnmount(() => {
 
 .kmodal__block dt {
   font-size: 13px;
-  color: var(--kmodal-ink-ikincil);
+  color: var(--text-secondary);
 }
 
 .kmodal__block dd {
@@ -723,7 +718,7 @@ onBeforeUnmount(() => {
    `opacity` düşürmüyoruz — kontrastı AA'nın altına indiriyordu. */
 .kmodal__files button:disabled {
   border-style: dashed;
-  color: var(--kmodal-ink-ikincil);
+  color: var(--text-secondary);
   cursor: not-allowed;
 }
 

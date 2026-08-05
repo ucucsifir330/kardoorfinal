@@ -41,4 +41,12 @@ useHead({ title: "Katalog Lab" });
   min-height: 100vh;
   background: var(--paper);
 }
+
+/* Mobilde 120px navbar payı çok: ölçüldü, sayfa/section/main dolguları üst
+   üste binince ilk kapı 538px'e düşüyordu (ekranın %64'ü boş). */
+@media (max-width: 860px) {
+  .catalog-lab-page {
+    padding-top: 76px;
+  }
+}
 </style>

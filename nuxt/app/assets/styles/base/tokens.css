@@ -140,7 +140,13 @@
      Tema dosyalari yalnizca DEGISKEN atamali; duzen kurali yazmamali. --- */
   --bg-color: var(--paper);
   --text-primary: var(--ink);
-  --text-secondary: var(--ink-soft);
+  /* `--ink-soft` DEGIL: o ton kart zemininde (#F2EEE6) 3.69:1 veriyor,
+     WCAG AA kucuk metin icin 4.5 istiyor (olculdu: urun adi 13px, urun
+     kodu 10px). Ayni sicak hue'nun daha koyu tonu -> 5.11:1.
+     Deger EN KOYU zemine gore secildi: modal paneli (#FBF9F5) daha acik,
+     orada oran daha da yuksek cikiyor. `--ink-soft` kendisi dokunulmadan
+     duruyor; cizgi/kenarlik gibi metin-disi yerlerde hala dogru deger o. */
+  --text-secondary: #6B6359;
   --entrance-handoff-bg: var(--paper);
   --catalog-stage-bg: var(--paper);
   --catalog-stage-surface-bg: var(--paper);

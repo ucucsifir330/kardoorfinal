@@ -478,3 +478,175 @@ const inViewOptions = {
     @next="showNextProduct"
   />
 </template>
+
+<!--
+  MOBİL DÜZEN — lab'in kendi katmanı.
+
+  `home-catalog.css` YAMANMIYOR: lab'in amacı zaten o dosyadan kurtulmak.
+  Mobil kurallar burada, bileşenin yanında duruyor.
+
+  Karar (2026-08-05): masaüstündeki 2 sütunlu grid mobile TAŞINMIYOR.
+  Her seri bir ŞERİT — kapılar yatay kayıyor, dikeyde 7 seri sıralanıyor.
+  Parmağın doğal hareketi; her seri kendi kimliğini koruyor; dikey scroll
+  68 karttan 7 şeride iniyor.
+
+  `:deep()` şart: bu sınıfların çoğu `v-for` içindeki alt öğelerde ve
+  global CSS'ten geliyor, scoped seçici tek başına ulaşamıyor.
+  `!important` kullanımı da bilinçli — devralınan kurallar zaten
+  `!important` yazılmış, bastırmanın başka yolu yok (bkz. home-catalog.css
+  686 adet). Lab production'a taşınırken o kurallar silinecek ve buradaki
+  `!important`'lar da düşecek.
+-->
+<style scoped>
+@media (max-width: 860px) {
+  /* ── ÜSTTEKİ ÖLÜ ALAN ────────────────────────────────────────────────
+     Ölçüldü (390x844): başlık 271px'de, ilk kapı 538px'de — ekranın %64'ü
+     kapı görmeden geçiyordu. Üç dolgu üst üste biniyordu: sayfa 120px,
+     section 96px, main 55px. Hepsi masaüstü sahnesinden devralınmıştı. */
+  .catalog-section :deep(.catalog-main) {
+    padding-top: 0 !important;
+  }
+
+  /* Section'ın 96px'i masaüstü sahnesinin nefes payı; mobilde navbar
+     zaten sayfa dolgusuyla ayrılıyor, ikisi üst üste biniyordu. */
+  .catalog-section {
+    padding-top: 28px !important;
+  }
+
+  /* "Koleksiyonlar" başlığı ölçüldü: 43px yükseklik + boşluklarıyla
+     ekranın üçte birini yiyordu. Mobilde marka anı bir satırla kurulur. */
+  .catalog-section :deep(.catalog-title) {
+    font-size: 30px !important;
+  }
+
+  /* ── SATIR: bilgi üstte, şerit altta ─────────────────────────────── */
+  .catalog-section :deep(.catalog-row) {
+    display: block !important;
+    margin-bottom: 44px !important;
+  }
+
+  /* Sol rail mobilde başlık yığınına dönüşüyordu — seri numarası ve adı
+     yeterli, etiket listesi (Dış İklim / Kasa Seri / Kanat Seri) kapıdan
+     yer çalıyor. Filtre kararı: YOK, seriler zaten ayrı bölümler. */
+  .catalog-section :deep(.catalog-row-info .catalog-tags),
+  .catalog-section :deep(.catalog-row-info .catalog-all-models) {
+    display: none !important;
+  }
+
+  .catalog-section :deep(.catalog-row-info) {
+    margin-bottom: 14px !important;
+  }
+
+  .catalog-section :deep(.catalog-product-family) {
+    margin: 0 !important;
+    font-size: 12px !important;
+    letter-spacing: 0.18em !important;
+  }
+
+  .catalog-section :deep(.catalog-designer) {
+    margin: 2px 0 0 !important;
+    font-size: 21px !important;
+    line-height: 1.15 !important;
+  }
+
+  /* Kart kabuğu şeridi kısıtlamasın: yatay kaydırma kenardan kenara. */
+  .catalog-section :deep(.catalog-card) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    background: transparent !important;
+  }
+
+  .catalog-section :deep(.catalog-card-header) {
+    padding: 0 0 10px !important;
+  }
+
+  .catalog-section :deep(.catalog-card-title) {
+    font-size: 15px !important;
+  }
+
+  /* ── ŞERİT ───────────────────────────────────────────────────────────
+     Grid değil, yatay akış. `scroll-snap` ile kapılar hizada durur;
+     parmağı bırakınca ortada bir kapı kalır, yarım kapıda asılı kalmaz. */
+  .catalog-section :deep(.catalog-product-grid) {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    /* Şerit ekranın kenarına kadar uzasın ama ilk/son kapı hizalı kalsın:
+       negatif margin + eşit padding. Kart kabuğu zaten 16px içeride, o
+       yüzden negatif margin de 16px.
+       `scroll-padding-inline` ŞART: onsuz snap padding'i yok sayıyor,
+       şerit 20px kayıp açılıyor ve ilk kapı ekranın solundan taşıyordu
+       (ölçüldü: scrollLeft 20, ilk kart -4px). */
+    margin: 0 -16px !important;
+    padding: 2px 16px 14px !important;
+    scroll-padding-inline: 16px !important;
+    scrollbar-width: none !important;
+  }
+
+  .catalog-section :deep(.catalog-product-grid)::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Kart genişliği: ekranda ~2.2 kapı görünsün. Yarım görünen üçüncü
+     kapı "devamı var" sinyali — kaydırılabilir olduğunu kendi anlatır. */
+  .catalog-section :deep(.catalog-product) {
+    flex: 0 0 auto !important;
+    width: calc((100vw - 32px - 12px) / 2.2) !important;
+    min-width: 132px !important;
+    scroll-snap-align: start !important;
+  }
+
+  .catalog-section :deep(.catalog-product-image-wrap) {
+    height: auto !important;
+    aspect-ratio: 3 / 4 !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* Ürün kodu `--ink-soft` kullanıyordu (home-catalog.css): kart zemininde
+     3.35:1, AA'nın altı. Tema-duyarlı token'a alınıyor — o token gündüzde
+     5.11:1 veriyor, gecede zaten yüksek. */
+  .catalog-section :deep(.catalog-code) {
+    color: var(--text-secondary) !important;
+  }
+
+  /* ── SERİ EYLEMLERİ ──────────────────────────────────────────────────
+     Ölçüldü: haplar 31–33px yükseklikteydi (dokunma tabanı 44px) ve üçü
+     de aynı ağırlıktaydı — hiçbiri birincil değildi, hiçbiri çağırmıyordu.
+     Şimdi ilki dolu, diğerleri çerçeveli. */
+  .catalog-section :deep(.liquid-actions) {
+    gap: 8px !important;
+    padding: 0 !important;
+  }
+
+  .catalog-section :deep(.liquid-actions li),
+  .catalog-section :deep(.liquid-actions li a) {
+    min-height: 44px !important;
+    padding: 0 18px !important;
+    font-size: 13px !important;
+    /* `--ink-body` DEĞİL: o token yalnız gündüz temasında tanımlı,
+       `.app-shell--night` içinde ezilmiyor — gece modunda gündüz mürekkebi
+       koyu zeminde kalıyordu, 1.35:1 ölçüldü, metin okunmuyordu.
+       `--text-secondary` iki temada da tanımlı. */
+    color: var(--text-secondary) !important;
+  }
+
+  .catalog-section :deep(.liquid-actions li:first-child) {
+    border-color: transparent !important;
+    background: var(--brand-700) !important;
+  }
+
+  .catalog-section :deep(.liquid-actions li:first-child a) {
+    color: var(--brand-100) !important;
+  }
+
+  .catalog-section :deep(.liquid-actions li:focus-visible),
+  .catalog-section :deep(.liquid-actions li a:focus-visible) {
+    outline: 2px solid var(--text-primary) !important;
+    outline-offset: 3px !important;
+  }
+}
+</style>
