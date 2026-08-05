@@ -47,7 +47,7 @@ const metin = computed(() => {
     return {
       toggle: acik.value ? "Close contact options" : "Open contact options",
       kicker: "Contact",
-      title: "Let's talk",
+      title: "Contact us",
       primary: "Plan a project",
       whatsapp: "WhatsApp",
       phone: "Call",
@@ -57,7 +57,7 @@ const metin = computed(() => {
   return {
     toggle: acik.value ? "İletişim seçeneklerini kapat" : "İletişim seçeneklerini aç",
     kicker: "İletişim",
-    title: "Görüşelim",
+    title: "Bize ulaş",
     primary: "Proje planla",
     whatsapp: "WhatsApp",
     phone: "Ara",
@@ -200,16 +200,31 @@ const heroSenkronKur = () => {
   });
 };
 
+/**
+ * Sol flare tetiğin SOL kenarına hizalanmalı. Tetik genişliği metne ve
+ * dile göre değişiyor (TR "Görüşelim" / EN "Let's talk"), sabit değer
+ * tutmuyor — ölçüp değişkene yazıyoruz.
+ */
+const tetikGenisligiOlc = () => {
+  const kok = kokRef.value;
+  const tetik = tetikRef.value;
+  if (!kok || !tetik) return;
+  kok.style.setProperty("--chub-trigger-w", `${Math.round(tetik.offsetWidth)}px`);
+};
+
 onMounted(() => {
   gsap.registerPlugin(ScrollTrigger);
   window.addEventListener("pointerdown", disaTiklama, { passive: true });
   window.addEventListener("keydown", klavye);
+  window.addEventListener("resize", tetikGenisligiOlc, { passive: true });
   heroSenkronKur();
+  requestAnimationFrame(tetikGenisligiOlc);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("pointerdown", disaTiklama);
   window.removeEventListener("keydown", klavye);
+  window.removeEventListener("resize", tetikGenisligiOlc);
   tl?.kill();
   heroTrigger?.kill();
 });
@@ -218,15 +233,25 @@ watch(() => route.fullPath, () => {
   acik.value = false;
   requestAnimationFrame(heroSenkronKur);
 });
+
+/** Dil değişince tetik genişliği değişir; flare hizası da yenilensin. */
+watch(locale, () => {
+  requestAnimationFrame(tetikGenisligiOlc);
+});
 </script>
 
 <template>
-  <aside
-    v-show="anaSayfaMi"
-    ref="kokRef"
-    class="chub"
-    :class="{ 'is-open': acik }"
-  >
+  <!-- `<Teleport to="body">` ŞART: sayfa `#smooth-content` içinde ve o katman
+       ScrollSmoother yüzünden transform taşıyor; transform'lu ata `position:
+       fixed`i kırıyor (ölçüldü: hub'ın alt kenarı -1845px çıkıyordu, ekranın
+       çok altında). Aynı tuzağa katalog modalında da düşülmüştü. -->
+  <Teleport to="body">
+    <aside
+      v-show="anaSayfaMi"
+      ref="kokRef"
+      class="chub"
+      :class="{ 'is-open': acik }"
+    >
     <div
       ref="panelRef"
       class="chub__panel"
@@ -283,23 +308,27 @@ watch(() => route.fullPath, () => {
       :aria-expanded="acik"
       @click="cevir"
     >
-      <span class="chub__trigger-copy">
-        <small>{{ metin.kicker }}</small>
-        {{ metin.title }}
-      </span>
+      <!-- Kicker YOK: tetikte "İLETİŞİM" + "Bize ulaş" iki satır olunca
+           aynı şeyi iki kez söylüyordu. Panel içindeki birincil eylemde
+           duruyor — orada bağlamı taşıyor. -->
+      <span class="chub__trigger-copy">{{ metin.title }}</span>
       <span class="chub__trigger-icon" aria-hidden="true">
+        <!-- İkon: baloncuk DEĞİL, "gönder" oku. "Bize ulaş" bir sohbet
+             daveti değil, bir eyleme çağrı — kağıt uçak/gönder oku o niyeti
+             taşıyor. Projedeki ikon stiliyle aynı: 24x24, stroke 1.9,
+             yuvarlak uçlar. -->
         <svg class="chub__icon chub__icon--chat" viewBox="0 0 24 24" fill="none">
-          <path d="M5.6 17.35C4.22 16.05 3.5 14.36 3.5 12.5C3.5 8.63 7.31 5.5 12 5.5C16.69 5.5 20.5 8.63 20.5 12.5C20.5 16.37 16.69 19.5 12 19.5C11.09 19.5 10.21 19.38 9.39 19.16L5.25 20.35L5.6 17.35Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M8.75 12.35H15.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-          <path d="M8.75 15H12.45" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+          <path d="M20.5 3.5L11 13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M20.5 3.5L14.4 20.5L11 13L3.5 9.6L20.5 3.5Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
         <svg class="chub__icon chub__icon--close" viewBox="0 0 24 24" fill="none">
           <path d="M7 7L17 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
           <path d="M17 7L7 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
         </svg>
       </span>
-    </button>
-  </aside>
+      </button>
+    </aside>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -317,19 +346,26 @@ watch(() => route.fullPath, () => {
   --chub-ink-dim: var(--slab-soft);
   --chub-line: rgba(255, 255, 255, 0.14);
   --chub-radius: 18px;
-  --chub-flare: 16px;
+  --chub-gap: 12px;
+  /* Flare = tetiğin üst kenarındaki içbükey kıvrım; navbar'ın imzası. */
+  --chub-flare: 18px;
   --chub-size: 60px;
   --chub-opacity: 1;
   --chub-y: 0px;
   --chub-pointer: auto;
 
   position: fixed;
-  right: clamp(18px, 2.45vw, 42px);
-  bottom: clamp(18px, 2.3vw, 34px);
+  /* Kenardan UZAK DEĞİL, sağ alt köşeye YAPIŞIK. Navbar üstte nasıl sayfaya
+     yapışıp alt köşelerinden flare ile bağlanıyorsa, hub da altta yapışıp
+     ÜST köşesinden bağlanıyor — aynı imza, ayna simetriği.
+     Eskiden 30px boşluk vardı; havada duran kutuda flare'in tutunacağı
+     yüzey olmuyordu (ölçüldü). */
+  right: 0;
+  bottom: 0;
   z-index: 82;
   display: grid;
   justify-items: end;
-  gap: 12px;
+  gap: var(--chub-gap);
   font-family: var(--header-font, var(--font-body));
   opacity: var(--chub-opacity);
   pointer-events: var(--chub-pointer);
@@ -344,7 +380,9 @@ watch(() => route.fullPath, () => {
   gap: 8px;
   width: min(292px, calc(100vw - 36px));
   padding: 10px;
-  border-radius: var(--chub-radius);
+  /* Sağ kenara yapışık: sağ alt köşe düz, diğerleri yuvarlak. */
+  border-radius: var(--chub-radius) 0 0 var(--chub-radius);
+  margin-right: 0;
   background: var(--chub-bar);
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.32);
   /* Başlangıç durumu GSAP'e ait DEĞİL, CSS'e: panel kapalıyken görünmez.
@@ -361,23 +399,6 @@ watch(() => route.fullPath, () => {
 
 .chub.is-open .chub__panel {
   pointer-events: auto;
-}
-
-/* Navbar imzası: panelin alt kenarında içbükey flare kıvrımı. Tetik hapıyla
-   panel arasındaki boşlukta duruyor, ikisini tek gövde gibi bağlıyor. */
-.chub__panel::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  right: var(--chub-flare);
-  width: var(--chub-flare);
-  height: var(--chub-flare);
-  pointer-events: none;
-  background: radial-gradient(
-    circle at bottom right,
-    transparent var(--chub-flare),
-    var(--chub-bar) calc(var(--chub-flare) + 0.5px)
-  );
 }
 
 /* ── BİRİNCİL EYLEM ──────────────────────────────────────────────────── */
@@ -409,8 +430,9 @@ watch(() => route.fullPath, () => {
   white-space: nowrap;
 }
 
-.chub__primary-copy small,
-.chub__trigger-copy small {
+/* `.chub__trigger-copy small` YOK: tetikte artık kicker yok, yalnız panel
+   içindeki birincil eylemde var. */
+.chub__primary-copy small {
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
@@ -474,19 +496,63 @@ watch(() => route.fullPath, () => {
   align-items: center;
   gap: 12px;
   min-height: var(--chub-size);
-  padding: 8px 8px 8px 19px;
+  /* Sağ kenara yapışık: sağ dolgu, kenar payını da içeriyor. */
+  padding: 8px 22px 8px 19px;
   border: 0;
-  border-radius: var(--chub-radius);
+  /* Yalnız SOL ÜST köşe yuvarlak — sağ ve alt kenarlar ekrana yapışık,
+     kıvrımı flare veriyor. Navbar'ın "üst köşeler düz, alt köşeler
+     yuvarlak" kuralının ayna simetriği. */
+  border-radius: var(--chub-radius) 0 0 0;
   background: var(--chub-bar);
   color: var(--chub-ink);
   font: inherit;
   cursor: pointer;
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.30);
-  transition: transform 0.28s var(--ease-soft);
+  box-shadow: -8px -8px 38px rgba(0, 0, 0, 0.28);
+  transition: filter 0.28s var(--ease-soft);
 }
 
 .chub__trigger:hover {
-  transform: translateY(-2px);
+  filter: brightness(1.12);
+}
+
+/* ── FLARE: İKİ KÖŞEDE ────────────────────────────────────────────────────
+   Navbar'da flare çubuğun İKİ yan ucunda; hub sağ alt köşede olduğu için
+   ikisi de tetiğin dışına bakıyor:
+
+     ::before → ÜST kenarda, yukarı kıvrılır (tetiği sağ kenara bağlar)
+     ::after  → SOL kenarda, sola kıvrılır (tetiği alt kenara bağlar)
+
+   İkisi birlikte tetiği köşeye "kaynatıyor" — navbar imzasının ayna
+   simetriği. */
+.chub__trigger::before,
+.chub__trigger::after {
+  content: "";
+  position: absolute;
+  width: var(--chub-flare);
+  height: var(--chub-flare);
+  pointer-events: none;
+}
+
+/* Üst köşe: tetiğin üstünde, sağ kenara yaslı. */
+.chub__trigger::before {
+  bottom: 100%;
+  right: 0;
+  background: radial-gradient(
+    circle at top left,
+    transparent var(--chub-flare),
+    var(--chub-bar) calc(var(--chub-flare) + 0.5px)
+  );
+}
+
+/* Sol köşe: tetiğin solunda, alt kenara yaslı. */
+.chub__trigger::after {
+  right: 100%;
+  bottom: 0;
+  background: radial-gradient(
+    circle at top left,
+    transparent var(--chub-flare),
+    var(--chub-bar) calc(var(--chub-flare) + 0.5px)
+  );
 }
 
 .chub__trigger:focus-visible {
@@ -495,9 +561,6 @@ watch(() => route.fullPath, () => {
 }
 
 .chub__trigger-copy {
-  display: grid;
-  gap: 3px;
-  text-align: left;
   font-size: 15px;
   font-weight: 700;
   line-height: 1.1;
