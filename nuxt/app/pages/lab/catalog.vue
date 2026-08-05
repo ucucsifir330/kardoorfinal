@@ -39,7 +39,22 @@ useHead({ title: "Katalog Lab" });
 .catalog-lab-page {
   padding-top: 120px;
   min-height: 100vh;
-  background: var(--paper);
+  /* `--paper` DEĞİL: o token her iki temada da krem (#F2EEE6), gece
+     modunda değişmiyor. Sayfa sarmalı krem kalırken bölüm lacivert
+     oluyordu ve üstteki dolgu bandında krem bir şerit görünüyordu
+     (ölçüldü: 0–76px arası sayfa bg, altı section bg).
+
+     Gündüzde section'ın kendi zemini yok (transparent) — sayfa zemini
+     görünüyor, `--catalog-stage-bg` doğru değer.
+     Gecede section `#080B18` alıyor; bandın onunla aynı olması için
+     aşağıdaki tema kuralı var. */
+  background: var(--catalog-stage-bg);
+}
+
+/* Gece: bant bölümün zeminiyle birebir aynı olmalı, yoksa üstte bir
+   ton farkı şerit gibi seçiliyor (#050714 vs #080B18 ölçüldü). */
+:global(.app-shell--night) .catalog-lab-page {
+  background: #080B18;
 }
 
 /* Mobilde 120px navbar payı çok: ölçüldü, sayfa/section/main dolguları üst

@@ -444,9 +444,13 @@ const inViewOptions = {
 
               <div class="liquid-menu-inner" @click.stop>
                 <ul class="liquid-actions">
+                  <!-- İki eylem: seriyi incele (birincil) ve teklif iste.
+                       "Seri Kataloğunu İndir" çıkarıldı — indirilecek dosya
+                       yok ve üç seçenek hiçbirini öne çıkarmıyordu.
+                       `downloadCatalog` sözlükte DURUYOR: production
+                       HomeCatalog.vue hâlâ kullanıyor. -->
                   <li><NuxtLink to="/catalog">{{ catalogCopy.actions.viewSeries }}</NuxtLink></li>
-                  <li>{{ catalogCopy.actions.downloadCatalog }}</li>
-                  <li>{{ catalogCopy.actions.requestOffer }}</li>
+                  <li><NuxtLink to="/contact">{{ catalogCopy.actions.requestOffer }}</NuxtLink></li>
                 </ul>
               </div>
             </div>
@@ -620,6 +624,19 @@ const inViewOptions = {
   .catalog-section :deep(.liquid-actions) {
     gap: 8px !important;
     padding: 0 !important;
+    /* İki eylem kaldı; üçüncüsü alta sarkmadığı için sarmaya gerek yok.
+       Sığmazsa daralsınlar, alt satıra düşmesinler. */
+    flex-wrap: nowrap !important;
+  }
+
+  .catalog-section :deep(.liquid-actions li) {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .catalog-section :deep(.liquid-actions li a) {
+    width: 100% !important;
+    justify-content: center !important;
   }
 
   .catalog-section :deep(.liquid-actions li),
