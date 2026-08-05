@@ -1,27 +1,22 @@
 <script setup lang="ts">
 /**
- * İLETİŞİM HUB'I — LAB SÜRÜMÜ
+ * İLETİŞİM HUB'I (lab sürümü)
  *
- * FloatingContactHub.vue'nun yerine geçmek üzere SIFIRDAN yazıldı.
- * Production dosyasına dokunulmuyor.
+ * Sayfanın sağ alt köşesine yapışan iletişim widget'ı. Kapalıyken tek bir
+ * hap ("Bize ulaş" + zarf ikonu); tıklanınca üstünde panel açılıyor:
+ * birincil eylem (/contact) + üç hızlı kanal (WhatsApp / telefon / e-posta).
  *
- * Eski sürümün dertleri (ölçüldü, 2026-08-05):
- *   • rAF SONSUZ DÖNGÜSÜ: saniyede 367 çağrı. Her karede hero'nun
- *     `getComputedStyle`'ını okuyup CSS değişkeni yazıyordu — ana sayfada
- *     hiç durmadan. Burada ScrollTrigger tek sefer kuruluyor, polling yok.
- *   • Tek elemanda 711 karakterlik Tailwind sınıf dizisi (toplam 4143).
- *     Stiller artık scoped CSS'te.
- *   • Animasyon düz CSS transition'dı; GSAP timeline'a alındı — eylemler
- *     kademeli giriyor (stagger).
- *   • Kendi cam sistemi vardı, navbar'la aynı aileden görünmüyordu.
- *     Şimdi navbar token'larını paylaşıyor + flare kıvrımı taşıyor.
+ * ÜÇ ŞEYİ AYNI ANDA YÖNETİYOR:
+ *   1. Panel açılış/kapanışı — GSAP timeline, kademeli giriş
+ *   2. Zarf ikonu — panelin durumunu yansıtır (kapalı/açık), boştayken süzülür
+ *   3. Hero senkronu — ana sayfada kapı sahnesi ilerledikçe hub soluyor
  *
- * Tasarım kararları (kullanıcı, 2026-08-05):
- *   renk/biçim → navbar ailesi; sağ alt köşeye yapışık, iki flare kıvrımı
- *   açılış     → kademeli: panel yükselir, eylemler sırayla girer
- *   ikon       → ZARF; panel açılınca kapak öne devrilir, kağıt yükselir.
- *                Hover'da hareket yok, X ikonu yok.
- *   metin      → "Bize ulaş" / "Contact us" (tetikte kicker yok)
+ * Görsel kimlik navbar'la ortak: aynı `--slab` renk ailesi ve aynı flare
+ * kıvrımı (bkz. site-header.css). Navbar üstte sayfaya yapışıp alt
+ * köşelerinden bağlanıyor; hub altta yapışıp üst/sol köşelerinden.
+ *
+ * Production'daki FloatingContactHub.vue'ya DOKUNULMUYOR — bu ayrı bir
+ * bileşen, beğenilirse değiştirme yapılacak.
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { gsap } from "gsap";
@@ -37,19 +32,19 @@ const props = withDefaults(defineProps<{
 const route = useRoute();
 const { locale } = useKardoorLocale();
 
-const acik = ref(false);
-const kokRef = ref<HTMLElement | null>(null);
+const isOpen = ref(false);
+const rootRef = ref<HTMLElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
-const tetikRef = ref<HTMLButtonElement | null>(null);
-const ikonRef = ref<SVGSVGElement | null>(null);
+const triggerRef = ref<HTMLButtonElement | null>(null);
+const iconRef = ref<SVGSVGElement | null>(null);
 
 /** Hub yalnız hero'lu sayfada: ana sayfa. Lab bunu aşabilir. */
-const anaSayfaMi = computed(() => props.forceVisible || route.path === "/");
+const isHomeRoute = computed(() => props.forceVisible || route.path === "/");
 
-const metin = computed(() => {
+const copy = computed(() => {
   if (locale.value === "en") {
     return {
-      toggle: acik.value ? "Close contact options" : "Open contact options",
+      toggle: isOpen.value ? "Close contact options" : "Open contact options",
       kicker: "Contact",
       title: "Contact us",
       primary: "Plan a project",
@@ -59,7 +54,7 @@ const metin = computed(() => {
     };
   }
   return {
-    toggle: acik.value ? "İletişim seçeneklerini kapat" : "İletişim seçeneklerini aç",
+    toggle: isOpen.value ? "İletişim seçeneklerini kapat" : "İletişim seçeneklerini aç",
     kicker: "İletişim",
     title: "Bize ulaş",
     primary: "Proje planla",
@@ -69,32 +64,32 @@ const metin = computed(() => {
   };
 });
 
-/* ── AÇILIŞ: KADEMELİ ─────────────────────────────────────────────────────
-   Panel yükselir, sonra üç eylem sırayla girer. Eski sürümde düz CSS
-   transition vardı — hepsi aynı anda geliyordu, dikkat sırası yoktu. */
-const azHareket = () =>
+/* ── PANEL AÇILIŞI / KAPANIŞI ────────────────────────────────────────────
+   Sıra bilinçli: panel önce gelir (zemin oturur), sonra birincil eylem,
+   en son üç kanal soldan sağa. Göz doğal olarak bu sırayı takip ediyor. */
+const prefersReducedMotion = () =>
   import.meta.client &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let tl: gsap.core.Timeline | null = null;
-let kapanisZamanAsimi = 0;
+let closeTimeout = 0;
 
-const eylemler = () =>
+const actionItems = () =>
   panelRef.value
     ? [...panelRef.value.querySelectorAll<HTMLElement>(".chub__action")]
     : [];
 
-const birincil = () =>
+const primaryItem = () =>
   panelRef.value?.querySelector<HTMLElement>(".chub__primary") ?? null;
 
-const ac = () => {
+const openPanel = () => {
   const panel = panelRef.value;
   if (!panel) return;
 
   tl?.kill();
 
-  if (azHareket()) {
-    gsap.set([panel, birincil(), ...eylemler()], { opacity: 1, y: 0, scale: 1 });
+  if (prefersReducedMotion()) {
+    gsap.set([panel, primaryItem(), ...actionItems()], { opacity: 1, y: 0, scale: 1 });
     return;
   }
 
@@ -102,104 +97,104 @@ const ac = () => {
   tl.fromTo(panel,
       { opacity: 0, y: 14, scale: 0.97 },
       { opacity: 1, y: 0, scale: 1, duration: 0.36 }, 0)
-    .fromTo(birincil(),
+    .fromTo(primaryItem(),
       { opacity: 0, y: 10 },
       { opacity: 1, y: 0, duration: 0.28 }, 0.08)
-    // Eylemler kademeli: soldan sağa, her biri 60ms arayla.
-    .fromTo(eylemler(),
+    // 60ms'lik stagger: kanallar tek tek girer, blok halinde patlamaz.
+    .fromTo(actionItems(),
       { opacity: 0, y: 12, scale: 0.94 },
       { opacity: 1, y: 0, scale: 1, duration: 0.3, stagger: 0.06 }, 0.14);
 };
 
-const kapat = () => {
+const closePanel = () => {
   const panel = panelRef.value;
-  if (!panel || !acik.value) {
-    acik.value = false;
+  if (!panel || !isOpen.value) {
+    isOpen.value = false;
     return;
   }
 
   tl?.kill();
 
-  if (azHareket()) {
-    acik.value = false;
+  if (prefersReducedMotion()) {
+    isOpen.value = false;
     return;
   }
 
-  // Kapanış açılışın tersi: eylemler önce ve sondan başlayarak çıkar.
+  // Kapanış açılışın tersi: kanallar sondan başlayarak çıkar.
   //
-  // GÜVENLİK AĞI: `acik` yalnız `onComplete`e bağlı olsaydı, timeline
-  // ilerlemediğinde panel açık kilitli kalırdı — arka plan sekmesinde
-  // tarayıcı rAF'ı saniyede 1-2 kareye düşürüyor ve GSAP ilerlemiyor
-  // (ölçüldü: tıklamadan 3sn sonra hâlâ açık). Zaman aşımı kapanışı
-  // her koşulda tamamlıyor.
-  let kapandi = false;
-  const bitir = () => {
-    if (kapandi) return;
-    kapandi = true;
-    window.clearTimeout(kapanisZamanAsimi);
-    acik.value = false;
+  // `isOpen` iki yoldan kapanır — timeline biterse `onComplete`, bitmezse
+  // 520ms'lik zaman aşımı. İkincisi şart: tarayıcı arka plan sekmesinde
+  // rAF'ı saniyede 1-2 kareye düşürüyor, GSAP ilerlemiyor ve panel açık
+  // kilitli kalıyor. Hangisi önce çalışırsa diğerini iptal ediyor.
+  let didClose = false;
+  const finishClose = () => {
+    if (didClose) return;
+    didClose = true;
+    window.clearTimeout(closeTimeout);
+    isOpen.value = false;
   };
 
-  kapanisZamanAsimi = window.setTimeout(bitir, 520);
+  closeTimeout = window.setTimeout(finishClose, 520);
 
-  tl = gsap.timeline({ onComplete: bitir });
-  tl.to(eylemler(),
+  tl = gsap.timeline({ onComplete: finishClose });
+  tl.to(actionItems(),
       { opacity: 0, y: 8, duration: 0.16, stagger: { each: 0.03, from: "end" }, ease: "power2.in" }, 0)
-    .to(birincil(), { opacity: 0, y: 6, duration: 0.16, ease: "power2.in" }, 0.04)
+    .to(primaryItem(), { opacity: 0, y: 6, duration: 0.16, ease: "power2.in" }, 0.04)
     .to(panel, { opacity: 0, y: 10, scale: 0.97, duration: 0.22, ease: "power2.in" }, 0.1);
 };
 
-const cevir = () => {
-  if (acik.value) {
-    kapat();
+const togglePanel = () => {
+  if (isOpen.value) {
+    closePanel();
     return;
   }
-  acik.value = true;
-  requestAnimationFrame(ac);
+  isOpen.value = true;
+  requestAnimationFrame(openPanel);
 };
 
 /**
- * Dışa tıklama, tetiğin KENDİ tıklamasını yakalamamalı.
+ * Panel dışına tıklayınca kapanır — ama tetiğin kendi tıklaması hariç.
  *
- * `pointerdown` `click`'ten ÖNCE ateşleniyor: hub kapalıyken tetiğe
- * basıldığında `acik` hâlâ false oluyor, erken çıkış çalışmıyor ve panel
- * açılır açılmaz kapanıyordu (ölçüldü: 279ms'de opacity 1 → 0).
- * Tetiğin içinden gelen pointerdown'ı ayrıca eliyoruz.
+ * `pointerdown` `click`'ten önce ateşlendiği için, hub kapalıyken tetiğe
+ * basıldığında bu handler `isOpen === false` görüyor ve "dışarı tıklandı"
+ * sanıyor. Sonuç: panel açılır açılmaz kapanıyor. Tetikten gelen olayı
+ * ayrıca eleyerek çözülüyor.
  */
 
 /* ── Kapanma yolları ─────────────────────────────────────────────────── */
 /** Tetiğe basılan pointerdown'ı işaretle — açılışı yemesin. */
-const tetigeMiBasildi = (event: PointerEvent) =>
-  event.target instanceof Node && !!tetikRef.value?.contains(event.target);
+const isTriggerTarget = (event: PointerEvent) =>
+  event.target instanceof Node && !!triggerRef.value?.contains(event.target);
 
-const disaTiklama = (event: PointerEvent) => {
-  if (!kokRef.value) return;
-  // Tetiğe basıldıysa karar `cevir`'in: pointerdown click'ten önce geldiği
+const onOutsidePointer = (event: PointerEvent) => {
+  if (!rootRef.value) return;
+  // Tetiğe basıldıysa karar `togglePanel`'in: pointerdown click'ten önce geldiği
   // için burada kapatmak açılışı anında geri alıyordu.
-  if (tetigeMiBasildi(event)) return;
-  if (!acik.value) return;
-  if (event.target instanceof Node && kokRef.value.contains(event.target)) return;
-  kapat();
+  if (isTriggerTarget(event)) return;
+  if (!isOpen.value) return;
+  if (event.target instanceof Node && rootRef.value.contains(event.target)) return;
+  closePanel();
 };
 
 
-const klavye = (event: KeyboardEvent) => {
-  if (event.key === "Escape" && acik.value) kapat();
+const onKeydown = (event: KeyboardEvent) => {
+  if (event.key === "Escape" && isOpen.value) closePanel();
 };
 
-/* ── HERO SENKRONU: POLLING YOK ───────────────────────────────────────────
-   Eski sürüm her karede hero'nun computed style'ını okuyordu (ölçüldü:
-   saniyede 367 rAF çağrısı). Aynı iş ScrollTrigger ile tek seferde kurulur:
-   hero'nun kapı sahnesi ilerledikçe hub solar, showroom'a geçince kaybolur.
+/* ── HERO SENKRONU ───────────────────────────────────────────────────────
+   Ana sayfada kapı sahnesi ilerledikçe hub geride kalmalı: solar, hafifçe
+   yukarı kayar, showroom'a geçildiğinde tıklanamaz olur.
 
-   `onUpdate` yalnız scroll değiştiğinde çalışır — boşta hiç maliyeti yok. */
+   ScrollTrigger tek sefer kuruluyor ve `onUpdate` yalnız scroll
+   değiştiğinde çalışıyor — boştayken sıfır maliyet. (Production sürümü
+   bunu her karede `getComputedStyle` okuyarak yapıyor: saniyede 367 rAF.) */
 let heroTrigger: ScrollTrigger | null = null;
 
-const heroSenkronKur = () => {
+const setupHeroSync = () => {
   heroTrigger?.kill();
   heroTrigger = null;
 
-  if (!anaSayfaMi.value || !kokRef.value) return;
+  if (!isHomeRoute.value || !rootRef.value) return;
 
   const hero = document.querySelector<HTMLElement>(".entrance-door, .entrance-lab");
   if (!hero) return;
@@ -209,14 +204,14 @@ const heroSenkronKur = () => {
     start: "top top",
     end: "bottom top",
     onUpdate: (self) => {
-      const kok = kokRef.value;
-      if (!kok) return;
+      const root = rootRef.value;
+      if (!root) return;
       // Kapı sahnesi ilerledikçe hub geride kalır.
-      const gorunurluk = 1 - self.progress;
-      kok.style.setProperty("--chub-opacity", String(gorunurluk));
-      kok.style.setProperty("--chub-y", `${self.progress * -18}px`);
-      kok.style.setProperty("--chub-pointer", gorunurluk > 0.08 ? "auto" : "none");
-      if (gorunurluk <= 0.08 && acik.value) kapat();
+      const visibility = 1 - self.progress;
+      root.style.setProperty("--chub-opacity", String(visibility));
+      root.style.setProperty("--chub-y", `${self.progress * -18}px`);
+      root.style.setProperty("--chub-pointer", visibility > 0.08 ? "auto" : "none");
+      if (visibility <= 0.08 && isOpen.value) closePanel();
     }
   });
 };
@@ -233,69 +228,69 @@ const heroSenkronKur = () => {
    3) HOVER: kapak yalnızca ARALANIYOR — tam açılmadan niyeti gösteriyor.
 
    `prefers-reduced-motion` açıksa hiçbiri başlamıyor. */
-let nefesTl: gsap.core.Timeline | null = null;
+let idleTl: gsap.core.Timeline | null = null;
 
-const zarfParcalari = () => {
-  const ikon = ikonRef.value;
-  if (!ikon) return null;
+const envelopeParts = () => {
+  const icon = iconRef.value;
+  if (!icon) return null;
   // Gövde (`--box`) hiç animate edilmiyor, o yüzden burada yok.
-  const kapali = ikon.querySelector(".chub__icon-flap--closed");
-  const acikKapak = ikon.querySelector(".chub__icon-flap--open");
-  const kagit = ikon.querySelector(".chub__icon-note");
-  if (!kapali || !acikKapak || !kagit) return null;
-  return { ikon, kapali, acikKapak, kagit };
+  const flapClosed = icon.querySelector(".chub__icon-flap--closed");
+  const flapOpen = icon.querySelector(".chub__icon-flap--open");
+  const note = icon.querySelector(".chub__icon-note");
+  if (!flapClosed || !flapOpen || !note) return null;
+  return { icon, flapClosed, flapOpen, note };
 };
 
 /* SVG'de `transformOrigin` YÜZDE ÇALIŞMIYOR: "50% 0%" verince tarayıcı
    "0px 0px" hesaplıyor (ölçüldü). viewBox 0 0 24 24 olduğu için PİKSEL
    veriyoruz — `svgOrigin` GSAP'in bunun için sunduğu yol. */
-/** Kapalı: aşağı bakan kapak görünür, açık kapak ve kağıt gizli. */
-const zarfiKapat = (aninda = false) => {
-  const p = zarfParcalari();
+/** Kapalı hal: aşağı bakan kapak görünür, kağıt gövdenin içinde saklı.
+    `instant` — ilk kurulumda animasyonsuz, sonrasında geçişli. */
+const closeEnvelope = (instant = false) => {
+  const p = envelopeParts();
   if (!p) return;
 
-  if (aninda || azHareket()) {
-    gsap.set(p.kapali, { opacity: 1 });
-    gsap.set(p.acikKapak, { opacity: 0 });
-    gsap.set(p.kagit, { opacity: 0, y: 5 });
+  if (instant || prefersReducedMotion()) {
+    gsap.set(p.flapClosed, { opacity: 1 });
+    gsap.set(p.flapOpen, { opacity: 0 });
+    gsap.set(p.note, { opacity: 0, y: 5 });
     return;
   }
 
-  // KAPANIŞ ANİMASYONLU: kağıt zarfa geri iner, kapak sonra kapanır.
-  // Eskiden kapanış anında sıçrıyordu — açılış akıcı, kapanış dümdüzdü.
+  // Kağıt önce zarfa iner, kapak sonra kapanır — açılışın tersi sıra.
   gsap.timeline({ defaults: { ease: "power2.inOut" } })
-    .to(p.kagit, { opacity: 0, y: 5, duration: 0.22 }, 0)
-    .to(p.acikKapak, { opacity: 0, duration: 0.26 }, 0.06)
-    .to(p.kapali, { opacity: 1, duration: 0.26 }, 0.06);
+    .to(p.note, { opacity: 0, y: 5, duration: 0.22 }, 0)
+    .to(p.flapOpen, { opacity: 0, duration: 0.26 }, 0.06)
+    .to(p.flapClosed, { opacity: 1, duration: 0.26 }, 0.06);
 };
 
-const nefesBaslat = () => {
-  const p = zarfParcalari();
-  if (!p || azHareket() || acik.value) return;
+const startIdleFloat = () => {
+  const p = envelopeParts();
+  if (!p || prefersReducedMotion() || isOpen.value) return;
 
-  nefesTl?.kill();
-  nefesTl = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: "sine.inOut" } });
-  nefesTl.to(p.ikon, { y: -1.2, duration: 1.7 }, 0);
+  idleTl?.kill();
+  idleTl = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: "sine.inOut" } });
+  idleTl.to(p.icon, { y: -1.2, duration: 1.7 }, 0);
 };
 
-const nefesDurdur = () => {
-  nefesTl?.kill();
-  nefesTl = null;
-  const p = zarfParcalari();
-  if (p) gsap.set(p.ikon, { y: 0 });
+const stopIdleFloat = () => {
+  idleTl?.kill();
+  idleTl = null;
+  const p = envelopeParts();
+  if (p) gsap.set(p.icon, { y: 0 });
 };
 
 /** Tetiğe basınca: kapak yukarı devrilir, kağıt yükselip belirir. */
-const zarfiAc = () => {
-  const p = zarfParcalari();
-  if (!p || azHareket()) return;
+const openEnvelope = () => {
+  const p = envelopeParts();
+  if (!p || prefersReducedMotion()) return;
 
-  // Kapak ÖNE devriliyor: kapalı yol solar, açık yol belirir. Ardından
-  // kağıt zarfın içinden yükseliyor.
+  // Kapak öne devrilir (kapalı yol solar, açık yol belirir), ardından
+  // kağıt gövdenin arkasından yükselir.
   gsap.timeline({ defaults: { ease: "power3.out" } })
-    .to(p.kapali, { opacity: 0, duration: 0.24 }, 0)
-    .to(p.acikKapak, { opacity: 1, duration: 0.28 }, 0.04)
-    .to(p.kagit, { opacity: 1, y: 0, duration: 0.34 }, 0.12);
+    .to(p.flapClosed, { opacity: 0, duration: 0.24 }, 0)
+    .to(p.flapOpen, { opacity: 1, duration: 0.28 }, 0.04)
+    .to(p.note, { opacity: 1, y: 0, duration: 0.34 }, 0.12);
 };
 
 /* HOVER'DA ARALANMA YOK: zarf yalnız panelin durumunu anlatır — açıkken
@@ -304,39 +299,39 @@ const zarfiAc = () => {
 
 onMounted(() => {
   gsap.registerPlugin(ScrollTrigger);
-  window.addEventListener("pointerdown", disaTiklama, { passive: true });
-  window.addEventListener("keydown", klavye);
-  heroSenkronKur();
+  window.addEventListener("pointerdown", onOutsidePointer, { passive: true });
+  window.addEventListener("keydown", onKeydown);
+  setupHeroSync();
   requestAnimationFrame(() => {
-    zarfiKapat(true);
-    nefesBaslat();
+    closeEnvelope(true);
+    startIdleFloat();
   });
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("pointerdown", disaTiklama);
-  window.removeEventListener("keydown", klavye);
+  window.removeEventListener("pointerdown", onOutsidePointer);
+  window.removeEventListener("keydown", onKeydown);
   tl?.kill();
-  nefesTl?.kill();
+  idleTl?.kill();
   heroTrigger?.kill();
-  window.clearTimeout(kapanisZamanAsimi);
+  window.clearTimeout(closeTimeout);
 });
 
 watch(() => route.fullPath, () => {
-  acik.value = false;
-  requestAnimationFrame(heroSenkronKur);
+  isOpen.value = false;
+  requestAnimationFrame(setupHeroSync);
 });
 
 /** Panel açılınca zarf açılır ve nefes durur; kapanınca tersi. */
-watch(acik, (aciMi) => {
-  if (aciMi) {
-    nefesDurdur();
-    requestAnimationFrame(zarfiAc);
+watch(isOpen, (nowOpen) => {
+  if (nowOpen) {
+    stopIdleFloat();
+    requestAnimationFrame(openEnvelope);
     return;
   }
   requestAnimationFrame(() => {
-    zarfiKapat();
-    nefesBaslat();
+    closeEnvelope();
+    startIdleFloat();
   });
 });
 </script>
@@ -348,21 +343,21 @@ watch(acik, (aciMi) => {
        çok altında). Aynı tuzağa katalog modalında da düşülmüştü. -->
   <Teleport to="body">
     <aside
-      v-show="anaSayfaMi"
-      ref="kokRef"
+      v-show="isHomeRoute"
+      ref="rootRef"
       class="chub"
-      :class="{ 'is-open': acik }"
+      :class="{ 'is-open': isOpen }"
     >
     <div
       ref="panelRef"
       class="chub__panel"
-      :aria-hidden="!acik"
-      :inert="!acik"
+      :aria-hidden="!isOpen"
+      :inert="!isOpen"
     >
-      <NuxtLink class="chub__primary" to="/contact" @click="kapat">
+      <NuxtLink class="chub__primary" to="/contact" @click="closePanel">
         <span class="chub__primary-copy">
-          <small>{{ metin.kicker }}</small>
-          {{ metin.primary }}
+          <small>{{ copy.kicker }}</small>
+          {{ copy.primary }}
         </span>
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M7 17L17 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -376,43 +371,43 @@ watch(acik, (aciMi) => {
           href="https://wa.me/905377765300"
           target="_blank"
           rel="noopener noreferrer"
-          @click="kapat"
+          @click="closePanel"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M20.52 3.48A11.87 11.87 0 0 0 12.07 0C5.5 0 .16 5.34.16 11.91c0 2.1.55 4.15 1.6 5.96L0 24l6.28-1.65a11.9 11.9 0 0 0 5.79 1.48h.01c6.57 0 11.91-5.34 11.91-11.91 0-3.18-1.24-6.17-3.47-8.44ZM12.08 21.82h-.01a9.9 9.9 0 0 1-5.05-1.38l-.36-.21-3.73.98.99-3.64-.24-.37a9.86 9.86 0 0 1-1.51-5.29c0-5.46 4.45-9.9 9.92-9.9a9.86 9.86 0 0 1 7.01 2.91 9.84 9.84 0 0 1 2.9 7c0 5.46-4.45 9.9-9.92 9.9Zm5.44-7.42c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35Z" />
           </svg>
-          <span>{{ metin.whatsapp }}</span>
+          <span>{{ copy.whatsapp }}</span>
         </a>
 
-        <a class="chub__action" href="tel:+905377765300" @click="kapat">
+        <a class="chub__action" href="tel:+905377765300" @click="closePanel">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M8.45 5.35L10.15 9.15C10.38 9.68 10.25 10.28 9.82 10.65L8.65 11.68C9.55 13.52 11.02 15 12.88 15.92L13.92 14.72C14.28 14.3 14.88 14.17 15.4 14.4L19.2 16.1C19.82 16.38 20.15 17.05 19.98 17.72L19.58 19.28C19.4 19.98 18.78 20.45 18.05 20.42C10.08 20.05 3.95 13.92 3.58 5.95C3.55 5.22 4.02 4.6 4.72 4.42L6.78 4.02C7.45 3.85 8.18 4.72 8.45 5.35Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <span>{{ metin.phone }}</span>
+          <span>{{ copy.phone }}</span>
         </a>
 
-        <a class="chub__action" href="mailto:info@kardoor.com" @click="kapat">
+        <a class="chub__action" href="mailto:info@kardoor.com" @click="closePanel">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M4.25 7.75H19.75C20.58 7.75 21.25 8.42 21.25 9.25V16.75C21.25 17.58 20.58 18.25 19.75 18.25H4.25C3.42 18.25 2.75 17.58 2.75 16.75V9.25C2.75 8.42 3.42 7.75 4.25 7.75Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             <path d="M3.75 8.75L12 14L20.25 8.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <span>{{ metin.mail }}</span>
+          <span>{{ copy.mail }}</span>
         </a>
       </div>
     </div>
 
     <button
-      ref="tetikRef"
+      ref="triggerRef"
       class="chub__trigger"
       type="button"
-      :aria-label="metin.toggle"
-      :aria-expanded="acik"
-      @click="cevir"
+      :aria-label="copy.toggle"
+      :aria-expanded="isOpen"
+      @click="togglePanel"
     >
       <!-- Kicker YOK: tetikte "İLETİŞİM" + "Bize ulaş" iki satır olunca
-           aynı şeyi iki kez söylüyordu. Panel içindeki birincil eylemde
+           aynı şeyi iki kez söylüyordu. Panel içindeki primaryItem eylemde
            duruyor — orada bağlamı taşıyor. -->
-      <span class="chub__trigger-copy">{{ metin.title }}</span>
+      <span class="chub__trigger-copy">{{ copy.title }}</span>
       <span class="chub__trigger-icon" aria-hidden="true">
         <!-- İkon: ZARF. Projede zaten var (hub'daki "E-posta" eylemi), aynı
              çizim dili. Üç parça ayrı çiziliyor ki kapak bağımsız açılsın:
@@ -421,7 +416,7 @@ watch(acik, (aciMi) => {
                --note  içinden çıkan kağıt (kapalıyken gizli)
              Tetiğe basılınca kapak yukarı açılıp kağıt yükseliyor. -->
         <!-- ZARF -->
-        <svg ref="ikonRef" class="chub__icon" viewBox="0 0 24 24" fill="none">
+        <svg ref="iconRef" class="chub__icon" viewBox="0 0 24 24" fill="none">
           <!-- Kağıt: gövdenin ARKASINDAN yukarı çıkar. En önce çizilir ki
                gövde onun alt kısmını örtsün. -->
           <rect
@@ -470,7 +465,6 @@ watch(acik, (aciMi) => {
   --chub-bar: var(--slab);
   --chub-ink: var(--slab-fg);
   --chub-ink-dim: var(--slab-soft);
-  --chub-line: rgba(255, 255, 255, 0.14);
   --chub-radius: 18px;
   --chub-gap: 12px;
   /* Flare = tetiğin üst kenarındaki içbükey kıvrım; navbar'ın imzası. */
@@ -481,11 +475,10 @@ watch(acik, (aciMi) => {
   --chub-pointer: auto;
 
   position: fixed;
-  /* Kenardan UZAK DEĞİL, sağ alt köşeye YAPIŞIK. Navbar üstte nasıl sayfaya
-     yapışıp alt köşelerinden flare ile bağlanıyorsa, hub da altta yapışıp
-     ÜST köşesinden bağlanıyor — aynı imza, ayna simetriği.
-     Eskiden 30px boşluk vardı; havada duran kutuda flare'in tutunacağı
-     yüzey olmuyordu (ölçüldü). */
+  /* Köşeye YAPIŞIK duruyor — kenar boşluğu yok. Flare kıvrımı ancak iki
+     yüzey bitişikse anlam kazanıyor; havada duran kutuda tutunacak yüzey
+     olmuyor. Navbar'ın ayna simetriği: o üstte yapışıp alt köşelerinden
+     bağlanıyor, hub altta yapışıp üst/sol köşelerinden. */
   right: 0;
   bottom: 0;
   z-index: 82;
@@ -511,10 +504,9 @@ watch(acik, (aciMi) => {
   margin-right: 0;
   background: var(--chub-bar);
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.32);
-  /* Başlangıç durumu GSAP'e ait DEĞİL, CSS'e: panel kapalıyken görünmez.
-     `is-open` sınıfı gelince CSS opacity'yi serbest bırakıyor, GSAP oradan
-     devralıyor. İkisi aynı anda aynı property'yi yönetirse tween başlangıç
-     değerinde takılıyor (ölçüldü: opacity 0'da kaldı). */
+  /* Kapalı başlangıç CSS'in, geçiş GSAP'in. `is-open` gelince CSS
+     opacity'yi serbest bırakıyor ve GSAP devralıyor — ikisi aynı anda
+     aynı property'yi sürerse tween başlangıç değerinde takılıyor. */
   opacity: 0;
   pointer-events: none;
 }
