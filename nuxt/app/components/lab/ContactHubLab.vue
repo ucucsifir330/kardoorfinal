@@ -218,62 +218,104 @@ const heroSenkronKur = () => {
   });
 };
 
-/* ── İKON CANLILIĞI ───────────────────────────────────────────────────────
-   Statik uçak cansız duruyordu. İki katman hareket var:
+/* ── ZARF ANİMASYONU ──────────────────────────────────────────────────────
+   Zarf statik durunca cansızdı. Üç parça ayrı çizildi (`--box` gövde,
+   `--flap` kapak, `--note` içindeki kağıt) ve şöyle canlanıyor:
 
-   1) SÜZÜLME (sürekli): uçak çok hafif ok yönünde süzülüp geri geliyor,
-      iç kırılma çizgisi onunla birlikte soluyor. Genlik bilerek küçük
-      (1.5px) — dikkat çekmeli ama göz yormamalı.
-   2) FIRLAMA (hover/odak): uçak ok yönünde atılıp geri geliyor.
+   1) NEFES (sürekli, kapalıyken): zarf çok hafif yukarı-aşağı süzülüyor.
+      Genlik küçük (1.2px) — dikkat çeker ama göz yormaz.
+   2) AÇILMA (tetiğe basınca): kapak üst kenarından yukarı devriliyor
+      (scaleY -1, origin üst) ve içindeki kağıt yükselip beliriyor.
+   3) HOVER: kapak yalnızca ARALANIYOR — tam açılmadan niyeti gösteriyor.
 
-   Panel açıkken süzülme durur: ikon zaten X'e dönüşüyor, ikisi çakışmasın.
-   `prefers-reduced-motion` açıksa hiç başlamıyor. */
-let suzulmeTl: gsap.core.Timeline | null = null;
+   `prefers-reduced-motion` açıksa hiçbiri başlamıyor. */
+let nefesTl: gsap.core.Timeline | null = null;
 
-const suzulmeBaslat = () => {
+const zarfParcalari = () => {
   const ikon = ikonRef.value;
-  if (!ikon || azHareket() || acik.value) return;
-
-  suzulmeTl?.kill();
-  const govde = ikon.querySelector(".chub__icon-body");
-  const cizgi = ikon.querySelector(".chub__icon-crease");
-  if (!govde || !cizgi) return;
-
-  suzulmeTl = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: "sine.inOut" } });
-  suzulmeTl
-    .to(govde, { y: -1.5, x: 0.8, duration: 1.6 }, 0)
-    .to(cizgi, { y: -1.5, x: 0.8, opacity: 0.5, duration: 1.6 }, 0);
+  if (!ikon) return null;
+  const kutu = ikon.querySelector(".chub__icon-box");
+  const kapali = ikon.querySelector(".chub__icon-flap--closed");
+  const acikKapak = ikon.querySelector(".chub__icon-flap--open");
+  const kagit = ikon.querySelector(".chub__icon-note");
+  if (!kutu || !kapali || !acikKapak || !kagit) return null;
+  return { ikon, kutu, kapali, acikKapak, kagit };
 };
 
-const suzulmeDurdur = () => {
-  suzulmeTl?.kill();
-  suzulmeTl = null;
-  const ikon = ikonRef.value;
-  if (ikon) gsap.set(ikon.querySelectorAll("path"), { x: 0, y: 0, opacity: 1 });
+/* SVG'de `transformOrigin` YÜZDE ÇALIŞMIYOR: "50% 0%" verince tarayıcı
+   "0px 0px" hesaplıyor (ölçüldü). viewBox 0 0 24 24 olduğu için PİKSEL
+   veriyoruz — `svgOrigin` GSAP'in bunun için sunduğu yol. */
+const KAGIT_ORIGIN = "12 9.5";
+
+/** Kapalı: aşağı bakan kapak görünür, açık kapak ve kağıt gizli. */
+const zarfiKapat = (aninda = false) => {
+  const p = zarfParcalari();
+  if (!p) return;
+
+  if (aninda || azHareket()) {
+    gsap.set(p.kapali, { opacity: 1 });
+    gsap.set(p.acikKapak, { opacity: 0 });
+    gsap.set(p.kagit, { opacity: 0, y: 6, scaleY: 0.6, svgOrigin: KAGIT_ORIGIN });
+    return;
+  }
+
+  // KAPANIŞ ANİMASYONLU: kağıt zarfa geri iner, kapak sonra kapanır.
+  // Eskiden kapanış anında sıçrıyordu — açılış akıcı, kapanış dümdüzdü.
+  gsap.timeline({ defaults: { ease: "power2.inOut" } })
+    .to(p.kagit, { opacity: 0, y: 6, scaleY: 0.6, duration: 0.22, svgOrigin: KAGIT_ORIGIN }, 0)
+    .to(p.acikKapak, { opacity: 0, duration: 0.26 }, 0.06)
+    .to(p.kapali, { opacity: 1, duration: 0.26 }, 0.06);
 };
 
-/** Hover/odak: uçak ok yönünde fırlar, sonra geri gelir. */
-const firlat = () => {
-  const ikon = ikonRef.value;
-  if (!ikon || azHareket() || acik.value) return;
-  gsap.fromTo(ikon,
-    { x: 0, y: 0 },
-    { x: 3, y: -3, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 });
+const nefesBaslat = () => {
+  const p = zarfParcalari();
+  if (!p || azHareket() || acik.value) return;
+
+  nefesTl?.kill();
+  nefesTl = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: "sine.inOut" } });
+  nefesTl.to(p.ikon, { y: -1.2, duration: 1.7 }, 0);
 };
+
+const nefesDurdur = () => {
+  nefesTl?.kill();
+  nefesTl = null;
+  const p = zarfParcalari();
+  if (p) gsap.set(p.ikon, { y: 0 });
+};
+
+/** Tetiğe basınca: kapak yukarı devrilir, kağıt yükselip belirir. */
+const zarfiAc = () => {
+  const p = zarfParcalari();
+  if (!p || azHareket()) return;
+
+  // Kapak ÖNE devriliyor: kapalı yol solar, açık yol belirir. Ardından
+  // kağıt zarfın içinden yükseliyor.
+  gsap.timeline({ defaults: { ease: "power3.out" } })
+    .to(p.kapali, { opacity: 0, duration: 0.24 }, 0)
+    .to(p.acikKapak, { opacity: 1, duration: 0.28 }, 0.04)
+    .to(p.kagit, { opacity: 1, y: -2, scaleY: 1, duration: 0.34, svgOrigin: KAGIT_ORIGIN }, 0.12);
+};
+
+/* HOVER'DA ARALANMA YOK: zarf yalnız panelin durumunu anlatır — açıkken
+   açık, kapalıyken kapalı. Hover'da da kıpırdaması iki ayrı sinyal
+   üretiyordu ve kafa karıştırıyordu. */
 
 onMounted(() => {
   gsap.registerPlugin(ScrollTrigger);
   window.addEventListener("pointerdown", disaTiklama, { passive: true });
   window.addEventListener("keydown", klavye);
   heroSenkronKur();
-  requestAnimationFrame(suzulmeBaslat);
+  requestAnimationFrame(() => {
+    zarfiKapat(true);
+    nefesBaslat();
+  });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("pointerdown", disaTiklama);
   window.removeEventListener("keydown", klavye);
   tl?.kill();
-  suzulmeTl?.kill();
+  nefesTl?.kill();
   heroTrigger?.kill();
   window.clearTimeout(kapanisZamanAsimi);
 });
@@ -283,10 +325,17 @@ watch(() => route.fullPath, () => {
   requestAnimationFrame(heroSenkronKur);
 });
 
-/** Panel açıkken süzülme durur (ikon X'e dönüyor), kapanınca geri başlar. */
+/** Panel açılınca zarf açılır ve nefes durur; kapanınca tersi. */
 watch(acik, (aciMi) => {
-  if (aciMi) suzulmeDurdur();
-  else requestAnimationFrame(suzulmeBaslat);
+  if (aciMi) {
+    nefesDurdur();
+    requestAnimationFrame(zarfiAc);
+    return;
+  }
+  requestAnimationFrame(() => {
+    zarfiKapat();
+    nefesBaslat();
+  });
 });
 </script>
 
@@ -357,34 +406,45 @@ watch(acik, (aciMi) => {
       :aria-label="metin.toggle"
       :aria-expanded="acik"
       @click="cevir"
-      @mouseenter="firlat"
-      @focus="firlat"
     >
       <!-- Kicker YOK: tetikte "İLETİŞİM" + "Bize ulaş" iki satır olunca
            aynı şeyi iki kez söylüyordu. Panel içindeki birincil eylemde
            duruyor — orada bağlamı taşıyor. -->
       <span class="chub__trigger-copy">{{ metin.title }}</span>
       <span class="chub__trigger-icon" aria-hidden="true">
-        <!-- İkon: "gönder" oku (kağıt uçak). Statik durunca dandik duruyordu;
-             GSAP ile sürekli hafif bir "süzülme" döngüsü var ve hover'da
-             uçak ileri fırlıyor. İki parça ayrı animate ediliyor:
-             gövde (`--body`) ve iç kırılma çizgisi (`--crease`). -->
-        <svg ref="ikonRef" class="chub__icon chub__icon--chat" viewBox="0 0 24 24" fill="none">
+        <!-- İkon: ZARF. Projede zaten var (hub'daki "E-posta" eylemi), aynı
+             çizim dili. Üç parça ayrı çiziliyor ki kapak bağımsız açılsın:
+               --box   gövde (dikdörtgen)
+               --flap  kapak (kapalıyken aşağı bakan V)
+               --note  içinden çıkan kağıt (kapalıyken gizli)
+             Tetiğe basılınca kapak yukarı açılıp kağıt yükseliyor. -->
+        <svg ref="ikonRef" class="chub__icon" viewBox="0 0 24 24" fill="none">
           <path
-            class="chub__icon-body"
-            d="M20.5 3.5L14.4 20.5L11 13L3.5 9.6L20.5 3.5Z"
+            class="chub__icon-note"
+            d="M8 9.5H16V4.5H8V9.5Z"
+            stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+          />
+          <path
+            class="chub__icon-box"
+            d="M4.25 7.75H19.75C20.58 7.75 21.25 8.42 21.25 9.25V16.75C21.25 17.58 20.58 18.25 19.75 18.25H4.25C3.42 18.25 2.75 17.58 2.75 16.75V9.25C2.75 8.42 3.42 7.75 4.25 7.75Z"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+          />
+          <!-- Kapak İKİ HALDE: kapalıyken aşağı bakan V (mektup kapalı),
+               açıkken yukarı bakan Λ (kapak öne devrilmiş). `scaleY: -1`
+               ile ters çevirmek "arkadan açılıyor" hissi veriyordu —
+               onun yerine iki ayrı yol arasında geçiş yapıyoruz. -->
+          <path
+            class="chub__icon-flap chub__icon-flap--closed"
+            d="M3.75 8.75L12 14L20.25 8.75"
             stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
           />
           <path
-            class="chub__icon-crease"
-            d="M20.5 3.5L11 13"
+            class="chub__icon-flap chub__icon-flap--open"
+            d="M3.75 8.75L12 3.5L20.25 8.75"
             stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
           />
         </svg>
-        <svg class="chub__icon chub__icon--close" viewBox="0 0 24 24" fill="none">
-          <path d="M7 7L17 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-          <path d="M17 7L7 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-        </svg>
+
       </span>
       </button>
     </aside>
@@ -646,23 +706,13 @@ watch(acik, (aciMi) => {
   transition: opacity 0.22s var(--ease-soft), transform 0.22s var(--ease-soft);
 }
 
-.chub__icon--chat {
-  opacity: 1;
-}
+/* Tek ikon var: X YOK. Açılan zarf zaten "açık" durumunu anlatıyor,
+   ayrıca bir kapatma simgesine gerek yok — ikisi çakışıyordu. */
 
-.chub__icon--close {
+/* Açık kapak başlangıçta gizli: GSAP açılışta devralıyor. Kapalı kapak
+   görünür başlar. */
+.chub__icon-flap--open {
   opacity: 0;
-  transform: scale(0.76) rotate(-45deg);
-}
-
-.chub.is-open .chub__icon--chat {
-  opacity: 0;
-  transform: scale(0.76) rotate(45deg);
-}
-
-.chub.is-open .chub__icon--close {
-  opacity: 1;
-  transform: scale(1) rotate(0);
 }
 
 /* ── MOBİL ───────────────────────────────────────────────────────────── */
