@@ -227,8 +227,9 @@ const heroSenkronKur = () => {
 
    1) NEFES (sürekli, kapalıyken): zarf çok hafif yukarı-aşağı süzülüyor.
       Genlik küçük (1.2px) — dikkat çeker ama göz yormaz.
-   2) AÇILMA (tetiğe basınca): kapak üst kenarından yukarı devriliyor
-      (scaleY -1, origin üst) ve içindeki kağıt yükselip beliriyor.
+   2) AÇILMA (tetiğe basınca): kapak iki ayrı yol arasında geçiş yapıyor
+      (aşağı V → yukarı Λ) ve gövdenin arkasındaki kağıt yükselip
+      beliriyor.
    3) HOVER: kapak yalnızca ARALANIYOR — tam açılmadan niyeti gösteriyor.
 
    `prefers-reduced-motion` açıksa hiçbiri başlamıyor. */
@@ -248,12 +249,6 @@ const zarfParcalari = () => {
 /* SVG'de `transformOrigin` YÜZDE ÇALIŞMIYOR: "50% 0%" verince tarayıcı
    "0px 0px" hesaplıyor (ölçüldü). viewBox 0 0 24 24 olduğu için PİKSEL
    veriyoruz — `svgOrigin` GSAP'in bunun için sunduğu yol. */
-/* Kağıdın ölçek merkezi ALT kenarda (y=13.5): kağıt oradan yukarı doğru
-   büyüyor, zarfın içinden çekilip çıkıyormuş gibi. Üst kenara koyunca
-   ölçek aşağı uzuyor ve yükselme hareketini yutuyordu (ölçüldü: y -3.5
-   verildiği halde transform +1.5 çıkıyordu). */
-const KAGIT_ORIGIN = "12 11";
-
 /** Kapalı: aşağı bakan kapak görünür, açık kapak ve kağıt gizli. */
 const zarfiKapat = (aninda = false) => {
   const p = zarfParcalari();
@@ -262,14 +257,14 @@ const zarfiKapat = (aninda = false) => {
   if (aninda || azHareket()) {
     gsap.set(p.kapali, { opacity: 1 });
     gsap.set(p.acikKapak, { opacity: 0 });
-    gsap.set(p.kagit, { opacity: 0, y: 4, scaleY: 0.35, svgOrigin: KAGIT_ORIGIN });
+    gsap.set(p.kagit, { opacity: 0, y: 5 });
     return;
   }
 
   // KAPANIŞ ANİMASYONLU: kağıt zarfa geri iner, kapak sonra kapanır.
   // Eskiden kapanış anında sıçrıyordu — açılış akıcı, kapanış dümdüzdü.
   gsap.timeline({ defaults: { ease: "power2.inOut" } })
-    .to(p.kagit, { opacity: 0, y: 4, scaleY: 0.35, duration: 0.22, svgOrigin: KAGIT_ORIGIN }, 0)
+    .to(p.kagit, { opacity: 0, y: 5, duration: 0.22 }, 0)
     .to(p.acikKapak, { opacity: 0, duration: 0.26 }, 0.06)
     .to(p.kapali, { opacity: 1, duration: 0.26 }, 0.06);
 };
@@ -300,7 +295,7 @@ const zarfiAc = () => {
   gsap.timeline({ defaults: { ease: "power3.out" } })
     .to(p.kapali, { opacity: 0, duration: 0.24 }, 0)
     .to(p.acikKapak, { opacity: 1, duration: 0.28 }, 0.04)
-    .to(p.kagit, { opacity: 1, y: 0, scaleY: 1, duration: 0.34, svgOrigin: KAGIT_ORIGIN }, 0.12);
+    .to(p.kagit, { opacity: 1, y: 0, duration: 0.34 }, 0.12);
 };
 
 /* HOVER'DA ARALANMA YOK: zarf yalnız panelin durumunu anlatır — açıkken
@@ -425,37 +420,33 @@ watch(acik, (aciMi) => {
                --flap  kapak (kapalıyken aşağı bakan V)
                --note  içinden çıkan kağıt (kapalıyken gizli)
              Tetiğe basılınca kapak yukarı açılıp kağıt yükseliyor. -->
+        <!-- ZARF -->
         <svg ref="ikonRef" class="chub__icon" viewBox="0 0 24 24" fill="none">
-          <!-- Kağıt: kutunun üst kenarını AŞARAK duruyor (y=4..11, kutu
-               y=7.75'te başlıyor) — yani açıkken zarftan çıkmış görünüyor.
-               Eskiden y=4.5..9.5 ile kutunun tamamen üstünde asılı
-               kalıyordu, ekranda tuhaf bir yatay çubuk gibiydi (ölçüldü).
-
-               Yükselmeyi ANİMASYONA bırakmıyoruz: yolun kendisi doğru
-               yerde, açılışta yalnız beliriyor ve hafifçe oturuyor.
-               Böylece animasyon yarıda kalsa bile ikon bozulmuyor. -->
-          <path
+          <!-- Kağıt: gövdenin ARKASINDAN yukarı çıkar. En önce çizilir ki
+               gövde onun alt kısmını örtsün. -->
+          <rect
             class="chub__icon-note"
-            d="M8.5 11H15.5V4H8.5V11Z"
-            stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+            x="7.5" y="3" width="9" height="10" rx="1"
+            fill="var(--chub-bar)" stroke="currentColor" stroke-width="1.6"
           />
-          <path
+
+          <!-- Gövde: dolu, kağıdın altını gizler. -->
+          <rect
             class="chub__icon-box"
-            d="M4.25 7.75H19.75C20.58 7.75 21.25 8.42 21.25 9.25V16.75C21.25 17.58 20.58 18.25 19.75 18.25H4.25C3.42 18.25 2.75 17.58 2.75 16.75V9.25C2.75 8.42 3.42 7.75 4.25 7.75Z"
-            stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+            x="3" y="7" width="18" height="11" rx="2"
+            fill="var(--chub-bar)" stroke="currentColor" stroke-width="1.9"
           />
-          <!-- Kapak İKİ HALDE: kapalıyken aşağı bakan V (mektup kapalı),
-               açıkken yukarı bakan Λ (kapak öne devrilmiş). `scaleY: -1`
-               ile ters çevirmek "arkadan açılıyor" hissi veriyordu —
-               onun yerine iki ayrı yol arasında geçiş yapıyoruz. -->
+
+          <!-- Kapak: gövdenin üst köşelerinden başlar.
+               kapalı → aşağı V, açık → yukarı Λ -->
           <path
             class="chub__icon-flap chub__icon-flap--closed"
-            d="M3.75 8.75L12 14L20.25 8.75"
+            d="M3 7.6L12 13.5L21 7.6"
             stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
           />
           <path
             class="chub__icon-flap chub__icon-flap--open"
-            d="M3.75 8.75L12 3.5L20.25 8.75"
+            d="M3 7.6L12 1.8L21 7.6"
             stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
           />
         </svg>
