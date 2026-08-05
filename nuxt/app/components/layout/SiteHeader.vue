@@ -31,11 +31,6 @@ const MENU_MODE_QUERY = "(max-width: 1120px)";
 
 const isHidden = ref(false);
 const isMenuOpen = ref(false);
-/**
- * SSR'da her zaman false. matchMedia yalnız onMounted'da okunur, böylece ilk
- * client render'ı sunucu çıktısıyla birebir eşleşir (hydration uyuşmazlığı yok).
- */
-const isMenuMode = ref(false);
 
 const navRoot = ref<HTMLElement | null>(null);
 const navBarRevealRef = ref<HTMLElement | null>(null);
@@ -112,9 +107,12 @@ const menuToggleLabel = computed(() => {
   return isTurkish.value ? "Menüyü aç" : "Open navigation";
 });
 
-const logoLabel = computed(() =>
-  isMenuMode.value ? menuToggleLabel.value : brandLabel.value
-);
+/**
+ * K'nin etiketi HER ZAMAN marka/ana sayfa. Önceden menü modunda
+ * "Menüyü aç" diyordu — K artık menü açmıyor, yalnız ana sayfaya
+ * gidiyor; o etiket ekran okuyucuya yanlış bilgi veriyordu.
+ */
+const logoLabel = brandLabel;
 
 /* ── Menü animasyonu ───────────────────────────────────────────────────── */
 
@@ -355,8 +353,6 @@ const onKeydown = (event: KeyboardEvent) => {
 let menuModeQuery: MediaQueryList | null = null;
 
 const onMenuModeChange = (event: MediaQueryListEvent | MediaQueryList) => {
-  isMenuMode.value = event.matches;
-
   if (event.matches || !isMenuOpen.value) return;
 
   // Masaüstüne genişlerken panel display:none olur. Açılış tween'i yarıda
