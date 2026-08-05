@@ -943,7 +943,7 @@ watch(doorMeta, (url) => {
   door.load(url).catch(() => {});
 });
 
-// Showroom fazına girince <body>'ye işaret koy → global "Görüşelim" hub'ı
+// Showroom fazına girince <body>'ye işaret koy → sağ alttaki iletişim hub'ı
 // (ContactHub) CSS ile gizlenir. Kapı açıldıktan sonra hub görünmesin.
 watch(isShowroomActive, (on) => {
   if (typeof document === "undefined") return;
