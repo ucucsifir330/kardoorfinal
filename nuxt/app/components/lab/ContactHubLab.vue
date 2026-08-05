@@ -38,6 +38,7 @@ const acik = ref(false);
 const kokRef = ref<HTMLElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
 const tetikRef = ref<HTMLButtonElement | null>(null);
+const ikonRef = ref<SVGSVGElement | null>(null);
 
 /** Hub yalnız hero'lu sayfada: ana sayfa. Lab bunu aşabilir. */
 const anaSayfaMi = computed(() => props.forceVisible || route.path === "/");
@@ -73,6 +74,7 @@ const azHareket = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let tl: gsap.core.Timeline | null = null;
+let kapanisZamanAsimi = 0;
 
 const eylemler = () =>
   panelRef.value
@@ -121,7 +123,23 @@ const kapat = () => {
   }
 
   // Kapanış açılışın tersi: eylemler önce ve sondan başlayarak çıkar.
-  tl = gsap.timeline({ onComplete: () => { acik.value = false; } });
+  //
+  // GÜVENLİK AĞI: `acik` yalnız `onComplete`e bağlı olsaydı, timeline
+  // ilerlemediğinde panel açık kilitli kalırdı — arka plan sekmesinde
+  // tarayıcı rAF'ı saniyede 1-2 kareye düşürüyor ve GSAP ilerlemiyor
+  // (ölçüldü: tıklamadan 3sn sonra hâlâ açık). Zaman aşımı kapanışı
+  // her koşulda tamamlıyor.
+  let kapandi = false;
+  const bitir = () => {
+    if (kapandi) return;
+    kapandi = true;
+    window.clearTimeout(kapanisZamanAsimi);
+    acik.value = false;
+  };
+
+  kapanisZamanAsimi = window.setTimeout(bitir, 520);
+
+  tl = gsap.timeline({ onComplete: bitir });
   tl.to(eylemler(),
       { opacity: 0, y: 8, duration: 0.16, stagger: { each: 0.03, from: "end" }, ease: "power2.in" }, 0)
     .to(birincil(), { opacity: 0, y: 6, duration: 0.16, ease: "power2.in" }, 0.04)
@@ -200,33 +218,64 @@ const heroSenkronKur = () => {
   });
 };
 
-/**
- * Sol flare tetiğin SOL kenarına hizalanmalı. Tetik genişliği metne ve
- * dile göre değişiyor (TR "Görüşelim" / EN "Let's talk"), sabit değer
- * tutmuyor — ölçüp değişkene yazıyoruz.
- */
-const tetikGenisligiOlc = () => {
-  const kok = kokRef.value;
-  const tetik = tetikRef.value;
-  if (!kok || !tetik) return;
-  kok.style.setProperty("--chub-trigger-w", `${Math.round(tetik.offsetWidth)}px`);
+/* ── İKON CANLILIĞI ───────────────────────────────────────────────────────
+   Statik uçak cansız duruyordu. İki katman hareket var:
+
+   1) SÜZÜLME (sürekli): uçak çok hafif ok yönünde süzülüp geri geliyor,
+      iç kırılma çizgisi onunla birlikte soluyor. Genlik bilerek küçük
+      (1.5px) — dikkat çekmeli ama göz yormamalı.
+   2) FIRLAMA (hover/odak): uçak ok yönünde atılıp geri geliyor.
+
+   Panel açıkken süzülme durur: ikon zaten X'e dönüşüyor, ikisi çakışmasın.
+   `prefers-reduced-motion` açıksa hiç başlamıyor. */
+let suzulmeTl: gsap.core.Timeline | null = null;
+
+const suzulmeBaslat = () => {
+  const ikon = ikonRef.value;
+  if (!ikon || azHareket() || acik.value) return;
+
+  suzulmeTl?.kill();
+  const govde = ikon.querySelector(".chub__icon-body");
+  const cizgi = ikon.querySelector(".chub__icon-crease");
+  if (!govde || !cizgi) return;
+
+  suzulmeTl = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: "sine.inOut" } });
+  suzulmeTl
+    .to(govde, { y: -1.5, x: 0.8, duration: 1.6 }, 0)
+    .to(cizgi, { y: -1.5, x: 0.8, opacity: 0.5, duration: 1.6 }, 0);
+};
+
+const suzulmeDurdur = () => {
+  suzulmeTl?.kill();
+  suzulmeTl = null;
+  const ikon = ikonRef.value;
+  if (ikon) gsap.set(ikon.querySelectorAll("path"), { x: 0, y: 0, opacity: 1 });
+};
+
+/** Hover/odak: uçak ok yönünde fırlar, sonra geri gelir. */
+const firlat = () => {
+  const ikon = ikonRef.value;
+  if (!ikon || azHareket() || acik.value) return;
+  gsap.fromTo(ikon,
+    { x: 0, y: 0 },
+    { x: 3, y: -3, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 });
 };
 
 onMounted(() => {
   gsap.registerPlugin(ScrollTrigger);
   window.addEventListener("pointerdown", disaTiklama, { passive: true });
   window.addEventListener("keydown", klavye);
-  window.addEventListener("resize", tetikGenisligiOlc, { passive: true });
   heroSenkronKur();
-  requestAnimationFrame(tetikGenisligiOlc);
+  requestAnimationFrame(suzulmeBaslat);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("pointerdown", disaTiklama);
   window.removeEventListener("keydown", klavye);
-  window.removeEventListener("resize", tetikGenisligiOlc);
   tl?.kill();
+  suzulmeTl?.kill();
   heroTrigger?.kill();
+  window.clearTimeout(kapanisZamanAsimi);
 });
 
 watch(() => route.fullPath, () => {
@@ -234,9 +283,10 @@ watch(() => route.fullPath, () => {
   requestAnimationFrame(heroSenkronKur);
 });
 
-/** Dil değişince tetik genişliği değişir; flare hizası da yenilensin. */
-watch(locale, () => {
-  requestAnimationFrame(tetikGenisligiOlc);
+/** Panel açıkken süzülme durur (ikon X'e dönüyor), kapanınca geri başlar. */
+watch(acik, (aciMi) => {
+  if (aciMi) suzulmeDurdur();
+  else requestAnimationFrame(suzulmeBaslat);
 });
 </script>
 
@@ -307,19 +357,29 @@ watch(locale, () => {
       :aria-label="metin.toggle"
       :aria-expanded="acik"
       @click="cevir"
+      @mouseenter="firlat"
+      @focus="firlat"
     >
       <!-- Kicker YOK: tetikte "İLETİŞİM" + "Bize ulaş" iki satır olunca
            aynı şeyi iki kez söylüyordu. Panel içindeki birincil eylemde
            duruyor — orada bağlamı taşıyor. -->
       <span class="chub__trigger-copy">{{ metin.title }}</span>
       <span class="chub__trigger-icon" aria-hidden="true">
-        <!-- İkon: baloncuk DEĞİL, "gönder" oku. "Bize ulaş" bir sohbet
-             daveti değil, bir eyleme çağrı — kağıt uçak/gönder oku o niyeti
-             taşıyor. Projedeki ikon stiliyle aynı: 24x24, stroke 1.9,
-             yuvarlak uçlar. -->
-        <svg class="chub__icon chub__icon--chat" viewBox="0 0 24 24" fill="none">
-          <path d="M20.5 3.5L11 13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M20.5 3.5L14.4 20.5L11 13L3.5 9.6L20.5 3.5Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+        <!-- İkon: "gönder" oku (kağıt uçak). Statik durunca dandik duruyordu;
+             GSAP ile sürekli hafif bir "süzülme" döngüsü var ve hover'da
+             uçak ileri fırlıyor. İki parça ayrı animate ediliyor:
+             gövde (`--body`) ve iç kırılma çizgisi (`--crease`). -->
+        <svg ref="ikonRef" class="chub__icon chub__icon--chat" viewBox="0 0 24 24" fill="none">
+          <path
+            class="chub__icon-body"
+            d="M20.5 3.5L14.4 20.5L11 13L3.5 9.6L20.5 3.5Z"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+          />
+          <path
+            class="chub__icon-crease"
+            d="M20.5 3.5L11 13"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+          />
         </svg>
         <svg class="chub__icon chub__icon--close" viewBox="0 0 24 24" fill="none">
           <path d="M7 7L17 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
