@@ -248,7 +248,11 @@ const zarfParcalari = () => {
 /* SVG'de `transformOrigin` YÜZDE ÇALIŞMIYOR: "50% 0%" verince tarayıcı
    "0px 0px" hesaplıyor (ölçüldü). viewBox 0 0 24 24 olduğu için PİKSEL
    veriyoruz — `svgOrigin` GSAP'in bunun için sunduğu yol. */
-const KAGIT_ORIGIN = "12 9.5";
+/* Kağıdın ölçek merkezi ALT kenarda (y=13.5): kağıt oradan yukarı doğru
+   büyüyor, zarfın içinden çekilip çıkıyormuş gibi. Üst kenara koyunca
+   ölçek aşağı uzuyor ve yükselme hareketini yutuyordu (ölçüldü: y -3.5
+   verildiği halde transform +1.5 çıkıyordu). */
+const KAGIT_ORIGIN = "12 11";
 
 /** Kapalı: aşağı bakan kapak görünür, açık kapak ve kağıt gizli. */
 const zarfiKapat = (aninda = false) => {
@@ -258,14 +262,14 @@ const zarfiKapat = (aninda = false) => {
   if (aninda || azHareket()) {
     gsap.set(p.kapali, { opacity: 1 });
     gsap.set(p.acikKapak, { opacity: 0 });
-    gsap.set(p.kagit, { opacity: 0, y: 6, scaleY: 0.6, svgOrigin: KAGIT_ORIGIN });
+    gsap.set(p.kagit, { opacity: 0, y: 4, scaleY: 0.35, svgOrigin: KAGIT_ORIGIN });
     return;
   }
 
   // KAPANIŞ ANİMASYONLU: kağıt zarfa geri iner, kapak sonra kapanır.
   // Eskiden kapanış anında sıçrıyordu — açılış akıcı, kapanış dümdüzdü.
   gsap.timeline({ defaults: { ease: "power2.inOut" } })
-    .to(p.kagit, { opacity: 0, y: 6, scaleY: 0.6, duration: 0.22, svgOrigin: KAGIT_ORIGIN }, 0)
+    .to(p.kagit, { opacity: 0, y: 4, scaleY: 0.35, duration: 0.22, svgOrigin: KAGIT_ORIGIN }, 0)
     .to(p.acikKapak, { opacity: 0, duration: 0.26 }, 0.06)
     .to(p.kapali, { opacity: 1, duration: 0.26 }, 0.06);
 };
@@ -296,7 +300,7 @@ const zarfiAc = () => {
   gsap.timeline({ defaults: { ease: "power3.out" } })
     .to(p.kapali, { opacity: 0, duration: 0.24 }, 0)
     .to(p.acikKapak, { opacity: 1, duration: 0.28 }, 0.04)
-    .to(p.kagit, { opacity: 1, y: -2, scaleY: 1, duration: 0.34, svgOrigin: KAGIT_ORIGIN }, 0.12);
+    .to(p.kagit, { opacity: 1, y: 0, scaleY: 1, duration: 0.34, svgOrigin: KAGIT_ORIGIN }, 0.12);
 };
 
 /* HOVER'DA ARALANMA YOK: zarf yalnız panelin durumunu anlatır — açıkken
@@ -422,10 +426,18 @@ watch(acik, (aciMi) => {
                --note  içinden çıkan kağıt (kapalıyken gizli)
              Tetiğe basılınca kapak yukarı açılıp kağıt yükseliyor. -->
         <svg ref="ikonRef" class="chub__icon" viewBox="0 0 24 24" fill="none">
+          <!-- Kağıt: kutunun üst kenarını AŞARAK duruyor (y=4..11, kutu
+               y=7.75'te başlıyor) — yani açıkken zarftan çıkmış görünüyor.
+               Eskiden y=4.5..9.5 ile kutunun tamamen üstünde asılı
+               kalıyordu, ekranda tuhaf bir yatay çubuk gibiydi (ölçüldü).
+
+               Yükselmeyi ANİMASYONA bırakmıyoruz: yolun kendisi doğru
+               yerde, açılışta yalnız beliriyor ve hafifçe oturuyor.
+               Böylece animasyon yarıda kalsa bile ikon bozulmuyor. -->
           <path
             class="chub__icon-note"
-            d="M8 9.5H16V4.5H8V9.5Z"
-            stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+            d="M8.5 11H15.5V4H8.5V11Z"
+            stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
           />
           <path
             class="chub__icon-box"
