@@ -16,9 +16,12 @@
  *   • Kendi cam sistemi vardı, navbar'la aynı aileden görünmüyordu.
  *     Şimdi navbar token'larını paylaşıyor + flare kıvrımı taşıyor.
  *
- * Tasarım kararı (kullanıcı, 2026-08-05):
- *   renk/biçim → navbar gibi flare'li kart
+ * Tasarım kararları (kullanıcı, 2026-08-05):
+ *   renk/biçim → navbar ailesi; sağ alt köşeye yapışık, iki flare kıvrımı
  *   açılış     → kademeli: panel yükselir, eylemler sırayla girer
+ *   ikon       → ZARF; panel açılınca kapak öne devrilir, kağıt yükselir.
+ *                Hover'da hareket yok, X ikonu yok.
+ *   metin      → "Bize ulaş" / "Contact us" (tetikte kicker yok)
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { gsap } from "gsap";
@@ -234,12 +237,12 @@ let nefesTl: gsap.core.Timeline | null = null;
 const zarfParcalari = () => {
   const ikon = ikonRef.value;
   if (!ikon) return null;
-  const kutu = ikon.querySelector(".chub__icon-box");
+  // Gövde (`--box`) hiç animate edilmiyor, o yüzden burada yok.
   const kapali = ikon.querySelector(".chub__icon-flap--closed");
   const acikKapak = ikon.querySelector(".chub__icon-flap--open");
   const kagit = ikon.querySelector(".chub__icon-note");
-  if (!kutu || !kapali || !acikKapak || !kagit) return null;
-  return { ikon, kutu, kapali, acikKapak, kagit };
+  if (!kapali || !acikKapak || !kagit) return null;
+  return { ikon, kapali, acikKapak, kagit };
 };
 
 /* SVG'de `transformOrigin` YÜZDE ÇALIŞMIYOR: "50% 0%" verince tarayıcı
@@ -515,9 +518,6 @@ watch(acik, (aciMi) => {
 
 .chub.is-open .chub__panel {
   opacity: 1;
-}
-
-.chub.is-open .chub__panel {
   pointer-events: auto;
 }
 
@@ -698,19 +698,16 @@ watch(acik, (aciMi) => {
   color: #fff;
 }
 
-/* İkon geçişi navbar'daki hamburger→X ile aynı dil. */
+/* Tek ikon (zarf) var — X YOK, açılan zarf zaten "açık" durumunu anlatıyor.
+   `position: absolute` KALDIRILDI: iki ikonu üst üste bindirmek içindi,
+   tek ikonda gereksizdi. `transition` da kaldırıldı — zarfın tüm hareketini
+   GSAP sürüyor, CSS geçişi onunla çakışıyordu. */
 .chub__icon {
-  position: absolute;
   width: 24px;
   height: 24px;
-  transition: opacity 0.22s var(--ease-soft), transform 0.22s var(--ease-soft);
 }
 
-/* Tek ikon var: X YOK. Açılan zarf zaten "açık" durumunu anlatıyor,
-   ayrıca bir kapatma simgesine gerek yok — ikisi çakışıyordu. */
-
-/* Açık kapak başlangıçta gizli: GSAP açılışta devralıyor. Kapalı kapak
-   görünür başlar. */
+/* Açık kapak başlangıçta gizli: GSAP açılışta devralıyor. */
 .chub__icon-flap--open {
   opacity: 0;
 }
