@@ -23,6 +23,62 @@ const normalizeTransitionPath = (path: string) => {
 
 const isTransitionRoute = (path: string) => transitionRoutes.has(normalizeTransitionPath(path));
 
+/**
+ * Ana sayfaya dönerken kapı sprite'ını ÖNDEN hazırla.
+ *
+ * Hero `<ClientOnly>` içinde; rota dönüşünde ~1.5sn sonra mount oluyor ve
+ * ancak o zaman `useDoorSprite` modülü + sprite JSON + WebP zinciri
+ * başlıyor. Ölçüldü: modül 500ms, JSON +361ms, çizim +330ms — kapı deliği
+ * ~1.2sn boş (siyah) kalıyordu.
+ *
+ * Geçiş BAŞLARKEN üçünü de tetikliyoruz; hero mount olduğunda hepsi
+ * tarayıcı önbelleğinde hazır oluyor. Hatalar sessizce yutuluyor: bu bir
+ * hızlandırma, davranış şartı değil.
+ */
+const spriteHazirlandi = new Set<string>();
+
+const spriteOnHazirla = () => {
+  if (!import.meta.client) return;
+
+  let gece = false;
+  try {
+    gece = window.localStorage.getItem("kardoor-showroom-ambience") === "night";
+  } catch {
+    // localStorage kapalıysa gündüz varsayılanıyla devam.
+  }
+
+  const metaUrl = gece ? "/kardoor-door-night.json" : "/kardoor-door-light.json";
+  if (spriteHazirlandi.has(metaUrl)) return;
+  spriteHazirlandi.add(metaUrl);
+
+  // Sonucu `useDoorSprite`in paylaşılan haritasına koyuyoruz; hero mount
+  // olduğunda `load()` aynı URL'i yeniden istemek yerine bu sözü bekliyor.
+  // Fetch + decode böylece geçiş sırasında, ana iş parçacığı boşken bitiyor.
+  import("~/composables/useDoorSprite")
+    .then(({ spriteOnBellek }) => {
+      if (spriteOnBellek.has(metaUrl)) return;
+
+      const hazirlik = fetch(metaUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error(`sprite metadata failed: ${res.status}`);
+          return res.json();
+        })
+        .then(async (meta) => {
+          // Alan adı `sprite` — bkz. public/kardoor-door-*.json
+          const img = new Image();
+          img.decoding = "async";
+          img.src = meta.sprite;
+          await (img.decode?.() ?? Promise.resolve());
+          return { meta, image: img };
+        });
+
+      // Hata olursa haritadan düşür: hero kendi yolundan tekrar denesin.
+      hazirlik.catch(() => spriteOnBellek.delete(metaUrl));
+      spriteOnBellek.set(metaUrl, hazirlik);
+    })
+    .catch(() => {});
+};
+
 const removeRouteGuard = import.meta.client
   ? router.beforeEach(async (to, from) => {
       const fromPath = normalizeTransitionPath(from.path);
@@ -35,6 +91,9 @@ const removeRouteGuard = import.meta.client
         isTransitionRoute(toPath);
 
       if (shouldRunPageTransition) {
+        // Ana sayfaya dönülüyorsa sprite'ı şimdiden çek.
+        if (toPath === "/") spriteOnHazirla();
+
         isPageContentVisible.value = false;
         shouldMountStartupScreens.value = false;
         await nextTick();

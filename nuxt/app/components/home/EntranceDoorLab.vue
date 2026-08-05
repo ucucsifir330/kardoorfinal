@@ -585,6 +585,20 @@ onMounted(() => {
   const section = sectionRef.value;
   if (!section || !canvasRef.value) return;
 
+  // Sprite yüklemesi İLK İŞ. Aşağıdaki kurulum bloğu (settle mantığı,
+  // ScrollTrigger, input katmanı) senkron çalışıyor ve yüklemeyi
+  // geciktiriyordu: rota dönüşünde hero mount olduktan ~1.3sn sonra kapı
+  // deliği doluyordu (ölçüldü). Fetch şimdi başlarsa o iş kurulum sırasında
+  // paralel ilerliyor.
+  const doorLoad = door
+    .load(doorMeta.value)
+    .catch((error) => {
+      console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
+    })
+    .finally(() => {
+      isDoorPainted.value = true;
+    });
+
   placeDoor();
   let previousProgress = 0;
   let scrollTween: ReturnType<typeof gsap.to> | undefined;
@@ -834,17 +848,6 @@ onMounted(() => {
     start: "top top",
     end: () => `+=${Math.round(window.innerHeight * 9)}`
   });
-
-  // finally: yükleme BAŞARISIZ olsa bile showroom açılır. Aksi halde sprite
-  // 404'lerse delik sonsuza dek kapalı kalır ve sahne hiç görünmez.
-  const doorLoad = door
-    .load(doorMeta.value)
-    .catch((error) => {
-      console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
-    })
-    .finally(() => {
-      isDoorPainted.value = true;
-    });
 
   // Açılış perdesi bu üç işi bekler — sabit süre yerine gerçek yükleme.
   // Hero görseli LCP adayı, sprite kapı deliğini dolduran katman, fontlar
