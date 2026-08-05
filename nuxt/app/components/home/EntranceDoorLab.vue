@@ -539,7 +539,7 @@ const updateMaster = (raw: number) => {
   // delikten görünen kesit hero büyürken kaymaz (transform-origin = delik).
   showroomDepthRef.value = 1 + (1 - zoomP) * SHOWROOM_DEPTH;
 
-  // Body sınıfı (FloatingContactHub'ı gizler) ESKİ eşikte kalır — showroom
+  // Body sınıfı (iletişim hub'ını gizler) ESKİ eşikte kalır — showroom
   // görünür oldu diye hero fazında hub'ı kaybetmeyelim.
   const showroomFade = easeInOut(clamp01((p - SHOWROOM_START) / (SHOWROOM_COVER - SHOWROOM_START)));
   isShowroomActive.value = showroomFade > 0.02;
@@ -944,7 +944,7 @@ watch(doorMeta, (url) => {
 });
 
 // Showroom fazına girince <body>'ye işaret koy → global "Görüşelim" hub'ı
-// (FloatingContactHub) CSS ile gizlenir. Kapı açıldıktan sonra hub görünmesin.
+// (ContactHub) CSS ile gizlenir. Kapı açıldıktan sonra hub görünmesin.
 watch(isShowroomActive, (on) => {
   if (typeof document === "undefined") return;
   document.body.classList.toggle("entrance-lab-showroom-on", on);

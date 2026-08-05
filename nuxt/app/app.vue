@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
       @complete="handleStartupComplete"
     />
     <SiteHeader />
-    <FloatingContactHub v-if="!isReferencesRoute" />
+    <ContactHub v-if="!isReferencesRoute" />
     <SmoothCursor v-if="!isReferencesRoute" />
     <!-- Katalog filtre dock'u da fixed: smooth-content dışında durmalı.
          v-if ile route değişince unmount olur, panel DOM'da asılı kalmaz. -->

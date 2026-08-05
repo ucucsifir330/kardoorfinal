@@ -22,8 +22,8 @@
    Keep this scoped: a universal selector forces broad style recalculation on
    every scroll tick in Safari/Chrome.
    ────────────────────────────────────────────────────────────── */
-html.is-scrolling .floating-contact__trigger,
-html.is-scrolling .floating-contact__panel,
+html.is-scrolling .chub__trigger,
+html.is-scrolling .chub__panel,
 html.is-scrolling .entrance-lab__cta-arrow,
 html.is-scrolling .product-modal,
 html.is-scrolling .product-modal-nav,

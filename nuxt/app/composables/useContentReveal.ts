@@ -6,7 +6,7 @@ import { useState } from "#app";
  * Sayfa perdesi açıldıktan sonra oynayan ortak blur/scale reveal.
  *
  * Neden ayrı dosya: aynı hazırla/oynat/temizle üçlüsü EntranceDoorLab,
- * SiteHeader ve FloatingContactHub içinde birebir kopyalanmıştı. Üç kopya
+ * SiteHeader ve iletişim hub'ı içinde birebir kopyalanmıştı. Üç kopya
  * demek, süre veya ease değişince üçünün ayrışması demek — perde altında
  * beraber görünmesi gereken parçalar için bu doğrudan görünür bir hata.
  *
