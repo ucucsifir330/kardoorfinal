@@ -571,17 +571,10 @@
   background: #080B18;
 }
 
-.app-shell:has(.contact-page) .footer-wrapper {
-  background-color: #080B18;
-  color: #F4F6FF;
-}
-
-.app-shell--night:has(.contact-page) .footer-dome {
-  background: linear-gradient(180deg, #0D122B 0%, #131937 100%);
-  background-color: #131937;
-  box-shadow: inset 0 0 0 2px #131937, 0 0 0 2px #131937;
-  outline-color: #131937;
-}
+/* Footer renkleri BURADA DEGIL — tek kaynak base/tokens.css'teki
+   --footer-surface / --footer-dome sozlesmesi. Eskiden burada gunduz de
+   gece de footer'i #080B18 yapan bir kural ve kubbeye ayri bir gradyan
+   (#0D122B -> #131937) vardi; ikisi de paletten sapmisti. */
 
 .app-shell--night:has(.contact-page) .contact-form__submit,
 .app-shell--night:has(.contact-page) .contact-form__submit-icon {
@@ -621,23 +614,6 @@
     color: #F4F6FF;
     stroke: #F4F6FF;
   }
-}
-
-.app-shell--night:has(.contact-page) .footer-socials > .social-btn {
-  background-color: #171D3D;
-  color: #F4F6FF;
-  border: 1px solid rgba(244, 246, 255, 0.12);
-}
-
-.app-shell--night:has(.contact-page) .footer-socials > .social-btn:hover {
-  background-color: #C3CCFF;
-  color: #050714;
-  border-color: rgba(142, 162, 255, 0.28);
-}
-
-.app-shell--day:has(.contact-page) .footer-wrapper,
-.app-shell--day:has(.contact-page) .footer-wrapper::before {
-  background: var(--surface-2) !important;
 }
 
 @media (max-width: 1280px) {

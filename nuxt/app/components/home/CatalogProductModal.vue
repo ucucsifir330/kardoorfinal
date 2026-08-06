@@ -1,591 +1,1069 @@
 <script setup lang="ts">
 /**
- * CatalogProductModal — HomeCatalog'dan cikarilan urun modali.
+ * KATALOG MODALI — LAB SÜRÜMÜ
  *
- * Kaynak: home-catalog.css satir 1316-2127 (811 satir, 0 !important).
- * Masaustu + mobil BIRLIKTE tasindi (DESIGN.md 12.2).
+ * Eski CatalogProductModal.vue'nun yerine geçmek üzere sıfırdan yazıldı.
+ * Production dosyasına dokunulmuyor; lab beğenilirse değiştirme yapılır.
  *
- * Orijinal sinif adlari KORUNUYOR — themes/*.css degiskenleri ve
- * main.css'teki html.is-scrolling backdrop-filter kurali bunlari hedefliyor.
+ * Eski sürümün dertleri (ölçüldü):
+ *   • 200 satır Tailwind sınıf dizisi, `max-[760px]:` öneki 40+ tekrar
+ *   • `min-height` zinciri kırıktı — 674px ekranda 34 eleman taşıyordu
+ *   • `fixed` çalışmıyordu: sayfa `#smooth-content` içinde ve o katman
+ *     ScrollSmoother yüzünden transform taşıyor
  *
- * Mobilde (<=760px) tasarim tamamen degisiyor: gorsel tam ekran arka plan,
- * bilgi altta overlay kart. Bu yuzden cogu utility'nin max-[760px] karsiligi var.
+ * Bu sürümde:
+ *   • Düzen iki kolon (sol görsel, sağ bilgi)
+ *   • Açılış cihaza göre: masaüstü GSAP "sahne", mobil Motion "ölçek"
+ *   • İçerik: kod/seri/yüzey + açıklama + teknik bilgi + dosyalar + iki
+ *     aksiyon. Özellik kartları ve renk seçenekleri YOK — onlar ürün DETAY
+ *     sayfasının işi, vitrin modalının değil.
+ *   • Stiller scoped CSS'te, utility yığını yok
+ *   • Odak tuzağı + arka plan kilidi + komşu görsel ön yüklemesi var
+ *
+ * `fixed` sorunu: bileşen `<Teleport to="body">` kullanıyor. layoutId YOK
+ * (panel yükseliyor, görsel uçmuyor) — dolayısıyla Teleport güvenli, kart
+ * ile modal arasında düzen bağı gerekmiyor.
  */
-defineProps<{
-  product: Record<string, any>;
-  productIndex: number;
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { useNuxtApp } from "#imports";
+import { motion, AnimatePresence } from "motion-v";
+import { gsap } from "gsap";
+
+const props = withDefaults(defineProps<{
+  product: Record<string, any> | null;
   copy: Record<string, any>;
   series: string;
   collection: string;
-  category: string;
   system: string;
-}>();
+  /** Önceki/sonraki ürünün görsel URL'leri — önceden indirmek için. */
+  neighbourImages?: string[];
+}>(), {});
 
-defineEmits<{
+/**
+ * MOBİL EŞİĞİ — modalın tek kolona düştüğü nokta (aşağıdaki media query ile
+ * aynı). Değeri tek yerde tutuyoruz ki ikisi ayrışmasın.
+ */
+const MOBIL_ESIK = 860;
+
+/**
+ * Açılış hareketi CİHAZA göre seçilir.
+ *
+ * Masaüstünde GSAP "sahne açılır": panel yatayda genişliyor, görsel
+ * derinlikten çıkıyor. Geniş ekranda sinematik duruyor.
+ *
+ * Mobilde Motion "merkezden büyür": orada panel zaten TEK KOLON ve tam
+ * ekran — yatay genişleme (scaleX 0.82) dar ekranda sıkışık görünüyor.
+ * Ayrıca GSAP timeline'ı mobilde gereksiz maliyet; Motion WAAPI'ye
+ * derlendiği için ana iş parçacığının dışında oynuyor.
+ */
+const mobilMi = ref(false);
+
+const guncelleCihaz = () => {
+  mobilMi.value = window.innerWidth <= MOBIL_ESIK;
+};
+
+if (import.meta.client) {
+  guncelleCihaz();
+  window.addEventListener("resize", guncelleCihaz, { passive: true });
+}
+
+/** Masaüstü GSAP ile açılır; mobil Motion ile. Motion propları GSAP
+    modunda devre dışı kalır — iki sistem aynı property'yi yönetemez. */
+const gsapMi = computed(() => !mobilMi.value);
+
+const emit = defineEmits<{
   close: [];
   prev: [];
   next: [];
-  toggleLike: [index: number];
-  imageError: [event: Event, fallback: string];
 }>();
 
-/* --- Kabuk --------------------------------------------------------------- */
-const modalClass = [
-  'product-modal fixed inset-0 z-[3000] flex items-center justify-center overflow-hidden',
-  'p-[clamp(24px,3vw,48px)] text-[#07090c]',
-  'bg-[radial-gradient(circle_at_18%_18%,rgba(0,0,0,0.035),transparent_34%),radial-gradient(circle_at_74%_62%,rgba(180,160,120,0.075),transparent_30%),var(--catalog-product-modal-backdrop,#f3f3ef)]',
-  'backdrop-blur-[18px]',
-  // mobil: tam ekran, koyu zemin, blur yok
-  'max-[760px]:h-[100dvh] max-[760px]:w-full max-[760px]:items-stretch max-[760px]:justify-stretch',
-  'max-[760px]:bg-[#0a0a0a] max-[760px]:p-0 max-[760px]:backdrop-blur-none'
-].join(' ');
+const acik = computed(() => props.product !== null);
 
-const panelClass = [
-  'product-modal-panel relative grid overflow-hidden',
-  'grid-cols-[minmax(420px,0.95fr)_minmax(500px,1.05fr)] gap-[clamp(42px,5vw,78px)]',
-  'w-[min(100%,1380px)] min-h-[min(780px,84vh)] max-h-[calc(100dvh-clamp(48px,6vw,96px))]',
-  // Grid satırları kabın payını aşmasın; çocuklar min-h-0 ile küçülebiliyor.
-  'grid-rows-[minmax(0,1fr)]',
-  'p-[clamp(42px,4.2vw,68px)]',
-  'border border-[rgba(18,18,18,0.065)] bg-[rgba(255,255,255,0.92)]',
-  '[box-shadow:0_42px_130px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.72)]',
-  'max-[1080px]:grid-cols-[1fr] max-[1080px]:gap-[34px] max-[1080px]:overflow-y-auto',
-  // mobil: iki satirli grid — gorsel ust, kart alt
-  'max-[760px]:h-[100dvh] max-[760px]:w-full max-[760px]:grid-rows-[1fr_auto] max-[760px]:grid-cols-[1fr]',
-  'max-[760px]:min-h-0 max-[760px]:max-h-none max-[760px]:rounded-none max-[760px]:border-0',
-  'max-[760px]:bg-transparent max-[760px]:p-0 max-[760px]:[box-shadow:none]'
-].join(' ');
+/**
+ * Modal görselinin ImageKit dönüşümü.
+ *
+ * Ham `product.image` kullanılıyordu: 1413x2226 dosya 294px'lik alanda
+ * gösteriliyordu. Ama ilk düzeltmem (`w-560` + `srcset` 2x) DAHA KÖTÜ
+ * oldu — ölçüldü:
+ *
+ *   • DPR 1.25'te tarayıcı 2x dalını seçiyor → `w-1120`, 158.3 KB
+ *   • Ok tuşuyla gezinirken ürün başına 500–750 ms bekleme
+ *   • Kart `w-440`'ı zaten indirmişken modal BAŞKA bir URL istiyordu,
+ *     yani önbellekten hiçbir şey gelmiyordu
+ *
+ * `srcset` KALDIRILDI. Modal görseli `object-fit: contain` ile sığdırılıyor
+ * ve en geniş kırılımda bile ~294px gösteriliyor; 2x dalı yalnızca dosyayı
+ * beş katına çıkarıyordu, görünür bir netlik kazandırmadan.
+ *
+ * Genişlik kartla AYNI (`w-440`, q-82): kart görseli zaten önbellekte
+ * olduğu için modal onu anında gösteriyor, ağ isteği hiç doğmuyor.
+ * 440px, 294px'lik alan için DPR 1.5'e kadar net kalıyor.
+ */
+const MODAL_GORSEL_W = 440;
 
-/* --- Ust kontroller ------------------------------------------------------ */
-const closeClass = [
-  'product-modal-close fixed top-[24px] right-[28px] z-[3004] h-[40px] w-[40px] cursor-pointer',
-  'rounded-[999px] border border-[rgba(0,0,0,0.045)] bg-[rgba(255,255,255,0.82)]',
-  'text-[24px] leading-none text-[#111] [box-shadow:0_18px_44px_rgba(0,0,0,0.13)]',
-  '[transition:transform_0.2s_ease,background_0.2s_ease,box-shadow_0.2s_ease]',
-  'hover:rotate-90 hover:bg-[var(--surface)]',
-  'max-[760px]:top-[calc(14px+env(safe-area-inset-top))] max-[760px]:right-[14px] max-[760px]:z-[3020]',
-  'max-[760px]:h-[36px] max-[760px]:w-[36px] max-[760px]:text-[22px]',
-  'max-[760px]:border-[rgba(255,255,255,0.14)] max-[760px]:bg-[rgba(0,0,0,0.42)]',
-  'max-[760px]:text-[rgba(255,255,255,0.88)] max-[760px]:backdrop-blur-[8px] max-[760px]:[box-shadow:none]'
-].join(' ');
+const gorselUrl = (url?: string) => {
+  if (!url) return "";
+  if (!url.includes("ik.imagekit.io")) return url;
+  return `${url.split("?")[0]}?tr=w-${MODAL_GORSEL_W},q-82`;
+};
 
-const navBase = [
-  'product-modal-nav fixed top-1/2 z-[3003] flex h-[56px] w-[76px] items-center justify-center',
-  'rounded-[999px] border border-[rgba(0,0,0,0.045)] cursor-pointer',
-  'max-[760px]:top-[30dvh] max-[760px]:z-[3010] max-[760px]:h-[40px] max-[760px]:w-[40px]',
-  'max-[760px]:border-[rgba(255,255,255,0.14)] max-[760px]:bg-[rgba(0,0,0,0.36)]',
-  'max-[760px]:backdrop-blur-[8px] max-[760px]:transform-none max-[760px]:[box-shadow:none]'
-].join(' ');
+const modalGorsel = computed(() => gorselUrl(props.product?.image as string | undefined));
 
-const prevClass = `${navBase} product-modal-prev max-[760px]:left-[12px]`;
-const nextClass = `${navBase} product-modal-next max-[760px]:right-[12px]`;
+/**
+ * Komşu ürünlerin görselini önceden indir.
+ *
+ * Ölçüldü: yavaş ağda önbellekte olmayan ürüne geçerken görsel 728–838 ms
+ * sonra beliriyordu — ok tuşuna basıp boş kutuya bakıyorsun. Önbellekteki
+ * ürünlerde aynı geçiş ~110 ms.
+ *
+ * Komşuların URL'sini ebeveyn veriyor (`neighbourImages`): liste ve sıra
+ * mantığı orada, modal yalnız "şu ikisini şimdiden çek" diyor. Prop boşsa
+ * sessizce atlanıyor — bu bir iyileştirme, davranış şartı değil.
+ */
+const onbellege = new Set<string>();
 
-/* --- Gorsel -------------------------------------------------------------- */
-const visualClass = [
-  // min-h-0 ŞART: grid/flex çocuğunun varsayılan `min-height: auto` değeri
-  // içeriğin altına küçülmesini engelliyor. Onsuz görsel kolonu 969px'e
-  // çıkıp panelin max-h'ini deliyordu (ölçüldü: 674px ekranda 34 eleman
-  // viewport dışına taşıyordu).
-  'product-modal-visual relative flex min-w-0 min-h-0 flex-col justify-center',
-  'max-[760px]:row-start-1 max-[760px]:h-full max-[760px]:w-full max-[760px]:overflow-hidden max-[760px]:p-0'
-].join(' ');
+const onceden = (url?: string) => {
+  const tam = gorselUrl(url);
+  if (!tam || onbellege.has(tam)) return;
+  onbellege.add(tam);
+  const im = new Image();
+  im.decoding = "async";
+  im.src = tam;
+};
 
-const visualFrameClass = [
-  'product-modal-visual-frame flex items-center justify-center overflow-hidden',
-  // min-height DEĞİL: sabit 520px, kısa ekranlarda (674px viewport) modalın
-  // kendi max-h'ini aşıyordu — görsel + metin toplamı 969px'e çıkıp alt
-  // bilgiler kesiliyordu. Şimdi kalan alana yayılıyor, tabanı korunuyor.
-  'h-full min-h-0 border border-[rgba(0,0,0,0.05)]',
-  'bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(242,242,238,0.96)),#f4f4f1]',
-  'max-[1080px]:min-h-[420px]',
-  'max-[760px]:h-full max-[760px]:w-full max-[760px]:min-h-0 max-[760px]:rounded-none',
-  'max-[760px]:border-0 max-[760px]:bg-[#0e0e0e] max-[760px]:p-0'
-].join(' ');
+/* --- Hareket --------------------------------------------------------------
+   Perde sade solar; panel aşağıdan yükselir. Spring bilerek düşük bounce:
+   kapı vitrin nesnesi, zıplaması markayı hafifletir. */
+const perdeMotion = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+  transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] as const }
+};
 
-const imageClass = [
-  'product-modal-image block w-auto max-w-[92%] max-h-[min(66vh,100%)] object-contain',
-  '[filter:drop-shadow(0_34px_42px_rgba(0,0,0,0.20))]',
-  'max-[1080px]:max-h-[420px]',
-  'max-[760px]:h-full max-[760px]:w-full max-[760px]:max-h-none max-[760px]:max-w-full',
-  'max-[760px]:px-[12%] max-[760px]:py-[8%]',
-  'max-[760px]:[filter:drop-shadow(0_20px_32px_rgba(0,0,0,0.5))]'
-].join(' ');
+/**
+ * Mobil açılışı: merkezden büyür. Spring bilerek düşük bounce — kapı
+ * vitrin nesnesi, zıplaması markayı hafifletir.
+ */
+const MOBIL_ACILIS = {
+  initial: { scale: 0.94, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0.97, opacity: 0 },
+  transition: { type: "spring" as const, visualDuration: 0.4, bounce: 0.14 }
+} as const;
 
-const captionClass = [
-  'product-modal-visual-caption flex justify-between gap-5 mt-[18px]',
-  'text-[11px] uppercase tracking-[0.14em] text-[rgba(0,0,0,0.48)]',
-  'max-[760px]:hidden'
-].join(' ');
+const panelMotion = computed(() => (gsapMi.value ? {} : MOBIL_ACILIS));
 
-/* --- Icerik -------------------------------------------------------------- */
-const contentClass = [
-  // justify-center DEĞİL: içerik kabın payını aştığında ortalama, üst ve alt
-  // uçları eşit taşırıyor — kaydırma açık olsa bile başa dönülemiyordu
-  // (ölçüldü: specs tablosu 696px'e taşıyordu, viewport 674px).
-  // justify-start + auto margin: sığıyorsa ortalı görünür, sığmıyorsa
-  // baştan başlar ve kaydırılır.
-  'product-modal-content flex min-w-0 min-h-0 flex-col justify-center overflow-y-auto py-0',
-  // Çocuklar küçülmesin: kaydırma kabın işi, içeriğin sıkışması değil.
-  '[&>*]:shrink-0',
-  '[scrollbar-width:thin]',
-  'max-[760px]:row-start-2 max-[760px]:block max-[760px]:max-h-[52dvh]',
-  'max-[760px]:px-5 max-[760px]:pt-5 max-[760px]:pb-7',
-  'max-[760px]:bg-[rgba(248,247,243,0.97)] max-[760px]:backdrop-blur-[18px]',
-  'max-[760px]:rounded-none max-[760px]:border-t max-[760px]:border-t-[rgba(0,0,0,0.06)]',
-  'max-[760px]:[overscroll-behavior:contain] max-[760px]:[-webkit-overflow-scrolling:touch]',
-  'max-[420px]:max-h-[55dvh] max-[420px]:px-4 max-[420px]:pt-4 max-[420px]:pb-6'
-].join(' ');
+/** İçerik: başlık → açıklama → aksiyonlar sırayla girer. */
+const icerikKap = {
+  gizli: { opacity: 0 },
+  gorunur: {
+    opacity: 1,
+    transition: { delayChildren: 0.14, staggerChildren: 0.07 }
+  }
+};
 
-const kickerClass = [
-  'product-modal-kicker m-0 mb-3 text-[11px] uppercase tracking-[0.22em] text-[rgba(0,0,0,0.48)]',
-  'max-[760px]:mb-1 max-[760px]:text-[9px] max-[760px]:text-[rgba(0,0,0,0.4)]'
-].join(' ');
+const icerikOge = {
+  gizli: { opacity: 0, y: 14 },
+  gorunur: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, visualDuration: 0.42, bounce: 0.1 }
+  }
+};
 
-const metaClass = [
-  'product-modal-meta flex flex-wrap items-center gap-x-[14px] gap-y-2 mt-6',
-  'text-[11px] uppercase leading-[1.45] tracking-[0.11em] text-[rgba(0,0,0,0.54)]',
-  'max-[760px]:mt-2 max-[760px]:gap-x-[6px] max-[760px]:gap-y-1 max-[760px]:text-[9px] max-[760px]:tracking-[0.08em]'
-].join(' ');
+/* ── GSAP AÇILIŞI (masaüstü) ───────────────────────────────────────────────
+   Motion'ın veremediği şey ÖRTÜŞEN zamanlama: aşağıdaki pozisyon
+   parametreleri ("-=0.7" gibi) bir adımı öncekinin bitişinden ÖNCE
+   başlatıyor, parçalar birbirinin içine giriyor. Motion'ın
+   staggerChildren'ı yalnız düz sıra verebiliyor. */
+const perdeRef = ref<any>(null);
+const panelRef = ref<any>(null);
+let gsapTl: gsap.core.Timeline | null = null;
 
-const descriptionClass = [
-  'product-modal-description max-w-[650px] mt-[26px] mb-0',
-  'text-[clamp(20px,1.45vw,25px)] leading-[1.36] tracking-[-0.035em] text-[rgba(0,0,0,0.76)]',
-  'max-[760px]:mt-3 max-[760px]:max-w-none max-[760px]:text-[14px]',
-  'max-[760px]:leading-[1.48] max-[760px]:tracking-[-0.01em] max-[760px]:text-[rgba(0,0,0,0.68)]'
-].join(' ');
+const azHareket = () =>
+  import.meta.client &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const actionsClass = [
-  'product-modal-actions flex flex-wrap items-center gap-[14px] mt-6',
-  'max-[760px]:mt-[14px] max-[760px]:grid max-[760px]:grid-cols-2 max-[760px]:gap-2'
-].join(' ');
+const gsapHedefler = () => {
+  const panel = panelRef.value?.$el ?? panelRef.value;
+  if (!panel) return null;
+  return {
+    perde: perdeRef.value?.$el ?? perdeRef.value,
+    panel,
+    gorsel: panel.querySelector(".kmodal__visual"),
+    metinler: [
+      panel.querySelector(".kmodal__kicker"),
+      panel.querySelector(".kmodal__code"),
+      panel.querySelector(".kmodal__meta"),
+      panel.querySelector(".kmodal__desc"),
+      panel.querySelector(".kmodal__details"),
+      panel.querySelector(".kmodal__actions")
+    ].filter(Boolean)
+  };
+};
 
-const actionBase = [
-  // py-0 gerekli: tarayicinin buton varsayilani padding-block:1px birakiyor.
-  'inline-flex items-center justify-center min-h-[40px] px-[18px] py-0',
-  'rounded-[999px] no-underline cursor-pointer',
-  'max-[760px]:min-h-[42px] max-[760px]:w-full max-[760px]:rounded-[10px] max-[760px]:px-3 max-[760px]:text-[13px]'
-].join(' ');
+const gsapAc = () => {
+  const h = gsapHedefler();
+  if (!h) return;
 
-const likeClass = `product-modal-like ${actionBase} gap-2 m-0 border border-[rgba(0,0,0,0.12)] bg-transparent text-[#111]`;
-const quoteClass = `product-modal-quote ${actionBase} border border-[#111] bg-[#111] text-white`;
+  gsapTl?.kill();
 
-const detailsClass = [
-  'product-modal-details grid grid-cols-[minmax(250px,1fr)_minmax(170px,0.62fr)]',
-  'gap-[clamp(42px,5vw,78px)] mt-[clamp(42px,4.4vw,58px)]',
-  'max-[1080px]:grid-cols-[1fr] max-[1080px]:gap-[30px]',
-  'max-[760px]:mt-5 max-[760px]:grid-cols-[1fr] max-[760px]:gap-5',
-  'max-[760px]:pt-4 max-[760px]:border-t max-[760px]:border-t-[rgba(0,0,0,0.07)]'
-].join(' ');
+  if (azHareket()) {
+    gsap.set([h.perde, h.panel, h.gorsel, ...h.metinler],
+      { opacity: 1, clearProps: "transform" });
+    return;
+  }
 
-const filesClass = [
-  'product-modal-files grid gap-[10px]',
-  'max-[760px]:grid-cols-2 max-[760px]:gap-[7px]'
-].join(' ');
+  gsapTl = gsap.timeline();
 
-const specsClass = [
-  'product-modal-specs grid grid-cols-[repeat(3,minmax(0,1fr))] gap-[10px] mt-[38px]',
-  'max-[1080px]:grid-cols-[1fr]',
-  'max-[760px]:mt-5 max-[760px]:flex max-[760px]:flex-col max-[760px]:gap-[5px]'
-].join(' ');
+  // Sahne açılışı: panel yatayda genişleyerek gelir, görsel derinlikten
+  // çıkar. Motion'ın veremediği şey buradaki ÖRTÜŞEN zamanlama —
+  // "-=0.7" gibi pozisyonlar bir adımı öncekinin bitişinden önce başlatır.
+  gsapTl
+    .fromTo(h.perde, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.inOut" })
+    .fromTo(h.panel, { scaleX: 0.82, scaleY: 0.94, opacity: 0 },
+      { scaleX: 1, scaleY: 1, opacity: 1, duration: 0.78, ease: "power4.out" }, "-=0.2")
+    .fromTo(h.gorsel, { scale: 1.2, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.94, ease: "power4.out" }, "-=0.7")
+    .fromTo(h.metinler, { y: 26, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.54, ease: "power3.out", stagger: 0.06 }, "-=0.62");
+};
 
-const finishesClass = [
-  'product-modal-finishes flex flex-wrap items-center gap-[13px] mt-[30px]',
-  'max-[760px]:static max-[760px]:z-auto max-[760px]:mt-[18px] max-[760px]:gap-[10px]',
-  'max-[760px]:border-0 max-[760px]:bg-transparent max-[760px]:p-0 max-[760px]:backdrop-blur-none'
-].join(' ');
+/**
+ * GSAP çıkışı ELLE yönetilir: AnimatePresence burada devrede değil, o yüzden
+ * kaldırma kararını geciktiriyoruz — önce tween, bitince emit('close').
+ * `kapaniyor` bayrağı çift tıklamada iki çıkışın üst üste binmesini önler.
+ */
+const kapaniyor = ref(false);
+
+const kapat = () => {
+  if (!gsapMi.value) {
+    emit("close");
+    return;
+  }
+  if (kapaniyor.value) return;
+
+  const h = gsapHedefler();
+  if (!h || azHareket()) {
+    emit("close");
+    return;
+  }
+
+  kapaniyor.value = true;
+  gsapTl?.kill();
+  gsapTl = gsap.timeline({
+    onComplete: () => {
+      kapaniyor.value = false;
+      emit("close");
+    }
+  });
+
+  gsapTl
+    .to(h.panel, { y: 26, opacity: 0, duration: 0.26, ease: "power2.in" })
+    .to(h.perde, { opacity: 0, duration: 0.2, ease: "power1.in" }, "-=0.16");
+};
+
+/* ── ÜRÜN DEĞİŞİMİ ────────────────────────────────────────────────────────
+   Ok tuşları/butonları ürünü değiştirince içerik ANINDA yer değiştiriyordu —
+   hangi kapıya geçtiğin belli olmuyordu. Şimdi görsel yön duyarlı kayıyor:
+   ileri gidersen sağdan, geri gelirsen soldan giriyor. */
+const gecisYonu = ref<1 | -1>(1);
+let gecisTl: gsap.core.Timeline | null = null;
+
+const urunDegisti = () => {
+  const h = gsapHedefler();
+  if (!h || azHareket()) return;
+
+  gecisTl?.kill();
+  const x = 34 * gecisYonu.value;
+
+  gecisTl = gsap.timeline();
+  gecisTl
+    .fromTo(h.gorsel, { x, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.44, ease: "power3.out" })
+    .fromTo(h.metinler, { y: 12, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.36, ease: "power2.out", stagger: 0.04 }, "-=0.32");
+};
+
+const oncekiUrun = () => {
+  gecisYonu.value = -1;
+  emit("prev");
+};
+
+const sonrakiUrun = () => {
+  gecisYonu.value = 1;
+  emit("next");
+};
+
+/* ── ODAK TUZAĞI ──────────────────────────────────────────────────────────
+   Modal açıkken Tab arkadaki sayfaya kaçıyordu: klavye kullanıcısı modaldan
+   çıkıp geri dönemiyordu. Kapanınca odak, modalı açan karta geri döner. */
+let oncekiOdak: HTMLElement | null = null;
+
+const odaklanabilirler = (): HTMLElement[] => {
+  const kap: HTMLElement | null = perdeRef.value?.$el ?? perdeRef.value;
+  if (!kap) return [];
+  return [...kap.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )].filter((el) => el.offsetParent !== null);
+};
+
+const odagiTut = (event: KeyboardEvent) => {
+  const liste = odaklanabilirler();
+  if (liste.length === 0) return;
+
+  const ilk = liste[0]!;
+  const son = liste[liste.length - 1]!;
+  const aktif = document.activeElement;
+
+  if (event.shiftKey && aktif === ilk) {
+    event.preventDefault();
+    son.focus();
+  } else if (!event.shiftKey && aktif === son) {
+    event.preventDefault();
+    ilk.focus();
+  }
+};
+
+/* ── ARKA PLAN KİLİDİ ─────────────────────────────────────────────────────
+   `body { overflow: hidden }` TEK BAŞINA YETMİYOR: sayfa gövde scroll'uyla
+   değil, ScrollSmoother'ın `#smooth-content` üstündeki transform'uyla
+   kayıyor. Modal açıkken tekerlek arkadaki kataloğu kaydırıyordu — panel
+   Teleport sayesinde yerinde durduğu için modal kayıyormuş gibi görünüyordu
+   (ölçüldü: modal açıkken scroll 2500 → 3000, panel sabit).
+
+   Bu yüzden smoother'ı da duraklatıyoruz. Dokunmatik cihazda `$smoother`
+   null döner — orada `body overflow` zaten yeterli, çünkü native scroll. */
+const { $smoother } = useNuxtApp();
+
+const smootherAl = () => ($smoother as undefined | (() => any))?.() ?? null;
+
+const arkaPlaniKilitle = (kilitli: boolean) => {
+  // Kilit `<html>` üzerinde olmak zorunda: ölçüldü, `body { overflow:
+  // hidden }` uygulanmasına rağmen `window.scrollY` 2500'den 3100'e çıktı
+  // — scroll kabı gövde değil, kök eleman.
+  document.documentElement.style.overflow = kilitli ? "hidden" : "";
+  document.body.style.overflow = kilitli ? "hidden" : "";
+  // Smoother varsa (masaüstü) transform'u da dursun; dokunmatikte null döner.
+  smootherAl()?.paused(kilitli);
+};
+
+/* --- Klavye + gövde kilidi ------------------------------------------------ */
+const onKeydown = (event: KeyboardEvent) => {
+  if (!acik.value) return;
+  if (event.key === "Escape") kapat();
+  if (event.key === "ArrowLeft") oncekiUrun();
+  if (event.key === "ArrowRight") sonrakiUrun();
+  if (event.key === "Tab") odagiTut(event);
+};
+
+watch(acik, async (aciMi) => {
+  if (!import.meta.client) return;
+
+  if (aciMi) {
+    oncekiOdak = document.activeElement as HTMLElement | null;
+    arkaPlaniKilitle(true);
+    window.addEventListener("keydown", onKeydown);
+    await nextTick();
+    requestAnimationFrame(() => {
+      if (gsapMi.value) gsapAc();
+      // Odak BİR KARE SONRA modala girer. Aynı karede denenince panel henüz
+      // boyanmamış oluyordu: offsetParent null dönüyor, odaklanabilir liste
+      // boş çıkıyor ve odak kartta kalıyordu (ölçüldü).
+      requestAnimationFrame(() => odaklanabilirler()[0]?.focus());
+    });
+  } else {
+    arkaPlaniKilitle(false);
+    window.removeEventListener("keydown", onKeydown);
+    // Odak, modalı açan karta dönsün — sayfanın en başına değil.
+    oncekiOdak?.focus();
+    oncekiOdak = null;
+  }
+});
+
+/** Modal AÇIKKEN ürün değişirse geçişi oynat; açılışta gsapAc zaten çalışıyor. */
+watch(() => props.product?.code, (yeniKod, eskiKod) => {
+  if (!import.meta.client || !acik.value) return;
+  if (!yeniKod || !eskiKod || yeniKod === eskiKod) return;
+  requestAnimationFrame(urunDegisti);
+});
+
+/** Açılışta ve her ürün değişiminde komşuları önceden indir. */
+watch(
+  () => [acik.value, props.neighbourImages] as const,
+  ([aciMi]) => {
+    if (!import.meta.client || !aciMi) return;
+    for (const url of props.neighbourImages ?? []) onceden(url);
+  },
+  { immediate: true, deep: true }
+);
+
+onBeforeUnmount(() => {
+  if (!import.meta.client) return;
+  gsapTl?.kill();
+  gecisTl?.kill();
+  window.removeEventListener("resize", guncelleCihaz);
+  // Modal acikken sayfadan cikilirsa smoother duraklamis kalmasin.
+  arkaPlaniKilitle(false);
+  window.removeEventListener("keydown", onKeydown);
+});
 </script>
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="product"
-      :class="modalClass"
-      role="dialog"
-      aria-modal="true"
-      :aria-label="`${product.code} ${copy.modal.productDetail}`"
-      @click.self="$emit('close')"
-    >
-      <button type="button" :class="closeClass" :aria-label="copy.modal.close" @click="$emit('close')">×</button>
+    <AnimatePresence>
+      <motion.div
+        v-if="product"
+        ref="perdeRef"
+        class="kmodal"
+        :class="{ 'is-gsap': gsapMi }"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="`${product.code} ${copy.modal.productDetail}`"
+        v-bind="gsapMi ? {} : perdeMotion"
+        @click.self="kapat"
+      >
+        <button class="kmodal__close" :aria-label="copy.modal.close" @click="kapat">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
+        </button>
 
-      <button type="button" :class="prevClass" :aria-label="copy.modal.previous" @click="$emit('prev')">
-        <svg viewBox="0 0 44 16" aria-hidden="true">
-          <line x1="43" y1="8" x2="2" y2="8" />
-          <polyline points="9,1 2,8 9,15" />
-        </svg>
-      </button>
+        <button class="kmodal__nav kmodal__nav--prev" :aria-label="copy.modal.previous" @click="oncekiUrun">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15,5 8,12 15,19" /></svg>
+        </button>
 
-      <button type="button" :class="nextClass" :aria-label="copy.modal.next" @click="$emit('next')">
-        <svg viewBox="0 0 44 16" aria-hidden="true">
-          <line x1="1" y1="8" x2="42" y2="8" />
-          <polyline points="35,1 42,8 35,15" />
-        </svg>
-      </button>
+        <button class="kmodal__nav kmodal__nav--next" :aria-label="copy.modal.next" @click="sonrakiUrun">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9,5 16,12 9,19" /></svg>
+        </button>
 
-      <section :class="panelClass">
-        <div :class="visualClass">
-          <div :class="visualFrameClass">
+        <motion.section ref="panelRef" class="kmodal__panel" v-bind="panelMotion">
+          <div class="kmodal__visual">
             <img
-              :src="product.image"
+              :src="modalGorsel"
               :alt="product.finish"
-              :class="imageClass"
-              @error="$emit('imageError', $event, product.localImage)"
+              class="kmodal__image"
+              decoding="async"
             >
           </div>
 
-          <div :class="captionClass">
-            <span>{{ product.code }}</span>
-            <span>{{ product.finish }}</span>
-          </div>
-        </div>
+          <motion.div
+            class="kmodal__content"
+            v-bind="gsapMi ? {} : { variants: icerikKap, initial: 'gizli', animate: 'gorunur' }"
+          >
+            <motion.p class="kmodal__kicker" v-bind="gsapMi ? {} : { variants: icerikOge }">
+              {{ series || copy.modal.seriesFallback }}
+            </motion.p>
 
-        <div :class="contentClass">
-          <div class="product-modal-heading min-w-0">
-            <p :class="kickerClass">{{ series || copy.modal.seriesFallback }}</p>
+            <motion.h2 class="kmodal__code" v-bind="gsapMi ? {} : { variants: icerikOge }">
+              {{ product.code }}
+            </motion.h2>
 
-            <h2>{{ product.code }}</h2>
+            <motion.p class="kmodal__meta" v-bind="gsapMi ? {} : { variants: icerikOge }">
+              {{ collection || copy.modal.collectionFallback }}
+              <span aria-hidden="true">·</span>
+              {{ product.finish }}
+            </motion.p>
 
-            <div :class="metaClass">
-              <span>{{ collection || copy.modal.collectionFallback }}</span>
-              <span>{{ category || copy.modal.categoryFallback }}</span>
-              <span>{{ product.finish }}</span>
-            </div>
-          </div>
+            <motion.p class="kmodal__desc" v-bind="gsapMi ? {} : { variants: icerikOge }">
+              {{ copy.modal.description }}
+            </motion.p>
 
-          <p :class="descriptionClass">{{ copy.modal.description }}</p>
-
-          <div :class="actionsClass">
-            <button type="button" :class="likeClass" @click.stop="$emit('toggleLike', productIndex)">
-              <span aria-hidden="true">♥</span>
-              {{ product.liked ? copy.favorite.remove : copy.favorite.add }}
-            </button>
-
-            <NuxtLink :class="quoteClass" to="/contact">{{ copy.modal.quote }}</NuxtLink>
-          </div>
-
-          <div :class="detailsClass">
-            <div class="product-modal-info-block relative">
-              <h3>{{ copy.modal.infoTitle }}</h3>
-
-              <dl>
-                <div><dt>{{ copy.modal.fields.code }}</dt><dd>{{ product.code }}</dd></div>
-                <div><dt>{{ copy.modal.fields.series }}</dt><dd>{{ series || copy.modal.collectionFallback }}</dd></div>
-                <div><dt>{{ copy.modal.fields.finish }}</dt><dd>{{ product.finish }}</dd></div>
-                <div><dt>{{ copy.modal.fields.system }}</dt><dd>{{ system || copy.modal.systemFallback }}</dd></div>
-                <div><dt>{{ copy.modal.fields.usage }}</dt><dd>{{ copy.modal.usage }}</dd></div>
-              </dl>
-            </div>
-
-            <div class="product-modal-info-block relative">
-              <h3>{{ copy.modal.filesTitle }}</h3>
-
-              <div :class="filesClass">
-                <a href="#">{{ copy.modal.files.specSheet }}</a>
-                <a href="#">{{ copy.modal.files.productImage }}</a>
-                <a href="#">{{ copy.modal.files.drawing }}</a>
-                <a href="#">{{ copy.modal.files.installation }}</a>
+            <!-- Teknik bilgi: sadeleştirmede tamamen çıkarılmıştı ama sağ
+                 kolonun %59'u boş kalıyordu (ölçüldü). B2B ziyaretçi
+                 sistem/kullanım bilgisini modal içinde bekliyor.
+                 CTA'nın ÜSTÜNDE: önce karar bilgisi, sonra eylem. -->
+            <motion.div class="kmodal__details" v-bind="gsapMi ? {} : { variants: icerikOge }">
+              <div class="kmodal__block">
+                <h3>{{ copy.modal.infoTitle }}</h3>
+                <dl>
+                  <div>
+                    <dt>{{ copy.modal.fields.system }}</dt>
+                    <dd>{{ system || copy.modal.systemFallback }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ copy.modal.fields.usage }}</dt>
+                    <dd>{{ copy.modal.usage }}</dd>
+                  </div>
+                </dl>
               </div>
-            </div>
-          </div>
 
-          <div :class="specsClass">
-            <div><span>01</span><strong>{{ copy.modal.specs.body }}</strong></div>
-            <div><span>02</span><strong>{{ copy.modal.specs.customSize }}</strong></div>
-            <div><span>03</span><strong>{{ copy.modal.specs.finishes }}</strong></div>
-          </div>
+              <div class="kmodal__block">
+                <h3>{{ copy.modal.filesTitle }}</h3>
+                <!-- Gerçek dosya URL'si henüz yok. `href="#"` YAZILMAZ:
+                     tıklanınca sayfayı başa atıyor, ekran okuyucuya da
+                     "gidilebilir bağlantı" diye yalan söylüyor. Dosyalar
+                     bağlanınca burası <a :href="..." download> olur. -->
+                <div class="kmodal__files">
+                  <button type="button" disabled>{{ copy.modal.files.specSheet }}</button>
+                  <button type="button" disabled>{{ copy.modal.files.drawing }}</button>
+                </div>
+              </div>
+            </motion.div>
 
-          <div :class="finishesClass" :aria-label="copy.modal.finishesAria">
-            <button type="button" style="--finish: #111111" :aria-label="copy.modal.finishLabels.black"></button>
-            <button type="button" style="--finish: #2f3335" :aria-label="copy.modal.finishLabels.anthracite"></button>
-            <button type="button" style="--finish: #7a6f5f" :aria-label="copy.modal.finishLabels.bronze"></button>
-            <button type="button" style="--finish: #f3f0e9" :aria-label="copy.modal.finishLabels.light"></button>
-            <button type="button" style="--finish: #c99354" :aria-label="copy.modal.finishLabels.brass"></button>
-            <button type="button" class="is-metal" :aria-label="copy.modal.finishLabels.metal"></button>
-          </div>
-        </div>
-      </section>
-    </div>
+            <motion.div class="kmodal__actions" v-bind="gsapMi ? {} : { variants: icerikOge }">
+              <NuxtLink class="kmodal__cta" to="/contact">{{ copy.modal.quote }}</NuxtLink>
+              <NuxtLink class="kmodal__link" to="/catalog">{{ copy.actions.viewSeries }}</NuxtLink>
+            </motion.div>
+          </motion.div>
+        </motion.section>
+      </motion.div>
+    </AnimatePresence>
   </Teleport>
 </template>
 
 <style scoped>
-/* Tailwind'e GIRMEYEN kisim — bilerek burada:
-   pseudo-element icerikleri, eleman-secici (h2/h3/dt/dd) kurallari ve
-   scrollbar stilleri utility ile ifade edilemiyor. */
-
-/* main.css'teki "button,input,textarea { font: inherit }" reset'i Tailwind'in
-   tek-sinifli utility'siyle ayni ozgullukte oldugu icin font-size/weight'i
-   eziyordu. Iki-sinifli secici ile yeniliyor. Ayni tuzak wishlist'te de vardi. */
-.product-modal-like,
-.product-modal-quote {
-  font-size: 13px;
-  font-weight: 600;
+/* GSAP modunda ilk kare gizli başlar — tween opacity'yi kendisi açıyor,
+   aksi halde animasyondan önce bir kare tam görünür yanıp sönüyor. */
+.kmodal.is-gsap {
+  opacity: 0;
 }
 
-.product-modal-close {
-  font-size: 24px;
+.kmodal {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 3vw, 48px);
+  background: var(--catalog-product-modal-backdrop, rgba(20, 21, 29, 0.48));
+  backdrop-filter: blur(18px);
 }
 
-/* NuxtLink <a> uretiyor; .product-modal koku "color:#07090c" veriyor ve
-   utility ile ayni ozgullukte kalinca miras kazaniyordu. */
-.product-modal-quote {
-  color: #fff;
-}
-
-/* max-w-[92%] uygulanmiyordu: img'in yuzde genisligi flex parent'ta
-   cozulmuyor; acik kural gerekiyor. */
-.product-modal-image {
-  max-width: 92%;
-}
-
-@media (max-width: 760px) {
-  .product-modal-image { max-width: 100%; }
-  .product-modal-like,
-  .product-modal-quote { font-size: 13px; }
-  .product-modal-close { font-size: 22px; }
-}
-
-.product-modal-panel::before {
-  content: "";
-  position: absolute;
-  top: clamp(30px, 3vw, 48px);
-  left: clamp(32px, 4vw, 68px);
-  right: clamp(32px, 4vw, 68px);
-  height: 1px;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.08), transparent);
-}
-
-.product-modal-panel::after {
-  content: "KARDOOR  /  ARCHITECTURAL ENTRANCE SYSTEM";
-  position: absolute;
-  right: clamp(34px, 4.5vw, 76px);
-  bottom: clamp(28px, 3vw, 44px);
-  pointer-events: none;
-  color: rgba(0, 0, 0, 0.28);
-  font-size: 9px;
-  letter-spacing: 0.22em;
-}
-
-.product-modal-content::-webkit-scrollbar { width: 6px; }
-.product-modal-content::-webkit-scrollbar-track { background: transparent; }
-.product-modal-content::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.18);
-  border-radius: 999px;
-}
-
-.product-modal-content h2 {
-  margin: 0;
-  color: #050505;
-  font-size: clamp(78px, 7.6vw, 116px);
-  font-weight: 520;
-  line-height: 0.86;
-  letter-spacing: -0.078em;
-}
-
-.product-modal-meta span:not(:last-child)::after {
-  content: "";
-  display: inline-block;
-  width: 1px;
-  height: 12px;
-  margin-left: 14px;
-  vertical-align: -2px;
-  background: rgba(150, 126, 74, 0.72);
-}
-
-.product-modal-meta span + span::before { content: none; }
-
-.product-modal-info-block h3,
-.product-modal-details h3 {
-  position: relative;
-  margin: 0 0 18px;
-  padding-bottom: 10px;
-  color: #080a0c;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.product-modal-details dl { display: grid; gap: 0; margin: 0; }
-
-.product-modal-info-block dl div,
-.product-modal-details dl div {
+/* --- Panel: iki kolon ---------------------------------------------------- */
+.kmodal__panel {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  gap: 18px;
-  padding: 0 0 7px;
-  margin: 0 0 11px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.045);
-  font-size: 15px;
-  line-height: 1.3;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(32px, 4vw, 64px);
+  width: min(100%, 1180px);
+  /* Yükseklik tavanı viewport'a bağlı, min-height YOK: eski modalda sabit
+     520px'lik iç kural kısa ekranlarda içeriği kesiyordu. */
+  max-height: min(86vh, 780px);
+  /* Satır kendi payını aşmasın: grid satırının varsayılan `auto` boyu
+     içeriğe göre büyüyor ve panelin max-height'ini deliyordu (ölçüldü:
+     panel 579px, çocukları 807px'e taşıyordu). */
+  grid-template-rows: minmax(0, 1fr);
+  padding: clamp(32px, 3.4vw, 56px);
+  border-radius: 4px 4px clamp(28px, 2.6vw, 42px);
+  background: var(--modal-surface);
+  box-shadow: 0 42px 130px rgba(0, 0, 0, 0.16);
+
 }
 
-.product-modal-info-block dl div:last-child,
-.product-modal-details dl div:last-child { border-bottom: 0; }
+/* --- Sol: görsel --------------------------------------------------------- */
+.kmodal__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* min-height: 0 — grid çocuğunun varsayılan `auto` değeri içeriğin altına
+     küçülmesini engelliyor, panelin tavanını deliyordu. */
+  min-height: 0;
+  padding: clamp(16px, 2vw, 32px);
+  border-radius: 2px 2px clamp(24px, 2.2vw, 34px);
+  background: var(--modal-raised);
+}
 
-.product-modal-info-block dt,
-.product-modal-details dt { color: rgba(0, 0, 0, 0.46); }
-
-.product-modal-info-block dd,
-.product-modal-details dd { margin: 0; color: rgba(0, 0, 0, 0.82); }
-
-.product-modal-files a,
-.product-modal-details a {
-  position: relative;
+.kmodal__image {
   display: block;
-  width: max-content;
-  padding-bottom: 3px;
-  color: rgba(0, 0, 0, 0.68);
-  border-bottom: 1px dotted rgba(0, 0, 0, 0.24);
-  font-size: 14px;
-  text-decoration: none;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  width: auto;
+  max-width: 92%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 28px 38px rgba(0, 0, 0, 0.18));
 }
 
-.product-modal-files a:hover,
-.product-modal-details a:hover {
-  color: #000;
-  border-bottom-color: rgba(0, 0, 0, 0.72);
-}
-
-.product-modal-specs div {
-  min-height: 72px;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.36);
-  border: 1px solid rgba(0, 0, 0, 0.075);
-  transition:
-    transform 0.25s ease,
-    background 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-.product-modal-specs div:hover { transform: translateY(-3px); }
-
-/* Sıra numarası kendi satırında dursun: span/strong bitişik yazıldığı için
-   "01Güçlendirilmiş gövde" diye okunuyordu. Numara küçük ve soluk bir
-   üst-etiket, başlık altında. */
-.product-modal-specs div {
+/* --- Sağ: bilgi ---------------------------------------------------------- */
+.kmodal__content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  /* `justify-content: center` DEĞİL: içerik taşınca flex ortalaması taşmayı
+     iki uca eşit dağıtıyor ve ÜST TARAF ERİŞİLEMEZ oluyor — kolon açılışta
+     scrollTop 60 ile geliyordu, kicker top:-58px'te görünmez kalıyordu
+     (ölçüldü). `center` yerine `safe center`: sığdığında ortalar, taşınca
+     üstten hizalar. */
+  justify-content: safe center;
+  min-height: 0;
+  overflow-y: auto;
+  /* DİKKAT: burada `scrollbar-width`/`scrollbar-color` BİLEREK YOK.
+     Chrome bu standart özelliklerden birini görünce elemanı standart
+     scrollbar yoluna alıp `::-webkit-scrollbar` kurallarını tamamen yok
+     sayıyor — `!important` ile bile geçilemiyor (ölçüldü: çubuk 4px yerine
+     10px, `scrollbar-color` eklenince 15px kaldı).
+     Chrome/Safari inceltmeyi aşağıdaki webkit kurallarından alıyor;
+     Firefox kendi bloğunda, dosyanın sonunda. */
+  /* Çubuk metne değmesin. `padding` yerine `scrollbar-gutter` kullanmıyoruz:
+     çubuk yokken de yer ayırıp kolonu daraltıyordu. */
+  padding-right: 14px;
+  margin-right: -14px;
 }
 
-.product-modal-specs span {
-  font-size: 10px;
+.kmodal__kicker {
+  margin: 0 0 clamp(6px, 1vmin, 10px);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--modal-fg-muted);
+}
+
+.kmodal__code {
+  margin: 0;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  /* Ölçek YALNIZ genişliğe bağlı olamaz: 1440x620 gibi kısa-geniş laptop
+     ekranlarında 4.4vw = 63px başlık + geniş boşluklar kolonu taşırıyordu
+     (ölçüldü: 622px'te 78px taşma). `vmin` yüksekliği de hesaba katıyor,
+     alçak ekranda başlık kendiliğinden küçülüyor. */
+  font-size: clamp(40px, 5.6vmin, 76px);
   font-weight: 500;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  color: var(--modal-fg);
+}
+
+.kmodal__meta {
+  margin: clamp(10px, 1.6vmin, 16px) 0 0;
+  font-size: 12px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--modal-fg-muted);
+}
+
+.kmodal__meta span {
+  margin: 0 6px;
+}
+
+.kmodal__desc {
+  margin: clamp(14px, 2.4vmin, 24px) 0 0;
+  max-width: 46ch;
+  font-size: clamp(16px, 1.15vw, 19px);
+  line-height: 1.5;
+  color: var(--modal-fg-muted);
+}
+
+/* Teknik bilgi bloğu. İki sütun değil TEK kolon içinde iki blok: sağ kolon
+   zaten dar, ikiye bölünce dt/dd satırları sarmalanıyordu. */
+.kmodal__details {
+  display: grid;
+  gap: clamp(13px, 1.9vmin, 19px);
+  margin-top: clamp(16px, 2.5vmin, 25px);
+  padding-top: clamp(14px, 2.1vmin, 21px);
+  border-top: 1px solid var(--modal-line);
+}
+
+.kmodal__block h3 {
+  margin: 0 0 clamp(8px, 1.2vmin, 12px);
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.14em;
-  color: rgba(0, 0, 0, 0.42);
+  text-transform: uppercase;
+  color: var(--modal-fg-muted);
 }
 
-.product-modal-finishes button,
-.product-modal-finishes span {
-  display: block;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 auto;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+.kmodal__block dl {
+  display: grid;
+  gap: clamp(7px, 1vmin, 10px);
+  margin: 0;
+}
+
+/* Etiket sabit genişlikte, değer kalan alanı alır — değerler aynı hizada
+   başlasın diye. Dar ekranda tek sütuna düşer. */
+.kmodal__block dl > div {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.34fr) 1fr;
+  gap: 4px 18px;
+  align-items: baseline;
+}
+
+.kmodal__block dt {
+  font-size: 13px;
+  color: var(--modal-fg-muted);
+}
+
+.kmodal__block dd {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--modal-fg);
+}
+
+.kmodal__files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kmodal__files button {
+  display: inline-flex;
+  align-items: center;
+  /* 38px değildi: dokunma hedefi tabanı 44px. */
+  min-height: 44px;
+  font: inherit;
+  padding: 0 16px;
+  border: 1px solid var(--modal-line);
   border-radius: 999px;
-  background: var(--finish, transparent);
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.35),
-    0 10px 20px rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+  color: var(--modal-fg);
+  /* `background` HİÇ VERİLMEMİŞTİ: <button> tarayıcı varsayılanına düşüp
+     #EFEFEF gri dolgu alıyordu (ölçüldü) — panel zemininden kopuk gri
+     baloncuklar olarak görünüyordu, gece temada da aynı gri kalıyordu. */
+  background: transparent;
+  text-decoration: none;
+  transition: border-color 0.22s ease, background 0.22s ease;
+}
+
+.kmodal__files button:not(:disabled):hover {
+  border-color: var(--accent-fg);
+  background: var(--modal-raised);
+}
+
+/* Dosya henüz bağlanmadı: tıklanabilir görünmesin ama okunabilir kalsın.
+   `opacity` düşürmüyoruz — kontrastı AA'nın altına indiriyordu.
+
+   `--text-secondary` DEĞİL: o token gündüzde #8A8073'e (--ink-soft) düşüyor
+   ve panel zemininde (#EFEFEF) 3.37:1 veriyordu — AA küçük metin için 4.5
+   gerekiyor (ölçüldü; gece tarafı 18.86 ile zaten sorunsuzdu).
+   `--muted` her iki temada gövde metni tonu: gündüz #3A352D, gece #B9C0D8. */
+.kmodal__files button:disabled {
+  border-style: dashed;
+  color: var(--modal-fg-muted);
+  cursor: not-allowed;
+}
+
+.kmodal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(18px, 3.2vmin, 32px);
+}
+
+.kmodal__cta,
+.kmodal__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+}
+
+.kmodal__cta {
+  color: var(--accent-on);
+  background: var(--accent-fill);
+}
+
+.kmodal__cta:hover {
+  background: var(--accent-fg);
+}
+
+.kmodal__link {
+  color: var(--modal-fg-muted);
+  border: 1px solid var(--modal-line);
+}
+
+.kmodal__link:hover {
+  color: var(--modal-fg);
+  border-color: var(--modal-fg-muted);
+}
+
+/* --- Kontroller ---------------------------------------------------------- */
+.kmodal__close,
+.kmodal__nav {
+  position: fixed;
+  z-index: 3004;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--modal-line);
+  border-radius: 999px;
+  background: var(--modal-surface);
+  color: var(--modal-fg);
   cursor: pointer;
+  transition: transform 0.22s ease, background 0.22s ease;
 }
 
-.product-modal-nav svg {
-  width: 44px;
-  height: 16px;
-  stroke: rgba(0, 0, 0, 0.62);
-  stroke-width: 1;
+.kmodal__close svg,
+.kmodal__nav svg {
+  width: 18px;
+  height: 18px;
   fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-/* --- Mobil: eleman-secici override'lari ------------------------------- */
-@media (max-width: 760px) {
-  .product-modal-content h2 {
-    margin: 0 0 8px;
-    font-size: clamp(30px, 9vw, 44px);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
+.kmodal__close {
+  top: 24px;
+  right: 28px;
+  /* 42px değildi: dokunma hedefi tabanı 44px (WCAG 2.5.8 / Apple HIG). */
+  width: 44px;
+  height: 44px;
+}
+
+/* ── ODAK HALKASI ─────────────────────────────────────────────────────────
+   Hiç tanımlı değildi: kapatma butonunda `outline: none` vardı, geri kalanı
+   tarayıcı varsayılanına kalmıştı (ölçüldü: 0.8px auto). Klavye kullanıcısı
+   modalda nerede olduğunu göremiyordu — odak tuzağı kurulmuşken bu eksik
+   kalması anlamsız. `:focus-visible` seçili: fareyle tıklayanda çıkmıyor. */
+.kmodal__close:focus-visible,
+.kmodal__nav:focus-visible,
+.kmodal__cta:focus-visible,
+.kmodal__link:focus-visible,
+.kmodal__files button:focus-visible {
+  outline: 2px solid var(--modal-fg);
+  outline-offset: 3px;
+}
+
+.kmodal__close:hover {
+  transform: rotate(90deg);
+}
+
+/* Oklar panelin DIŞINDA durmalı. Sabit `24px` kenar payı geniş ekranda
+   çalışıyordu ama panel kenara yaklaşınca ok panelin üstüne biniyor ve
+   kapı görselini kapatıyordu (ölçüldü: 1024px'te sol ok 24–68, panel 31'de
+   başlıyor).
+
+   `--kmodal-yan-bosluk`: panelin bir yanında kalan boşluk. Panel
+   `min(100vw - 2*sayfa-payı, 1180px)` genişliğinde ve ortalanmış, yani
+   boşluk = (100vw - panel) / 2. Ok o boşluğun ortasına oturuyor; boşluk
+   dar kaldığında `max()` tabanı devreye girip ok kenara yapışıyor. */
+.kmodal__nav {
+  --kmodal-yan-bosluk: calc((100vw - min(100vw - 2 * clamp(24px, 3vw, 48px), 1180px)) / 2);
+  --kmodal-ok-yeri: max(10px, calc(var(--kmodal-yan-bosluk) / 2 - 24px));
+
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
+}
+
+.kmodal__nav--prev { left: var(--kmodal-ok-yeri); }
+.kmodal__nav--next { right: var(--kmodal-ok-yeri); }
+
+.kmodal__nav:hover {
+  background: var(--modal-raised);
+}
+
+/* ── TABLET / KÜÇÜK LAPTOP (861–1180px) ───────────────────────────────────
+   Burası boştu: panel iki kolon kalıyor ama iki kolon da dar düşüyordu.
+   Görsele daha az, bilgiye daha çok pay veriyoruz — sağdaki metin sarmalı
+   asıl sıkışan taraftı. */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .kmodal__panel {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+    gap: clamp(24px, 3vw, 40px);
+    padding: clamp(24px, 3vw, 40px);
   }
 
-  .product-modal-content::-webkit-scrollbar { display: none; }
-
-  .product-modal-meta span:not(:last-child)::after { display: none; }
-
-  .product-modal-meta span {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 8px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.6);
+  /* Etiket sütunu daralsın: 88px taban dar kolonda değerleri sıkıştırıyordu. */
+  .kmodal__block dl > div {
+    grid-template-columns: minmax(72px, 0.32fr) 1fr;
+    gap: 4px 12px;
   }
 
-  .product-modal-info-block h3,
-  .product-modal-details h3 {
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.42);
+  /* Bu aralıkta panel neredeyse tüm ekranı kaplıyor (ölçüldü: 1024px'te
+     panel 31–993), yanda ok için yer YOK — dışarı koymaya çalışmak okları
+     kapı görselinin üstüne bindiriyordu. Onun yerine oklar panelin İÇİNE,
+     görselin alt-sol köşesine ikili grup olarak iniyor. */
+  .kmodal__nav {
+    top: auto;
+    bottom: clamp(24px, 3vw, 40px);
+    width: 44px;
+    height: 44px;
+    margin-top: 0;
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.10);
   }
 
-  .product-modal-info-block dl div,
-  .product-modal-details dl div {
-    grid-template-columns: 76px minmax(0, 1fr);
-    gap: 10px;
-    padding: 8px 0;
-    margin: 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    font-size: 13px;
-    line-height: 1.35;
+  .kmodal__nav--prev {
+    left: clamp(24px, 3vw, 40px);
+    right: auto;
   }
 
-  .product-modal-files a,
-  .product-modal-details a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: auto;
-    min-height: 36px;
-    padding: 0 10px;
-    border: 1px solid rgba(0, 0, 0, 0.09);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
-    text-align: center;
-    text-decoration: none;
-    color: rgba(0, 0, 0, 0.64);
+  .kmodal__nav--next {
+    left: calc(clamp(24px, 3vw, 40px) + 52px);
+    right: auto;
+  }
+}
+
+/* ── ALÇAK EKRAN (yükseklik ≤ 700px) ──────────────────────────────────────
+   1440x620 gibi kısa-geniş laptop'larda kolon taşıyordu (ölçüldü: 78px).
+   Genişlik yeterli olduğu için media query yalnız YÜKSEKLİĞE bakıyor. */
+@media (min-width: 861px) and (max-height: 700px) {
+  .kmodal__panel {
+    max-height: 94vh;
+    padding: clamp(20px, 2.4vw, 34px);
   }
 
-  .product-modal-specs div {
+  /* NOT: burada açıklamayı `-webkit-line-clamp: 2` ile kırpıyorduk —
+     metin "...özel mimari..." diye kesiliyordu. Ölçüldü: kırpma
+     kaldırıldığında 700px yükseklikte kolon taşması yine 0. Yukarıdaki
+     `vmin` tabanlı tipografi/boşluk ölçeği yeri zaten açıyor, kırpma
+     gereksizdi. Cümleyi kesmek ürün metnini sakatlıyor; geri konmasın. */
+}
+
+@media (max-width: 860px) {
+  .kmodal {
+    padding: 0;
+  }
+
+  .kmodal__panel {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 0;
+    width: 100%;
+    height: 100dvh;
+    max-height: none;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .kmodal__visual {
+    border-radius: 0;
+  }
+
+  .kmodal__content {
+    /* Sağ kenar boşluğu masaüstündeki scrollbar payını (14px) telafi eden
+       negatif margin'i mobilde de dengelemeli, yoksa metin kenara yapışıyor. */
+    padding: 24px 20px 32px;
+    padding-right: 34px;
+    /* Sabit 46dvh değildi: bilgi tablosu geldikten sonra kısa telefonlarda
+       içerik boğuluyordu. Alt sınır tabloyu, üst sınır görseli koruyor. */
+    max-height: clamp(300px, 54dvh, 62dvh);
+    border-top: 1px solid var(--modal-line);
+  }
+
+  .kmodal__code {
+    font-size: clamp(34px, 9vw, 46px);
+  }
+
+  /* Oklar içerik panelinin üstünde durur — yüksekliği artık değişken
+     olduğu için sabit `46dvh` yerine görsel alanının içine sabitliyoruz. */
+  .kmodal__nav {
+    top: auto;
+    bottom: auto;
+    margin-top: 0;
+    /* Görsel alanı = panel yüksekliği eksi içerik kolonu. Ok'u onun
+       dikey ortasına değil, alt kenarına yakın koyuyoruz ki kapıyı
+       kapatmasın. */
+    top: clamp(180px, 26dvh, 300px);
+  }
+}
+
+/* ── YATAY TELEFON ────────────────────────────────────────────────────────
+   844x390 gibi yatay telefonlarda tek kolon düzeni kapıyı 90px'e eziyordu
+   (ölçüldü) — kapı vitrininde görselin yok olması kabul edilemez. Bu
+   ekranlarda genişlik bol, yükseklik kıt: iki kolona geri dönüyoruz. */
+@media (max-width: 860px) and (orientation: landscape) and (max-height: 520px) {
+  .kmodal__panel {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 20px;
+    padding: 16px;
+  }
+
+  .kmodal__visual {
+    border-radius: 2px 2px 20px;
+  }
+
+  .kmodal__content {
+    max-height: none;
+    padding: 0 20px 0 0;
+    border-top: 0;
+  }
+
+  /* Başlık yükseklikten pay çalıyor. */
+  .kmodal__code {
+    font-size: clamp(28px, 7vmin, 40px);
+  }
+
+  /* Açıklama bu yükseklikte lüks; bilgi tablosu ve CTA öncelikli. */
+  .kmodal__desc {
+    display: none;
+  }
+
+  /* Oklar görselin alt köşesine, panelin içine. */
+  .kmodal__nav {
+    top: auto;
+    bottom: 14px;
+    width: 38px;
+    height: 38px;
+    margin-top: 0;
+  }
+
+  .kmodal__nav--prev { left: 14px; right: auto; }
+  .kmodal__nav--next { left: 60px; right: auto; }
+}
+
+/* Çok dar telefon (≤380px): iki CTA yan yana sığmıyordu, alt alta. */
+@media (max-width: 380px) {
+  .kmodal__actions {
     display: grid;
-    grid-template-columns: 26px 1fr;
-    align-items: center;
-    min-height: 40px;
-    padding: 8px 12px;
-    border-radius: 7px;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
-  .product-modal-specs span { margin: 0; font-size: 9px; }
-  .product-modal-specs strong { font-size: 12.5px; }
+  .kmodal__cta,
+  .kmodal__link {
+    justify-content: center;
+  }
 
-  .product-modal-finishes button,
-  .product-modal-finishes span { width: 32px; height: 32px; }
-
-  .product-modal-nav svg {
-    width: 24px;
-    height: 10px;
-    stroke: rgba(255, 255, 255, 0.82);
-    stroke-width: 1.5;
+  /* Etiket/değer yan yana sığmıyor: değer alta geçsin. */
+  .kmodal__block dl > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }
 
-@media (max-width: 420px) {
-  .product-modal-content h2 { font-size: clamp(28px, 8.5vw, 38px); }
+/* Hareket kısıtlıysa: konum değişimi yok, yalnız solma. */
+@media (prefers-reduced-motion: reduce) {
+  .kmodal__close:hover {
+    transform: none;
+  }
+}
+</style>
+
+<!--
+  Scrollbar kuralları GLOBAL blokta olmak zorunda.
+
+  Neden: modal `<Teleport to="body">` ile gövdeye taşınıyor ve
+  `::-webkit-scrollbar` bir pseudo-element. `<style scoped>` seçicinin
+  sonuna kendi data attribute'ünü ekleyemediği için düz yazım hiç
+  tutmuyordu; `:deep()` de Teleport zinciri koptuğu için tutmadı
+  (ikisi de ölçüldü: çubuk 10px kalmaya devam etti).
+
+  `.kmodal__content` yalnız bu bileşende geçen bir sınıf, global olması
+  sızıntı üretmiyor.
+-->
+<style>
+.kmodal__content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.kmodal__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kmodal__content::-webkit-scrollbar-thumb {
+  background: var(--modal-line);
+  border-radius: 999px;
+}
+
+.kmodal__content::-webkit-scrollbar-thumb:hover {
+  background: var(--modal-fg-muted);
+}
+
+/* Firefox: webkit pseudo-element'lerini bilmiyor, standart özelliklere
+   ihtiyacı var. `@supports not selector(::-webkit-scrollbar)` sayesinde bu
+   blok Chrome'a HİÇ ulaşmıyor — yukarıdaki çakışma orada tekrar doğmuyor. */
+@supports not selector(::-webkit-scrollbar) {
+  .kmodal__content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--modal-line) transparent;
+  }
 }
 </style>

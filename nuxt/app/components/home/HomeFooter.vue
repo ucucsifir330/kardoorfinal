@@ -244,7 +244,10 @@
 // @ts-nocheck
 import { computed, onBeforeUnmount, onMounted, ref } from "vue"
 import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useKardoorLocale } from "~/composables/useKardoorLocale"
+
+gsap.registerPlugin(ScrollTrigger)
 
 const { locale } = useKardoorLocale()
 
@@ -428,99 +431,83 @@ const leaveDirectionalFill = (event: PointerEvent, fillSelector: string) => {
   })
 }
 
+/**
+ * Kubbe acilma animasyonu.
+ *
+ * ScrollTrigger scrub kullaniliyor — elle `scroll` dinleyicisi DEGIL.
+ *
+ * Neden: sayfa ScrollSmoother altinda calisiyor; scroll gercek bir kaydirma
+ * degil, `#smooth-content` uzerinde bir transform. Bu yuzden `window.scroll`
+ * olayi ile `IntersectionObserver` footer'a dogru sinyal vermiyordu (ayni
+ * tespit HomeCatalog.vue:453'te de yazili). Olculdu: sayfa en dipteyken
+ * (scrollY 20568 = maxScroll) kubbe y=11.3px / radius=244px'te asili
+ * kaliyordu — hedef 0/0. "Dark temada footer patlamis, GSAP oynamiyo"
+ * sikayetinin kok nedeni buydu; gece temasinda kubbe zeminle ayni renk
+ * oldugu icin (o da duzeltildi) hic fark edilmiyordu.
+ *
+ * ScrollTrigger ayni motoru ScrollSmoother ile paylasir: progress her karede
+ * dogru, sayfa dibinde kesin 1. matchMedia ile mobil/masaustu olculeri
+ * ayrilir ve viewport degisiminde otomatik yeniden kurulur.
+ */
 const initFooterAnimation = () => {
   const footer = footerDome.value
   const wrapper = footerWrapper.value
 
   if (!footer || !wrapper) return
 
-  const isMobileFooter = () => window.matchMedia("(max-width: 760px)").matches
-  const getFooterMotion = () => {
-    if (isMobileFooter()) {
-      return { y: 0, radius: 220, divisor: 1.18 }
-    }
+  const mm = gsap.matchMedia()
 
-    return { y: 24, radius: 520, divisor: 1.35 }
-  }
-
-  const initialMotion = getFooterMotion()
-
-  gsap.set(footer, {
-    y: initialMotion.y,
-    "--dome-radius": `${initialMotion.radius}px`,
-    borderTopLeftRadius: `50% ${initialMotion.radius}px`,
-    borderTopRightRadius: `50% ${initialMotion.radius}px`,
-    force3D: true
-  })
-
-  let ticking = false
-  let footerNearViewport = false
-  let lastEasedProgress = -1
-
-  const updateFooterShape = () => {
-    ticking = false
-
-    const rect = wrapper.getBoundingClientRect()
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight
-    const motion = getFooterMotion()
-    const rawProgress = (viewportHeight - rect.top) / (viewportHeight * motion.divisor)
-    const progress = Math.min(1, Math.max(0, rawProgress))
-    const easedProgress = gsap.parseEase("sine.inOut")(progress)
-
-    // Marka katmanı (fixed, sol üst) sayfa sonunda footer içeriğiyle
-    // çakışıyordu. Footer'ın üst kenarı ekranın üst yarısına girdiğinde
-    // işaretle; CSS o an markayı gizliyor. Ölçüm zaten burada yapıldığı
-    // için ek reflow maliyeti yok.
-    // NOT: erken return'den ÖNCE olmalı — sonrasında atlanırdı.
-    footer.classList.toggle("is-brand-overlap", rect.top < viewportHeight * 0.5)
-
-    // Değer değişmediyse (footer ekran dışında progress 0/1'de sabit) tween'i
-    // yeniden başlatma — eskiden her scroll frame'inde 0.9s'lik gsap.to restart
-    // ediliyordu, sayfanın tepesinde bile.
-    if (Math.abs(easedProgress - lastEasedProgress) < 0.002) return
-    lastEasedProgress = easedProgress
-    const y = Math.max(0, motion.y * (1 - easedProgress))
-    const radius = Math.max(0, motion.radius * (1 - easedProgress))
-    const radiusValue = `50% ${radius}px`
+  const buildDomeTween = (motion: { y: number; radius: number }) => {
+    gsap.set(footer, {
+      y: motion.y,
+      "--dome-radius": `${motion.radius}px`,
+      borderTopLeftRadius: `50% ${motion.radius}px`,
+      borderTopRightRadius: `50% ${motion.radius}px`,
+      force3D: true
+    })
 
     gsap.to(footer, {
-      y,
-      "--dome-radius": `${radius}px`,
-      borderTopLeftRadius: radiusValue,
-      borderTopRightRadius: radiusValue,
-      duration: 0.9,
-      ease: "power2.out",
-      overwrite: true,
-      force3D: true
+      y: 0,
+      "--dome-radius": "0px",
+      borderTopLeftRadius: "50% 0px",
+      borderTopRightRadius: "50% 0px",
+      ease: "sine.inOut",
+      force3D: true,
+      scrollTrigger: {
+        trigger: wrapper,
+        // Acilma YOLU uzun tutuluyor — eski sistemin hissi buydu.
+        //
+        // Eski kurulum footer'i `rootMargin: "80% 0px"` ile daha ekranda
+        // yokken izlemeye basliyor, `divisor: 1.35` ile de ilerlemeyi
+        // viewport'un 1.35 katina yayiyordu; toplam yol ~1900px'ti.
+        // `top bottom -> top top` ise yalnizca 1 viewport (900px) yol verir,
+        // yani hareket iki kattan fazla hizlanir. Baslangici bir viewport
+        // yukari cekip bitisi footer'in ortasina taşiyarak eski yola
+        // donuluyor: kubbe uzaktan, yavasca acilir.
+        start: "top bottom+=100%",
+        end: "center top",
+        scrub: 1.1,
+        invalidateOnRefresh: true,
+        // Marka katmani (fixed, sol ust) sayfa sonunda footer icerigiyle
+        // cakisiyordu; CSS bu sinifi gorunce markayi gizler.
+        //
+        // Esik ilerlemeye DEGIL, olcuye bagli: ilerleme araligi degistiginde
+        // (yukaridaki start/end ayari gibi) marka yanlis yerde kaybolmasin.
+        // Eski kosul da birebir buydu: footer'in ust kenari ekranin yarisinda.
+        onUpdate: () => {
+          const top = wrapper.getBoundingClientRect().top
+          const vh = window.innerHeight || document.documentElement.clientHeight
+          footer.classList.toggle("is-brand-overlap", top < vh * 0.5)
+        }
+      }
     })
   }
 
-  const requestFooterUpdate = () => {
-    // Footer viewport'a yaklaşmadan rect bile okuma: scroll listener tüm sayfa
-    // boyunca aktif ama iş sadece footer görünürlüğe yaklaşınca yapılır.
-    if (!footerNearViewport || ticking) return
-
-    ticking = true
-    requestAnimationFrame(updateFooterShape)
-  }
-
-  const footerObserver = new IntersectionObserver(
-    (entries) => {
-      footerNearViewport = entries.some((entry) => entry.isIntersecting)
-      if (footerNearViewport) requestFooterUpdate()
-    },
-    { rootMargin: "80% 0px" }
-  )
-  footerObserver.observe(wrapper)
-
-  updateFooterShape()
-  window.addEventListener("scroll", requestFooterUpdate, { passive: true })
-  window.addEventListener("resize", requestFooterUpdate)
+  mm.add("(max-width: 760px)", () => buildDomeTween({ y: 0, radius: 220 }))
+  mm.add("(min-width: 761px)", () => buildDomeTween({ y: 24, radius: 520 }))
 
   cleanupFooter = () => {
-    footerObserver.disconnect()
-    window.removeEventListener("scroll", requestFooterUpdate)
-    window.removeEventListener("resize", requestFooterUpdate)
+    mm.revert()
   }
 }
 

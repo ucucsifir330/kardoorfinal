@@ -7,7 +7,7 @@
       class="title-area pointer-events-none absolute top-0 left-0 z-10 flex h-full w-[45%] items-center pl-[3vw] max-[1024px]:relative max-[1024px]:h-auto max-[1024px]:w-full max-[1024px]:items-start max-[1024px]:px-[clamp(18px,4vw,40px)] max-[640px]:px-5"
     >
       <h2
-        class="title rotating-title text-rotating relative z-[2] m-0 flex flex-col font-telegraf font-[540] leading-[1.05] tracking-normal text-[var(--ink)] max-[1024px]:text-rotating-lg max-[640px]:w-[min(100%,360px)] max-[640px]:text-rotating-sm max-[640px]:leading-[1.04]"
+        class="title rotating-title text-rotating relative z-[2] m-0 flex flex-col font-telegraf font-[540] leading-[1.05] tracking-normal text-text max-[1024px]:text-rotating-lg max-[640px]:w-[min(100%,360px)] max-[640px]:text-rotating-sm max-[640px]:leading-[1.04]"
       >
         <div
           class="top-row inline-flex items-center whitespace-nowrap [transition:gap_var(--title-pill-transition-smooth)] max-[640px]:gap-[clamp(8px,2.2vw,12px)]"
@@ -665,7 +665,11 @@ onBeforeUnmount(() => {
 
 const reviewCardClass = [
   'review-card relative flex w-[clamp(340px,27vw,410px)] shrink-0 select-none flex-col justify-between',
-  'gap-[clamp(1.35rem,1.8vw,1.75rem)] rounded-[14px] border border-[var(--hairline)] bg-[var(--surface)]',
+  // Kart ZEMINDEN YUKSELEN yuzey: bg-surface-raised + border-surface-line.
+  // Ikisi de tema-duyarli (bkz. tokens.css YUZEY SOZLESMESI), bu yuzden
+  // main.css'te ayrica `.app-shell--night .review-card {...!important}`
+  // yazmaya gerek yok — o kural kaldirildi.
+  'gap-[clamp(1.35rem,1.8vw,1.75rem)] rounded-[14px] border border-surface-line bg-surface-raised',
   'px-[clamp(1.35rem,1.7vw,1.75rem)] py-[clamp(1.55rem,2vw,2rem)]',
   '[box-shadow:0_16px_44px_rgba(0,0,0,0.035)] [--scale:1] [transform-style:preserve-3d]',
   '[transform:perspective(1000px)_scale(var(--scale))_rotateX(var(--rx,0deg))_rotateY(var(--ry,0deg))]',
@@ -680,12 +684,12 @@ const reviewCardClass = [
 ].join(' ');
 
 const quoteClass =
-  'quote relative z-[2] m-0 font-body text-quote leading-[1.58] text-[var(--text-primary)] max-[640px]:text-[0.96rem] max-[640px]:leading-[1.52]';
+  'quote relative z-[2] m-0 font-body text-quote leading-[1.58] text-text max-[640px]:text-[0.96rem] max-[640px]:leading-[1.52]';
 const authorClass =
-  'author relative z-[2] flex items-center justify-between border-t border-t-[var(--hairline)] pt-6 max-[640px]:pt-4';
+  'author relative z-[2] flex items-center justify-between border-t border-t-surface-line pt-6 max-[640px]:pt-4';
 const authorInfoClass = 'author-info flex flex-col gap-[0.3rem]';
 const nameClass =
-  'name font-mori text-name font-semibold text-[var(--text-primary)] max-[640px]:text-[0.95rem]';
+  'name font-mori text-name font-semibold text-text max-[640px]:text-[0.95rem]';
 const ratingClass =
   'rating font-body text-rating tracking-[0.08em] text-[var(--brand-700)] max-[640px]:text-[1.02rem]';
 </script>

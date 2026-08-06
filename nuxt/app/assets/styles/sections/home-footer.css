@@ -1,13 +1,14 @@
 /* Homepage animated footer section. Extracted from public theme files because these rules are not theme-specific. */
 
 .footer-wrapper {
-  background-color: var(--catalog-stage-surface-bg, var(--bg-color));
+  background-color: var(--footer-surface);
   position: relative;
   overflow: hidden;
 }
 
 .footer-dome {
-  background-color: var(--slab);
+  background-color: var(--footer-dome);
+  color: var(--footer-dome-fg);
   --dome-radius: 680px;
   border-top-left-radius: 50% var(--dome-radius);
   border-top-right-radius: 50% var(--dome-radius);
@@ -15,12 +16,39 @@
   will-change: transform, border-radius;
   backface-visibility: hidden;
   position: relative;
+  /* Kubbe dikisi: ScrollSmoother kesirli translate ettiginde kenarda 1px seam
+     birakiyor; kendi rengiyle muhurleniyor. Renk degiskenden geldigi icin
+     tema/rota farketmez — eskiden bu kural --day / --references / --night
+     icin ayri ayri, uc farkli deger ile yaziliyordu. */
+  box-shadow: inset 0 0 0 2px var(--footer-dome), 0 0 0 2px var(--footer-dome);
+  outline-color: var(--footer-dome);
+
+  /* Duzen: contact CTA ilk katman, dizin linkleri altinda.
+     (Eskiden ayni seciciyi 690. satirda ikinci kez acan bir blok vardi.) */
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 0 clamp(620px, 36vw, 780px);
 }
 
+/* Marka kutusu — tek tanim. (Eskiden ayni secici 727. satirda ikinci kez
+   aciliyor, grid/olcu kurallarini oraya yaziyordu.) */
 .footer-brand {
+  position: relative;
+  z-index: 3;
+  grid-column: 1 / -1;
+  width: 100%;
+  height: clamp(390px, 27vw, 540px);
+  margin: clamp(6px, 1vw, 20px) 0 18px;
+  /* Logo kutuya SIGAR: tasma yok, ortalanir. Eskiden overflow:visible +
+     transform:translate(-3%) ile disari itiliyordu (olculdu: kutu x=56,
+     logo x=34.4 — 21.6px sola tasma). */
+  overflow: hidden;
   display: flex;
   align-items: center;
-  z-index: 3;
+  justify-content: center;
 }
 
 .footer-logo {
@@ -28,10 +56,16 @@
   /* Inset/debossed shadow that follows the K glyph (see #kInnerShadow). */
   filter: url(#kInnerShadow);
   /* EgeLogo fill="currentColor" kullanir — renk BURADAN gelir.
-     Koyu blok uzerinde durdugu icin --slab-fg.
-     Onceden color verilmemisti; gunduzde sayfa metin rengini (koyu) miras
-     alip koyu footer uzerinde gorunmez oluyordu. */
-  color: var(--slab-fg);
+     Kubbe uzerinde durdugu icin kubbenin on plan rengi. */
+  color: var(--footer-dome-fg);
+  /* Inline SVG'de object-fit calismaz; karsiligi viewBox + varsayilan
+     preserveAspectRatio="xMidYMid meet" = zaten contain + ortali.
+     Genislik kutuyu ASMAZ: min() tavani kutu genisligi.
+     Eskiden `width:clamp(410px,27vw,560px) !important` + scale(1.04) vardi;
+     3 !important ile kutudan tasiyordu. */
+  width: min(100%, clamp(340px, 24vw, 470px));
+  height: 100%;
+  max-width: 100%;
 }
 
 .footer-logo-filter {
@@ -381,10 +415,21 @@
   }
 }
 
+/* Tek tanim: renk/tipografi + duzen birlikte. (Eskiden ayni secici 757.
+   satirda ikinci kez aciliyor, duzen kurallarini oraya yaziyordu.) */
 .footer-info {
-  color: var(--slab-fg);
+  color: var(--footer-dome-fg);
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   z-index: 2;
+  position: relative;
+  width: 100%;
+  margin: clamp(140px, 10vw, 220px) auto 0;
+  padding: 0 56px;
+  display: grid;
+  box-sizing: border-box;
+  grid-template-columns: minmax(500px, 36vw) minmax(0, 1fr);
+  column-gap: clamp(72px, 6.5vw, 160px);
+  transform: translateY(clamp(100px, 5vw, 140px));
 }
 
 .footer-info-left {
@@ -564,7 +609,10 @@
   bottom: 0;
   padding: 14px 56px;
   box-sizing: border-box;
-  background: #FFFFFF;
+  /* Serit kubbenin DISINDA, sayfa zemini uzerinde durur. Eskiden #FFFFFF
+     sabitti: gece temasinda koyu sayfanin dibinde beyaz bir bant olarak
+     patliyordu (olculdu: 8 senaryonun 8'inde de #FFFFFF). */
+  background: var(--footer-surface);
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(620px, auto) minmax(260px, 1fr);
   align-items: center;
@@ -577,11 +625,13 @@
 .footer-bottom > div:first-child {
   display: flex;
   flex-direction: column;
-  color: var(--ink-soft);
+  /* --ink/--ink-soft DEGIL: onlar acik-tema sabitleri, gece serit koyu
+     zemine oturdugunda okunmaz oluyordu. --text/--soft temaya gore doner. */
+  color: var(--soft);
 }
 
 .footer-bottom > div:first-child strong {
-  color: var(--ink);
+  color: var(--text);
   font-weight: 700;
 }
 
@@ -631,45 +681,14 @@
   text-decoration: none;
 }
 
-.app-shell--references {
-  background: #07000D;
-}
-
-/* Dome, wrapper'in uzerinde ayri bir katman olarak okunmali; ikisi de --slab
-   olsaydi kubbe zeminde kaybolurdu. Derinlik ayni aileden, bir irtifa asagidan
-   aliniyor. */
-.app-shell--references .footer-wrapper {
-  background: var(--brand-900);
-}
-
-.app-shell--day .footer-dome {
-  background: var(--slab);
-  background-color: var(--slab);
-  box-shadow: inset 0 0 0 2px var(--slab), 0 0 0 2px var(--slab);
-  outline-color: var(--slab);
-}
-
-.app-shell--day.app-shell--references,
-.app-shell--day.app-shell--references .footer-wrapper {
-  background: #f6f2e9;
-  background-color: #f6f2e9;
-}
-
-.app-shell--references .footer-dome {
-  background-color: var(--slab);
-  box-shadow: inset 0 0 0 2px var(--slab), 0 0 0 2px var(--slab);
-  outline: 1px solid var(--slab);
-  outline-offset: -1px;
-}
-
-/* No visible chip ring around the footer social buttons on references. */
-.app-shell--references .social-btn {
-  background-color: transparent;
-}
-
+/* Alt serit kubbenin DISINDA, sayfa zemini uzerinde durur; metin de o zemine
+   gore secilir. Eskiden background:#FFFFFF sabitti ve gece temasinda beyaz
+   serit olarak patliyordu (olculdu: 8 senaryonun 8'inde de #FFFFFF). */
 .footer-bottom,
-.footer-bottom a {
-  color: var(--ink);
+.footer-bottom a,
+.footer-bottom .footer-agency,
+.footer-bottom .footer-agency__brand {
+  color: var(--text);
 }
 
 .footer-bottom .flip-text-link {
@@ -679,29 +698,11 @@
 
 .footer-bottom .flip-text-link::before,
 .footer-bottom .flip-text-link::after {
-  color: var(--ink);
-}
-
-.footer-bottom .footer-agency {
-  color: var(--ink);
+  color: var(--text);
 }
 
 .footer-bottom .footer-agency__lead {
-  color: var(--ink-soft);
-}
-
-.footer-bottom .footer-agency__brand {
-  color: var(--ink);
-}
-
-/* Keep the contact CTA as the first footer layer and move directory links below it. */
-.footer-dome {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 0 0 clamp(620px, 36vw, 780px);
+  color: var(--soft);
 }
 
 .footer-main {
@@ -747,42 +748,11 @@
   display: contents;
 }
 
-.footer-brand {
-  position: relative;
-  grid-column: 1 / -1;
-  width: 100%;
-  height: clamp(390px, 27vw, 540px);
-  margin: clamp(6px, 1vw, 20px) 0 18px;
-  justify-content: center;
-  overflow: visible;
-}
-
-/* Inline SVG: object-fit/object-position uygulanmaz — karşılığı viewBox +
-   preserveAspectRatio="xMidYMid meet" (varsayılan), yani zaten contain+center. */
-.footer-logo {
-  width: clamp(410px, 27vw, 560px) !important;
-  height: 100% !important;
-  transform: translate(-3%, -1%) scale(1.04) !important;
-  transform-origin: center center !important;
-}
-
 .footer-panel {
   max-width: 860px;
   margin: 0 0 0 auto;
   /* Paneli divider'dan biraz sağa it (mockup dengesi). Tek ayar düğmesi. */
   padding-left: clamp(28px, 4vw, 88px);
-}
-
-.footer-info {
-  position: relative;
-  width: 100%;
-  margin: clamp(140px, 10vw, 220px) auto 0;
-  padding: 0 56px;
-  display: grid;
-  box-sizing: border-box;
-  grid-template-columns: minmax(500px, 36vw) minmax(0, 1fr);
-  column-gap: clamp(72px, 6.5vw, 160px);
-  transform: translateY(clamp(100px, 5vw, 140px));
 }
 
 @media (max-width: 1180px) {
@@ -798,19 +768,16 @@
     display: none;
   }
 
+  /* display:contents — cocuklar (brand + socials) dogrudan .footer-main
+     akisina girer. Grid tanimi vermek ANLAMSIZ: contents kutuyu kaldirdigi
+     icin grid-template hic uygulanmaz. Eskiden ust uste iki ayri blok vardi;
+     ilki grid kuruyor, ikincisi ayni seciciyle onu iptal ediyordu. */
   .footer-visual {
-    width: 100%;
-    grid-template-columns: repeat(6, 72px);
-    grid-auto-rows: 72px;
-    align-items: center;
+    display: contents;
   }
 
   .footer-panel {
     margin-inline: 0;
-  }
-
-  .footer-visual {
-    display: contents;
   }
 
   .footer-info {
@@ -824,8 +791,7 @@
   }
 
   .footer-logo {
-    width: min(480px, 78vw) !important;
-    transform: scale(1.04) !important;
+    width: min(480px, 78vw);
   }
 }
 
@@ -1000,9 +966,8 @@
   }
 
   .footer-logo {
-    width: 96px !important;
-    height: 86px !important;
-    transform: none !important;
+    width: 96px;
+    height: 86px;
   }
 
   .footer-socials > .social-btn {
