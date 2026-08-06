@@ -407,6 +407,18 @@
     inset 0 0 0 1px var(--contact-map-inset);
 }
 
+/* Harita henüz yüklenmediğinde duran yer tutucu.
+   `.contact-map__frame` zaten sabit yükseklik + zemin veriyor; burada yalnız
+   o kutuyu kaplayıp iframe geldiğinde boyut sıçraması olmamasını sağlıyoruz.
+   iframe'ler etkileşime kadar hiç basılmıyor (bkz. contact.vue): üçü de
+   görünür olduğu için `loading="lazy"` hiçbir şey ertelemiyordu ve açılışta
+   120 dış istek doğuyordu (ölçüldü). */
+.contact-map__placeholder {
+  position: absolute;
+  inset: 0;
+  background: var(--contact-map-surface);
+}
+
 /* The iframe is sized to the FULL expanded width (set as --map-expanded-w on
    the row) and centered + clipped by its card. While a card grows/shrinks the
    iframe keeps a constant size, so Google Maps never re-renders — only more of
