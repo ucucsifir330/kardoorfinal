@@ -20,6 +20,6 @@
     "motion-v": "^2.3.0"
   },
   "devDependencies": {
-    "vercel": "^54.21.0"
+    "vercel": "^58.7.1"
   }
 }
