@@ -131,6 +131,22 @@ window.__kardoorHero={aspect:pick.a,night:night,href:href};
 var l=document.createElement("link");
 l.rel="preload";l.as="image";l.href=href;l.setAttribute("fetchpriority","high");
 document.head.appendChild(l);
+// SSR kabugunun hero <img>'i src'siz basiliyor (bkz. HomeExperience.vue):
+// sunucu temayi bilemedigi icin oraya yazilan gunduz varyanti gece
+// kullanicisinda BOSA indiriliyordu. Dogru src'yi burada veriyoruz.
+// MutationObserver: img bu script'ten SONRA parse ediliyor, DOM'a girer
+// girmez yakalayip yaziyoruz — preload scanner zaten yukaridaki link'i
+// gordugu icin gecikme olmuyor.
+var yaz=function(el){if(el&&!el.src)el.src=href;};
+var mevcut=document.querySelector("img[data-kardoor-hero]");
+if(mevcut){yaz(mevcut);}else{
+var mo=new MutationObserver(function(){
+var el=document.querySelector("img[data-kardoor-hero]");
+if(el){yaz(el);mo.disconnect();}});
+mo.observe(document.documentElement,{childList:true,subtree:true});
+// Guvenlik agi: DOM hazir oldugunda gozlemci hala calisiyorsa kapat.
+document.addEventListener("DOMContentLoaded",function(){
+yaz(document.querySelector("img[data-kardoor-hero]"));mo.disconnect();});}
 }catch(e){}})();`,
           tagPosition: "head"
         }

@@ -14,8 +14,19 @@
     <EntranceDoorLab v-else />
     <template #fallback>
       <section class="entrance-ssr-shell">
+        <!-- `src` SSR'da BASILMAZ. Tema localStorage'da; sunucu okuyamadığı
+             için burada hep gündüz varyantı yazılıyordu ve gece kullanıcısı
+             265 KB'lık `hero-day-16x9.avif`i indirip hydration sonrası
+             ÇÖPE ATIYORDU (ölçüldü: gece temada hem hero-night 145 KB hem
+             hero-day 266 KB iniyordu).
+
+             Doğru URL'i `nuxt.config.ts`'teki senkron inline script yazıyor:
+             o script <head>'de, bu img'den ÇOK önce çalışıp
+             `window.__kardoorHero.href`i hesaplıyor (ölçüldü: script konum
+             1151, img konum 44294) ve img DOM'a girer girmez src'yi basıyor.
+             Preload scanner yine görüyor — link[rel=preload] aynı script'te. -->
         <img
-          :src="ssrHeroSrc"
+          data-kardoor-hero
           class="entrance-ssr-shell__bg"
           fetchpriority="high"
           decoding="async"
@@ -59,10 +70,9 @@
     <HomeReviews />
   </div>
 </template><script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useKardoorLocale } from '~/composables/useKardoorLocale'
 import { useEntranceCopy } from '~/composables/useEntranceCopy'
-import { useShowroomAmbience } from '~/composables/useShowroomAmbience'
 import AdaCtaButton from '~/components/home/AdaCtaButton.vue'
 
 const isMobileEntrance = ref(
@@ -74,15 +84,11 @@ const isMobileEntrance = ref(
 // SSR kabuğunun metni — interaktif sahnelerle AYNI kaynak, yoksa sunucu
 // çıktısı ile mount sonrası metin ayrışır.
 const { copy: entranceCopy } = useEntranceCopy();
-const { isNight } = useShowroomAmbience();
 
-// Sunucu viewport oranını bilemez; varyant seçimi mount'ta placeDoor() ile
-// yapılıyor. Kabukta en yaygın masaüstü oranı (16:9) kullanılır — sahne
-// mount olunca doğru varyantla değişir. Tema ise inline script'ten gelen
-// sınıfla SSR'da doğru biliniyor.
-const ssrHeroSrc = computed(() =>
-  isNight.value ? '/hero-night-16x9.avif' : '/hero-day-16x9.avif'
-);
+// `ssrHeroSrc` KALDIRILDI: hero src'sini artık nuxt.config.ts'teki senkron
+// inline script yazıyor (bkz. template'teki data-kardoor-hero notu). Burada
+// hesaplamak, sunucunun temayı bilememesi yüzünden gece kullanıcısına yanlış
+// varyantı indirtiyordu.
 
 const { locale } = useKardoorLocale();
 </script>
