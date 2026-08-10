@@ -239,9 +239,13 @@ body.entrance-mobile-locked {
   inset: 0;
   display: flex;
   align-items: center;
-  background: var(--ambience-bg);
+  background: color-mix(in srgb, #131937 58%, #080B18);
   visibility: hidden;
   will-change: transform;
+}
+
+.entrance-mobile[data-ambience="day"] .entrance-mobile__configure {
+  background: color-mix(in srgb, var(--paper) 58%, var(--hairline));
 }
 
 .entrance-mobile__configure-inner {
