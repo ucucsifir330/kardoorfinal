@@ -804,7 +804,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-card-subtitle {
   margin-top: 4px !important;
-  color: var(--ink-soft) !important;
+  color: var(--brand-700) !important;
   font-size: 15.5px !important;
   line-height: 1.2 !important;
   text-align: right !important;

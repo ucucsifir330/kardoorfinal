@@ -1150,8 +1150,8 @@ onBeforeUnmount(() => {
    ve home-footer.css'in dogru degerini eziyordu (ayni ozgullik, sonra
    yuklendigi icin kazaniyordu). */
 :global(.app-shell--references .footer-dome) {
-  background-color: #16101F;
-  box-shadow: 0 0 0 1px #16101F;
+  background-color: var(--slab);
+  box-shadow: 0 0 0 1px var(--slab);
 }
 
 :global(.app-shell--references:not(.app-shell--day) .footer-dome) {

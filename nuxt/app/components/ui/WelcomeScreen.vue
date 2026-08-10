@@ -260,7 +260,7 @@ onBeforeUnmount(() => {
 }
 
 :global(.app-shell--day .welcome-screen) {
-  --welcome-screen-bg: #16101F;
+  --welcome-screen-bg: var(--slab);
 }
 
 .welcome-screen__lockup {
