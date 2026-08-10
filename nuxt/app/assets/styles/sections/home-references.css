@@ -336,9 +336,13 @@
    HomeReferences.vue). Scrub yalnızca transform sürdüğü için relayout ve
    layout shift (CLS) üretmez. JS kurulumu tamamlanana dek gizli kalır. */
 .home-references-flip__media {
+  --references-media-radius-x: var(--radius-xl);
+  --references-media-radius-y: var(--radius-xl);
   position: absolute;
   inset: 0;
   z-index: 3;
+  overflow: hidden;
+  border-radius: var(--references-media-radius-x) / var(--references-media-radius-y);
   opacity: 0;
   visibility: hidden;
   will-change: transform;
@@ -349,7 +353,7 @@
   width: 100%;
   height: 100%;
   border: 0;
-  background: #050607;
+  background: var(--slab);
 }
 
 .home-references-flip__play {
@@ -365,19 +369,19 @@
   background:
     linear-gradient(rgba(5, 6, 7, 0.14), rgba(5, 6, 7, 0.14)),
     var(--references-video-poster) center / cover no-repeat,
-    #050607;
-  color: #050607;
+    var(--slab);
+  color: var(--brand-700);
   cursor: pointer;
   text-transform: uppercase;
 }
 
 .home-references-flip__play-icon {
   display: grid;
-  width: clamp(46px, 16vw, 186px);
-  height: clamp(46px, 16vw, 186px);
+  width: clamp(44px, 13vw, 156px);
+  height: clamp(44px, 13vw, 156px);
   place-items: center;
   border-radius: 50%;
-  background: #ffe8c9;
+  background: var(--brand-100);
   box-shadow: 0 clamp(10px, 2.2vw, 28px) clamp(28px, 6vw, 86px) rgba(0, 0, 0, 0.3);
   transition: transform 520ms cubic-bezier(0.165, 0.84, 0.44, 1), background-color 520ms cubic-bezier(0.165, 0.84, 0.44, 1);
 }
@@ -385,12 +389,11 @@
 .home-references-flip__play-icon svg {
   width: 34%;
   height: 34%;
-  transform: translateX(7%);
 }
 
 .home-references-flip__play-text {
   font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
-  color: #ffe8c9;
+  color: var(--brand-100);
   font-size: clamp(0.78rem, 3.05vw, 2.44rem);
   font-weight: 600;
   letter-spacing: 0;

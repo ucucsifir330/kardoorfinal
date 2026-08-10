@@ -251,6 +251,9 @@ const setupFlip = async () => {
       const fitVars = Flip.fit(media, startMarker, { scale: true, getVars: true }) as FlipFitVars;
       const fitScaleX = Number(fitVars.scaleX) || 1;
       const fitScaleY = Number(fitVars.scaleY) || 1;
+      const mediaRadius = Number.parseFloat(window.getComputedStyle(media).borderTopLeftRadius) || 0;
+      const startMediaRadiusX = `${mediaRadius / Math.max(Math.abs(fitScaleX), 0.001)}px`;
+      const startMediaRadiusY = `${mediaRadius / Math.max(Math.abs(fitScaleY), 0.001)}px`;
 
       gsap.set(media, { autoAlpha: 1 });
 
@@ -267,7 +270,23 @@ const setupFlip = async () => {
         }
       });
 
-      timeline.fromTo(media, { ...fitVars }, { x: 0, y: 0, scaleX: 1, scaleY: 1 }, 0);
+      timeline.fromTo(
+        media,
+        {
+          ...fitVars,
+          "--references-media-radius-x": startMediaRadiusX,
+          "--references-media-radius-y": startMediaRadiusY
+        },
+        {
+          x: 0,
+          y: 0,
+          scaleX: 1,
+          scaleY: 1,
+          "--references-media-radius-x": "0px",
+          "--references-media-radius-y": "0px"
+        },
+        0
+      );
 
       const playContent = media.querySelectorAll<HTMLElement>(
         ".home-references-flip__play-icon, .home-references-flip__play-text"
