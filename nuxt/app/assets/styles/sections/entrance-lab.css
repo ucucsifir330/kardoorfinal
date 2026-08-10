@@ -159,7 +159,7 @@
 }
 
 .entrance-lab[data-ambience="day"] .entrance-lab__configure {
-  background: color-mix(in srgb, #f3f1ea 58%, #d9d6cd);
+  background: color-mix(in srgb, var(--paper) 58%, var(--hairline));
   color: var(--ink);
 }
 
@@ -376,8 +376,8 @@
 .entrance-lab__copy-mask {
   position: absolute;
   /* EntranceDoor masaüstü copy konumuyla birebir. */
-  left: clamp(20px, 3.9vw, 126px);
-  top: clamp(130px, 19svh, 340px);
+  left: clamp(20px, 3.5vw, 126px);
+  top: clamp(130px, 21.5svh, 340px);
   width: clamp(280px, 32.33vw, 1000px);
   max-width: 100%;
   z-index: 3;
