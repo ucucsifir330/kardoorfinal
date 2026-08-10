@@ -194,7 +194,6 @@ const titleIndex = ref(0);
 const titleWidth = ref(initialTitleWidth);
 const hiddenSpan = ref<HTMLElement | null>(null);
 const staticText = ref<HTMLElement | null>(null);
-const baseTitleWidth = ref(0);
 
 const inner1 = ref<HTMLElement | null>(null);
 const inner2 = ref<HTMLElement | null>(null);
@@ -292,10 +291,8 @@ let typewriterVisible = false;
 let typewriterTrigger: ScrollTrigger | null = null;
 let activeTitleWord = titleWords.value[0] ?? '';
 
-// Measure the pill width for `activeTitleWord` via the hidden span and animate
-// the static "Son" word a touch to keep the composition balanced. The pill width
-// is set to the full word up-front so the centered typewriter has room and the
-// caret never clips while characters stream in.
+// Measure the active word via the hidden span. The static "Son" label stays
+// anchored while only the rotating word wrapper changes width.
 // Aynı kelime + aynı viewport genişliği için ölçüm sonucunu sakla.
 // Sebep: textContent YAZIP hemen getBoundingClientRect() OKUMAK tarayıcıyı
 // senkron reflow'a zorluyor (layout thrashing). Bu fonksiyon açılışta 3 kez,
@@ -304,7 +301,6 @@ const titleWidthCache = new Map<string, number>();
 
 const updateTitleWidth = () => {
   const hiddenSpanEl = hiddenSpan.value as HTMLElement | null;
-  const staticTextEl = staticText.value as HTMLElement | null;
 
   if (!hiddenSpanEl) return;
 
@@ -319,15 +315,6 @@ const updateTitleWidth = () => {
   }
 
   titleWidth.value = measuredWidth;
-
-  if (!baseTitleWidth.value) {
-    baseTitleWidth.value = measuredWidth;
-  }
-
-  if (staticTextEl) {
-    const offset = (measuredWidth - baseTitleWidth.value) * 0.18;
-    staticTextEl.style.transform = `translateX(${offset}px)`;
-  }
 };
 
 // Feel knobs (seconds). Tuned live with the user — keep these readable.
@@ -336,9 +323,9 @@ const ERASE_PER_CHAR = 0.07;
 const WORD_HOLD = 1.5;
 
 // One GSAP timeline drives the whole "sözü → kararı → yorumu" cycle:
-// type the word in (TextPlugin), hold, erase it, advance to the next. The pill
-// width is re-measured per word BEFORE typing so the centered word + caret sit
-// in a correctly sized pill. The caret blink is a separate stepped tween.
+// type the word in (TextPlugin), hold, erase it, advance to the next. Width is
+// re-measured before typing and every word receives its own gradient identity.
+// The caret blink is a separate stepped tween.
 const buildTypewriter = () => {
   const el = typewriter.value as HTMLElement | null;
   if (!el) return;
@@ -364,10 +351,14 @@ const buildTypewriter = () => {
   typewriterTl = gsap.timeline({ repeat: -1, paused: !typewriterVisible });
   if (!typewriterVisible) cursorTween?.pause();
 
-  words.forEach((word) => {
+  words.forEach((word, wordIndex) => {
     typewriterTl!
       .call(() => {
         activeTitleWord = word;
+        el.dataset.gradient = `word-${wordIndex}`;
+        if (el.parentElement) {
+          el.parentElement.dataset.gradient = `word-${wordIndex}`;
+        }
         updateTitleWidth();
       })
       .to(el, {
@@ -409,8 +400,7 @@ watch(
 );
 
 const dynamicGap = computed(() => {
-  const gapValue = 34 + titleWidth.value * 0.04;
-  return `${Math.max(38, Math.min(58, gapValue))}px`;
+  return "clamp(12px, 1.2vw, 22px)";
 });
 
 const getX = (event: MouseEvent | TouchEvent): number => {

@@ -20,22 +20,22 @@
           </span>
 
           <div
-            class="rotating-text-wrapper relative block h-[clamp(4.5rem,6.05vw,6.75rem)] overflow-hidden rounded-[clamp(28px,3.2vw,44px)] bg-[var(--brand-700)] bg-[length:300%_300%] [box-shadow:0_18px_44px_rgba(34,49,140,0.18)] [animation:gradientBG_6s_ease_infinite] [transition:width_var(--title-pill-transition-smooth),box-shadow_var(--title-pill-transition-smooth)] max-[1024px]:h-[clamp(3.65rem,9.1vw,5.7rem)] max-[640px]:h-[clamp(3rem,12vw,3.7rem)] max-[640px]:rounded-[18px]"
+            class="rotating-text-wrapper relative block h-[clamp(4.85rem,6.55vw,7.25rem)] overflow-visible [transition:width_var(--title-pill-transition-smooth)] max-[1024px]:h-[clamp(3.95rem,9.7vw,6.05rem)] max-[640px]:h-[clamp(3.25rem,12.8vw,4rem)]"
             :style="{ width: titleWidth + 'px' }"
           >
             <span
               :ref="setHiddenSpanRef"
-              class="hidden-measure text-rotating pointer-events-none absolute top-0 left-0 flex h-full items-center whitespace-nowrap px-[2vw] font-telegraf font-[540] tracking-normal invisible max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
+              class="hidden-measure text-rotating pointer-events-none absolute top-0 left-0 flex h-full items-center whitespace-nowrap font-telegraf font-[540] tracking-normal invisible max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
             ></span>
 
             <div
-              class="typewriter-line pointer-events-none absolute inset-0 flex items-center justify-center px-[2vw]"
+              class="typewriter-line pointer-events-none absolute inset-0 flex items-center justify-start"
             >
               <span
                 :ref="setTypewriterRef"
-                class="typewriter-text text-rotating translate-y-[-0.03em] whitespace-nowrap font-telegraf font-[540] leading-none tracking-normal text-[var(--brand-100)] max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
+                class="typewriter-text text-rotating whitespace-nowrap font-telegraf font-[540] leading-[1.08] tracking-normal max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
               ></span><span
-                class="typewriter-cursor text-rotating ml-[0.04em] translate-y-[-0.03em] whitespace-nowrap font-telegraf font-normal leading-none tracking-normal text-[var(--brand-100)] will-change-[opacity] max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
+                class="typewriter-cursor text-rotating ml-[0.04em] whitespace-nowrap font-telegraf font-normal leading-[1.08] tracking-normal text-[var(--typewriter-caret,var(--brand-500))] will-change-[opacity] max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
                 aria-hidden="true"
                 >|</span
               >
@@ -198,6 +198,75 @@ const ratingClass =
 </script>
 
 <style scoped>
+.typewriter-text {
+  background-image: var(--typewriter-gradient);
+  background-position:
+    0% 20%,
+    100% 80%,
+    0 0;
+  background-size:
+    145% 145%,
+    155% 155%,
+    100% 100%;
+  background-repeat: no-repeat;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  will-change: background-position;
+  animation: typewriter-gradient-flow 16s cubic-bezier(0.45, 0, 0.2, 1) infinite alternate;
+}
+
+.typewriter-line[data-gradient='word-0'] {
+  --typewriter-caret: #35bfa0;
+  --typewriter-gradient:
+    radial-gradient(
+      circle at 30% 35%,
+      #2b4bf2 0%,
+      transparent 52%
+    ),
+    radial-gradient(circle at 72% 66%, #35bfa0 0%, transparent 50%),
+    linear-gradient(118deg in oklab, #12336b 0%, #77d5b3 100%);
+}
+
+.typewriter-line[data-gradient='word-1'] {
+  --typewriter-caret: #7657ee;
+  --typewriter-gradient:
+    radial-gradient(circle at 24% 68%, #2b4bf2 0%, transparent 50%),
+    radial-gradient(circle at 76% 28%, #7657ee 0%, transparent 54%),
+    linear-gradient(118deg in oklab, #142f78 0%, #b497cf 100%);
+}
+
+.typewriter-line[data-gradient='word-2'] {
+  --typewriter-caret: #ff9ffc;
+  --typewriter-gradient:
+    radial-gradient(circle at 34% 24%, #2b4bf2 0%, transparent 49%),
+    radial-gradient(circle at 70% 74%, #ff9ffc 0%, transparent 52%),
+    linear-gradient(118deg in oklab, #153b7a 0%, #8c6ff0 100%);
+}
+
+@keyframes typewriter-gradient-flow {
+  0% {
+    background-position:
+      0% 20%,
+      100% 80%,
+      0 0;
+  }
+
+  100% {
+    background-position:
+      78% 74%,
+      24% 18%,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-text {
+    animation: none;
+  }
+}
+
 .review-card.tilting {
   transition:
     transform var(--transition-tilt),
