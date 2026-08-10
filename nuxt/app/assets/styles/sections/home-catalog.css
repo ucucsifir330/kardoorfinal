@@ -765,7 +765,9 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-card-subtitle {
   margin-top: 4px;
-  color: var(--ink-soft);
+  /* 699ba4c: sicak gri --ink-soft yerine lacivert --brand-700. O commit'teki
+     !important'lar ALINMADI; bu dosyada !important sokumu ayri bir is kolu. */
+  color: var(--brand-700);
   font-size: 15.5px;
   line-height: 1.2;
   text-align: right;

@@ -420,7 +420,7 @@ span.ada-brand-logo {
 .app-shell--day .ada-manifesto-cta {
   --ada-cta-text-color: #F4F6FF;
 
-  background: #16101F;
+  background: var(--slab);
   color: #F4F6FF;
 }
 

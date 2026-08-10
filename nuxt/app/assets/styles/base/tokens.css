@@ -39,9 +39,9 @@
   --brand-900: #0E1338;
 
   /* acik zemin */
-  --paper:     #F2EEE6;
-  --surface:   #FBF9F5;
-  --surface-2: #F1EDE5;
+  --paper:     #EBE6DB;
+  --surface:   #FDFCFA;
+  --surface-2: #F1F0EC;
   --hairline:  #DDD6C9;
   --ink:       #16130F;
   --ink-soft:  #8A8073;
@@ -188,7 +188,7 @@
      soluk metin olarak okunuyor (PALETTE-light.md, uygulama kurali 2).
      Ikili basligin 2. satiri bu degiskenden besleniyor. */
   --accent: var(--brand-700);
-  --accent-soft: var(--brand-500);
+  --accent-soft: var(--brand-700);
   --ambience-bg: var(--paper);
   --ambience-text: var(--ink);
   --ambience-muted: var(--ink-body);
