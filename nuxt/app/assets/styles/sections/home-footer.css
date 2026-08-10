@@ -241,6 +241,7 @@
 .footer-heading__emphasis {
   display: block;
   margin: 0.09em 0 0.14em;
+  color: var(--brand-300);
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
@@ -504,6 +505,7 @@
   text-decoration: none;
   margin-bottom: 34px;
   letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .location-card__phone-label {
@@ -706,23 +708,31 @@
 }
 
 .footer-main {
+  --footer-center-gap: clamp(96px, 12vw, 160px);
+
   width: min(100%, 1680px);
   min-height: clamp(720px, 72svh, 900px);
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: minmax(360px, 560px) auto minmax(520px, 860px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
-  justify-content: space-between;
-  column-gap: clamp(64px, 8vw, 150px);
+  column-gap: 0;
   padding: clamp(150px, 11vw, 205px) 56px 0;
 }
 
-/* K (sol sütun) ile form arasında ortadaki dikey ayraç. Kendi grid sütununda
-   durduğu için iki yanındaki column-gap simetrik = eşit boşluk. */
+/* Ayraç gerçek viewport merkezinde; iki içerik de aynı merkez boşluğunu kullanır. */
 .footer-divider {
-  align-self: stretch;
+  position: absolute;
+  top: calc(clamp(150px, 11vw, 205px) + clamp(8px, 1.4vw, 24px));
+  left: 50%;
   width: 1px;
-  margin: clamp(8px, 1.4vw, 24px) 0 clamp(40px, 6vw, 90px);
+  height: calc(
+    clamp(720px, 72svh, 900px)
+    - clamp(150px, 11vw, 205px)
+    - clamp(8px, 1.4vw, 24px)
+    - clamp(40px, 6vw, 90px)
+  );
+  transform: translateX(-0.5px);
   background: linear-gradient(
     180deg,
     rgba(237, 234, 245, 0) 0%,
@@ -733,13 +743,8 @@
 }
 
 .footer-visual {
-  width: min(100%, 540px);
-  display: grid;
-  grid-template-columns: repeat(4, 96px);
-  grid-auto-rows: 96px;
-  gap: 22px;
-  align-content: start;
-  justify-content: start;
+  grid-column: 1;
+  width: 100%;
 }
 
 /* The social group owns only the links; its desktop links are positioned
@@ -748,11 +753,37 @@
   display: contents;
 }
 
+.footer-main > .footer-visual > .footer-brand {
+  position: relative;
+  width: 100%;
+  height: clamp(390px, 27vw, 540px);
+  margin: clamp(6px, 1vw, 20px) 0 18px;
+  box-sizing: border-box;
+  justify-content: flex-end !important;
+  padding-right: var(--footer-center-gap);
+  overflow: visible;
+}
+
+/* b005963'un .footer-logo boyut override'i (clamp(380px,25vw,520px) + 3 adet
+   !important) ALINMADI. O commit eski tabandan calisiyordu; bizde ayni kural
+   zaten min(100%, clamp(340px,24vw,470px)) olarak yeniden yazilmisti (bkz.
+   satir 54) cunku !important'li sabit genislik logoyu kutudan tasiriyordu.
+   Bu paketten alinan sey hizalama: yukaridaki justify-content: flex-end. */
+
 .footer-panel {
-  max-width: 860px;
-  margin: 0 0 0 auto;
-  /* Paneli divider'dan biraz sağa it (mockup dengesi). Tek ayar düğmesi. */
-  padding-left: clamp(28px, 4vw, 88px);
+  grid-column: 2;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  box-sizing: border-box;
+  padding-left: var(--footer-center-gap);
+}
+
+@media (min-width: 1181px) {
+  .footer-main > .footer-visual > .footer-brand,
+  .footer-panel {
+    transform: translateY(clamp(22px, 2vw, 32px));
+  }
 }
 
 @media (max-width: 1180px) {
@@ -771,13 +802,18 @@
   /* display:contents — cocuklar (brand + socials) dogrudan .footer-main
      akisina girer. Grid tanimi vermek ANLAMSIZ: contents kutuyu kaldirdigi
      icin grid-template hic uygulanmaz. Eskiden ust uste iki ayri blok vardi;
-     ilki grid kuruyor, ikincisi ayni seciciyle onu iptal ediyordu. */
+     ilki grid kuruyor, ikincisi ayni seciciyle onu iptal ediyordu.
+     b005963 ayni olu gridi (grid-column / grid-template-columns /
+     grid-auto-rows) geri getiriyordu; display:contents altinda hicbiri
+     uygulanmadigi icin alinmadi. */
   .footer-visual {
     display: contents;
   }
 
   .footer-panel {
+    grid-column: auto;
     margin-inline: 0;
+    padding-left: clamp(28px, 4vw, 88px);
   }
 
   .footer-info {
@@ -785,9 +821,11 @@
     row-gap: 64px;
   }
 
-  .footer-brand {
+  .footer-main .footer-brand {
     height: 280px;
     margin-top: 0;
+    justify-content: center !important;
+    padding-right: 0;
   }
 
   .footer-logo {
