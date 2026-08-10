@@ -207,6 +207,7 @@
 .footer-heading__emphasis {
   display: block;
   margin: 0.09em 0 0.14em;
+  color: var(--brand-300);
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
@@ -459,6 +460,7 @@
   text-decoration: none;
   margin-bottom: 34px;
   letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .location-card__phone-label {
@@ -705,23 +707,31 @@
 }
 
 .footer-main {
+  --footer-center-gap: clamp(96px, 12vw, 160px);
+
   width: min(100%, 1680px);
   min-height: clamp(720px, 72svh, 900px);
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: minmax(360px, 560px) auto minmax(520px, 860px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
-  justify-content: space-between;
-  column-gap: clamp(64px, 8vw, 150px);
+  column-gap: 0;
   padding: clamp(150px, 11vw, 205px) 56px 0;
 }
 
-/* K (sol sütun) ile form arasında ortadaki dikey ayraç. Kendi grid sütununda
-   durduğu için iki yanındaki column-gap simetrik = eşit boşluk. */
+/* Ayraç gerçek viewport merkezinde; iki içerik de aynı merkez boşluğunu kullanır. */
 .footer-divider {
-  align-self: stretch;
+  position: absolute;
+  top: calc(clamp(150px, 11vw, 205px) + clamp(8px, 1.4vw, 24px));
+  left: 50%;
   width: 1px;
-  margin: clamp(8px, 1.4vw, 24px) 0 clamp(40px, 6vw, 90px);
+  height: calc(
+    clamp(720px, 72svh, 900px)
+    - clamp(150px, 11vw, 205px)
+    - clamp(8px, 1.4vw, 24px)
+    - clamp(40px, 6vw, 90px)
+  );
+  transform: translateX(-0.5px);
   background: linear-gradient(
     180deg,
     rgba(237, 234, 245, 0) 0%,
@@ -732,13 +742,8 @@
 }
 
 .footer-visual {
-  width: min(100%, 540px);
-  display: grid;
-  grid-template-columns: repeat(4, 96px);
-  grid-auto-rows: 96px;
-  gap: 22px;
-  align-content: start;
-  justify-content: start;
+  grid-column: 1;
+  width: 100%;
 }
 
 /* The social group owns only the links; its desktop links are positioned
@@ -747,30 +752,40 @@
   display: contents;
 }
 
-.footer-brand {
+.footer-main > .footer-visual > .footer-brand {
   position: relative;
-  grid-column: 1 / -1;
   width: 100%;
   height: clamp(390px, 27vw, 540px);
   margin: clamp(6px, 1vw, 20px) 0 18px;
-  justify-content: center;
+  box-sizing: border-box;
+  justify-content: flex-end !important;
+  padding-right: var(--footer-center-gap);
   overflow: visible;
 }
 
 /* Inline SVG: object-fit/object-position uygulanmaz — karşılığı viewBox +
    preserveAspectRatio="xMidYMid meet" (varsayılan), yani zaten contain+center. */
 .footer-logo {
-  width: clamp(410px, 27vw, 560px) !important;
+  width: clamp(380px, 25vw, 520px) !important;
   height: 100% !important;
-  transform: translate(-3%, -1%) scale(1.04) !important;
+  transform: translateY(-1%) !important;
   transform-origin: center center !important;
 }
 
 .footer-panel {
-  max-width: 860px;
-  margin: 0 0 0 auto;
-  /* Paneli divider'dan biraz sağa it (mockup dengesi). Tek ayar düğmesi. */
-  padding-left: clamp(28px, 4vw, 88px);
+  grid-column: 2;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  box-sizing: border-box;
+  padding-left: var(--footer-center-gap);
+}
+
+@media (min-width: 1181px) {
+  .footer-main > .footer-visual > .footer-brand,
+  .footer-panel {
+    transform: translateY(clamp(22px, 2vw, 32px));
+  }
 }
 
 .footer-info {
@@ -799,6 +814,7 @@
   }
 
   .footer-visual {
+    grid-column: auto;
     width: 100%;
     grid-template-columns: repeat(6, 72px);
     grid-auto-rows: 72px;
@@ -806,7 +822,9 @@
   }
 
   .footer-panel {
+    grid-column: auto;
     margin-inline: 0;
+    padding-left: clamp(28px, 4vw, 88px);
   }
 
   .footer-visual {
@@ -818,9 +836,11 @@
     row-gap: 64px;
   }
 
-  .footer-brand {
+  .footer-main .footer-brand {
     height: 280px;
     margin-top: 0;
+    justify-content: center !important;
+    padding-right: 0;
   }
 
   .footer-logo {
