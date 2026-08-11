@@ -22,6 +22,22 @@ const DURATION = 1.5;
 const EASE = "power2.out";
 const CLEAR = "filter,opacity,scale";
 
+/**
+ * Perde kalktıktan SONRA beklenen süre.
+ *
+ * Ölçüm (1440x900, soğuk yükleme): WelcomeScreen 1858ms'de görünüyor,
+ * 4106ms'de kalkıyor ve reveal aynı karede başlıyordu — perde ile içerik
+ * üst üste biniyor, göz ikisini tek hareket olarak okuyor.
+ *
+ * Referans (revise dalı, aynı ölçüm): perde 7820ms'de kalkıyor, reveal
+ * 8812ms'de başlıyor — arada ~990ms boşluk var ve his belirgin biçimde
+ * daha sakin. Bu değer o boşluğu bizim zamanlamamıza taşır: 4106 + 1200
+ * = ~5300ms'de başlar, ~6800ms'de tamamlanır.
+ *
+ * Reduced-motion'da tween hiç kurulmadığı için gecikme de uygulanmaz.
+ */
+const DELAY = 1.2;
+
 export interface ContentRevealOptions {
   /** Birlikte açılacak elemanlar. Boş/null olanlar varsa reveal ertelenir. */
   targets: () => Array<HTMLElement | null>;
@@ -79,6 +95,7 @@ export const useContentReveal = (options: ContentRevealOptions) => {
     tween = gsap.to(targets, {
       ...TO,
       duration: DURATION,
+      delay: DELAY,
       ease: EASE,
       overwrite: "auto",
       clearProps: CLEAR,
