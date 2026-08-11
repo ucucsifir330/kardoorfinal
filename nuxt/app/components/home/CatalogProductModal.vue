@@ -37,7 +37,12 @@ const props = withDefaults(defineProps<{
   system: string;
   /** Önceki/sonraki ürünün görsel URL'leri — önceden indirmek için. */
   neighbourImages?: string[];
-}>(), {});
+  /** Ana sayfada seri bağlantısı görünür; katalog sayfasında aynı sayfaya
+      giden gereksiz ikinci aksiyon gizlenir. */
+  showSeriesLink?: boolean;
+}>(), {
+  showSeriesLink: true
+});
 
 /**
  * MOBİL EŞİĞİ — modalın tek kolona düştüğü nokta (aşağıdaki media query ile
@@ -468,7 +473,7 @@ onBeforeUnmount(() => {
             </motion.p>
 
             <motion.p class="kmodal__desc" v-bind="gsapMi ? {} : { variants: icerikOge }">
-              {{ copy.modal.description }}
+              {{ product.description || copy.modal.description }}
             </motion.p>
 
             <!-- Teknik bilgi: sadeleştirmede tamamen çıkarılmıştı ama sağ
@@ -505,7 +510,9 @@ onBeforeUnmount(() => {
 
             <motion.div class="kmodal__actions" v-bind="gsapMi ? {} : { variants: icerikOge }">
               <NuxtLink class="kmodal__cta" to="/contact">{{ copy.modal.quote }}</NuxtLink>
-              <NuxtLink class="kmodal__link" to="/catalog">{{ copy.actions.viewSeries }}</NuxtLink>
+              <NuxtLink v-if="showSeriesLink" class="kmodal__link" to="/catalog">
+                {{ copy.actions.viewSeries }}
+              </NuxtLink>
             </motion.div>
           </motion.div>
         </motion.section>
