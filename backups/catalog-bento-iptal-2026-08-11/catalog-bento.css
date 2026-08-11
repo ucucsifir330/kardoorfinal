@@ -1,0 +1,486 @@
+/* ===========================================================================
+   KATALOG — VITRIN DUVARI (bento)
+   ---------------------------------------------------------------------------
+   Hucre boyutu SUSLEME DEGIL, urunun kendi orani. Olculdu: kapi gorselleri
+   seffaf kesim ve oranlari 0.54 (dar) ile 0.86 (genis pivot) arasinda
+   degisiyor; `visualRole` alani bunu zaten isaretliyor.
+
+     product          ~0.60  ->  .is-door    1 sutun x 3 satir
+     product-showcase ~0.67+ ->  .is-wide    2 sutun x 4 satir
+     showcase         sahne  ->  .is-scene   2 sutun x 4 satir, tam kanama
+
+   Boylece bento veriyle surulur; ileride CMS/e-ticaret tarafindan
+   yonetilebilir. `grid-auto-flow: dense` bosluklari kendi doldurur, elle
+   hucre yerlestirmiyoruz.
+
+   Eski gridin sorunlari (olculdu): kutu her kapinin oranina gore sekil
+   aliyordu (yukseklik 267-291px arasi savruluyor), kart `justify-content:
+   center` oldugu icin etiket taban cizgileri 505-518 arasinda kayiyordu ve
+   1px hairline ayraclar PRODUCT.md'de anti-reference olarak yazili
+   "yogun e-ticaret gridi" gorunumu uretiyordu.
+   ========================================================================= */
+
+.cbento {
+  /* 6 sutun: 1/2/3 span'lerin hepsi temiz bolunur. */
+  --cb-cols: 6;
+  --cb-gap: clamp(10px, 1vw, 20px);
+  /* Satir birimi: kapi 3 satir kaplar. Sutun ~215px'te kapi ~360px olur,
+     yani gercek kapi orani (0.6) korunur. */
+  --cb-row: clamp(96px, 7.6vw, 132px);
+
+  --cb-cell: var(--clg-surface-raised);
+  --cb-cell-line: color-mix(in srgb, var(--clg-text) 8%, transparent);
+  --cb-ground: color-mix(in srgb, var(--clg-text) 14%, transparent);
+  /* Bolum basligi hucresi: sayfanin tersi. */
+  --cb-series-bg: var(--slab);
+  --cb-series-fg: var(--slab-fg);
+
+  display: grid;
+  grid-template-columns: repeat(var(--cb-cols), minmax(0, 1fr));
+  grid-auto-rows: var(--cb-row);
+  grid-auto-flow: dense;
+  gap: var(--cb-gap);
+  margin: 0;
+  padding: 0 clamp(16px, 3vw, 48px) clamp(48px, 6vw, 96px);
+  list-style: none;
+}
+
+/* --- Hucre kabugu ------------------------------------------------------- */
+.cbento__cell {
+  position: relative;
+  min-width: 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto calc(var(--cb-row) * 3);
+  /* Giris animasyonu GSAP'ta; burada yalnizca baslangic durumu.
+     `visibility` DEGIL opacity: JS calismazsa icerik yine gorunur kalir
+     (reveal'i gorunurluge bagli yapmak, headless render'da bos sayfa
+     uretme riskini dogurur). */
+}
+
+.cbento__link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px 3px 14px;
+  background: var(--cb-cell);
+  box-shadow: inset 0 0 0 1px var(--cb-cell-line);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  /* `transform` GECISI YOK: yukselme hareketinin sahibi motion-v.
+     Ayni property'yi CSS ile paylasmak bu projede iki kez kirilmaya yol
+     acti -- CSS kurali inline stili eziyor, Motion'in yazdigi transform
+     hic uygulanmiyordu. Yalnizca golge CSS'te kaliyor. */
+  transition: box-shadow 420ms var(--quint-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.cbento__link:focus-visible {
+  outline: var(--clg-focus);
+  outline-offset: 3px;
+}
+
+/* --- Hucre tipleri -------------------------------------------------------
+   TUM hucreler 3 SATIRIN KATI. Sebep: karisik yukseklikler (3/4/1) ile
+   `dense` akis delik birakiyordu -- olculdu, sol sutunda tam bir hucre boyu
+   bosluklar olusuyordu ve mozaik "tasarim" degil "kirik tablo" okunuyordu.
+   Ortak birim: her sey 3 veya 6 satir. Boylece satir bantlari hizalanir. */
+.cbento__cell.is-door {
+  grid-column: span 1;
+  grid-row: span 3;
+}
+
+.cbento__cell.is-wide {
+  grid-column: span 2;
+  grid-row: span 3;
+}
+
+/* Sahne: iki bant boyu. Sayfanin odak noktasi bu -- olcek karsitligi
+   olmadan bento "bento" degil, esit kutular gridi olur. */
+.cbento__cell.is-scene {
+  grid-column: span 2;
+  grid-row: span 6;
+}
+
+/* Sayfanin ILK sahnesi daha genis: acilista net bir odak noktasi olsun.
+   `:first-of-type` degil `.is-lead` -- sira harmanlamaya bagli. */
+.cbento__cell.is-scene.is-lead {
+  grid-column: span 3;
+}
+
+/* Seri isareti: bir kapi yuvasi kadar yer kaplar ve TIPOGRAFI tasir.
+   Ince serit olarak birakildiginda yaninda bos yuva kaliyordu. */
+.cbento__cell.is-series {
+  grid-column: span 1;
+  grid-row: span 3;
+}
+
+/* --- Kapi govdesi -------------------------------------------------------- */
+/* `min-height: 0` SART: flex cocugunun varsayilan `auto` degeri icerigin
+   altina kuculmesini engeller, kutu gorselin dogal boyuna acilirdi. */
+.cbento__stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: clamp(12px, 1.1vw, 20px) clamp(8px, 0.7vw, 14px) 0;
+  overflow: hidden;
+}
+
+/* Kapi ZEMINE oturur (`align-items: flex-end`). Gercek kapi yerde durur;
+   boylece komsu hucrelerdeki kapilar ortak taban cizgisini paylasir.
+
+   `max-height` KULLANILIYOR, `height:100%` DEGIL: <img> degistirilmis bir
+   eleman: `inset` verilse veya yuzde yazilsa bile `width/height: auto` iken
+   dogal boyutuna gidiyor ve hucreden tasiyordu -- olculdu, hucre 237x397
+   iken gorsel 237x531 cikip etiketin uzerine biniyordu. `max-*` kisiti
+   oranini bozmadan kutuya sigdiriyor. */
+.cbento__img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 18px 22px rgba(20, 18, 16, 0.18));
+  /* transform gecisi YOK -- Motion sahibi (bkz. .cbento__link notu). */
+}
+
+.cbento__image-motion {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transform-origin: center bottom;
+}
+
+/* Sahne hucresi: fotograf tam kanar, kapi kesim degil ortam. */
+.cbento__cell.is-scene .cbento__img {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: none;
+}
+
+.cbento__cell.is-scene .cbento__image-motion {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* --- Isik tarama: "malzeme konusur" -------------------------------------
+   Hover'da yuzeyde bir isik geziyor ve dokuyu aciga cikariyor. Kapiyi
+   ACMIYORUZ bilerek: 169 urunluk gridde kapilarin cirpinmasi
+   PRODUCT.md'deki "gosteris degil, ozguven" tonuna aykiri olurdu. */
+.cbento__sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    color-mix(in srgb, #fff 42%, transparent) 50%,
+    transparent 62%
+  );
+  /* Baslangic konumu Motion'da (`:variants` -> rest). CSS'te transform
+     birakmak Motion'in x hareketini eziyordu. */
+}
+
+/* --- Zemin cizgisi ------------------------------------------------------- */
+.cbento__ground {
+  position: absolute;
+  right: clamp(14px, 1.4vw, 26px);
+  bottom: 0;
+  left: clamp(14px, 1.4vw, 26px);
+  height: 1px;
+  background: var(--cb-ground);
+  transform-origin: left center;
+}
+
+.cbento__cell.is-scene .cbento__ground {
+  display: none;
+}
+
+/* --- Etiket -------------------------------------------------------------- */
+.cbento__meta {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: clamp(12px, 1.1vw, 18px) clamp(14px, 1.4vw, 22px)
+    clamp(14px, 1.2vw, 20px);
+}
+
+.cbento__name {
+  font-size: clamp(0.95rem, 0.92vw, 1.12rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--clg-text);
+}
+
+.cbento__code {
+  font-size: clamp(0.72rem, 0.66vw, 0.8rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--clg-text-muted);
+}
+
+/* Sahne hucresinde etiket fotografin uzerinde durur. */
+.cbento__cell.is-scene .cbento__meta {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  color: #fff;
+  background: linear-gradient(
+    to top,
+    rgba(12, 10, 9, 0.72),
+    rgba(12, 10, 9, 0)
+  );
+  padding-top: clamp(38px, 4vw, 62px);
+}
+
+.cbento__cell.is-scene .cbento__name,
+.cbento__cell.is-scene .cbento__code {
+  color: #fff;
+}
+
+.cbento__cell.is-scene .cbento__code {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+/* --- Seri isareti --------------------------------------------------------
+   Bir kapi yuvasi kadar yer kaplar; icini TIPOGRAFI doldurur. Bolum
+   basligi burada bir "urun" gibi davranir, ritmi o kirar. */
+/* TERS CEVRILMIS: koyu hucre, acik metin. Sayfa bastan sona bej ustune bej
+   akiyordu; bolum basliklarinin koyu olmasi hem ritmi hem kontrasti getiriyor
+   ve gozun "neredeyim" sorusunu tek bakista cevapliyor. */
+.cbento__series {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: clamp(18px, 1.8vw, 30px) clamp(16px, 1.5vw, 24px);
+  border-radius: 3px 3px 14px;
+  background: var(--cb-series-bg);
+  overflow: hidden;
+}
+
+.cbento__series-title {
+  font-size: clamp(1.5rem, 2.1vw, 2.4rem);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+  color: var(--cb-series-fg);
+}
+
+.cbento__series-count {
+  font-size: clamp(0.7rem, 0.64vw, 0.78rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: color-mix(in srgb, var(--cb-series-fg) 62%, transparent);
+}
+
+/* --- Sepete ekle --------------------------------------------------------- */
+.cbento__add {
+  position: absolute;
+  top: clamp(10px, 0.9vw, 14px);
+  right: clamp(10px, 0.9vw, 14px);
+  z-index: 4;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--clg-text) 88%, transparent);
+  color: var(--cb-cell);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    opacity 260ms ease,
+    transform 260ms var(--spring-snappy, cubic-bezier(0.2, 1.4, 0.4, 1));
+}
+
+/* --- Hover / focus ------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  /* Yalnizca GOLGE: yukselme ve gorsel olcegi motion-v'de. */
+  .cbento__link:hover {
+    box-shadow:
+      inset 0 0 0 1px var(--cb-cell-line),
+      0 26px 42px rgba(20, 18, 16, 0.14);
+  }
+
+  .cbento__link:hover .cbento__add,
+  .cbento__link:focus-within .cbento__add {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Masaustu showroom duvari: 3 + 6 + 3 kolonluk acilis bandi her seriye
+   belirgin bir giris verir. Devam eden urunler dortlu, daha buyuk ve sakin
+   akar; ilk ekrandaki eski altili e-ticaret satiri ortadan kalkar. */
+@media (min-width: 1181px) {
+  .cbento {
+    --cb-cols: 12;
+    --cb-row: clamp(96px, 5.55vw, 118px);
+  }
+
+  .cbento__cell.is-door {
+    grid-column: span 3;
+    grid-row: span 3;
+  }
+
+  .cbento__cell.is-series {
+    grid-column: span 3;
+    grid-row: span 6;
+  }
+
+  .cbento__cell.is-series-lead,
+  .cbento__cell.is-wide,
+  .cbento__cell.is-scene {
+    grid-column: span 6;
+    grid-row: span 6;
+  }
+
+  .cbento__cell.is-scene.is-lead {
+    grid-column: span 9;
+  }
+
+  .cbento__series {
+    justify-content: space-between;
+    padding: clamp(24px, 2.2vw, 40px);
+  }
+
+  .cbento__series-title {
+    max-width: 8ch;
+    font-size: clamp(2.5rem, 3.8vw, 4.8rem);
+    line-height: 0.9;
+  }
+
+  .cbento__series-count {
+    order: -1;
+  }
+
+  .cbento__cell.is-series-lead .cbento__stage {
+    padding: clamp(24px, 2.4vw, 46px) clamp(32px, 4vw, 76px) 0;
+  }
+
+  .cbento__cell.is-series-lead .cbento__name {
+    font-size: clamp(1.2rem, 1.35vw, 1.6rem);
+  }
+}
+
+/* Scroll sirasinda yuzlerce alfa kanalli WebP icin drop-shadow yeniden
+   boyamasi yapma. Scroll bitince statik malzeme golgesi geri gelir. */
+html.is-scrolling .catalog-lib .cbento__img {
+  filter: none;
+}
+
+/* Dokunmatikte gizli buton erisilemez olurdu. */
+@media (hover: none) {
+  .cbento__add {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- Kirilimlar ---------------------------------------------------------- */
+@media (max-width: 1180px) {
+  .cbento {
+    --cb-cols: 4;
+    --cb-row: clamp(92px, 9.6vw, 128px);
+  }
+}
+
+@media (max-width: 760px) {
+  .cbento {
+    --cb-cols: 2;
+    --cb-row: clamp(88px, 21vw, 116px);
+    padding-inline: 14px;
+  }
+
+  /* Dar ekranda 2 sutunluk hucre satiri komple kaplar; sahne ve genis
+     kapilar tam genislige gecer, kapilar ikili durur.
+
+     `.is-lead` DE buraya dahil: masaustunde `span 3` aliyor, ama grid burada
+     2 sutunlu. Span sutun sayisini asinca tarayici ucuncu bir ORTUK sutun
+     acip digerlerini 0px'e eziyordu -- olculdu, grid-template-columns
+     "0px 0px 342px" cikiyor ve kapilarin yarisi gorunmez oluyordu. */
+  .cbento__cell.is-wide,
+  .cbento__cell.is-scene,
+  .cbento__cell.is-scene.is-lead,
+  .cbento__cell.is-series {
+    grid-column: span 2;
+  }
+}
+
+/* --- Hareket azaltma ----------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .cbento__link,
+  .cbento__img,
+  .cbento__add {
+    transition-duration: 1ms;
+  }
+
+  .cbento__sheen {
+    display: none;
+  }
+}
+
+/* --- Gece temasi ---------------------------------------------------------
+   Katalog sayfasinda gece kurali HIC YOKTU (olculdu: 0 eslesme); sayfa
+   yalnizca acik temada dogru duruyordu. Degerler sitenin yuzey
+   sozlesmesinden aliniyor. */
+.app-shell--night .catalog-lib,
+html[data-theme="dark"] .catalog-lib {
+  --clg-text: var(--text-main);
+  --clg-text-muted: var(--text-muted);
+  --clg-surface: #080b18;
+  --clg-surface-strong: var(--card-bg);
+  --clg-surface-raised: var(--card-bg);
+  --clg-hairline: rgba(244, 246, 255, 0.12);
+  --clg-shadow: 0 24px 38px rgba(0, 0, 0, 0.5);
+  --clg-focus: 2px solid var(--text-main);
+}
+
+.app-shell--night .cbento,
+html[data-theme="dark"] .cbento {
+  --cb-cell-line: rgba(244, 246, 255, 0.1);
+  --cb-ground: rgba(244, 246, 255, 0.16);
+  /* Gecede sayfa zaten koyu; baslik hucresi TERSINE acik olur. */
+  --cb-series-bg: var(--slab-fg);
+  --cb-series-fg: var(--slab);
+}
+
+.app-shell--night .cbento__img,
+html[data-theme="dark"] .cbento__img {
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.55));
+}
+
+.app-shell--night .cbento__link:hover,
+html[data-theme="dark"] .cbento__link:hover {
+  box-shadow:
+    inset 0 0 0 1px var(--cb-cell-line),
+    0 26px 44px rgba(0, 0, 0, 0.55);
+}
