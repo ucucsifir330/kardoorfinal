@@ -129,8 +129,22 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
   // playhead'iyle AYNI kaynağı örneklemesi için. Eski motor ham (yumuşatılmamış)
   // window.scrollY'yi manuel bir rAF döngüsünde okuyordu; çizgi gecikmeli
   // içerikle yarışıyor ve takılıyormuş gibi görünüyordu.
-  //   progress 0: bölümün üstü viewport'un %20'sinde
-  //   progress 1: bölümün altı viewport'un %28'inde
+  //   progress 0: bölümün üstü viewport'un %46'sında
+  //   progress 1: bölümün altı viewport'un %55'inde
+  //
+  // Bu iki değer TÜRETİLDİ, seçilmedi. Eski aralık (top 20% / bottom 28%)
+  // matematiksel olarak kusursuzdu — 1440x900'de scrollY 11370'te tam %50
+  // çiziyordu — ama revise dalı aynı noktada %54.5, 12694'te %79.5
+  // gösteriyordu; yani çizgi bizde geç kalıyordu. revise'in eğrisi de doğrusal
+  // olduğu için iki örnekten gerçek aralığı çözdük: başlangıç 8484px,
+  // bitiş 13780px. Bölüm geometrisine çevirince (secTop 8900, secBottom 14271,
+  // vh 900) top %46.2 ve bottom %54.6 çıkıyor.
+  //
+  // Doğrulandı: beş örnekleme noktasının BEŞİNDE de fark 0
+  // (0 / 0 / 54.5 / 79.5 / 100 — iki portta birebir).
+  //
+  // Bu sayılar viewport yüksekliğine göre yüzde olduğu için 900px dışındaki
+  // ekranlarda oran korunur; değiştirilecekse yeniden ölçülmeli.
   const buildTrigger = () => {
     const section = targets.section.value;
     if (!section) return;
@@ -138,8 +152,8 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
     trigger?.kill();
     trigger = ScrollTrigger.create({
       trigger: section,
-      start: "top 20%",
-      end: "bottom 28%",
+      start: "top 46%",
+      end: "bottom 55%",
       onUpdate: (self) => draw(self.progress),
       onRefresh: (self) => draw(self.progress),
       onLeave: () => draw(1),
