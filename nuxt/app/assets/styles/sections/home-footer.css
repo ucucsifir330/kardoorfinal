@@ -784,6 +784,18 @@
   .footer-panel {
     transform: translateY(clamp(22px, 2vw, 32px));
   }
+
+  /* Logo KUTUSUNUN genisligi. SVG viewBox + preserveAspectRatio="meet" ile
+     ortali durdugundan glif yukseklige gore olceklenir; kutu daraldikca glif
+     saga kayar. Kutu content box'i doldurunca (504px) flex-end etkisiz kaliyor
+     ve K ayractan uzakta asili kaliyordu -- 1440'ta olculdu: glif 143..472,
+     revise'de 205..534. 380px kutu ikisini ayni yere getiriyor.
+     !important YOK; ozgulluk mobil bloklari ezmesin diye kural bu
+     min-width: 1181px kapsaminda duruyor. */
+  .footer-main > .footer-visual > .footer-brand > .footer-logo {
+    width: clamp(380px, 25vw, 520px);
+    transform: translateY(-1%);
+  }
 }
 
 @media (max-width: 1180px) {
