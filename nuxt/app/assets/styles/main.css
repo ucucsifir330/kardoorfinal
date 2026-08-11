@@ -1,7 +1,15 @@
 /* Base */
 @import "./base/fonts.css";
 @import "./base/tokens.css";
-@import "./base/reset.css";
+/* KATMAN: reset `@layer base`e giriyor.
+   tailwind.css `@layer theme, base, components, utilities` ilan ediyor ama
+   reset katmansiz kaliyordu. CSS'te KATMANSIZ stiller katmanli olanlari
+   ozgullukten BAGIMSIZ yener; bu yuzden reset'teki `a { color: inherit }`
+   Tailwind'in `layer(utilities)` icindeki her metin rengini eziyordu
+   (CDP ile dogrulandi: `.text-[var(--kd-stage)]` eslesiyor ama uygulanmiyor,
+   buton metni zeminle ayni renge dusuyordu).
+   Reset zaten en zayif katman olmali -- dogru yeri `base`. */
+@import "./base/reset.css" layer(base);
 @import "./base/transitions.css";
 /* Shared components */
 @import "./components/buttons.css";
@@ -13,7 +21,6 @@
 @import "./sections/home-footer.css";
 @import "./pages/catalog/subpage.css";
 @import "./pages/door-detail.css";
-@import "./pages/catalog-library.css";
 @import "./pages/company.css";
 @import "./pages/contact.css";
 
