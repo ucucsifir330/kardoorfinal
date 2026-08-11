@@ -23,6 +23,11 @@ const normalizeTransitionPath = (path: string) => {
 
 const isTransitionRoute = (path: string) => transitionRoutes.has(normalizeTransitionPath(path));
 
+// Koleksiyon kataloğu kendi alt şeridini ve "Model detayı" aksiyonunu taşıyor;
+// yüzen iletişim hub'ı onların üstüne biniyordu. Gizlemek yerine unmount:
+// hub kendi RAF/observer kurulumunu yapıyor, boşuna çalışmasın.
+const isCatalogRoute = computed(() => normalizeTransitionPath(route.path) === "/catalog");
+
 /**
  * Ana sayfaya dönerken kapı sprite'ını ÖNDEN hazırla.
  *
@@ -208,11 +213,8 @@ onBeforeUnmount(() => {
       @complete="handleStartupComplete"
     />
     <SiteHeader />
-    <ContactHub v-if="!isReferencesRoute" />
+    <ContactHub v-if="!isReferencesRoute && !isCatalogRoute" />
     <SmoothCursor v-if="!isReferencesRoute" />
-    <!-- Katalog filtre dock'u da fixed: smooth-content dışında durmalı.
-         v-if ile route değişince unmount olur, panel DOM'da asılı kalmaz. -->
-    <CatalogFilterDock v-if="normalizeTransitionPath(route.path) === '/catalog'" />
 
     <!-- ScrollSmoother containers. Fixed overlays above stay OUTSIDE so the
          #smooth-content transform doesn't break their positioning. -->
