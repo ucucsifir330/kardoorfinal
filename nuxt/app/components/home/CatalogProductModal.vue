@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<{
  * MOBİL EŞİĞİ — modalın tek kolona düştüğü nokta (aşağıdaki media query ile
  * aynı). Değeri tek yerde tutuyoruz ki ikisi ayrışmasın.
  */
-const MOBIL_ESIK = 860;
+const MOBILE_BREAKPOINT = 860;
 
 /**
  * Açılış hareketi CİHAZA göre seçilir.
@@ -61,20 +61,20 @@ const MOBIL_ESIK = 860;
  * Ayrıca GSAP timeline'ı mobilde gereksiz maliyet; Motion WAAPI'ye
  * derlendiği için ana iş parçacığının dışında oynuyor.
  */
-const mobilMi = ref(false);
+const isMobile = ref(false);
 
-const guncelleCihaz = () => {
-  mobilMi.value = window.innerWidth <= MOBIL_ESIK;
+const syncDevice = () => {
+  isMobile.value = window.innerWidth <= MOBILE_BREAKPOINT;
 };
 
 if (import.meta.client) {
-  guncelleCihaz();
-  window.addEventListener("resize", guncelleCihaz, { passive: true });
+  syncDevice();
+  window.addEventListener("resize", syncDevice, { passive: true });
 }
 
 /** Masaüstü GSAP ile açılır; mobil Motion ile. Motion propları GSAP
     modunda devre dışı kalır — iki sistem aynı property'yi yönetemez. */
-const gsapMi = computed(() => !mobilMi.value);
+const gsapMode = computed(() => !isMobile.value);
 
 const emit = defineEmits<{
   close: [];
@@ -82,7 +82,7 @@ const emit = defineEmits<{
   next: [];
 }>();
 
-const acik = computed(() => props.product !== null);
+const isOpen = computed(() => props.product !== null);
 
 /**
  * Modal görselinin ImageKit dönüşümü.
@@ -104,15 +104,15 @@ const acik = computed(() => props.product !== null);
  * olduğu için modal onu anında gösteriyor, ağ isteği hiç doğmuyor.
  * 440px, 294px'lik alan için DPR 1.5'e kadar net kalıyor.
  */
-const MODAL_GORSEL_W = 440;
+const MODAL_IMAGE_WIDTH = 440;
 
-const gorselUrl = (url?: string) => {
+const imageUrl = (url?: string) => {
   if (!url) return "";
   if (!url.includes("ik.imagekit.io")) return url;
-  return `${url.split("?")[0]}?tr=w-${MODAL_GORSEL_W},q-82`;
+  return `${url.split("?")[0]}?tr=w-${MODAL_IMAGE_WIDTH},q-82`;
 };
 
-const modalGorsel = computed(() => gorselUrl(props.product?.image as string | undefined));
+const modalImage = computed(() => imageUrl(props.product?.image as string | undefined));
 
 /**
  * Komşu ürünlerin görselini önceden indir.
@@ -125,21 +125,21 @@ const modalGorsel = computed(() => gorselUrl(props.product?.image as string | un
  * mantığı orada, modal yalnız "şu ikisini şimdiden çek" diyor. Prop boşsa
  * sessizce atlanıyor — bu bir iyileştirme, davranış şartı değil.
  */
-const onbellege = new Set<string>();
+const preloaded = new Set<string>();
 
-const onceden = (url?: string) => {
-  const tam = gorselUrl(url);
-  if (!tam || onbellege.has(tam)) return;
-  onbellege.add(tam);
-  const im = new Image();
-  im.decoding = "async";
-  im.src = tam;
+const preload = (url?: string) => {
+  const src = imageUrl(url);
+  if (!src || preloaded.has(src)) return;
+  preloaded.add(src);
+  const img = new Image();
+  img.decoding = "async";
+  img.src = src;
 };
 
 /* --- Hareket --------------------------------------------------------------
    Perde sade solar; panel aşağıdan yükselir. Spring bilerek düşük bounce:
    kapı vitrin nesnesi, zıplaması markayı hafifletir. */
-const perdeMotion = {
+const backdropMotion = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
@@ -150,27 +150,27 @@ const perdeMotion = {
  * Mobil açılışı: merkezden büyür. Spring bilerek düşük bounce — kapı
  * vitrin nesnesi, zıplaması markayı hafifletir.
  */
-const MOBIL_ACILIS = {
+const MOBILE_ENTER = {
   initial: { scale: 0.94, opacity: 0 },
   animate: { scale: 1, opacity: 1 },
   exit: { scale: 0.97, opacity: 0 },
   transition: { type: "spring" as const, visualDuration: 0.4, bounce: 0.14 }
 } as const;
 
-const panelMotion = computed(() => (gsapMi.value ? {} : MOBIL_ACILIS));
+const panelMotion = computed(() => (gsapMode.value ? {} : MOBILE_ENTER));
 
 /** İçerik: başlık → açıklama → aksiyonlar sırayla girer. */
-const icerikKap = {
-  gizli: { opacity: 0 },
-  gorunur: {
+const contentGroup = {
+  hidden: { opacity: 0 },
+  visible: {
     opacity: 1,
     transition: { delayChildren: 0.14, staggerChildren: 0.07 }
   }
 };
 
-const icerikOge = {
-  gizli: { opacity: 0, y: 14 },
-  gorunur: {
+const contentItem = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
     opacity: 1,
     y: 0,
     transition: { type: "spring" as const, visualDuration: 0.42, bounce: 0.1 }
@@ -182,22 +182,22 @@ const icerikOge = {
    parametreleri ("-=0.7" gibi) bir adımı öncekinin bitişinden ÖNCE
    başlatıyor, parçalar birbirinin içine giriyor. Motion'ın
    staggerChildren'ı yalnız düz sıra verebiliyor. */
-const perdeRef = ref<any>(null);
+const backdropRef = ref<any>(null);
 const panelRef = ref<any>(null);
 let gsapTl: gsap.core.Timeline | null = null;
 
-const azHareket = () =>
+const prefersReducedMotion = () =>
   import.meta.client &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const gsapHedefler = () => {
+const gsapTargets = () => {
   const panel = panelRef.value?.$el ?? panelRef.value;
   if (!panel) return null;
   return {
-    perde: perdeRef.value?.$el ?? perdeRef.value,
+    backdrop: backdropRef.value?.$el ?? backdropRef.value,
     panel,
-    gorsel: panel.querySelector(".kmodal__visual"),
-    metinler: [
+    visual: panel.querySelector(".kmodal__visual"),
+    texts: [
       panel.querySelector(".kmodal__kicker"),
       panel.querySelector(".kmodal__code"),
       panel.querySelector(".kmodal__meta"),
@@ -208,14 +208,14 @@ const gsapHedefler = () => {
   };
 };
 
-const gsapAc = () => {
-  const h = gsapHedefler();
-  if (!h) return;
+const gsapOpen = () => {
+  const targets = gsapTargets();
+  if (!targets) return;
 
   gsapTl?.kill();
 
-  if (azHareket()) {
-    gsap.set([h.perde, h.panel, h.gorsel, ...h.metinler],
+  if (prefersReducedMotion()) {
+    gsap.set([targets.backdrop, targets.panel, targets.visual, ...targets.texts],
       { opacity: 1, clearProps: "transform" });
     return;
   }
@@ -226,108 +226,108 @@ const gsapAc = () => {
   // çıkar. Motion'ın veremediği şey buradaki ÖRTÜŞEN zamanlama —
   // "-=0.7" gibi pozisyonlar bir adımı öncekinin bitişinden önce başlatır.
   gsapTl
-    .fromTo(h.perde, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.inOut" })
-    .fromTo(h.panel, { scaleX: 0.82, scaleY: 0.94, opacity: 0 },
+    .fromTo(targets.backdrop, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.inOut" })
+    .fromTo(targets.panel, { scaleX: 0.82, scaleY: 0.94, opacity: 0 },
       { scaleX: 1, scaleY: 1, opacity: 1, duration: 0.78, ease: "power4.out" }, "-=0.2")
-    .fromTo(h.gorsel, { scale: 1.2, opacity: 0 },
+    .fromTo(targets.visual, { scale: 1.2, opacity: 0 },
       { scale: 1, opacity: 1, duration: 0.94, ease: "power4.out" }, "-=0.7")
-    .fromTo(h.metinler, { y: 26, opacity: 0 },
+    .fromTo(targets.texts, { y: 26, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.54, ease: "power3.out", stagger: 0.06 }, "-=0.62");
 };
 
 /**
  * GSAP çıkışı ELLE yönetilir: AnimatePresence burada devrede değil, o yüzden
  * kaldırma kararını geciktiriyoruz — önce tween, bitince emit('close').
- * `kapaniyor` bayrağı çift tıklamada iki çıkışın üst üste binmesini önler.
+ * `isClosing` bayrağı çift tıklamada iki çıkışın üst üste binmesini önler.
  */
-const kapaniyor = ref(false);
+const isClosing = ref(false);
 
-const kapat = () => {
-  if (!gsapMi.value) {
+const closeModal = () => {
+  if (!gsapMode.value) {
     emit("close");
     return;
   }
-  if (kapaniyor.value) return;
+  if (isClosing.value) return;
 
-  const h = gsapHedefler();
-  if (!h || azHareket()) {
+  const targets = gsapTargets();
+  if (!targets || prefersReducedMotion()) {
     emit("close");
     return;
   }
 
-  kapaniyor.value = true;
+  isClosing.value = true;
   gsapTl?.kill();
   gsapTl = gsap.timeline({
     onComplete: () => {
-      kapaniyor.value = false;
+      isClosing.value = false;
       emit("close");
     }
   });
 
   gsapTl
-    .to(h.panel, { y: 26, opacity: 0, duration: 0.26, ease: "power2.in" })
-    .to(h.perde, { opacity: 0, duration: 0.2, ease: "power1.in" }, "-=0.16");
+    .to(targets.panel, { y: 26, opacity: 0, duration: 0.26, ease: "power2.in" })
+    .to(targets.backdrop, { opacity: 0, duration: 0.2, ease: "power1.in" }, "-=0.16");
 };
 
 /* ── ÜRÜN DEĞİŞİMİ ────────────────────────────────────────────────────────
    Ok tuşları/butonları ürünü değiştirince içerik ANINDA yer değiştiriyordu —
    hangi kapıya geçtiğin belli olmuyordu. Şimdi görsel yön duyarlı kayıyor:
    ileri gidersen sağdan, geri gelirsen soldan giriyor. */
-const gecisYonu = ref<1 | -1>(1);
-let gecisTl: gsap.core.Timeline | null = null;
+const slideDirection = ref<1 | -1>(1);
+let slideTl: gsap.core.Timeline | null = null;
 
-const urunDegisti = () => {
-  const h = gsapHedefler();
-  if (!h || azHareket()) return;
+const animateProductChange = () => {
+  const targets = gsapTargets();
+  if (!targets || prefersReducedMotion()) return;
 
-  gecisTl?.kill();
-  const x = 34 * gecisYonu.value;
+  slideTl?.kill();
+  const x = 34 * slideDirection.value;
 
-  gecisTl = gsap.timeline();
-  gecisTl
-    .fromTo(h.gorsel, { x, opacity: 0 },
+  slideTl = gsap.timeline();
+  slideTl
+    .fromTo(targets.visual, { x, opacity: 0 },
       { x: 0, opacity: 1, duration: 0.44, ease: "power3.out" })
-    .fromTo(h.metinler, { y: 12, opacity: 0 },
+    .fromTo(targets.texts, { y: 12, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.36, ease: "power2.out", stagger: 0.04 }, "-=0.32");
 };
 
-const oncekiUrun = () => {
-  gecisYonu.value = -1;
+const goPrev = () => {
+  slideDirection.value = -1;
   emit("prev");
 };
 
-const sonrakiUrun = () => {
-  gecisYonu.value = 1;
+const goNext = () => {
+  slideDirection.value = 1;
   emit("next");
 };
 
 /* ── ODAK TUZAĞI ──────────────────────────────────────────────────────────
    Modal açıkken Tab arkadaki sayfaya kaçıyordu: klavye kullanıcısı modaldan
    çıkıp geri dönemiyordu. Kapanınca odak, modalı açan karta geri döner. */
-let oncekiOdak: HTMLElement | null = null;
+let previousFocus: HTMLElement | null = null;
 
-const odaklanabilirler = (): HTMLElement[] => {
-  const kap: HTMLElement | null = perdeRef.value?.$el ?? perdeRef.value;
-  if (!kap) return [];
-  return [...kap.querySelectorAll<HTMLElement>(
+const focusables = (): HTMLElement[] => {
+  const root: HTMLElement | null = backdropRef.value?.$el ?? backdropRef.value;
+  if (!root) return [];
+  return [...root.querySelectorAll<HTMLElement>(
     'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
   )].filter((el) => el.offsetParent !== null);
 };
 
-const odagiTut = (event: KeyboardEvent) => {
-  const liste = odaklanabilirler();
-  if (liste.length === 0) return;
+const trapFocus = (event: KeyboardEvent) => {
+  const items = focusables();
+  if (items.length === 0) return;
 
-  const ilk = liste[0]!;
-  const son = liste[liste.length - 1]!;
-  const aktif = document.activeElement;
+  const first = items[0]!;
+  const last = items[items.length - 1]!;
+  const active = document.activeElement;
 
-  if (event.shiftKey && aktif === ilk) {
+  if (event.shiftKey && active === first) {
     event.preventDefault();
-    son.focus();
-  } else if (!event.shiftKey && aktif === son) {
+    last.focus();
+  } else if (!event.shiftKey && active === last) {
     event.preventDefault();
-    ilk.focus();
+    first.focus();
   }
 };
 
@@ -342,64 +342,64 @@ const odagiTut = (event: KeyboardEvent) => {
    null döner — orada `body overflow` zaten yeterli, çünkü native scroll. */
 const { $smoother } = useNuxtApp();
 
-const smootherAl = () => ($smoother as undefined | (() => any))?.() ?? null;
+const getSmoother = () => ($smoother as undefined | (() => any))?.() ?? null;
 
-const arkaPlaniKilitle = (kilitli: boolean) => {
+const lockBackground = (locked: boolean) => {
   // Kilit `<html>` üzerinde olmak zorunda: ölçüldü, `body { overflow:
   // hidden }` uygulanmasına rağmen `window.scrollY` 2500'den 3100'e çıktı
   // — scroll kabı gövde değil, kök eleman.
-  document.documentElement.style.overflow = kilitli ? "hidden" : "";
-  document.body.style.overflow = kilitli ? "hidden" : "";
+  document.documentElement.style.overflow = locked ? "hidden" : "";
+  document.body.style.overflow = locked ? "hidden" : "";
   // Smoother varsa (masaüstü) transform'u da dursun; dokunmatikte null döner.
-  smootherAl()?.paused(kilitli);
+  getSmoother()?.paused(locked);
 };
 
 /* --- Klavye + gövde kilidi ------------------------------------------------ */
 const onKeydown = (event: KeyboardEvent) => {
-  if (!acik.value) return;
-  if (event.key === "Escape") kapat();
-  if (event.key === "ArrowLeft") oncekiUrun();
-  if (event.key === "ArrowRight") sonrakiUrun();
-  if (event.key === "Tab") odagiTut(event);
+  if (!isOpen.value) return;
+  if (event.key === "Escape") closeModal();
+  if (event.key === "ArrowLeft") goPrev();
+  if (event.key === "ArrowRight") goNext();
+  if (event.key === "Tab") trapFocus(event);
 };
 
-watch(acik, async (aciMi) => {
+watch(isOpen, async (opened) => {
   if (!import.meta.client) return;
 
-  if (aciMi) {
-    oncekiOdak = document.activeElement as HTMLElement | null;
-    arkaPlaniKilitle(true);
+  if (opened) {
+    previousFocus = document.activeElement as HTMLElement | null;
+    lockBackground(true);
     window.addEventListener("keydown", onKeydown);
     await nextTick();
     requestAnimationFrame(() => {
-      if (gsapMi.value) gsapAc();
+      if (gsapMode.value) gsapOpen();
       // Odak BİR KARE SONRA modala girer. Aynı karede denenince panel henüz
       // boyanmamış oluyordu: offsetParent null dönüyor, odaklanabilir liste
       // boş çıkıyor ve odak kartta kalıyordu (ölçüldü).
-      requestAnimationFrame(() => odaklanabilirler()[0]?.focus());
+      requestAnimationFrame(() => focusables()[0]?.focus());
     });
   } else {
-    arkaPlaniKilitle(false);
+    lockBackground(false);
     window.removeEventListener("keydown", onKeydown);
     // Odak, modalı açan karta dönsün — sayfanın en başına değil.
-    oncekiOdak?.focus();
-    oncekiOdak = null;
+    previousFocus?.focus();
+    previousFocus = null;
   }
 });
 
-/** Modal AÇIKKEN ürün değişirse geçişi oynat; açılışta gsapAc zaten çalışıyor. */
-watch(() => props.product?.code, (yeniKod, eskiKod) => {
-  if (!import.meta.client || !acik.value) return;
-  if (!yeniKod || !eskiKod || yeniKod === eskiKod) return;
-  requestAnimationFrame(urunDegisti);
+/** Modal AÇIKKEN ürün değişirse geçişi oynat; açılışta gsapOpen zaten çalışıyor. */
+watch(() => props.product?.code, (newCode, oldCode) => {
+  if (!import.meta.client || !isOpen.value) return;
+  if (!newCode || !oldCode || newCode === oldCode) return;
+  requestAnimationFrame(animateProductChange);
 });
 
 /** Açılışta ve her ürün değişiminde komşuları önceden indir. */
 watch(
-  () => [acik.value, props.neighbourImages] as const,
-  ([aciMi]) => {
-    if (!import.meta.client || !aciMi) return;
-    for (const url of props.neighbourImages ?? []) onceden(url);
+  () => [isOpen.value, props.neighbourImages] as const,
+  ([opened]) => {
+    if (!import.meta.client || !opened) return;
+    for (const url of props.neighbourImages ?? []) preload(url);
   },
   { immediate: true, deep: true }
 );
@@ -407,10 +407,10 @@ watch(
 onBeforeUnmount(() => {
   if (!import.meta.client) return;
   gsapTl?.kill();
-  gecisTl?.kill();
-  window.removeEventListener("resize", guncelleCihaz);
+  slideTl?.kill();
+  window.removeEventListener("resize", syncDevice);
   // Modal acikken sayfadan cikilirsa smoother duraklamis kalmasin.
-  arkaPlaniKilitle(false);
+  lockBackground(false);
   window.removeEventListener("keydown", onKeydown);
 });
 </script>
@@ -420,34 +420,34 @@ onBeforeUnmount(() => {
     <AnimatePresence>
       <motion.div
         v-if="product"
-        ref="perdeRef"
+        ref="backdropRef"
         class="kmodal"
-        :class="{ 'is-gsap': gsapMi }"
+        :class="{ 'is-gsap': gsapMode }"
         role="dialog"
         aria-modal="true"
         :aria-label="`${product.code} ${copy.modal.productDetail}`"
-        v-bind="gsapMi ? {} : perdeMotion"
-        @click.self="kapat"
+        v-bind="gsapMode ? {} : backdropMotion"
+        @click.self="closeModal"
       >
-        <button class="kmodal__close" :aria-label="copy.modal.close" @click="kapat">
+        <button class="kmodal__close" :aria-label="copy.modal.close" @click="closeModal">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <line x1="6" y1="6" x2="18" y2="18" />
             <line x1="18" y1="6" x2="6" y2="18" />
           </svg>
         </button>
 
-        <button class="kmodal__nav kmodal__nav--prev" :aria-label="copy.modal.previous" @click="oncekiUrun">
+        <button class="kmodal__nav kmodal__nav--prev" :aria-label="copy.modal.previous" @click="goPrev">
           <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15,5 8,12 15,19" /></svg>
         </button>
 
-        <button class="kmodal__nav kmodal__nav--next" :aria-label="copy.modal.next" @click="sonrakiUrun">
+        <button class="kmodal__nav kmodal__nav--next" :aria-label="copy.modal.next" @click="goNext">
           <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9,5 16,12 9,19" /></svg>
         </button>
 
         <motion.section ref="panelRef" class="kmodal__panel" v-bind="panelMotion">
           <div class="kmodal__visual">
             <img
-              :src="modalGorsel"
+              :src="modalImage"
               :alt="product.finish"
               class="kmodal__image"
               decoding="async"
@@ -456,23 +456,23 @@ onBeforeUnmount(() => {
 
           <motion.div
             class="kmodal__content"
-            v-bind="gsapMi ? {} : { variants: icerikKap, initial: 'gizli', animate: 'gorunur' }"
+            v-bind="gsapMode ? {} : { variants: contentGroup, initial: 'hidden', animate: 'visible' }"
           >
-            <motion.p class="kmodal__kicker" v-bind="gsapMi ? {} : { variants: icerikOge }">
+            <motion.p class="kmodal__kicker" v-bind="gsapMode ? {} : { variants: contentItem }">
               {{ series || copy.modal.seriesFallback }}
             </motion.p>
 
-            <motion.h2 class="kmodal__code" v-bind="gsapMi ? {} : { variants: icerikOge }">
+            <motion.h2 class="kmodal__code" v-bind="gsapMode ? {} : { variants: contentItem }">
               {{ product.code }}
             </motion.h2>
 
-            <motion.p class="kmodal__meta" v-bind="gsapMi ? {} : { variants: icerikOge }">
+            <motion.p class="kmodal__meta" v-bind="gsapMode ? {} : { variants: contentItem }">
               {{ collection || copy.modal.collectionFallback }}
               <span aria-hidden="true">·</span>
               {{ product.finish }}
             </motion.p>
 
-            <motion.p class="kmodal__desc" v-bind="gsapMi ? {} : { variants: icerikOge }">
+            <motion.p class="kmodal__desc" v-bind="gsapMode ? {} : { variants: contentItem }">
               {{ product.description || copy.modal.description }}
             </motion.p>
 
@@ -480,7 +480,7 @@ onBeforeUnmount(() => {
                  kolonun %59'u boş kalıyordu (ölçüldü). B2B ziyaretçi
                  sistem/kullanım bilgisini modal içinde bekliyor.
                  CTA'nın ÜSTÜNDE: önce karar bilgisi, sonra eylem. -->
-            <motion.div class="kmodal__details" v-bind="gsapMi ? {} : { variants: icerikOge }">
+            <motion.div class="kmodal__details" v-bind="gsapMode ? {} : { variants: contentItem }">
               <div class="kmodal__block">
                 <h3>{{ copy.modal.infoTitle }}</h3>
                 <dl>
@@ -508,7 +508,7 @@ onBeforeUnmount(() => {
               </div>
             </motion.div>
 
-            <motion.div class="kmodal__actions" v-bind="gsapMi ? {} : { variants: icerikOge }">
+            <motion.div class="kmodal__actions" v-bind="gsapMode ? {} : { variants: contentItem }">
               <NuxtLink class="kmodal__cta" to="/contact">{{ copy.modal.quote }}</NuxtLink>
               <NuxtLink v-if="showSeriesLink" class="kmodal__link" to="/catalog">
                 {{ copy.actions.viewSeries }}
@@ -522,7 +522,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* GSAP modunda ilk kare gizli başlar — tween opacity'yi kendisi açıyor,
+/* GSAP modunda ilk kare hidden başlar — tween opacity'yi kendisi açıyor,
    aksi halde animasyondan önce bir kare tam görünür yanıp sönüyor. */
 .kmodal.is-gsap {
   opacity: 0;
@@ -835,13 +835,13 @@ onBeforeUnmount(() => {
    kapı görselini kapatıyordu (ölçüldü: 1024px'te sol ok 24–68, panel 31'de
    başlıyor).
 
-   `--kmodal-yan-bosluk`: panelin bir yanında kalan boşluk. Panel
+   `--kmodal-side-gap`: panelin bir yanında kalan boşluk. Panel
    `min(100vw - 2*sayfa-payı, 1180px)` genişliğinde ve ortalanmış, yani
    boşluk = (100vw - panel) / 2. Ok o boşluğun ortasına oturuyor; boşluk
    dar kaldığında `max()` tabanı devreye girip ok kenara yapışıyor. */
 .kmodal__nav {
-  --kmodal-yan-bosluk: calc((100vw - min(100vw - 2 * clamp(24px, 3vw, 48px), 1180px)) / 2);
-  --kmodal-ok-yeri: max(10px, calc(var(--kmodal-yan-bosluk) / 2 - 24px));
+  --kmodal-side-gap: calc((100vw - min(100vw - 2 * clamp(24px, 3vw, 48px), 1180px)) / 2);
+  --kmodal-arrow-offset: max(10px, calc(var(--kmodal-side-gap) / 2 - 24px));
 
   top: 50%;
   width: 48px;
@@ -849,8 +849,8 @@ onBeforeUnmount(() => {
   margin-top: -24px;
 }
 
-.kmodal__nav--prev { left: var(--kmodal-ok-yeri); }
-.kmodal__nav--next { right: var(--kmodal-ok-yeri); }
+.kmodal__nav--prev { left: var(--kmodal-arrow-offset); }
+.kmodal__nav--next { right: var(--kmodal-arrow-offset); }
 
 .kmodal__nav:hover {
   background: var(--modal-raised);
