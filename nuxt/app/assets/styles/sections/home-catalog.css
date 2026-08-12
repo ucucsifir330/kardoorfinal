@@ -634,6 +634,7 @@ html[data-theme="dark"] .home-page .catalog-section {
   margin: 8px 0 58px !important;
   color: var(--ink-soft) !important;
   font-size: 15.5px !important;
+  font-weight: 600 !important;
   line-height: 1.25 !important;
 }
 
