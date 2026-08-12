@@ -15,7 +15,11 @@ const catalogCopies: Record<string, any> = {
   tr: {
     title: "Koleksiyonlar",
     allShort: "Tümü",
-    allFull: "Tüm Modelleri Gör",
+    allFull: "Tümünü Gör",
+    model: "model",
+    sourceSeries: "Kaynak seri",
+    subclasses: "Alt sınıf",
+    allSources: "Tümü",
     productImageAlt: "Kapı modeli",
     actions: {
       viewSeries: "Tüm Seriyi İncele",
@@ -28,83 +32,102 @@ const catalogCopies: Record<string, any> = {
     },
     blocks: {
       1: {
-        seriesLabel: "Seri 01",
-        shortName: "Alüminyum",
-        category: { short: "Dış İklim", full: "Dış İklim Modelleri" },
-        parts: [
-          { id: "frame", short: "Kasa Seri", full: "Alüminyum Kasa Seri" },
-          { id: "leaf", short: "Kanat Seri", full: "Alüminyum Kasa ve Kanat Seri" }
-        ],
-        cardTitle: "Alüminyum Sistemler",
-        description: "dış iklim uyumlu kapı sistemleri"
+        shortName: "Çelik Kapı",
+        category: { short: "Sistemler", full: "Çelik Kapı Sistemleri" },
+        cardTitle: "Çelik Kapı Sistemleri",
+        description: "cam detaylı ve kaplamalı çelik kapı sistemleri",
+        sources: {
+          "camli-modeller": {
+            short: "Camlı",
+            full: "Camlı Modeller",
+            parts: [
+              { id: "mixed-glass", short: "Karma", full: "Karma Cam Seri" },
+              { id: "tempered-glass", short: "Temperli", full: "Temperli Cam Seri" }
+            ]
+          },
+          "pvc-laminoks": {
+            short: "PVC & Laminoks",
+            full: "PVC & Laminoks",
+            parts: [
+              { id: "lux-pvc", short: "PVC", full: "Lüks PVC Seri" },
+              { id: "elit-laminox", short: "Elit", full: "Elit Laminoks Seri" },
+              { id: "rustic-laminox", short: "Rustik", full: "Rustik Laminoks Seri" }
+            ]
+          }
+        }
       },
       2: {
-        seriesLabel: "Seri 02",
-        shortName: "Doğal",
-        category: { short: "Dış İklim", full: "Dış İklim Modelleri" },
-        parts: [
-          { id: "wood", short: "Wood Seri", full: "Termo Wood Seri" },
-          { id: "stone", short: "Taş Seri", full: "Doğal Taş Seri" }
-        ],
-        cardTitle: "Doğal Yüzeyler",
-        description: "wood ve taş dokulu kapı yüzeyleri"
+        shortName: "Dış İklim",
+        category: { short: "Sistemler", full: "Dış İklim Kapı Sistemleri" },
+        cardTitle: "Dış İklim Kapı Sistemleri",
+        description: "dış iklim uyumlu kapı sistemleri",
+        sources: {
+          "aluminyum-sistemler": {
+            short: "Alüminyum",
+            full: "Alüminyum Sistemler",
+            parts: [
+              { id: "frame", short: "Kasa Seri", full: "Alüminyum Kasa Seri" },
+              { id: "leaf", short: "Kanat Seri", full: "Alüminyum Kasa ve Kanat Seri" }
+            ]
+          },
+          "dogal-yuzeyler": {
+            short: "Doğal Yüzey",
+            full: "Doğal Yüzeyler",
+            parts: [
+              { id: "wood", short: "Wood Seri", full: "Termo Wood Seri" },
+              { id: "stone", short: "Taş Seri", full: "Doğal Taş Seri" }
+            ]
+          }
+        }
       },
       3: {
-        seriesLabel: "Seri 03",
-        shortName: "Cam",
-        category: { short: "Dış İklim", full: "Dış İklim Modelleri" },
-        parts: [
-          { id: "mixed-glass", short: "Karma", full: "Karma Cam Seri" },
-          { id: "tempered-glass", short: "Temperli", full: "Temperli Cam Seri" }
-        ],
-        cardTitle: "Camlı Modeller",
-        description: "cam detaylı dış kapı çözümleri"
+        shortName: "Ekonomik",
+        category: { short: "Sistemler", full: "Ekonomik Kapı Sistemleri" },
+        cardTitle: "Ekonomik Kapı Sistemleri",
+        description: "dayanıklı metal ve kompozit kapı çözümleri",
+        sources: {
+          "metal-kompozit": {
+            short: "Metal",
+            full: "Metal & Kompozit",
+            parts: [
+              { id: "composite", short: "Kompozit", full: "Kompozit Seri" },
+              { id: "sheet-metal", short: "Sac", full: "Komple Sac Metal Seri" }
+            ]
+          }
+        }
       },
       4: {
-        seriesLabel: "Seri 04",
-        shortName: "Metal",
-        category: { short: "Dış İklim", full: "Dış İklim Modelleri" },
-        parts: [
-          { id: "composite", short: "Kompozit", full: "Kompozit Seri" },
-          { id: "sheet-metal", short: "Sac", full: "Komple Sac Metal Seri" }
-        ],
-        cardTitle: "Metal & Kompozit",
-        description: "dayanıklı metal ve kompozit modeller"
+        shortName: "Bina Giriş",
+        category: { short: "Sistemler", full: "Bina Giriş Sistemleri" },
+        cardTitle: "Bina Giriş Sistemleri",
+        description: "bina girişi, acil çıkış ve şaft sistemleri",
+        sources: {
+          "giris-teknik": {
+            short: "Giriş & Teknik",
+            full: "Giriş & Teknik",
+            parts: [
+              { id: "villa-building-entry", short: "Giriş", full: "Villa ve Bina Giriş Seri" },
+              { id: "emergency-exit", short: "Acil", full: "Acil Çıkış Seri" },
+              { id: "shaft-cover", short: "Şaft", full: "Şaft Kapakları" }
+            ]
+          }
+        }
       },
       5: {
-        seriesLabel: "Seri 05",
-        shortName: "Laminoks",
-        category: { short: "Exclusive", full: "Exclusive Modeller" },
-        parts: [
-          { id: "lux-pvc", short: "PVC", full: "Lüks PVC Seri" },
-          { id: "elit-laminox", short: "Elit", full: "Elit Laminoks Seri" },
-          { id: "rustic-laminox", short: "Rustik", full: "Rustik Laminoks Seri" }
-        ],
-        cardTitle: "PVC & Laminoks",
-        description: "exclusive kaplama seçenekleri"
-      },
-      6: {
-        seriesLabel: "Seri 06",
-        shortName: "Mimari",
-        category: { short: "Exclusive", full: "Exclusive Modeller" },
-        parts: [
-          { id: "project-custom", short: "Özel", full: "Projeye Özel Seri" },
-          { id: "pivot", short: "Pivot", full: "Pivot Seri" }
-        ],
-        cardTitle: "Mimari Özel",
-        description: "projeye özel ve pivot çözümler"
-      },
-      7: {
-        seriesLabel: "Seri 07",
-        shortName: "Teknik",
-        category: { short: "Çözümler", full: "Teknik Çözümler" },
-        parts: [
-          { id: "villa-building-entry", short: "Giriş", full: "Villa ve Bina Giriş Seri" },
-          { id: "emergency-exit", short: "Acil", full: "Acil Çıkış Seri" },
-          { id: "shaft-cover", short: "Şaft", full: "Bina Şaft Kapakları Seri" }
-        ],
-        cardTitle: "Giriş & Teknik",
-        description: "giriş, acil çıkış ve şaft sistemleri"
+        shortName: "Özel Proje",
+        category: { short: "Sistemler", full: "Özel Proje Sistemleri" },
+        cardTitle: "Özel Proje Sistemleri",
+        description: "projeye özel mimari kapı çözümleri",
+        sources: {
+          "mimari-ozel": {
+            short: "Mimari Özel",
+            full: "Mimari Özel",
+            parts: [
+              { id: "project-custom", short: "Özel", full: "Projeye Özel" },
+              { id: "pivot", short: "Pivot", full: "Pivot" }
+            ]
+          }
+        }
       }
     },
     modal: {
@@ -154,7 +177,11 @@ const catalogCopies: Record<string, any> = {
   en: {
     title: "Collections",
     allShort: "All",
-    allFull: "View All Models",
+    allFull: "View All",
+    model: "models",
+    sourceSeries: "Source series",
+    subclasses: "Subclass",
+    allSources: "All",
     productImageAlt: "Door model",
     actions: {
       viewSeries: "Explore the Full Series",
@@ -167,83 +194,102 @@ const catalogCopies: Record<string, any> = {
     },
     blocks: {
       1: {
-        seriesLabel: "Series 01",
-        shortName: "Aluminium",
-        category: { short: "Exterior", full: "Exterior Climate Models" },
-        parts: [
-          { id: "frame", short: "Frame Series", full: "Aluminium Frame Series" },
-          { id: "leaf", short: "Leaf Series", full: "Aluminium Frame and Leaf Series" }
-        ],
-        cardTitle: "Aluminium Systems",
-        description: "door systems engineered for exterior climates"
+        shortName: "Steel Door",
+        category: { short: "Systems", full: "Steel Door Systems" },
+        cardTitle: "Steel Door Systems",
+        description: "steel door systems with glazed and clad surfaces",
+        sources: {
+          "camli-modeller": {
+            short: "Glazed",
+            full: "Glazed Models",
+            parts: [
+              { id: "mixed-glass", short: "Mixed", full: "Mixed Glass Series" },
+              { id: "tempered-glass", short: "Tempered", full: "Tempered Glass Series" }
+            ]
+          },
+          "pvc-laminoks": {
+            short: "PVC & Laminox",
+            full: "PVC & Laminox",
+            parts: [
+              { id: "lux-pvc", short: "PVC", full: "Luxury PVC Series" },
+              { id: "elit-laminox", short: "Elite", full: "Elite Laminox Series" },
+              { id: "rustic-laminox", short: "Rustic", full: "Rustic Laminox Series" }
+            ]
+          }
+        }
       },
       2: {
-        seriesLabel: "Series 02",
-        shortName: "Natural",
-        category: { short: "Exterior", full: "Exterior Climate Models" },
-        parts: [
-          { id: "wood", short: "Wood Series", full: "Thermo Wood Series" },
-          { id: "stone", short: "Stone Series", full: "Natural Stone Series" }
-        ],
-        cardTitle: "Natural Surfaces",
-        description: "wood and stone textured architectural door surfaces"
+        shortName: "Exterior Climate",
+        category: { short: "Systems", full: "Exterior Climate Door Systems" },
+        cardTitle: "Exterior Climate Door Systems",
+        description: "door systems engineered for exterior climates",
+        sources: {
+          "aluminyum-sistemler": {
+            short: "Aluminium",
+            full: "Aluminium Systems",
+            parts: [
+              { id: "frame", short: "Frame Series", full: "Aluminium Frame Series" },
+              { id: "leaf", short: "Leaf Series", full: "Aluminium Frame and Leaf Series" }
+            ]
+          },
+          "dogal-yuzeyler": {
+            short: "Natural Surface",
+            full: "Natural Surfaces",
+            parts: [
+              { id: "wood", short: "Wood Series", full: "Thermo Wood Series" },
+              { id: "stone", short: "Stone Series", full: "Natural Stone Series" }
+            ]
+          }
+        }
       },
       3: {
-        seriesLabel: "Series 03",
-        shortName: "Glass",
-        category: { short: "Exterior", full: "Exterior Climate Models" },
-        parts: [
-          { id: "mixed-glass", short: "Mixed", full: "Mixed Glass Series" },
-          { id: "tempered-glass", short: "Tempered", full: "Tempered Glass Series" }
-        ],
-        cardTitle: "Glazed Models",
-        description: "exterior door solutions refined with glass detailing"
+        shortName: "Economical",
+        category: { short: "Systems", full: "Economical Door Systems" },
+        cardTitle: "Economical Door Systems",
+        description: "durable metal and composite door solutions",
+        sources: {
+          "metal-kompozit": {
+            short: "Metal",
+            full: "Metal & Composite",
+            parts: [
+              { id: "composite", short: "Composite", full: "Composite Series" },
+              { id: "sheet-metal", short: "Sheet Metal", full: "Full Sheet Metal Series" }
+            ]
+          }
+        }
       },
       4: {
-        seriesLabel: "Series 04",
-        shortName: "Metal",
-        category: { short: "Exterior", full: "Exterior Climate Models" },
-        parts: [
-          { id: "composite", short: "Composite", full: "Composite Series" },
-          { id: "sheet-metal", short: "Sheet Metal", full: "Full Sheet Metal Series" }
-        ],
-        cardTitle: "Metal & Composite",
-        description: "resilient metal and composite entrance models"
+        shortName: "Building Entrance",
+        category: { short: "Systems", full: "Building Entrance Systems" },
+        cardTitle: "Building Entrance Systems",
+        description: "building entrance, emergency exit and shaft systems",
+        sources: {
+          "giris-teknik": {
+            short: "Entrance & Technical",
+            full: "Entrance & Technical",
+            parts: [
+              { id: "villa-building-entry", short: "Entrance", full: "Villa and Building Entrance Series" },
+              { id: "emergency-exit", short: "Exit", full: "Emergency Exit Series" },
+              { id: "shaft-cover", short: "Shaft", full: "Shaft Covers" }
+            ]
+          }
+        }
       },
       5: {
-        seriesLabel: "Series 05",
-        shortName: "Laminox",
-        category: { short: "Exclusive", full: "Exclusive Models" },
-        parts: [
-          { id: "lux-pvc", short: "PVC", full: "Luxury PVC Series" },
-          { id: "elit-laminox", short: "Elite", full: "Elite Laminox Series" },
-          { id: "rustic-laminox", short: "Rustic", full: "Rustic Laminox Series" }
-        ],
-        cardTitle: "PVC & Laminox",
-        description: "exclusive architectural cladding options"
-      },
-      6: {
-        seriesLabel: "Series 06",
-        shortName: "Architectural",
-        category: { short: "Exclusive", full: "Exclusive Models" },
-        parts: [
-          { id: "project-custom", short: "Bespoke", full: "Project-Specific Series" },
-          { id: "pivot", short: "Pivot", full: "Pivot Series" }
-        ],
-        cardTitle: "Architectural Bespoke",
-        description: "project-specific and pivot door solutions"
-      },
-      7: {
-        seriesLabel: "Series 07",
-        shortName: "Technical",
-        category: { short: "Solutions", full: "Technical Solutions" },
-        parts: [
-          { id: "villa-building-entry", short: "Entrance", full: "Villa and Building Entrance Series" },
-          { id: "emergency-exit", short: "Exit", full: "Emergency Exit Series" },
-          { id: "shaft-cover", short: "Shaft", full: "Building Shaft Cover Series" }
-        ],
-        cardTitle: "Entrance & Technical",
-        description: "entrance, emergency exit, and shaft systems"
+        shortName: "Special Project",
+        category: { short: "Systems", full: "Special Project Systems" },
+        cardTitle: "Special Project Systems",
+        description: "bespoke architectural door solutions",
+        sources: {
+          "mimari-ozel": {
+            short: "Architectural Special",
+            full: "Architectural Special",
+            parts: [
+              { id: "project-custom", short: "Bespoke", full: "Project-Specific" },
+              { id: "pivot", short: "Pivot", full: "Pivot" }
+            ]
+          }
+        }
       }
     },
     modal: {

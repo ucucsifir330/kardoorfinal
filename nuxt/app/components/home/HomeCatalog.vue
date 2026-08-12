@@ -20,7 +20,7 @@
  * göre hesaplasın.
  */
 import { computed, onBeforeUnmount, ref } from "vue";
-import { motion } from "motion-v";
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion-v";
 import { useHomeCatalog } from "~/composables/useHomeCatalog";
 import { useCatalogCopy } from "~/composables/useCatalogCopy";
 import { useLiquidMenu } from "~/composables/useLiquidMenu";
@@ -31,7 +31,8 @@ import { useMagneticHover } from "~/composables/useMagneticHover";
 const {
   products,
   catalogBlocks,
-  getCatalogPreviewProducts,
+  getCatalogProductCount,
+  getCatalogPreviewGroups,
   activeProduct,
   activeProductIndex,
   openProductModal,
@@ -41,6 +42,7 @@ const {
   resetCatalogModalState
 } = useHomeCatalog();
 const { catalogCopy } = useCatalogCopy();
+const shouldReduceMotion = useReducedMotion();
 
 // Yapı çizgisi: bölümün ve satırların geometrisini okur, scroll ile çizilir.
 const sectionRef = ref<HTMLElement | null>(null);
@@ -74,19 +76,72 @@ const {
 } = useLiquidMenu();
 
 const localizedBlocks = computed(() =>
-  catalogBlocks.map((block: any) => ({
-    ...block,
-    ...(catalogCopy.value.blocks[block.index] ?? {})
-  }))
+  catalogBlocks.map((block) => {
+    const localizedBlock = catalogCopy.value.blocks[block.index] ?? {};
+    return {
+      ...block,
+      ...localizedBlock,
+      sources: block.sources.map((source) => ({
+        ...source,
+        ...(localizedBlock.sources?.[source.seriesSlug] ?? {})
+      }))
+    };
+  })
 );
 
-// Modal, ürünün serisini/koleksiyonunu SEÇİLİ DİLDE göstermeli. Ürün
-// verisi dilden bağımsız; eşleme kod önekiyle yapılır (AL-001 → Alüminyum).
+const selectedSourceByBlock = ref<Record<number, string>>({});
+const selectedSubclassByBlock = ref<Record<number, string>>({});
+
+const selectedSourceSlug = (block: any) => {
+  if (block.sources.length === 1) return block.sources[0].seriesSlug;
+  return selectedSourceByBlock.value[block.index] ?? "all";
+};
+
+const selectSource = (blockIndex: number, sourceSlug: string) => {
+  if ((selectedSourceByBlock.value[blockIndex] ?? "all") === sourceSlug) return;
+
+  selectedSourceByBlock.value = {
+    ...selectedSourceByBlock.value,
+    [blockIndex]: sourceSlug
+  };
+};
+
+const sidebarSubclasses = (block: any) =>
+  block.index === 3 || block.index === 4 || block.index === 5
+    ? block.sources[0]?.parts ?? []
+    : [];
+
+const selectedSubclass = (blockIndex: number) =>
+  selectedSubclassByBlock.value[blockIndex] ?? "all";
+
+const selectSubclass = (blockIndex: number, subclassId: string) => {
+  if ((selectedSubclassByBlock.value[blockIndex] ?? "all") === subclassId) return;
+
+  selectedSubclassByBlock.value = {
+    ...selectedSubclassByBlock.value,
+    [blockIndex]: subclassId
+  };
+};
+
+const activeTechnicalParts = (block: any) => {
+  const sourceSlug = selectedSourceSlug(block);
+  if (sourceSlug === "all") return [];
+  return block.sources.find((source: any) => source.seriesSlug === sourceSlug)?.parts ?? [];
+};
+
+const isEmphasizedFacet = (block: any, facetId: string) => {
+  const sourceSlug = selectedSourceSlug(block);
+  const source = block.sources.find((item: any) => item.seriesSlug === sourceSlug);
+  return source?.emphasizedFacetIds?.includes(facetId) ?? false;
+};
+
+// Modal, ürünün müşteri yüzündeki beşli grubunu SEÇİLİ DİLDE göstermeli.
+// Kanonik ürün verisi değişmez; eşleme mevcut `seriesSlug` üzerinden yapılır.
 const activeBlock = computed(() => {
   const product = activeProduct.value;
   if (!product?.code) return null;
-  return localizedBlocks.value.find((b: any) =>
-    product.code.startsWith(`${b.productPrefix}-`)
+  return localizedBlocks.value.find((block: any) =>
+    block.sources.some((source: any) => source.seriesSlug === product.seriesSlug)
   ) ?? null;
 });
 
@@ -94,7 +149,9 @@ const activeSeries = computed(
   () => activeBlock.value?.cardTitle ?? activeProduct.value?.series ?? ""
 );
 const activeCollection = computed(
-  () => activeBlock.value?.seriesLabel ?? activeProduct.value?.collection ?? ""
+  () => activeBlock.value
+    ? `${getCatalogProductCount(activeBlock.value)} ${catalogCopy.value.model}`
+    : activeProduct.value?.collection ?? ""
 );
 /**
  * Sistem adı. Blok başlığını BAŞA EKLEMİYORUZ: o zaten seri adı ve modalın
@@ -154,12 +211,72 @@ const thumbSrcset = (url?: string) => {
 // ── GİRİŞ ANİMASYONU ───────────────────────────────────────────────────
 // Bulanıklıktan netleşerek, hafif büyüyerek. Hero/navbar ile aynı dil;
 // kartlar küçük olduğu için blur 20px değil 12px.
-const enterFrom = { opacity: 0, filter: "blur(12px)", scale: 0.96 };
-const enterTo = { opacity: 1, filter: "blur(0px)", scale: 1 };
+const enterFrom = computed(() =>
+  shouldReduceMotion.value
+    ? { opacity: 0 }
+    : { opacity: 0, filter: "blur(12px)", scale: 0.96 }
+);
+const enterTo = computed(() =>
+  shouldReduceMotion.value
+    ? { opacity: 1 }
+    : { opacity: 1, filter: "blur(0px)", scale: 1 }
+);
 const enterTransition = { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const };
 
 /** Kart başına gecikme — satır içinde sıralı giriş. */
 const CARD_STAGGER = 0.08;
+
+/**
+ * Filtre geri bildirimi modalın ağır ama kontrollü hareket dilini taşır.
+ * Aktif yüzey düşük bounce'lu spring ile seçenekler arasında süzülür;
+ * kartlar çıkarken kısa, girerken daha uzun davranır.
+ */
+const filterIndicatorTransition = computed(() =>
+  shouldReduceMotion.value
+    ? { duration: 0 }
+    : { type: "spring" as const, visualDuration: 0.58, bounce: 0.06 }
+);
+const filterPressTransition = {
+  type: "spring" as const,
+  visualDuration: 0.2,
+  bounce: 0.08
+};
+const filterLayoutTransition = computed(() =>
+  shouldReduceMotion.value
+    ? { duration: 0 }
+    : { type: "spring" as const, visualDuration: 0.62, bounce: 0.06 }
+);
+const filterExit = computed(() =>
+  shouldReduceMotion.value
+    ? { opacity: 0, transition: { duration: 0.12 } }
+    : {
+        opacity: 0,
+        filter: "blur(5px)",
+        scale: 0.985,
+        y: 8,
+        transition: { duration: 0.24, ease: [0.4, 0, 1, 1] as const }
+      }
+);
+const filterDividerEnter = computed(() =>
+  shouldReduceMotion.value
+    ? { opacity: 1 }
+    : { opacity: 1, filter: "blur(0px)", y: 0 }
+);
+const filterDividerInitial = computed(() =>
+  shouldReduceMotion.value
+    ? { opacity: 0 }
+    : { opacity: 0, filter: "blur(4px)", y: 6 }
+);
+const filterDividerExit = computed(() =>
+  shouldReduceMotion.value
+    ? { opacity: 0, transition: { duration: 0.12 } }
+    : {
+        opacity: 0,
+        filter: "blur(4px)",
+        y: 6,
+        transition: { duration: 0.2, ease: [0.4, 0, 1, 1] as const }
+      }
+);
 
 /**
  * Kart hover'ı SPRING ile: CSS geçişi imleç hızla girip çıkınca baştan
@@ -287,6 +404,7 @@ const inViewOptions = {
           :key="block.index"
           :ref="setRowRef"
           :data-row-index="block.index"
+          :data-hero-group="block.heroGroup"
           class="catalog-row"
           :class="{
             'is-liquid-expanded': liquidExpanded[`block-${block.index}`],
@@ -300,29 +418,111 @@ const inViewOptions = {
               :in-view-options="inViewOptions"
               :transition="enterTransition"
             >
-              <h2 class="catalog-product-family">{{ block.number }}</h2>
-              <p class="catalog-designer">{{ block.shortName }}</p>
+              <div class="catalog-sidebar-heading">
+                <h2 class="catalog-product-family">{{ block.number }}</h2>
+                <p class="catalog-designer">{{ block.shortName }}</p>
+              </div>
 
-              <div class="catalog-tags">
-                <div class="catalog-tag">
-                  <span class="catalog-tag-part">
-                    <span class="catalog-tag-label catalog-tag-label--short">{{ block.category.short }}</span>
-                    <span class="catalog-tag-label catalog-tag-label--full">{{ block.category.full }}</span>
-                    <span class="catalog-tag-line"></span>
-                  </span>
-                </div>
+              <div v-if="block.sources.length > 1" class="catalog-source-filter">
+                <LayoutGroup :id="`catalog-filter-${block.index}`">
+                  <div class="catalog-source-filter__options" role="group" :aria-label="catalogCopy.sourceSeries">
+                  <motion.button
+                    class="catalog-source-filter__option"
+                    :class="{ 'is-active': selectedSourceSlug(block) === 'all' }"
+                    type="button"
+                    :aria-pressed="selectedSourceSlug(block) === 'all'"
+                    :while-press="{ scale: 0.97 }"
+                    :transition="filterPressTransition"
+                    @click="selectSource(block.index, 'all')"
+                  >
+                    <motion.span
+                      v-if="selectedSourceSlug(block) === 'all'"
+                      class="catalog-source-filter__active-bg"
+                      :layout-id="`catalog-filter-active-${block.index}`"
+                      :transition="filterIndicatorTransition"
+                      aria-hidden="true"
+                    >
+                      <span class="catalog-source-filter__active-dot"></span>
+                    </motion.span>
+                    <span class="catalog-source-filter__label">{{ catalogCopy.allSources }}</span>
+                  </motion.button>
+                  <motion.button
+                    v-for="source in block.sources"
+                    :key="source.seriesSlug"
+                    class="catalog-source-filter__option"
+                    :class="{ 'is-active': selectedSourceSlug(block) === source.seriesSlug }"
+                    type="button"
+                    :aria-pressed="selectedSourceSlug(block) === source.seriesSlug"
+                    :while-press="{ scale: 0.97 }"
+                    :transition="filterPressTransition"
+                    @click="selectSource(block.index, source.seriesSlug)"
+                  >
+                    <motion.span
+                      v-if="selectedSourceSlug(block) === source.seriesSlug"
+                      class="catalog-source-filter__active-bg"
+                      :layout-id="`catalog-filter-active-${block.index}`"
+                      :transition="filterIndicatorTransition"
+                      aria-hidden="true"
+                    >
+                      <span class="catalog-source-filter__active-dot"></span>
+                    </motion.span>
+                    <span class="catalog-source-filter__label">{{ source.short }}</span>
+                  </motion.button>
+                  </div>
+                </LayoutGroup>
+              </div>
 
-                <div class="catalog-tag catalog-tag--summary">
-                  <template v-for="(part, partIndex) in block.parts" :key="part.id">
-                    <span v-if="partIndex" class="catalog-tag-separator" aria-hidden="true"> / </span>
-                    <span class="catalog-tag-part">
-                      <span class="catalog-tag-label catalog-tag-label--short">{{ part.short }}</span>
-                      <span class="catalog-tag-label catalog-tag-label--full">{{ part.full }}</span>
-                      <span class="catalog-tag-line"></span>
-                    </span>
-                  </template>
-
-                </div>
+              <div v-if="sidebarSubclasses(block).length" class="catalog-source-filter">
+                <LayoutGroup :id="`catalog-filter-${block.index}`">
+                  <div
+                    class="catalog-source-filter__options"
+                    role="group"
+                    :aria-label="catalogCopy.subclasses"
+                  >
+                  <motion.button
+                    class="catalog-source-filter__option"
+                    :class="{ 'is-active': selectedSubclass(block.index) === 'all' }"
+                    type="button"
+                    :aria-pressed="selectedSubclass(block.index) === 'all'"
+                    :while-press="{ scale: 0.97 }"
+                    :transition="filterPressTransition"
+                    @click="selectSubclass(block.index, 'all')"
+                  >
+                    <motion.span
+                      v-if="selectedSubclass(block.index) === 'all'"
+                      class="catalog-source-filter__active-bg"
+                      :layout-id="`catalog-filter-active-${block.index}`"
+                      :transition="filterIndicatorTransition"
+                      aria-hidden="true"
+                    >
+                      <span class="catalog-source-filter__active-dot"></span>
+                    </motion.span>
+                    <span class="catalog-source-filter__label">{{ catalogCopy.allSources }}</span>
+                  </motion.button>
+                  <motion.button
+                    v-for="subclass in sidebarSubclasses(block)"
+                    :key="subclass.id"
+                    class="catalog-source-filter__option"
+                    :class="{ 'is-active': selectedSubclass(block.index) === subclass.id }"
+                    type="button"
+                    :aria-pressed="selectedSubclass(block.index) === subclass.id"
+                    :while-press="{ scale: 0.97 }"
+                    :transition="filterPressTransition"
+                    @click="selectSubclass(block.index, subclass.id)"
+                  >
+                    <motion.span
+                      v-if="selectedSubclass(block.index) === subclass.id"
+                      class="catalog-source-filter__active-bg"
+                      :layout-id="`catalog-filter-active-${block.index}`"
+                      :transition="filterIndicatorTransition"
+                      aria-hidden="true"
+                    >
+                      <span class="catalog-source-filter__active-dot"></span>
+                    </motion.span>
+                    <span class="catalog-source-filter__label">{{ subclass.short }}</span>
+                  </motion.button>
+                  </div>
+                </LayoutGroup>
               </div>
 
               <a
@@ -331,6 +531,15 @@ const inViewOptions = {
                 @mousemove="magnet.onMove"
                 @mouseleave="magnet.onLeave"
               >
+                <svg
+                  class="catalog-all-models__icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M2.75 12s3.25-5.25 9.25-5.25S21.25 12 21.25 12 18 17.25 12 17.25 2.75 12 2.75 12Z" />
+                  <circle cx="12" cy="12" r="2.25" />
+                </svg>
                 <span class="catalog-tag-part">
                   <span class="catalog-tag-label catalog-tag-label--short">{{ catalogCopy.allShort }}</span>
                   <span class="catalog-tag-label catalog-tag-label--full">{{ catalogCopy.allFull }}</span>
@@ -346,7 +555,7 @@ const inViewOptions = {
           >
             <div class="catalog-card-header">
               <h3 class="catalog-card-title">
-                {{ block.cardTitle }} <span>{{ block.seriesLabel }}</span>
+                {{ block.cardTitle }}
               </h3>
 
               <div class="catalog-card-actions">
@@ -355,22 +564,47 @@ const inViewOptions = {
             </div>
 
             <div class="catalog-product-grid">
-              <motion.article
-                v-for="(item, index) in getCatalogPreviewProducts(block)"
-                :key="'row-' + block.index + '-item-' + item.id"
-                class="catalog-product"
-                :initial="enterFrom"
-                :while-in-view="enterTo"
-                :in-view-options="inViewOptions"
-                :transition="{ ...enterTransition, delay: index * CARD_STAGGER }"
-                :variants="{ hover: cardHover }"
-                while-hover="hover"
-                :while-press="{ scale: 0.985 }"
-                role="button"
-                :aria-label="`${item.finish} ${block.cardTitle} ${item.code}`"
-                @click="openProductModal(item.productIndex)"
-                @keydown="onCardKeydown($event, item.productIndex)"
+              <AnimatePresence mode="popLayout">
+              <template
+                v-for="(previewGroup, groupIndex) in getCatalogPreviewGroups(block, selectedSourceSlug(block))"
+                :key="`${block.heroGroup}-${previewGroup.source.seriesSlug}`"
               >
+                <motion.div
+                  v-if="block.sources.length > 1"
+                  :key="`${block.heroGroup}-${previewGroup.source.seriesSlug}-divider`"
+                  class="catalog-source-divider"
+                  layout="position"
+                  :initial="filterDividerInitial"
+                  :animate="filterDividerEnter"
+                  :exit="filterDividerExit"
+                  :transition="{ ...enterTransition, layout: filterLayoutTransition }"
+                >
+                  <span>{{ previewGroup.source.full }}</span>
+                  <small>{{ previewGroup.totalCount }} {{ catalogCopy.model }}</small>
+                </motion.div>
+
+                <motion.article
+                  v-for="(item, index) in previewGroup.products"
+                  :key="'row-' + block.index + '-item-' + item.id"
+                  class="catalog-product"
+                  layout="position"
+                  :initial="enterFrom"
+                  :while-in-view="enterTo"
+                  :exit="filterExit"
+                  :in-view-options="inViewOptions"
+                  :transition="{
+                    ...enterTransition,
+                    layout: filterLayoutTransition,
+                    delay: (groupIndex * previewGroup.products.length + index) * CARD_STAGGER
+                  }"
+                  :variants="{ hover: cardHover }"
+                  while-hover="hover"
+                  :while-press="{ scale: 0.985 }"
+                  role="button"
+                  :aria-label="`${item.finish} ${block.cardTitle} ${item.code}`"
+                  @click="openProductModal(item.productIndex)"
+                  @keydown="onCardKeydown($event, item.productIndex)"
+                >
                 <div class="catalog-product-image-wrap">
                   <!-- `layout-id` YOK: eşi olacak modal görseli `<Teleport>`
                        ile gövdeye taşınıyor, düzen ağacı koptuğu için Motion
@@ -395,7 +629,7 @@ const inViewOptions = {
                     <p class="catalog-finish">{{ item.finish }}</p>
 
                     <div class="catalog-code-wrap">
-                      <p class="catalog-code">{{ block.cardTitle }} / {{ item.code }}</p>
+                      <p class="catalog-code">{{ item.code }}</p>
                       <div class="catalog-code-line"></div>
                     </div>
                   </div>
@@ -407,7 +641,9 @@ const inViewOptions = {
                     </svg>
                   </div>
                 </div>
-              </motion.article>
+                </motion.article>
+              </template>
+              </AnimatePresence>
             </div>
 
             <div
@@ -491,9 +727,9 @@ const inViewOptions = {
   Mobil kurallar burada, bileşenin yanında duruyor.
 
   Karar (2026-08-05): masaüstündeki 2 sütunlu grid mobile TAŞINMIYOR.
-  Her seri bir ŞERİT — kapılar yatay kayıyor, dikeyde 7 seri sıralanıyor.
+     Her grup bir ŞERİT — kapılar yatay kayıyor, dikeyde 5 grup sıralanıyor.
   Parmağın doğal hareketi; her seri kendi kimliğini koruyor; dikey scroll
-  68 karttan 7 şeride iniyor.
+     Kartlar 5 kontrollü şeritte kalıyor.
 
   `:deep()` şart: bu sınıfların çoğu `v-for` içindeki alt öğelerde ve
   global CSS'ten geliyor, scoped seçici tek başına ulaşamıyor.
@@ -503,6 +739,276 @@ const inViewOptions = {
   `!important`'lar da düşecek.
 -->
 <style scoped>
+.catalog-section :deep(.catalog-row-info) {
+  padding:
+    calc(var(--spacing) * 8)
+    calc(var(--spacing) * 4)
+    calc(var(--spacing) * 5);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.catalog-section :deep(.catalog-row-info > div) {
+  min-height: 100%;
+}
+
+.catalog-sidebar-heading {
+  position: relative;
+  width: 100%;
+  height: calc(var(--spacing) * 15);
+  transform: translateY(calc(var(--spacing) * -2));
+}
+
+.catalog-section :deep(.catalog-sidebar-heading .catalog-product-family) {
+  position: absolute;
+  top: calc(var(--spacing) * -3.5);
+  left: calc(var(--spacing) * -0.5);
+  margin: 0 !important;
+  color: var(--brand-500);
+  font-size: clamp(56px, 4.2vw, 58px) !important;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  opacity: 0.16;
+}
+
+.catalog-section :deep(.catalog-sidebar-heading .catalog-designer) {
+  position: absolute;
+  top: calc(var(--spacing) * 5);
+  right: auto;
+  bottom: auto;
+  left: calc(var(--spacing) * 10);
+  margin: 0 !important;
+  color: var(--ink);
+  font-size: 15px !important;
+  font-weight: 600;
+  line-height: 1.2 !important;
+  opacity: 1;
+}
+
+.catalog-source-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 10px;
+  margin-top: auto;
+  margin-bottom: auto;
+  transform: translateY(calc(var(--spacing) * -1));
+}
+
+.catalog-source-filter__label {
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalog-source-filter__options {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.catalog-source-filter__option {
+  position: relative;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ink-body);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: left;
+  white-space: nowrap;
+  transform: translateX(0);
+  isolation: isolate;
+  transition:
+    color 420ms var(--ease-soft),
+    opacity 360ms var(--ease-soft),
+    transform 360ms var(--ease-soft);
+}
+
+.catalog-source-filter__option.is-active {
+  color: var(--surface);
+  font-weight: 600;
+}
+
+.catalog-source-filter__active-bg {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  border-radius: inherit;
+  background: var(--ink);
+  pointer-events: none;
+}
+
+.catalog-source-filter__active-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: var(--radius-full);
+  background: var(--brand-500);
+}
+
+.catalog-source-filter__label {
+  position: relative;
+  z-index: 1;
+}
+
+.catalog-source-filter__option.is-active .catalog-source-filter__label {
+  padding-left: 13px;
+}
+
+.catalog-source-filter__option:not(.is-active):hover {
+  color: var(--ink);
+  opacity: 0.78;
+  transform: translateX(3px);
+}
+
+.catalog-source-filter__option:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.catalog-all-models :deep(.catalog-tag-label--short) {
+  display: none;
+}
+
+.catalog-all-models :deep(.catalog-tag-label--full) {
+  display: inline;
+}
+
+.catalog-all-models__icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.catalog-section :deep(.catalog-all-models) {
+  gap: 7px;
+  margin-top: 0;
+  margin-left: -12px;
+  padding: 12px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  transition:
+    color 280ms var(--ease-soft),
+    opacity 280ms var(--ease-soft),
+    transform 280ms var(--ease-soft);
+}
+
+.catalog-section :deep(.catalog-all-models .catalog-tag-line) {
+  display: none;
+}
+
+.catalog-section :deep(.catalog-all-models:hover) {
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-source-filter__option,
+  .catalog-section :deep(.catalog-all-models) {
+    transition: none;
+  }
+
+  .catalog-source-filter__option:not(.is-active):hover {
+    transform: none;
+  }
+}
+
+.catalog-tag-part.is-emphasized {
+  font-weight: 600;
+}
+
+.catalog-tag-part.is-emphasized :deep(.catalog-tag-line) {
+  width: 100%;
+  transform: scaleX(1);
+}
+
+.catalog-source-divider {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 15px 6px;
+  border-bottom: 1px solid var(--hairline);
+  color: var(--ink-body);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.catalog-source-divider small {
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+@media (max-width: 1180px) {
+  .catalog-section :deep(.catalog-product-grid > .catalog-product) {
+    display: flex !important;
+  }
+
+  .catalog-section :deep(.catalog-product-grid > .catalog-product:nth-of-type(n + 9)) {
+    display: none !important;
+  }
+}
+
+@media (max-width: 920px) {
+  .catalog-section :deep(.catalog-row-info) {
+    padding: 0 0 8px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .catalog-sidebar-heading {
+    height: calc(var(--spacing) * 15);
+    margin-top: calc(var(--spacing) * 4);
+    margin-bottom: calc(var(--spacing) * 5);
+    transform: none;
+  }
+
+  .catalog-source-filter {
+    margin-top: 0;
+    margin-bottom: 0;
+    transform: none;
+  }
+
+  .catalog-source-filter__options {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .catalog-section :deep(.catalog-all-models) {
+    margin-top: calc(var(--spacing) * 5);
+    margin-left: 0;
+    padding: 10px 0;
+  }
+}
+
 @media (max-width: 860px) {
   /* ── ÜSTTEKİ ÖLÜ ALAN ────────────────────────────────────────────────
      Ölçüldü (390x844): başlık 271px'de, ilk kapı 538px'de — ekranın %64'ü
@@ -533,25 +1039,71 @@ const inViewOptions = {
   /* Sol rail mobilde başlık yığınına dönüşüyordu — seri numarası ve adı
      yeterli, etiket listesi (Dış İklim / Kasa Seri / Kanat Seri) kapıdan
      yer çalıyor. Filtre kararı: YOK, seriler zaten ayrı bölümler. */
-  .catalog-section :deep(.catalog-row-info .catalog-tags),
-  .catalog-section :deep(.catalog-row-info .catalog-all-models) {
+  .catalog-section :deep(.catalog-row-info .catalog-tags) {
     display: none !important;
+  }
+
+  .catalog-all-models :deep(.catalog-tag-label--short) {
+    display: none;
+  }
+
+  .catalog-all-models :deep(.catalog-tag-label--full) {
+    display: inline;
   }
 
   .catalog-section :deep(.catalog-row-info) {
     margin-bottom: 14px !important;
+    padding: 0 0 4px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   .catalog-section :deep(.catalog-product-family) {
-    margin: 0 !important;
-    font-size: 12px !important;
-    letter-spacing: 0.18em !important;
+    font-size: 56px !important;
+    letter-spacing: -0.035em !important;
   }
 
   .catalog-section :deep(.catalog-designer) {
-    margin: 2px 0 0 !important;
-    font-size: 21px !important;
-    line-height: 1.15 !important;
+    margin: 0 !important;
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+  }
+
+  .catalog-source-filter {
+    gap: 6px;
+    margin: 0;
+  }
+
+  .catalog-source-filter__options {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .catalog-source-filter__option {
+    min-height: 32px;
+    padding: 7px 11px;
+    font-size: 13px;
+  }
+
+  .catalog-section :deep(.catalog-all-models) {
+    margin-top: calc(var(--spacing) * 5);
+    margin-left: 0;
+    padding: 10px 0;
+  }
+
+  .catalog-source-divider {
+    flex: 0 0 88px !important;
+    width: 88px;
+    min-width: 88px;
+    align-self: stretch;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    border-right: 1px solid var(--hairline);
+    border-bottom: 0;
+    padding: 8px 10px;
   }
 
   /* Kart kabuğu şeridi kısıtlamasın: yatay kaydırma kenardan kenara. */

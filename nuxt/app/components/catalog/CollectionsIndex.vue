@@ -1311,10 +1311,7 @@ onBeforeUnmount(() => {
     :data-desktop-message="copy.desktopOnly"
   >
     <header class="collections-hero">
-      <div class="collections-hero__eyebrow">
-        <span>{{ copy.catalog }}</span>
-        <span>{{ products.length }} {{ copy.model }} · {{ copy.seriesCount }}</span>
-      </div>
+      <div class="collections-hero__eyebrow" aria-hidden="true"></div>
 
       <h1 class="collections-hero__title">
         <span>{{ copy.titleTop }}</span>

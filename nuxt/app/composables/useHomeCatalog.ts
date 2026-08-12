@@ -10,28 +10,36 @@ export interface ProductVariant {
   collection?: string;
   category?: string;
   system?: string;
+  seriesSlug: string;
   image: string;
   localImage: string;
   liked: boolean;
 }
 
-export interface CatalogBlock {
-  index: number;
+export interface CatalogSourceSeries {
+  seriesSlug: string;
   productPrefix: string;
-  number: string;
-  seriesLabel: string;
-  shortName: string;
-  category: {
-    short: string;
-    full: string;
-  };
-  parts: {
+  emphasizedFacetIds?: string[];
+  short?: string;
+  full?: string;
+  parts?: Array<{
     id: string;
     short: string;
     full: string;
-  }[];
-  cardTitle: string;
-  description: string;
+  }>;
+}
+
+export interface CatalogBlock {
+  index: number;
+  heroGroup: string;
+  number: string;
+  sources: CatalogSourceSeries[];
+}
+
+export interface CatalogPreviewGroup {
+  source: CatalogSourceSeries;
+  totalCount: number;
+  products: Array<ProductVariant & { productIndex: number }>;
 }
 
 const catalogPreviewLimit = 10;
@@ -39,124 +47,45 @@ const catalogPreviewLimit = 10;
 const catalogBlocks: CatalogBlock[] = [
   {
     index: 1,
-    productPrefix: "AL",
+    heroGroup: "steel-door-systems",
     number: "01",
-    seriesLabel: "Seri 01",
-    shortName: "Alüminyum",
-    category: {
-      short: "Dış İklim",
-      full: "Dış İklim Modelleri"
-    },
-    parts: [
-      { id: "aluminium-frame", short: "Kasa", full: "Alüminyum Kasa Seri" },
-      { id: "aluminium-frame-wing", short: "Kanat", full: "Alüminyum Kasa ve Kanat Seri" }
-    ],
-    cardTitle: "Alüminyum Sistemler",
-    description: "dış iklim uyumlu kapı sistemleri"
+    sources: [
+      { seriesSlug: "camli-modeller", productPrefix: "CM" },
+      { seriesSlug: "pvc-laminoks", productPrefix: "PL" }
+    ]
   },
   {
     index: 2,
-    productPrefix: "DY",
+    heroGroup: "exterior-climate-door-systems",
     number: "02",
-    seriesLabel: "Seri 02",
-    shortName: "Doğal",
-    category: {
-      short: "Dış İklim",
-      full: "Dış İklim Modelleri"
-    },
-    parts: [
-      { id: "termo-wood", short: "Wood", full: "Termo Wood Seri" },
-      { id: "natural-stone", short: "Taş", full: "Doğal Taş Seri" }
-    ],
-    cardTitle: "Doğal Yüzeyler",
-    description: "wood ve taş dokulu kapı yüzeyleri"
+    sources: [
+      { seriesSlug: "aluminyum-sistemler", productPrefix: "AL" },
+      { seriesSlug: "dogal-yuzeyler", productPrefix: "DY" }
+    ]
   },
   {
     index: 3,
-    productPrefix: "CM",
+    heroGroup: "economical-door-systems",
     number: "03",
-    seriesLabel: "Seri 03",
-    shortName: "Cam",
-    category: {
-      short: "Dış İklim",
-      full: "Dış İklim Modelleri"
-    },
-    parts: [
-      { id: "mixed-glass", short: "Karma", full: "Karma Cam Seri" },
-      { id: "tempered-glass", short: "Temperli", full: "Temperli Cam Seri" }
-    ],
-    cardTitle: "Camlı Modeller",
-    description: "cam detaylı dış kapı çözümleri"
+    sources: [{ seriesSlug: "metal-kompozit", productPrefix: "MK" }]
   },
   {
     index: 4,
-    productPrefix: "MK",
+    heroGroup: "building-entrance-systems",
     number: "04",
-    seriesLabel: "Seri 04",
-    shortName: "Metal",
-    category: {
-      short: "Dış İklim",
-      full: "Dış İklim Modelleri"
-    },
-    parts: [
-      { id: "composite", short: "Kompozit", full: "Kompozit Seri" },
-      { id: "sheet-metal", short: "Sac", full: "Komple Sac Metal Seri" }
-    ],
-    cardTitle: "Metal & Kompozit",
-    description: "dayanıklı metal ve kompozit modeller"
+    sources: [
+      {
+        seriesSlug: "giris-teknik",
+        productPrefix: "GT",
+        emphasizedFacetIds: ["shaft-cover"]
+      }
+    ]
   },
   {
     index: 5,
-    productPrefix: "PL",
+    heroGroup: "special-project-systems",
     number: "05",
-    seriesLabel: "Seri 05",
-    shortName: "Laminoks",
-    category: {
-      short: "Exclusive",
-      full: "Exclusive Modeller"
-    },
-    parts: [
-      { id: "lux-pvc", short: "PVC", full: "Lüks PVC Seri" },
-      { id: "elit-laminox", short: "Elit", full: "Elit Laminoks Seri" },
-      { id: "rustic-laminox", short: "Rustik", full: "Rustik Laminoks Seri" }
-    ],
-    cardTitle: "PVC & Laminoks",
-    description: "exclusive kaplama seçenekleri"
-  },
-  {
-    index: 6,
-    productPrefix: "MO",
-    number: "06",
-    seriesLabel: "Seri 06",
-    shortName: "Mimari",
-    category: {
-      short: "Exclusive",
-      full: "Exclusive Modeller"
-    },
-    parts: [
-      { id: "project-custom", short: "Özel", full: "Projeye Özel Seri" },
-      { id: "pivot", short: "Pivot", full: "Pivot Seri" }
-    ],
-    cardTitle: "Mimari Özel",
-    description: "projeye özel ve pivot çözümler"
-  },
-  {
-    index: 7,
-    productPrefix: "GT",
-    number: "07",
-    seriesLabel: "Seri 07",
-    shortName: "Teknik",
-    category: {
-      short: "Çözümler",
-      full: "Teknik Çözümler"
-    },
-    parts: [
-      { id: "villa-building-entry", short: "Giriş", full: "Villa ve Bina Giriş Seri" },
-      { id: "emergency-exit", short: "Acil", full: "Acil Çıkış Seri" },
-      { id: "shaft-cover", short: "Şaft", full: "Bina Şaft Kapakları Seri" }
-    ],
-    cardTitle: "Giriş & Teknik",
-    description: "giriş, acil çıkış ve şaft sistemleri"
+    sources: [{ seriesSlug: "mimari-ozel", productPrefix: "MO" }]
   }
 ];
 
@@ -170,6 +99,7 @@ const catalogProducts: ProductVariant[] = doorProducts.map((product) => ({
   collection: product.category,
   category: product.subClass,
   system: product.materials.join(" / "),
+  seriesSlug: product.seriesSlug,
   image: product.image,
   liked: false
 }));
@@ -179,11 +109,33 @@ export const useHomeCatalog = () => {
   const visibleRows = ref<number[]>([1]);
   const activeProductIndex = ref<number | null>(null);
 
-  const getCatalogPreviewProducts = (block: CatalogBlock) =>
+  const sourceProducts = (source: CatalogSourceSeries) =>
     products.value
       .map((product, productIndex) => ({ ...product, productIndex }))
-      .filter((product) => product.code.startsWith(`${block.productPrefix}-`))
-      .slice(0, catalogPreviewLimit);
+      .filter((product) => product.seriesSlug === source.seriesSlug);
+
+  const getCatalogProductCount = (block: CatalogBlock) =>
+    block.sources.reduce((count, source) => count + sourceProducts(source).length, 0);
+
+  const getCatalogPreviewGroups = (
+    block: CatalogBlock,
+    selectedSourceSlug = "all"
+  ): CatalogPreviewGroup[] => {
+    const visibleSources = selectedSourceSlug === "all"
+      ? block.sources
+      : block.sources.filter((source) => source.seriesSlug === selectedSourceSlug);
+    const combinedPreviewLimit = visibleSources.length > 1 ? 8 : catalogPreviewLimit;
+    const previewLimit = Math.max(1, Math.floor(combinedPreviewLimit / visibleSources.length));
+
+    return visibleSources.map((source) => {
+      const matchingProducts = sourceProducts(source);
+      return {
+        source,
+        totalCount: matchingProducts.length,
+        products: matchingProducts.slice(0, previewLimit)
+      };
+    });
+  };
 
   const toggleLike = (index: number | null) => {
     if (index === null || !products.value[index]) return;
@@ -243,7 +195,8 @@ export const useHomeCatalog = () => {
     visibleRows,
     activeProduct,
     activeProductIndex,
-    getCatalogPreviewProducts,
+    getCatalogProductCount,
+    getCatalogPreviewGroups,
     toggleLike,
     openProductModal,
     closeProductModal,

@@ -95,8 +95,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Page transitions (out-in): jump to top and recalc after the new page settles.
   //
-  // Ana sayfanın hero'su (EntranceDoorLab) `<ClientOnly>` içinde mount edilir →
-  // bu hook çalıştığında pin trigger HENÜZ kurulmamış olabilir. Tek bir
+  // Ana sayfanın hero'su (EntranceDoorLab) HomeContentLoader üzerinden LAZY mount
+  // edilir → bu hook çalıştığında pin trigger HENÜZ kurulmamış olabilir. Tek bir
   // rAF-refresh, pin var olmadan çalışıp boşa gidiyor; pin sonradan ScrollSmoother'ın
   // güncel transform state'ine göre kuruluyor ve section ~60px kayıp altta/üstte
   // zemin şeridi bırakıyordu. Çözüm: birkaç frame boyunca refresh'i tekrarla — geç

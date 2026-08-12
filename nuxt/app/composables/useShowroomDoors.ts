@@ -36,69 +36,69 @@ const showroomCopies: Record<string, {
   "aluminyum-sistemler": {
     tr: {
       title: "Çelik Kapı Sistemleri",
-      series: "Dış İklim Koleksiyonu",
-      spec: "Dış iklim dayanımı · Alüminyum kasa ve kanat · Projeye özel ölçü",
-      meta: "Alüminyum sistem · Isı yalıtımı · Çelik gövde"
+      series: "Camlı & Laminasyon",
+      spec: "Cam detaylı yüzeyler ve laminasyon kaplama seçenekleriyle şehir tipi girişler",
+      meta: "Temperli cam · Laminoks panel · Çelik gövde"
     },
     en: {
-      title: "Aluminium Systems",
-      series: "Exterior Climate Collection",
-      spec: "Exterior-grade performance · Aluminium frame and leaf · Project-specific sizing",
-      meta: "Aluminium system · Thermal insulation · Steel body"
+      title: "Steel Door Systems",
+      series: "Glazed & Lamination",
+      spec: "Urban entrances with glazed surfaces and lamination finish options",
+      meta: "Tempered glass · Laminox panel · Steel body"
     }
   },
   "dogal-yuzeyler": {
     tr: {
       title: "Dış İklim Kapı Sistemleri",
-      series: "Dış İklim Koleksiyonu",
-      spec: "Wood ve taş dokusu · Mimari yüzey etkisi · Dış iklim kullanımı",
-      meta: "Doğal yüzey · Ahşap/taş doku · Çelik gövde"
+      series: "Dış İklim",
+      spec: "Alüminyum dayanımı ve doğal yüzey dokusunu bir arada sunan dış mekân koleksiyonu",
+      meta: "Alüminyum sistem · Ahşap/taş doku · Isı yalıtımı"
     },
     en: {
-      title: "Natural Surfaces",
-      series: "Exterior Climate Collection",
-      spec: "Wood and stone textures · Architectural surface presence · Exterior use",
-      meta: "Natural finish · Wood/stone texture · Steel body"
+      title: "Exterior Climate Door Systems",
+      series: "Exterior Climate",
+      spec: "An exterior collection combining aluminium durability with natural surface textures",
+      meta: "Aluminium system · Wood/stone texture · Thermal insulation"
     }
   },
   "camli-modeller": {
     tr: {
       title: "Ekonomik Kapı Sistemleri",
-      series: "Dış İklim Koleksiyonu",
-      spec: "Cam detay · Cephe uyumu · Güçlendirilmiş giriş sistemi",
-      meta: "Temperli cam · Metal detay · Çelik gövde"
+      series: "Metal & Kompozit",
+      spec: "Uygun maliyetli, dayanıklı metal ve kompozit yüzeyli giriş çözümleri",
+      meta: "Kompozit yüzey · Sac gövde · Çelik detay"
     },
     en: {
-      title: "Glazed Models",
-      series: "Exterior Climate Collection",
-      spec: "Glass detailing · Facade integration · Reinforced entrance system",
-      meta: "Tempered glass · Metal detail · Steel body"
+      title: "Economical Door Systems",
+      series: "Metal & Composite",
+      spec: "Cost-effective, durable entrance solutions with metal and composite surfaces",
+      meta: "Composite surface · Sheet-metal body · Steel detail"
     }
   },
   "pvc-laminoks": {
     tr: {
       title: "Bina Giriş Sistemleri",
-      series: "Exclusive Koleksiyonu",
-      spec: "Exclusive kaplama · Klasik panel dili · Renkli yüzey seçeneği",
-      meta: "PVC yüzey · Laminoks panel · Çelik gövde"
+      series: "Giriş & Teknik",
+      spec: "Acil çıkış, şaft ve teknik giriş sistemleri için mühendislik odaklı çözümler",
+      meta: "Acil çıkış uyumlu · Şaft kapağı seçeneği · Teknik sertifikasyon"
     },
     en: {
-      title: "PVC & Laminox",
-      series: "Exclusive Collection",
-      spec: "Exclusive cladding · Classic panel language · Coloured finish option",
-      meta: "PVC surface · Laminox panel · Steel body"
+      title: "Building Entrance Systems",
+      series: "Entrance & Technical",
+      spec: "Engineering-led solutions for emergency exits, shafts and technical entrance systems",
+      meta: "Emergency-exit compliant · Shaft cover option · Technical certification"
     }
   },
   "mimari-ozel": {
     tr: {
       title: "Özel Proje Sistemleri",
-      series: "Mimari Özel",
+      series: "Mimari Özel · Pivot",
       spec: "Mimari giriş etkisi · Projeye özel kurgu · Pivot veya vitrin kullanımı",
       meta: "Mimari yüzey · Pivot sistem · Cam/metal detay"
     },
     en: {
-      title: "Architectural Bespoke",
-      series: "Architectural Bespoke",
+      title: "Special Project Systems",
+      series: "Architectural Bespoke · Pivot",
       spec: "Architectural entrance presence · Project-specific composition · Pivot or showcase use",
       meta: "Architectural finish · Pivot system · Glass/metal detail"
     }
