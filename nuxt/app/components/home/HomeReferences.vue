@@ -161,19 +161,23 @@ let rebuildFlip: (() => void) | null = null;
 let documentaryStartScrollY = 0;
 // Catalog rows reserve their final height before product batches reveal, so this
 // trigger should not drift during normal scroll. If an upstream responsive/layout
-// change still moves this section, refresh ONLY this trigger instance. A global
+// change still moves this section, rebuild ONLY this section. A global
 // ScrollTrigger.refresh() would re-pin the hero/turntable and yank the scroll
 // position.
-let flipScrollTrigger: { refresh: () => void } | null = null;
+//
+// Neden refresh() DEĞİL de tam rebuild: refresh yalnız trigger'ın başlangıç/bitiş
+// scroll noktalarını yeniden ölçer; Flip.fit ile hesaplanan fitVars tween'in
+// içine gömülüdür ve olduğu gibi kalır. Katalog yüksekliği değiştiğinde başlangıç
+// kartının yeri de kayabildiği için eski fit değerleri yanlış kalırdı.
 let catalogResizeObserver: ResizeObserver | null = null;
 let catalogResizeTimer = 0;
 
-const scheduleFlipTriggerRefresh = () => {
+const scheduleFlipRebuild = () => {
   window.clearTimeout(catalogResizeTimer);
   catalogResizeTimer = window.setTimeout(() => {
     catalogResizeTimer = 0;
     window.requestAnimationFrame(() => {
-      flipScrollTrigger?.refresh();
+      rebuildFlip?.();
     });
   }, 180);
 };
@@ -233,9 +237,38 @@ const setupFlip = async () => {
 
   gsap.registerPlugin(ScrollTrigger, Flip);
 
+  // PERDE TELAFİSİ.
+  //
+  // `.home-catalog-reference-stack` scroll boyunca --catalog-curtain-y ile
+  // YUKARI ötelenir (0 → -240px, bkz. HomeCatalogTransition). ScrollTrigger ise
+  // trigger'ın yerini refresh anında ölçer; refresh sayfa açılışında, yani perde
+  // daha 0'ken çalıştığı için bu bölümü olduğundan --catalog-curtain-extra kadar
+  // AŞAĞIDA sanıyor ve scrub o kadar geç başlıyordu.
+  //
+  // Ölçüldü (1703x741, aynı sayfa): telafisiz start/end 13289/13971, olması
+  // gereken 13049/13731 — kart, panel %24 çizgisini geçtikten 240px sonra
+  // büyümeye başlıyordu.
+  //
+  // Telafi SABİT alınabilir: perde kendi trigger'ını referans bölümü ekrana
+  // girmeden çok önce bitirir (~6940px; bu scrub ~13049px'te başlar), yani bu
+  // bölüm görünürken öteleme her zaman tam değerindedir. Fonksiyon olarak
+  // veriliyor ki her refresh'te yeniden okunsun — mobilde perde CSS ile
+  // kapatıldığı için 0 döner.
+  const curtainOffset = () => {
+    if (window.innerWidth <= 760) return 0;
+
+    const stack = section.closest(".home-catalog-reference-stack");
+    if (!stack) return 0;
+
+    return (
+      Number.parseFloat(
+        window.getComputedStyle(stack).getPropertyValue("--catalog-curtain-extra")
+      ) || 0
+    );
+  };
+
   const create = () => {
     flipContext?.revert();
-    flipScrollTrigger = null;
 
     flipContext = gsap.context(() => {
       const media = mediaRef.value;
@@ -261,9 +294,12 @@ const setupFlip = async () => {
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: initial,
-          start: "top 24%",
+          // `top-=<perde>` → ölçüm noktası perdenin götüreceği kadar yukarı
+          // alınır, böylece scrub panelin GÖRÜNEN yerine göre başlar/biter.
+          // İki uç da aynı miktarda kaydığı için scrub mesafesi (682px) değişmez.
+          start: () => `top-=${curtainOffset()} 24%`,
           endTrigger: final,
-          end: "bottom bottom",
+          end: () => `bottom-=${curtainOffset()} bottom`,
           // ScrollSmoother already eases the page; keep this card locked to
           // that smoothed playhead instead of adding a second one-second lag.
           scrub: true
@@ -304,13 +340,34 @@ const setupFlip = async () => {
         );
       }
 
-      flipScrollTrigger = timeline.scrollTrigger ?? null;
     }, section);
   };
 
   create();
   rebuildFlip = create;
   window.addEventListener("resize", create);
+
+  // FONT SONRASI YENİDEN KURULUM ŞART.
+  //
+  // Scrub'ın start/end'i fonksiyon (yukarıda), yani ancak bir refresh'te
+  // yeniden okunur; fitVars ise refresh'te HİÇ güncellenmez, yalnız create()
+  // ile. Fontlar geç çözüldüğünde üstteki katalog/panel yüksekliği oynuyor ve
+  // ikisi de mount anındaki ölçüde kalıyordu — kart yanlış scroll noktasında
+  // büyümeye başlıyordu.
+  //
+  // Eskiden bunu HomeExperience'taki global ScrollTrigger.refresh() örtüyordu;
+  // o çağrı hero pin'ini de yeniden ölçtüğü için kaldırıldı (bkz.
+  // HomeCatalogTransition.vue fonts.ready notu). Buradaki rebuild gsap.context
+  // ile `section`'a kapsanmıştır: hero'ya dokunmaz.
+  const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+
+  if (fonts?.ready) {
+    fonts.ready.then(() => {
+      // unmount olduysa rebuildFlip null'lanmıştır.
+      if (!rebuildFlip) return;
+      requestAnimationFrame(() => rebuildFlip?.());
+    });
+  }
 
   if ("ResizeObserver" in window) {
     catalogResizeObserver?.disconnect();
@@ -328,7 +385,7 @@ const setupFlip = async () => {
         if (Math.abs(nextHeight - lastHeight) < 1) return;
 
         lastHeight = nextHeight;
-        scheduleFlipTriggerRefresh();
+        scheduleFlipRebuild();
       });
 
       upstreamTargets.forEach((target) => catalogResizeObserver?.observe(target));
@@ -361,7 +418,6 @@ onBeforeUnmount(() => {
   catalogResizeTimer = 0;
   catalogResizeObserver?.disconnect();
   catalogResizeObserver = null;
-  flipScrollTrigger = null;
 
   flipContext?.revert();
   flipContext = null;
