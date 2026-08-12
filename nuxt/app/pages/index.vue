@@ -26,6 +26,6 @@ useSeoMeta({
 
 <template>
   <div class="home-page">
-    <HomeExperience />
+    <HomeContentLoader />
   </div>
 </template>

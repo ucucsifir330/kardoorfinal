@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useGSAP } from "~/composables/useGSAP";
-import { useStartupProgress } from "~/composables/useStartupProgress";
 
 const emit = defineEmits<{
   complete: [];
@@ -17,40 +16,9 @@ const { gsap } = useGSAP();
 
 let fallbackTimer = 0;
 let exitTimer = 0;
-let minimumHoldTimer = 0;
 let removeVisibilityListener: (() => void) | null = null;
 let loaderTimeline: ReturnType<typeof gsap.timeline> | null = null;
-let fillTween: ReturnType<typeof gsap.to> | null = null;
-let surfaceTween: ReturnType<typeof gsap.to> | null = null;
 let completed = false;
-let hasMinimumHoldPassed = false;
-
-/**
- * Perde artık sabit süreyle değil, hero'nun gerçek yükleme işleriyle
- * sürülüyor (bkz. useStartupProgress). İki koruma bandı var:
- *
- *  • MINIMUM_HOLD — sıcak cache'te işler ~50ms'de biterse perde tek karede
- *    açılıp kapanır; o göz kırpması animasyondan rahatsız edici.
- *  • MAX_WAIT — bir iş hiç çözülmezse perde asılı kalmasın. Eski 9800ms
- *    fallback'in yerini alır ama artık istisna yolu, normal akış değil.
- */
-const MINIMUM_HOLD_MS = 900;
-const MAX_WAIT_MS = 8000;
-
-const { progress, isComplete, hasTasks } = useStartupProgress();
-
-/**
- * Hero'suz sayfalarda (alt sayfalar, lab) hiç görev kaydolmaz; isComplete
- * sonsuza dek false kalır ve perde 8 saniyelik MAX_WAIT'e asılırdı. Görev
- * listesi bu süre dolduğunda hâlâ boşsa "bekleyecek şey yok" say.
- *
- * Süre MINIMUM_HOLD'dan uzun ve BİLEREK 2500ms: ana sayfada görevler hero
- * mount olunca kaydolur (~1.5-2s, dev'de daha geç). Daha kısa bir değer,
- * görevler kaydolmadan perdeyi açıp yüklemeyi bekleme amacını boşa çıkarır.
- */
-const NO_TASK_GRACE_MS = 2500;
-let hasNoTaskGracePassed = false;
-let noTaskGraceTimer = 0;
 
 const prefersReducedMotion = () =>
   import.meta.client && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -71,55 +39,22 @@ onMounted(async () => {
     document.removeEventListener("visibilitychange", handleVisibilityChange);
   };
 
-  // Ağ takılırsa perde asılı kalmasın (istisna yolu).
   fallbackTimer = window.setTimeout(() => {
     startExit();
-  }, MAX_WAIT_MS);
-
-  minimumHoldTimer = window.setTimeout(() => {
-    hasMinimumHoldPassed = true;
-    maybeFinish();
-  }, MINIMUM_HOLD_MS);
-
-  noTaskGraceTimer = window.setTimeout(() => {
-    hasNoTaskGracePassed = true;
-    maybeFinish();
-  }, NO_TASK_GRACE_MS);
+  }, 9800);
 
   await nextTick();
   playLoader();
-  maybeFinish();
-});
-
-/** Hem gerçek işler bitmiş hem de en kısa gösterim süresi dolmuşsa çık. */
-const maybeFinish = () => {
-  if (!hasMinimumHoldPassed) return;
-
-  const nothingToWaitFor = !hasTasks.value && hasNoTaskGracePassed;
-  if (!isComplete.value && !nothingToWaitFor) return;
-
-  startExit();
-};
-
-watch([isComplete, progress], () => {
-  syncFillToProgress();
-  maybeFinish();
 });
 
 const clearTimers = () => {
   window.clearTimeout(fallbackTimer);
   window.clearTimeout(exitTimer);
-  window.clearTimeout(minimumHoldTimer);
-  window.clearTimeout(noTaskGraceTimer);
 };
 
 const stopLoaderTimeline = () => {
   loaderTimeline?.kill();
   loaderTimeline = null;
-  fillTween?.kill();
-  fillTween = null;
-  surfaceTween?.kill();
-  surfaceTween = null;
 };
 
 const complete = () => {
@@ -233,54 +168,43 @@ const playLoader = () => {
     return;
   }
 
-  // Wordmark girişi sabit kalır (yüklemeden bağımsız marka anı). Dolum ise
-  // artık zaman çizelgesinde DEĞİL — gerçek ilerlemeyi takip eder.
-  loaderTimeline = gsap.timeline({ defaults: { ease: "power2.out" } });
-
-  loaderTimeline.to(
-    wordmark,
-    {
-      autoAlpha: 1,
-      clipPath: "inset(0% 0% 0% 0%)",
-      y: 0,
-      duration: 1.24,
-      ease: "power3.inOut",
-      overwrite: true
-    },
-    0.58
-  );
-
-  syncFillToProgress();
-};
-
-/**
- * Dolum seviyesini gerçek ilerlemeye taşır. Sayaç sıçramalı arttığı için
- * (3 görevde 0 → .33 → .66 → 1) doğrudan set etmek basamaklı görünürdü;
- * kısa bir tween aradaki geçişi yumuşatıyor.
- */
-const syncFillToProgress = () => {
-  const fill = fillRef.value;
-  const surface = surfaceRef.value;
-  if (!fill || !surface || isExiting.value || completed) return;
-  if (prefersReducedMotion()) return;
-
-  const value = Math.max(0, Math.min(1, progress.value));
-
-  fillTween?.kill();
-  fillTween = gsap.to(fill, {
-    clipPath: `inset(${(1 - value) * 100}% 0% 0% 0%)`,
-    duration: 0.6,
-    ease: "power2.out",
-    overwrite: "auto"
+  loaderTimeline = gsap.timeline({
+    defaults: { ease: "power2.out" },
+    onComplete: startExit
   });
 
-  surfaceTween?.kill();
-  surfaceTween = gsap.to(surface, {
-    yPercent: 120 - value * 368, // 120 → -248 arasına eşlenir
-    duration: 0.6,
-    ease: "power2.out",
-    overwrite: "auto"
-  });
+  loaderTimeline
+    .to(
+      wordmark,
+      {
+        autoAlpha: 1,
+        clipPath: "inset(0% 0% 0% 0%)",
+        y: 0,
+        duration: 1.24,
+        ease: "power3.inOut",
+        overwrite: true
+      },
+      0.58
+    )
+    .to(
+      fill,
+      {
+        clipPath: "inset(0% 0% 0% 0%)",
+        duration: 4.55,
+        overwrite: true
+      },
+      0.42
+    )
+    .to(
+      surface,
+      {
+        yPercent: -248,
+        duration: 4.55,
+        overwrite: true
+      },
+      0.42
+    )
+    .to({}, { duration: 0.62 });
 };
 
 onBeforeUnmount(() => {

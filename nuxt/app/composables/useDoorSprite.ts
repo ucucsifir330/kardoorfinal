@@ -34,20 +34,6 @@ interface SpriteMetadata {
 
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
-/**
- * Rota geçişinde önden hazırlanan sprite'lar.
- *
- * `app.vue` ana sayfaya dönerken bu haritayı dolduruyor; `load()` aynı
- * URL'i yeniden istemek yerine hazır sözü bekliyor. Paylaşmadan önce
- * ölçüldüğünde `load()` JSON'u 1480ms'de TEKRAR istiyordu ve o istek
- * 406ms sürüyordu (boşta aynı istek 10ms) — ana iş parçacığı hero
- * kurulumuyla meşgul olduğu için. Şimdi iş geçiş sırasında bitiyor.
- */
-export const spriteOnBellek = new Map<string, Promise<{
-  meta: SpriteMetadata;
-  image: HTMLImageElement;
-}>>();
-
 const loadImage = (src: string): Promise<HTMLImageElement> => {
   const img = new Image();
   img.decoding = "async";
@@ -155,19 +141,11 @@ export function useDoorSprite(canvasRef: Ref<HTMLCanvasElement | null>) {
     if (!canvas) return;
     if (!ctx) ctx = canvas.getContext("2d");
 
-    // Önden hazırlanmışsa onu kullan; yoksa şimdi indir ve paylaş.
-    let hazir = spriteOnBellek.get(metaUrl);
-    if (!hazir) {
-      hazir = fetch(metaUrl)
-        .then((res) => {
-          if (!res.ok) throw new Error(`sprite metadata failed: ${res.status}`);
-          return res.json() as Promise<SpriteMetadata>;
-        })
-        .then(async (m) => ({ meta: m, image: await loadImage(m.sprite) }));
-      spriteOnBellek.set(metaUrl, hazir);
-    }
-
-    const { meta: nextMeta, image: nextImage } = await hazir;
+    const nextMeta: SpriteMetadata = await fetch(metaUrl).then((res) => {
+      if (!res.ok) throw new Error(`sprite metadata failed: ${res.status}`);
+      return res.json();
+    });
+    const nextImage = await loadImage(nextMeta.sprite);
 
     meta = nextMeta;
     image = nextImage;

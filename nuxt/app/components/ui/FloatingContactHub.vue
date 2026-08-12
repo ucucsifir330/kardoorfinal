@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { gsap } from "gsap";
-import { useRoute } from "#imports";
+import { useRoute, useState } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
-import { useContentReveal } from "~/composables/useContentReveal";
 
 const route = useRoute();
 const { locale } = useKardoorLocale();
@@ -13,21 +12,56 @@ const hubRef = ref<HTMLElement | null>(null);
 const triggerRevealRef = ref<HTMLButtonElement | null>(null);
 // Hub yalnızca hero'lu sayfalarda görünür: ana sayfa.
 const isHomeRoute = computed(() => route.path === "/");
-// Hub tetiği, perde açıldıktan sonra hero ile birlikte belirir — yalnız ana
-// sayfada, çünkü diğer rotalarda zaten görünmüyor (bkz. useContentReveal).
-const {
-  isPageContentVisible,
-  play: playContentReveal,
-  prepare: prepareContentReveal,
-  reset: resetContentReveal
-} = useContentReveal({
-  targets: () => [triggerRevealRef.value],
-  enabled: () => isHomeRoute.value
-});
+const isPageContentVisible = useState<boolean>("kardoor-page-content-visible", () => true);
 const contactActionClass =
   "floating-contact__action pointer-events-auto flex min-h-[66px] flex-col items-center justify-center gap-[7px] rounded-[18px] px-[6px] py-[9px] text-[11px] font-bold leading-none tracking-[0] no-underline [transition:background_.24s_var(--ease-soft),transform_.24s_var(--ease-soft)] hover:[transform:translateX(-2px)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent-blue)]";
 
 let syncFrame = 0;
+let pageIntroTween: ReturnType<typeof gsap.to> | null = null;
+let isPageIntroPrepared = false;
+let hasPlayedPageIntro = false;
+
+const prefersReducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const preparePageIntro = () => {
+  const trigger = triggerRevealRef.value;
+  if (!trigger || isPageIntroPrepared || prefersReducedMotion()) return;
+
+  gsap.set(trigger, {
+    filter: "blur(20px)",
+    opacity: 0,
+    scale: 0.9
+  });
+  isPageIntroPrepared = true;
+};
+
+const playPageIntro = () => {
+  const trigger = triggerRevealRef.value;
+  if (!trigger || hasPlayedPageIntro || !isHomeRoute.value) return;
+
+  hasPlayedPageIntro = true;
+
+  if (prefersReducedMotion()) {
+    gsap.set(trigger, { clearProps: "filter,opacity,scale" });
+    return;
+  }
+
+  preparePageIntro();
+  pageIntroTween?.kill();
+  pageIntroTween = gsap.to(trigger, {
+    filter: "blur(0px)",
+    opacity: 1,
+    scale: 1,
+    duration: 1.5,
+    ease: "power2.out",
+    overwrite: "auto",
+    clearProps: "filter,opacity,scale",
+    onComplete: () => {
+      pageIntroTween = null;
+    }
+  });
+};
 
 const copy = computed(() => {
   if (locale.value === "en") {
@@ -114,12 +148,18 @@ const requestHeroMotionSync = () => {
 };
 
 onMounted(() => {
+  preparePageIntro();
+  if (isPageContentVisible.value) playPageIntro();
   window.addEventListener("pointerdown", onPointerDown, { passive: true });
   window.addEventListener("keydown", onKeydown);
   requestHeroMotionSync();
 });
 
 onBeforeUnmount(() => {
+  pageIntroTween?.kill();
+  if (triggerRevealRef.value) {
+    gsap.set(triggerRevealRef.value, { clearProps: "filter,opacity,scale" });
+  }
   window.removeEventListener("pointerdown", onPointerDown);
   window.removeEventListener("keydown", onKeydown);
 
@@ -133,15 +173,15 @@ watch(
   async () => {
     closeHub();
     await nextTick();
-    // Ana sayfaya geri dönüldüğünde tetik yeniden bağlanır: "bir kez oynar"
-    // kilidi açılmalı, yoksa hub blur'lu takılı kalır. Perde zaten açıksa
-    // reveal burada başlar (watch yeni rotada tekrar tetiklenmez).
-    resetContentReveal();
-    prepareContentReveal();
-    if (isPageContentVisible.value) playContentReveal();
+    preparePageIntro();
+    if (isPageContentVisible.value) playPageIntro();
     requestHeroMotionSync();
   }
 );
+
+watch(isPageContentVisible, (isVisible) => {
+  if (isVisible) playPageIntro();
+});
 </script>
 
 <template>

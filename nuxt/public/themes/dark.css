@@ -38,12 +38,9 @@ body {
   right: -40% !important;
   width: 140% !important;
   height: 100% !important;
-  /* `--bg-color` DEGIL: o deger bolum zemininden farkli (gece #050714 vs
-     #080B18) ve maske ile bolum arasinda ince bir ton kirilmasi seridi
-     uretiyordu (olculdu). Maske bolum zeminiyle BIREBIR ayni olmali. */
   background: linear-gradient(
     to right,
-    var(--catalog-stage-surface-bg, var(--bg-color)) 60%,
+    var(--bg-color) 60%,
     transparent 100%
   ) !important;
   opacity: 1 !important;
@@ -103,6 +100,10 @@ body {
   transform: translateX(0) !important;
 }
 
+.footer-dome {
+  box-shadow: 0 -12px 42px rgba(0, 0, 0, 0.1);
+}
+
 /* Responsive viewport fit: 1920x1080 stays the reference size. */
 
 @media (max-width: 1180px) {
@@ -134,8 +135,7 @@ body {
     padding: 0 18px !important;
     display: block !important;
     pointer-events: none !important;
-  }
-
+  }
 
   .top-row {
     align-items: center !important;
@@ -173,14 +173,19 @@ body {
 
   .track-inner {
     gap: 16px !important;
-  }
-
-
-
+  }
 }
 
 /* Mobile final notes: carousel centering, catalog line, chips, CTA, footer. */
 @media (max-width: 760px) {
+
+  .footer-wrapper {
+  background: #080B18 !important;
+}
+
+  .footer-dome {
+  background: #171D3D !important;
+}
 
   .footer-logo {
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.24)) !important;

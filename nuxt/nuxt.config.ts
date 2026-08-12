@@ -20,12 +20,6 @@ export default defineNuxtConfig({
     "pages:extend"(pages) {
       const disabledRoutes = new Set(["/doors/:code"]);
 
-      // Prototip sayfaları (/prototypes/*) SADECE dev'de var olur; production
-      // build'e hiç girmezler. noindex yeterli değildi: rota canlıda ayakta
-      // kalıyor ve kendi chunk'ıyla bundle'a giriyordu.
-      // nuxi dev NODE_ENV=development, nuxi build NODE_ENV=production kurar.
-      const shipPrototypes = process.env.NODE_ENV === "development";
-
       const removeDisabledRoutes = (routes: typeof pages) => {
         for (let index = routes.length - 1; index >= 0; index -= 1) {
           const route = routes[index];
@@ -33,11 +27,6 @@ export default defineNuxtConfig({
           if (!route) continue;
 
           if (disabledRoutes.has(route.path)) {
-            routes.splice(index, 1);
-            continue;
-          }
-
-          if (!shipPrototypes && route.path.startsWith("/prototypes")) {
             routes.splice(index, 1);
             continue;
           }
@@ -52,10 +41,7 @@ export default defineNuxtConfig({
     }
   },
   modules: ["@nuxt/image"],
-  // pathPrefix: false tüm ağacı öneksiz global bileşene çeviriyor. Prototipler
-  // bileşenlerini zaten explicit import ediyor; auto-import kaydına girip
-  // gerçek bileşen isimleriyle çakışmalarına gerek yok.
-  components: [{ path: "~/components", pathPrefix: false, ignore: ["prototypes/**"] }],
+  components: [{ path: "~/components", pathPrefix: false }],
   css: ["~/assets/styles/main.css", "~/assets/styles/tailwind.css"],
   app: {
     cdnURL: appCdnUrl,
@@ -100,25 +86,6 @@ export default defineNuxtConfig({
         },
         { id: "kardoor-theme", rel: "stylesheet", href: "/themes/light.css" }
       ],
-      style: [
-        {
-          // Perde altındaki içeriği İLK BOYAMADA gizle.
-          //
-          // Aynı kural transitions.css'te de var ama o harici dosya; indirilene
-          // kadar hero kabuğu + navbar bir kare opak görünüyordu (650ms
-          // ölçüldü). WelcomeScreen SSR'da hiç basılmadığı için o karede sayfa
-          // açıkta kalıyor. Kritik yol olduğundan burada inline.
-          key: "kardoor-startup-veil",
-          innerHTML:
-            ".app-shell--content-hidden>*:not(.welcome-screen):not(.page-transition-overlay)" +
-            "{visibility:hidden;pointer-events:none}" +
-            // showroom kendi .is-revealed kuralıyla visibility:visible yazıp
-            // miras alınan gizlemeyi eziyor; perde varken o iptal edilir.
-            ".app-shell--content-hidden .entrance-lab__showroom.is-revealed" +
-            "{visibility:hidden}",
-          tagPosition: "head"
-        }
-      ],
       script: [
         {
           // LCP hero'sunu erken keşfet: doğru varyant viewport oranına, doğru
@@ -129,7 +96,6 @@ export default defineNuxtConfig({
           // EntranceDoorLab.vue ile BİREBİR aynı olmalı (yoksa çift indirme).
           key: "kardoor-hero-preload",
           innerHTML: `(function(){try{
-if(window.location.pathname!=="/")return;
 var UW={d:"/L-21X9.webp",n:"/N-21X9.webp",a:3134/1344};
 var V=[{d:"/hero-day-16x9.avif",n:"/hero-night-16x9.avif",a:16/9},
 {d:"/hero-day-4x3.avif",n:"/hero-night-4x3.avif",a:4/3},
@@ -146,22 +112,6 @@ window.__kardoorHero={aspect:pick.a,night:night,href:href};
 var l=document.createElement("link");
 l.rel="preload";l.as="image";l.href=href;l.setAttribute("fetchpriority","high");
 document.head.appendChild(l);
-// SSR kabugunun hero <img>'i src'siz basiliyor (bkz. HomeExperience.vue):
-// sunucu temayi bilemedigi icin oraya yazilan gunduz varyanti gece
-// kullanicisinda BOSA indiriliyordu. Dogru src'yi burada veriyoruz.
-// MutationObserver: img bu script'ten SONRA parse ediliyor, DOM'a girer
-// girmez yakalayip yaziyoruz — preload scanner zaten yukaridaki link'i
-// gordugu icin gecikme olmuyor.
-var yaz=function(el){if(el&&!el.src)el.src=href;};
-var mevcut=document.querySelector("img[data-kardoor-hero]");
-if(mevcut){yaz(mevcut);}else{
-var mo=new MutationObserver(function(){
-var el=document.querySelector("img[data-kardoor-hero]");
-if(el){yaz(el);mo.disconnect();}});
-mo.observe(document.documentElement,{childList:true,subtree:true});
-// Guvenlik agi: DOM hazir oldugunda gozlemci hala calisiyorsa kapat.
-document.addEventListener("DOMContentLoaded",function(){
-yaz(document.querySelector("img[data-kardoor-hero]"));mo.disconnect();});}
 }catch(e){}})();`,
           tagPosition: "head"
         }
@@ -171,19 +121,6 @@ yaz(document.querySelector("img[data-kardoor-hero]"));mo.disconnect();});}
   },
   image: {
     domains: ["i.hizliresim.com", "ik.imagekit.io"],
-    imagekit: {
-      baseURL: "https://ik.imagekit.io/kardoor"
-    },
-    presets: {
-      collectionsThumbnail: {
-        provider: "imagekit",
-        modifiers: { width: 80, quality: 58, format: "webp" }
-      },
-      collectionsSpecimen: {
-        provider: "imagekit",
-        modifiers: { width: 1024, quality: 84, format: "webp" }
-      }
-    },
     quality: 82,
     format: ["webp", "avif"],
     screens: {

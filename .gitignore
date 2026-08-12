@@ -16,11 +16,6 @@ Thumbs.db
 chrome-*.png
 nuxt/.playwright-cli/
 .playwright-cli/
-.playwright-mcp/
-nuxt/.playwright-mcp/
-# Depo kökündeki PNG'ler her seferinde hata ayıklama ekran görüntüsü oluyor.
-# Gerçek görseller nuxt/public/ altında durur.
-/*.png
 nuxt/output/
 nuxt/reports/
 output/

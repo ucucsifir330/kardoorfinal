@@ -174,7 +174,6 @@ const initScrollTimeline = async () => {
     let scrollTween: ReturnType<typeof gsap.to> | null = null;
     let wheelLocked = false;
     let wheelQuietTimer = 0;
-    let timelineInput: ReturnType<typeof useEntranceInput> | null = null;
 
     const applyTimelineProgress = (progress: number) => {
       const currentFloat = clampProgress(progress) * maxIndex;
@@ -215,9 +214,6 @@ const initScrollTimeline = async () => {
       onUpdate: (self) => applyTimelineProgress(self.progress),
       onToggle: (self) => {
         isTimelineActive = self.isActive;
-        // Girdi otoritesi bandı buradan öğrenir: bant biterse listener DOM'dan
-        // sökülür, tarayıcı compositor hızlı yoluna geri döner.
-        timelineInput?.setActive(self.isActive);
         if (!self.isActive) {
           isStepping = false;
           wheelLocked = false;
@@ -299,52 +295,29 @@ const initScrollTimeline = async () => {
       goToIndex(targetIndex);
     };
 
-    /**
-     * Zaman çizelgesinin karar fonksiyonu — girdi türünden bağımsız.
-     * Ana sayfadaki `driveEntrance` ile aynı sözleşme: yön + şiddet + iptal.
-     */
-    const driveTimeline = (
-      direction: 1 | -1,
-      _strength: number,
-      cancel: () => void
-    ) => {
-      cancel();
+    const handleTimelineWheel = (event: WheelEvent) => {
+      if (!isTimelineActive) return;
+      const delta = event.deltaY;
+      if (Math.abs(delta) < 8) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
       unlockWheelAfterQuiet();
 
       if (isStepping || wheelLocked) return;
 
       wheelLocked = true;
-      stepTimeline(direction);
+      stepTimeline(delta > 0 ? 1 : -1);
     };
 
-    // Listener SADECE pin bandı aktifken bağlı. Eskiden `window`'a
-    // {passive:false, capture:true} ile bağlanıp sayfa boyunca duruyordu;
-    // handler `isTimelineActive` ile erken çıksa da listener'ın VARLIĞI
-    // tarayıcının compositor scroll hızlı yolunu tüm sayfa için kapatıyordu.
-    // Bandı zaten yukarıdaki `trigger` biliyor — ikinci bir ScrollTrigger
-    // kurmak yerine onun onToggle'ından besliyoruz.
-    timelineInput = useEntranceInput({
-      band: {
-        initialActive: window.scrollY >= trigger.start && window.scrollY <= trigger.end
-      },
-      drive: driveTimeline,
-      capture: true,
-      minStrength: 8,
-      // Klavye burada KAPALI: bu sayfada yıl butonları gerçek focusable
-      // kontroller ve kendi klavye davranışları var; ikinci bir otorite
-      // onların üstüne binmesin.
-      keyboard: false
-    });
-
     isTimelineActive = window.scrollY >= trigger.start && window.scrollY <= trigger.end;
-    timelineInput.start();
+    window.addEventListener("wheel", handleTimelineWheel, { passive: false, capture: true });
     goToTimelineIndex = goToIndex;
 
     cleanupGsap = () => {
       scrollTween?.kill();
       window.clearTimeout(wheelQuietTimer);
-      timelineInput?.destroy();
-      timelineInput = null;
+      window.removeEventListener("wheel", handleTimelineWheel, { capture: true });
       context.revert();
       cleanupGsap = null;
       goToTimelineIndex = null;

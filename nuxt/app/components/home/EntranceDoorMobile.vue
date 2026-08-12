@@ -3,7 +3,6 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { gsap } from "gsap";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 import ShowroomLab from "~/components/home/ShowroomLab.vue";
-import { useEntranceCopy } from "~/composables/useEntranceCopy";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import { useShowroomAmbience } from "~/composables/useShowroomAmbience";
 import { useShowroomDoors } from "~/composables/useShowroomDoors";
@@ -93,18 +92,26 @@ const { isNight, mode } = useShowroomAmbience();
 const { locale } = useKardoorLocale();
 const { doors } = useShowroomDoors();
 
-// Hero metni ortak kaynaktan (useEntranceCopy) — masaüstü sürümle birebir
-// aynıydı. Dokunma ipuçları cihaza özgü olduğu için burada kalır.
-const { copy } = useEntranceCopy();
-
-const cues = computed(() =>
+const copy = computed(() =>
   locale.value === "tr"
     ? {
+        line1: "Hayallerinize",
+        accent: "Açılan",
+        line2: "Kapı",
+        subtitleLead: "Güven kapının ardında",
+        subtitleAccent: "yaşar.",
+        ctaLabel: "Koleksiyonları Keşfet",
         enterCue: "Yukarı kaydırarak gir",
         showroomCue: "Kapılar arasında kaydır",
         exitCue: "Koleksiyona geçmek için kaydırmaya devam et"
       }
     : {
+        line1: "The Door",
+        accent: "to Your",
+        line2: "Dreams",
+        subtitleLead: "Confidence lives behind the door",
+        subtitleAccent: "",
+        ctaLabel: "Explore Collections",
         enterCue: "Swipe up to enter",
         showroomCue: "Swipe between doors",
         exitCue: "Keep swiping to reach the collection"
@@ -648,7 +655,7 @@ onBeforeUnmount(() => {
 
       <div class="entrance-mobile__showroom-nav">
         <span class="entrance-mobile__showroom-cue">
-          {{ isAtLastDoor ? cues.exitCue : cues.showroomCue }}
+          {{ isAtLastDoor ? copy.exitCue : copy.showroomCue }}
         </span>
       </div>
 
@@ -689,7 +696,7 @@ onBeforeUnmount(() => {
               <span class="ada-manifesto-cta-text">{{ configureCopy.collection }}</span>
             </a>
           </div>
-          <span class="entrance-mobile__configure-cue">{{ cues.exitCue }}</span>
+          <span class="entrance-mobile__configure-cue">{{ copy.exitCue }}</span>
         </div>
       </div>
     </div>
@@ -738,7 +745,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div ref="cueRef" class="entrance-mobile__cue" aria-hidden="true">
-      <span>{{ cues.enterCue }}</span>
+      <span>{{ copy.enterCue }}</span>
       <span class="entrance-mobile__gesture-line" />
     </div>
   </section>

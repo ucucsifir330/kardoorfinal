@@ -43,22 +43,6 @@
   --color-bg-navy: var(--bg-navy);
   --color-card: var(--card-bg);
 
-  /* --- Yuzey sozlesmesi (bkz. tokens.css "YUZEY SOZLESMESI") -------------
-     Bilesenlerin okumasi GEREKEN katman: `bg-surface-raised`,
-     `border-surface-line`, `hover:bg-surface-hover`.
-     Bunlar tema-duyarli — degeri .app-shell--day / --night verir, yani
-     bilesende gece icin ikinci bir kural yazmaya gerek KALMAZ.
-     `--color-card` gibi ham renk adlarini yeni kodda kullanma. */
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-surface-hover: var(--surface-hover);
-  --color-surface-line: var(--surface-line);
-
-  /* Footer sozlesmesi — ayni mantik, footer'a ozgu. */
-  --color-footer-surface: var(--footer-surface);
-  --color-footer-dome: var(--footer-dome);
-  --color-footer-dome-fg: var(--footer-dome-fg);
-
   /* Ambience (gunduz/gece sahne degiskenleri) */
   --color-ambience-bg: var(--ambience-bg);
   --color-ambience-text: var(--ambience-text);

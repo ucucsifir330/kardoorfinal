@@ -60,37 +60,3 @@
 ::view-transition-new(root) {
   z-index: 1;
 }
-
-/* ──────────────────────────────────────────────────────────────
-   AÇILIŞ PERDESİ ALTINDAKİ İÇERİK
-
-   Sorun: SSR hero kabuğunu ve navbar'ı OPAK basıyor, ama açılış perdesini
-   (WelcomeScreen) basmıyor — o `v-if` ile yalnız istemcide mount oluyor.
-   Sonuç: JS yüklenene kadar (~650ms ölçüldü) sayfa açıkta duruyor, sonra
-   hidrasyonla birden loader beliriyordu.
-
-   Çözüm ilk boyamada geçerli olmalı, o yüzden JS değil CSS.
-
-   TEK KURAL, parça listesi DEĞİL: daha önce tek tek seçici sayılmıştı
-   (navbar, cue, hub...) ve hero kabuğunun kendisi listede olmadığı için
-   sızdı. Perde açık değilken app-shell'in TÜM doğrudan çocukları gizlenir;
-   yalnız perdenin kendisi ve geçiş katmanı görünür kalır.
-
-   visibility kullanılıyor, display DEĞİL: düzen korunur, perde açılınca
-   yeniden akış (layout shift) olmaz ve hero görseli indirilmeye devam eder
-   — LCP adayı odur, ağdan çekilmesi engellenmemeli.
-   ────────────────────────────────────────────────────────────── */
-.app-shell--content-hidden > *:not(.welcome-screen):not(.page-transition-overlay) {
-  visibility: hidden;
-  /* Klavye/okuyucu kullanıcısı perde altındaki kontrollere ulaşmasın. */
-  pointer-events: none;
-}
-
-/* visibility MİRAS ALINIR ama çocuk `visible` derse geri gelir. Showroom tam
-   bunu yapıyor: sprite yüklenince `.is-revealed` sınıfı `visibility: visible`
-   yazıyor (kendi amacı doğru — kapı çizilmeden sızmasın diye). Perde açıkken
-   o kural bizim gizlememizi eziyordu; gece temasında loader bitmeden showroom
-   ekrana geliyordu. Perde varken showroom'un kendi kuralı devre dışı. */
-.app-shell--content-hidden .entrance-lab__showroom.is-revealed {
-  visibility: hidden;
-}

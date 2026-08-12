@@ -18,26 +18,6 @@ const mapRef = ref<HTMLElement | null>(null);
 let mapMedia: ReturnType<typeof gsap.matchMedia> | undefined;
 let mapResizeObserver: ResizeObserver | undefined;
 
-/**
- * Harita iframe'leri ETKİLEŞİME KADAR yüklenmez.
- *
- * Üç şube haritası da yan yana ve görünür (flex: 1 1 0), bu yüzden
- * `loading="lazy"` hiçbir şey ertelemiyordu — üçü birden açılışta
- * yükleniyordu. Ölçüldü: 120 dış istek (Google Maps + Yandex + Google
- * Fonts), iframe süresi 1982ms, sayfa `load` olayı 2851ms.
- *
- * Artık kart hover edilince (mobilde ilk dokunuşta) o kartın iframe'i
- * yükleniyor. Bir kez yüklenen kart sette kalır; fare çıkınca boşaltılmaz,
- * yoksa her geçişte yeniden istek doğardı.
- */
-const yuklenenHaritalar = ref<Set<string>>(new Set());
-
-const haritayiYukle = (id: string) => {
-  if (yuklenenHaritalar.value.has(id)) return;
-  // Set'i yeniden kurmak şart: Vue mutasyonu değil referans değişimini izler.
-  yuklenenHaritalar.value = new Set(yuklenenHaritalar.value).add(id);
-};
-
 const form = reactive({
   firstName: "",
   lastName: "",
@@ -561,24 +541,14 @@ onBeforeUnmount(() => {
           v-for="branch in contactBranches"
           :key="branch.id"
           class="contact-map__branch"
-          @pointerenter="haritayiYukle(branch.id)"
-          @focusin="haritayiYukle(branch.id)"
         >
           <div class="contact-map__frame">
-            <!-- iframe yalnız etkileşimden SONRA basılır (bkz. yuklenenHaritalar).
-                 GSAP hover animasyonu `.contact-map__branch` ve onun
-                 children'ına bakıyor; iframe ile yer tutucu aynı kutuda ve
-                 aynı derinlikte durduğu için animasyon etkilenmiyor. -->
             <iframe
-              v-if="yuklenenHaritalar.has(branch.id)"
               :src="branch.embedUrl"
               :title="`${copy.mapTitle} - ${branch.label}`"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
             />
-            <!-- Yüklenmeden önceki yer tutucu: aynı kutuyu kaplar, böylece
-                 kart yüksekliği etkileşimde sıçramaz. -->
-            <div v-else class="contact-map__placeholder" aria-hidden="true"></div>
             <span class="contact-map__pin" aria-hidden="true">
               <svg viewBox="0 0 48 64" focusable="false">
                 <path d="M24 4C13.51 4 5 12.51 5 23c0 15.25 19 37 19 37s19-21.75 19-37C43 12.51 34.49 4 24 4Z" />

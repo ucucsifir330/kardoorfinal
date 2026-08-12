@@ -529,22 +529,9 @@ onBeforeUnmount(() => {
   background: #080B18 !important;
 }
 
-/* KAPSAM SART: secici `.app-shell--references` ile baglanmali.
-   Eskiden burada kapsamsiz `:global(.footer-wrapper)` vardi ve scoped stil
-   olmasina ragmen TUM rotalarin footer'ina `#080B18` basiyordu (olculdu:
-   /references gunduz temada zemin #080B18 cikiyordu, sayfanin geri kalani
-   krem iken). Renk artik footer sozlesmesinden geliyor.
-
-   Deger `--ref-surface`ten OKUNAMAZ: o degisken `.viewport-wrapper`da
-   tanimli ve `.app-shell` onun ATASI — miras yukari akmaz. Bu yuzden
-   sozlesme degeri dogrudan kabuga yaziliyor; `.viewport-wrapper` icindeki
-   `--ref-surface` ile ayni ikili (gece #080B18 / gunduz #f6f2e9). */
-:global(.app-shell--references) {
-  --footer-surface: #080B18;
-}
-
-:global(.app-shell--day.app-shell--references) {
-  --footer-surface: #f6f2e9;
+:global(.app-shell),
+:global(.footer-wrapper) {
+  background: var(--ref-surface, #080B18);
 }
 
 :global(.site-header) {
@@ -1142,8 +1129,76 @@ onBeforeUnmount(() => {
   background-color: #080B18 !important;
 }
 
+:global(.app-shell--references:not(.app-shell--day) .footer-wrapper) {
+  background: #131937 !important;
+  background-color: #131937 !important;
+}
+
+:global(.app-shell--day.app-shell--references),
+:global(.app-shell--day.app-shell--references .footer-wrapper) {
+  background: #f6f2e9 !important;
+  background-color: #f6f2e9 !important;
+}
+
 :global(.app-shell--references .footer-wrapper) {
   margin-top: 0;
+}
+
+/* Footer dome rengi PALETTEN gelir — WelcomeScreen ile AYNI degerler:
+     gunduz #16101F, gece #080B18
+   Eskiden burada #2a2a30 (gri) ve #131937 vardi; ikisi de paletten sapmisti
+   ve home-footer.css'in dogru degerini eziyordu (ayni ozgullik, sonra
+   yuklendigi icin kazaniyordu). */
+:global(.app-shell--references .footer-dome) {
+  background-color: var(--slab);
+  box-shadow: 0 0 0 1px var(--slab);
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-dome) {
+  background: #080B18 !important;
+  background-color: #080B18 !important;
+  box-shadow: 0 0 0 1px #080B18 !important;
+  outline-color: #080B18 !important;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-form .form-row input) {
+  border-color: rgba(244, 246, 255, 0.22);
+  color: #F4F6FF;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-form .form-row input:focus),
+:global(.app-shell--references:not(.app-shell--day) .footer-form .form-row input:focus-visible) {
+  border-color: #8EA2FF;
+}
+
+@media (min-width: 761px) {
+  :global(.app-shell--references:not(.app-shell--day) .submit-btn),
+  :global(.app-shell--references:not(.app-shell--day) .submit-btn__label),
+  :global(.app-shell--references:not(.app-shell--day) .submit-btn svg) {
+    color: #F4F6FF !important;
+    stroke: #F4F6FF !important;
+  }
+}
+
+/* No visible chip ring around the footer social buttons on references. */
+:global(.app-shell--references .social-btn) {
+  background-color: transparent;
+}
+
+:global(.app-shell--references .social-btn:hover) {
+  background-color: #e6e7eb;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-socials > .social-btn) {
+  background-color: #171D3D !important;
+  color: #F4F6FF !important;
+  border: 1px solid rgba(244, 246, 255, 0.12) !important;
+}
+
+:global(.app-shell--references:not(.app-shell--day) .footer-socials > .social-btn:hover) {
+  background-color: #C3CCFF !important;
+  color: #050714 !important;
+  border-color: rgba(142, 162, 255, 0.28) !important;
 }
 
 @media (max-width: 900px) {

@@ -24,14 +24,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useShowroomAmbience } from "~/composables/useShowroomAmbience";
 import { useDoorSprite } from "~/composables/useDoorSprite";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
-import { useEntranceCopy } from "~/composables/useEntranceCopy";
-import { useEntranceInput } from "~/composables/useEntranceInput";
-import { useContentReveal } from "~/composables/useContentReveal";
-import {
-  useStartupProgress,
-  whenFontsReady,
-  whenImageReady
-} from "~/composables/useStartupProgress";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 import ShowroomLab from "~/components/home/ShowroomLab.vue";
 
@@ -210,11 +202,27 @@ const heroSrc = computed(() =>
 const doorMeta = computed(() => (isNight.value ? DOOR.night : DOOR.day));
 
 const { locale } = useKardoorLocale();
-// Hero metni ortak kaynaktan (useEntranceCopy) gelir — mobil sürümle birebir
-// aynıydı ve SSR kabuğu da aynı metni basıyor. scrollCue cihaza özgü olduğu
-// için burada kalır.
-const { copy } = useEntranceCopy();
-const scrollCue = computed(() => (locale.value === "tr" ? "Kaydır" : "Scroll"));
+const copy = computed(() =>
+  locale.value === "tr"
+    ? {
+        line1: "Hayallerinize",
+        accent: "Açılan",
+        line2: "Kapı",
+        subtitleLead: "Güven kapının ardında",
+        subtitleAccent: "yaşar.",
+        ctaLabel: "Koleksiyonları Keşfet",
+        scrollCue: "Kaydır",
+      }
+    : {
+        line1: "The Door",
+        accent: "to Your",
+        line2: "Dreams",
+        subtitleLead: "Confidence lives behind the door",
+        subtitleAccent: "",
+        ctaLabel: "Explore Collections",
+        scrollCue: "Scroll",
+      }
+);
 
 const configureCopy = computed(() =>
   locale.value === "tr"
@@ -263,7 +271,6 @@ const sectionRef = ref<HTMLElement | null>(null);
 const zoomRef = ref<HTMLElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
-// Perde açıldıktan sonra birlikte reveal olan hero parçaları (bkz. useContentReveal).
 const heroHeadingRef = ref<HTMLElement | null>(null);
 const heroSubtitleRef = ref<HTMLElement | null>(null);
 const heroActionsRef = ref<HTMLElement | null>(null);
@@ -288,29 +295,18 @@ const showroomDepthRef = ref(1 + SHOWROOM_DEPTH); // delik ardındaki derinlik (
 // Sprite ilk kez SONUÇLANANA kadar (başarı ya da hata) showroom gizli tutulur.
 const isDoorPainted = ref(false);
 const isShowroomActive = ref(false); // yalnız body sınıfı için (hub'ı gizler)
+const isPageContentVisible = useState<boolean>("kardoor-page-content-visible", () => true);
 const { $smoother } = useNuxtApp();
-
-// Perde açılınca hero başlığı, alt başlık, CTA'lar ve kaydırma ipucu birlikte
-// belirir. Kapı sahnesinin kendi scroll animasyonlarından bağımsızdır.
-useContentReveal({
-  targets: () => [
-    heroHeadingRef.value,
-    heroSubtitleRef.value,
-    heroActionsRef.value,
-    heroCueRef.value
-  ]
-});
-
-const { track: trackStartup } = useStartupProgress();
 
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
-// Girdi otoritesi (tekerlek + klavye) — kendi bandını yönetir, bkz. useEntranceInput.
-let entranceInput: ReturnType<typeof useEntranceInput> | null = null;
 let teardown: (() => void) | undefined;
+let heroSupportingTween: ReturnType<typeof gsap.to> | undefined;
 let configureHeadingTween: ReturnType<typeof gsap.to> | undefined;
 let configureCopyTween: ReturnType<typeof gsap.to> | undefined;
 let configureCopyLastWordTween: ReturnType<typeof gsap.to> | undefined;
+let isHeroSupportingIntroPrepared = false;
+let hasPlayedHeroSupportingIntro = false;
 let hasPlayedConfigureHeadingIntro = false;
 let hasPlayedConfigureCopyIntro = false;
 let hasPlayedConfigureCopyLastWordIntro = false;
@@ -373,6 +369,59 @@ const placeDoor = () => {
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const getHeroSupportingTargets = () => {
+  const heading = heroHeadingRef.value;
+  const subtitle = heroSubtitleRef.value;
+  const actions = heroActionsRef.value;
+  const cue = heroCueRef.value;
+  return heading && subtitle && actions && cue ? [heading, subtitle, actions, cue] : [];
+};
+
+const prepareHeroSupportingIntro = () => {
+  if (isHeroSupportingIntroPrepared || prefersReducedMotion()) return;
+
+  const targets = getHeroSupportingTargets();
+  if (targets.length === 0) return;
+
+  gsap.set(targets, {
+    filter: "blur(20px)",
+    opacity: 0,
+    scale: 0.9
+  });
+  isHeroSupportingIntroPrepared = true;
+};
+
+const playHeroSupportingIntro = () => {
+  const targets = getHeroSupportingTargets();
+  if (targets.length === 0 || hasPlayedHeroSupportingIntro) return;
+
+  hasPlayedHeroSupportingIntro = true;
+
+  if (prefersReducedMotion()) {
+    gsap.set(targets, { clearProps: "filter,opacity,scale" });
+    return;
+  }
+
+  prepareHeroSupportingIntro();
+  heroSupportingTween?.kill();
+  heroSupportingTween = gsap.to(targets, {
+    filter: "blur(0px)",
+    opacity: 1,
+    scale: 1,
+    duration: 1.5,
+    ease: "power2.out",
+    overwrite: "auto",
+    clearProps: "filter,opacity,scale",
+    onComplete: () => {
+      heroSupportingTween = undefined;
+    }
+  });
+};
+
+watch(isPageContentVisible, (isVisible) => {
+  if (isVisible) playHeroSupportingIntro();
+});
 
 const playConfigureHeadingIntro = () => {
   const heading = configureHeadingRef.value;
@@ -539,7 +588,7 @@ const updateMaster = (raw: number) => {
   // delikten görünen kesit hero büyürken kaymaz (transform-origin = delik).
   showroomDepthRef.value = 1 + (1 - zoomP) * SHOWROOM_DEPTH;
 
-  // Body sınıfı (iletişim hub'ını gizler) ESKİ eşikte kalır — showroom
+  // Body sınıfı (FloatingContactHub'ı gizler) ESKİ eşikte kalır — showroom
   // görünür oldu diye hero fazında hub'ı kaybetmeyelim.
   const showroomFade = easeInOut(clamp01((p - SHOWROOM_START) / (SHOWROOM_COVER - SHOWROOM_START)));
   isShowroomActive.value = showroomFade > 0.02;
@@ -585,20 +634,8 @@ onMounted(() => {
   const section = sectionRef.value;
   if (!section || !canvasRef.value) return;
 
-  // Sprite yüklemesi İLK İŞ. Aşağıdaki kurulum bloğu (settle mantığı,
-  // ScrollTrigger, input katmanı) senkron çalışıyor ve yüklemeyi
-  // geciktiriyordu: rota dönüşünde hero mount olduktan ~1.3sn sonra kapı
-  // deliği doluyordu (ölçüldü). Fetch şimdi başlarsa o iş kurulum sırasında
-  // paralel ilerliyor.
-  const doorLoad = door
-    .load(doorMeta.value)
-    .catch((error) => {
-      console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
-    })
-    .finally(() => {
-      isDoorPainted.value = true;
-    });
-
+  prepareHeroSupportingIntro();
+  if (isPageContentVisible.value) playHeroSupportingIntro();
   placeDoor();
   let previousProgress = 0;
   let scrollTween: ReturnType<typeof gsap.to> | undefined;
@@ -754,29 +791,13 @@ onMounted(() => {
     }
   };
 
-  /**
-   * Giriş sahnesinin TEK karar fonksiyonu. Wheel ve klavye aynı buradan geçer:
-   * tekerlek `deltaY`'nin yalnız İŞARETİNİ kullanıyordu, dolayısıyla girdi
-   * türünden bağımsız tek sözleşme = yön (+1 aşağı / -1 yukarı) + iptal.
-   *
-   * `strength`: portal geri-çekme eşiği için kullanılan ham şiddet. Tekerlekte
-   * |deltaY|, klavyede sabit (tuş basımı zaten kasıtlı bir hareket).
-   * `cancel()`: sadece wheel'de preventDefault; klavyede çağıran karar verir.
-   */
-  const driveEntrance = (direction: 1 | -1, strength: number, cancel: () => void) => {
-    // `|| !getSmoother()` KALDIRILDI: ScrollSmoother yoksa sahne hiç
-    // sürülmüyordu. Ama smoother yalnız masaüstünde kuruluyor (bkz.
-    // scroll.client.ts → isTouchDevice), yani coarse-pointer'lı ≤1024px bir
-    // cihazda bu bileşen mount olursa kapı seçimi ölü kalıyordu.
-    // settleToProgress'in native dalı (gsap.to(window,{scrollTo})) zaten
-    // çalışıyor — ölçüldü, snap'ler iki modda birebir aynı
-    // (5270/5435/5600/5765/5929, deltalar 165/165/165/164).
-    if (!trigger) return;
+  const onWheel = (event: WheelEvent) => {
+    if (!trigger || !getSmoother()) return;
 
     if (isAutoSettling) {
-      cancel();
-      if (isPortalSettling && settleDirection > 0 && direction < 0 && strength > 8) pullThroughPortal(-1);
-      else if (isPortalSettling && settleDirection < 0 && direction > 0 && strength > 8) pullThroughPortal(1);
+      event.preventDefault();
+      if (isPortalSettling && settleDirection > 0 && event.deltaY < -8) pullThroughPortal(-1);
+      else if (isPortalSettling && settleDirection < 0 && event.deltaY > 8) pullThroughPortal(1);
       return;
     }
 
@@ -798,8 +819,8 @@ onMounted(() => {
     const inHorizontalBand =
       scrollY > horizontalBandStartY + 1 && scrollY <= trigger.end + 1;
     if (inHorizontalBand) {
-      if (direction < 0) {
-        cancel();
+      if (event.deltaY < 0) {
+        event.preventDefault();
         if (performance.now() < settleCooldownUntil || wheelGestureLocked) return;
         wheelGestureLocked = true;
         lockedDoorIndex = DOOR_SNAP_POINTS.length - 1;
@@ -815,11 +836,12 @@ onMounted(() => {
       return;
     }
 
-    cancel();
-    if (performance.now() < settleCooldownUntil || strength < 2) return;
+    event.preventDefault();
+    if (performance.now() < settleCooldownUntil || Math.abs(event.deltaY) < 2) return;
     if (wheelGestureLocked) return;
     wheelGestureLocked = true;
 
+    const direction = event.deltaY > 0 ? 1 : -1;
     if (lockedDoorIndex === undefined) lockedDoorIndex = getNearestDoorIndex(progress);
     const targetIndex = lockedDoorIndex + direction;
 
@@ -838,25 +860,18 @@ onMounted(() => {
     isPortalSettling = false;
     settleToProgress(DOOR_SNAP_POINTS[targetIndex]!, direction);
   };
+  // finally: yükleme BAŞARISIZ olsa bile showroom açılır. Aksi halde sprite
+  // 404'lerse delik sonsuza dek kapalı kalır ve sahne hiç görünmez.
+  door
+    .load(doorMeta.value)
+    .catch((error) => {
+      console.error("[EntranceDoorLab] Kapı sprite yüklenemedi.", error);
+    })
+    .finally(() => {
+      isDoorPainted.value = true;
+    });
 
-  // Girdi (tekerlek + klavye) artık useEntranceInput'un sorumluluğu. Sahne
-  // yalnız `driveEntrance` sözleşmesini sağlar; girdi türünü hiç bilmez.
-  // Listener'lar sadece pin bandı aktifken DOM'a bağlanır (aşağıda start()).
-  entranceInput = useEntranceInput({
-    trigger: section,
-    drive: driveEntrance,
-    start: "top top",
-    end: () => `+=${Math.round(window.innerHeight * 9)}`
-  });
-
-  // Açılış perdesi bu üç işi bekler — sabit süre yerine gerçek yükleme.
-  // Hero görseli LCP adayı, sprite kapı deliğini dolduran katman, fontlar
-  // ise perde açılınca metnin yeniden akmasını önler.
-  trackStartup("hero-image", whenImageReady(heroSrc.value));
-  trackStartup("door-sprite", doorLoad);
-  trackStartup("fonts", whenFontsReady());
-
-  entranceInput.start();
+  window.addEventListener("wheel", onWheel, { passive: false });
 
   // Tek pinli scrub: progress 0→1 boyunca PORTAL → HOLD → ZOOM → SHOWROOM.
   trigger = ScrollTrigger.create({
@@ -925,14 +940,19 @@ onMounted(() => {
 
   teardown = () => {
     scrollTween?.kill();
+    heroSupportingTween?.kill();
+    heroSupportingTween = undefined;
+    const heroSupportingTargets = getHeroSupportingTargets();
+    if (heroSupportingTargets.length) {
+      gsap.set(heroSupportingTargets, { clearProps: "filter,opacity,scale" });
+    }
     configureHeadingTween?.kill();
     configureCopyTween?.kill();
     configureCopyLastWordTween?.kill();
     settleToDoorIndex = undefined;
     if (resizeDebounce) window.clearTimeout(resizeDebounce);
     resizeDebounce = 0;
-    entranceInput?.destroy();
-    entranceInput = null;
+    window.removeEventListener("wheel", onWheel);
     window.removeEventListener("resize", onResize);
     window.removeEventListener("kardoor:home", goHome);
     trigger?.kill(true);
@@ -946,8 +966,8 @@ watch(doorMeta, (url) => {
   door.load(url).catch(() => {});
 });
 
-// Showroom fazına girince <body>'ye işaret koy → sağ alttaki iletişim hub'ı
-// (ContactHub) CSS ile gizlenir. Kapı açıldıktan sonra hub görünmesin.
+// Showroom fazına girince <body>'ye işaret koy → global "Görüşelim" hub'ı
+// (FloatingContactHub) CSS ile gizlenir. Kapı açıldıktan sonra hub görünmesin.
 watch(isShowroomActive, (on) => {
   if (typeof document === "undefined") return;
   document.body.classList.toggle("entrance-lab-showroom-on", on);
@@ -1089,7 +1109,7 @@ onBeforeUnmount(() => {
 
     <!-- KAYDIR ipucu — scroll başlayınca kaybolur (--hero-cue-opacity). -->
     <div ref="heroCueRef" class="entrance-lab__cue" aria-hidden="true">
-      <span class="entrance-lab__cue-label">{{ scrollCue }}</span>
+      <span class="entrance-lab__cue-label">{{ copy.scrollCue }}</span>
       <span class="entrance-lab__scroll-device">
         <span class="entrance-lab__scroll-motion" />
       </span>

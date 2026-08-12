@@ -24,14 +24,14 @@
 
   <slot name="before-references-title" />
 
-  <div ref="titleContainerRef" class="ada-title-container">
-    <h4 ref="titleRef" class="ada-giant-title">
+  <div class="ada-title-container">
+    <h4 class="ada-giant-title">
       {{ manifestoCopy.brandsTitle }}
     </h4>
   </div>
 
-  <div ref="loopContainerRef" class="ada-subtitle-container">
-    <div ref="loopTrackRef" class="ada-loop-track">
+  <div class="ada-subtitle-container">
+    <div class="ada-loop-track">
       <div v-for="group in 2" :key="'brand-row-a-' + group" class="ada-loop-group" :aria-hidden="group === 2 ? 'true' : undefined">
         <span v-for="brand in primaryBrands" :key="group + brand.name" class="ada-loop-item">
           <img class="ada-brand-logo" :src="brand.src" :alt="brand.name">
@@ -40,8 +40,8 @@
     </div>
   </div>
 
-  <div ref="loopContainerReverseRef" class="ada-subtitle-container-reverse">
-    <div ref="loopTrackReverseRef" class="ada-loop-track-reverse">
+  <div class="ada-subtitle-container-reverse">
+    <div class="ada-loop-track-reverse">
       <div v-for="group in 2" :key="'brand-row-b-' + group" class="ada-loop-group" :aria-hidden="group === 2 ? 'true' : undefined">
         <span v-for="brand in secondaryBrands" :key="group + brand.name" class="ada-loop-item">
           <span v-if="brand.name === 'Microsoft'" class="ada-brand-logo ada-brand-logo-microsoft" aria-label="Microsoft" role="img">
@@ -151,13 +151,7 @@ const kurManifestoAnimasyonu = () => {
     });
 
     // Trigger geç kurulduğu için konum bilgisi güncel değil; bir kez ölçtür.
-    //
-    // YALNIZ KENDİ trigger'ı — global ScrollTrigger.refresh() DEĞİL. Bu
-    // kurulum kullanıcı bölüme yaklaşırken çalışıyor; global refresh o anda
-    // hero'nun pin'ini ve komşu bölümlerin geometrisini de yeniden ölçüyordu.
-    // Aynı kural HomeReferences'ta da yazılı: bir bölüm kendi ölçüsünü
-    // tazeler, komşularının pin'ine dokunmaz.
-    quoteScrollTrigger.refresh();
+    ScrollTrigger.refresh();
 
     // onEnter yalnızca GEÇİŞTE ateşler. Kurulum anında kullanıcı başlangıç
     // noktasını geçmişse hiç tetiklenmez ve harfler opacity:0 kalırdı.
@@ -166,120 +160,8 @@ const kurManifestoAnimasyonu = () => {
   }
 };
 
-// ── BAŞLIK + LOGO TICKER'LARI ─────────────────────────────────────────────
-// Bu blok HomeExperience'tan taşındı. Orada parent, bu bileşenin DOM'unu
-// document.querySelector ile bulup ('.ada-giant-title', '.ada-loop-track' …)
-// üzerine kendi animasyonlarını kuruyordu — yani manifesto'nun İKİ sahibi
-// vardı. Artık her şey burada ve kök scope'a bağlı bir gsap.context içinde;
-// dışarıdan global seçici ile erişim yok, unmount'ta tek revert temizliyor.
-const titleRef = ref<HTMLElement | null>(null);
-const titleContainerRef = ref<HTMLElement | null>(null);
-const loopTrackRef = ref<HTMLElement | null>(null);
-const loopContainerRef = ref<HTMLElement | null>(null);
-const loopTrackReverseRef = ref<HTMLElement | null>(null);
-const loopContainerReverseRef = ref<HTMLElement | null>(null);
-
-const premiumEase = "power3.out";
-const silkEase = "sine.inOut";
-
-let brandsContext: ReturnType<typeof gsap.context> | null = null;
-let brandsCleanup: Array<() => void> = [];
-
-const splitTitleToFloatingChars = (element: HTMLElement) => {
-  const text = (element.textContent || "").trim().replace(/\s+/g, " ");
-
-  if (!text || element.dataset.floatReady === "true") return;
-
-  element.innerHTML = "";
-  element.dataset.floatReady = "true";
-
-  text.split(" ").forEach((word, wordIndex, words) => {
-    const wordSpan = document.createElement("span");
-    wordSpan.className = "ada-title-float-word";
-
-    Array.from(word).forEach((char, charIndex) => {
-      const charSpan = document.createElement("span");
-      charSpan.className = "ada-title-float-char";
-      if (wordIndex === 0 && charIndex === 0) charSpan.classList.add("ada-first-letter");
-      charSpan.textContent = char;
-      wordSpan.appendChild(charSpan);
-    });
-
-    element.appendChild(wordSpan);
-    if (wordIndex < words.length - 1) element.appendChild(document.createTextNode(" "));
-  });
-};
-
-/** Sonsuz kayan logo şeridi + hover'da yumuşak duraklatma. */
-const kurTicker = (track: HTMLElement, container: HTMLElement, reverse: boolean) => {
-  const tween = reverse
-    ? gsap.fromTo(track, { xPercent: -50 }, { xPercent: 0, duration: 160, ease: "none", repeat: -1 })
-    : gsap.to(track, { xPercent: -50, duration: 160, ease: "none", repeat: -1 });
-
-  gsap.fromTo(
-    container,
-    { opacity: 0, y: 70 },
-    {
-      opacity: 1,
-      y: 0,
-      duration: 1.75,
-      ease: premiumEase,
-      scrollTrigger: { trigger: container, start: "top 92%", end: "bottom 34%", scrub: 1.35 }
-    }
-  );
-
-  const pause = () => gsap.to(tween, { timeScale: 0, duration: 1.6, ease: premiumEase });
-  const play = () => gsap.to(tween, { timeScale: 1, duration: 1.8, ease: silkEase });
-
-  container.addEventListener("mouseenter", pause);
-  container.addEventListener("mouseleave", play);
-  brandsCleanup.push(() => {
-    container.removeEventListener("mouseenter", pause);
-    container.removeEventListener("mouseleave", play);
-  });
-};
-
-const kurMarkaAnimasyonlari = () => {
-  brandsContext = gsap.context(() => {
-    const titleContainer = titleContainerRef.value;
-    const title = titleRef.value;
-
-    if (titleContainer) titleContainer.style.setProperty("overflow", "visible", "important");
-
-    if (title) {
-      title.style.setProperty("overflow", "visible", "important");
-      splitTitleToFloatingChars(title);
-
-      gsap.fromTo(
-        title.querySelectorAll(".ada-title-float-char"),
-        { yPercent: 115, rotateX: -72, opacity: 0, scale: 0.96, filter: "blur(10px)" },
-        {
-          yPercent: 0,
-          rotateX: 0,
-          opacity: 1,
-          scale: 1,
-          filter: "blur(0px)",
-          duration: 1.05,
-          ease: "power4.out",
-          stagger: { amount: 0.38, from: "center", ease: silkEase },
-          scrollTrigger: { trigger: title, start: "top 92%", toggleActions: "play none none none", once: true }
-        }
-      );
-    }
-
-    if (loopTrackRef.value && loopContainerRef.value) {
-      kurTicker(loopTrackRef.value, loopContainerRef.value, false);
-    }
-    if (loopTrackReverseRef.value && loopContainerReverseRef.value) {
-      kurTicker(loopTrackReverseRef.value, loopContainerReverseRef.value, true);
-    }
-  }, manifestoQuoteRef.value?.closest("section") ?? undefined);
-};
-
 onMounted(async () => {
   await nextTick();
-
-  kurMarkaAnimasyonlari();
 
   const quoteElement = manifestoQuoteRef.value;
   if (!quoteElement) return;
@@ -307,13 +189,6 @@ onBeforeUnmount(() => {
   quoteTimeline = null;
   quoteSplit?.revert();
   quoteSplit = null;
-
-  // Marka bloğu: context tüm tween/ScrollTrigger'ları tek seferde geri alır,
-  // listener'lar ayrıca sökülür.
-  brandsContext?.revert();
-  brandsContext = null;
-  brandsCleanup.forEach((task) => task());
-  brandsCleanup = [];
 });
 
 const primaryBrands = [
