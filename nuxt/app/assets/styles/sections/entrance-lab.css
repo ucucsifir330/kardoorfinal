@@ -718,3 +718,127 @@
     opacity: 0.86;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   SSR KABUĞU — sunucudan basılan hero (ClientOnly fallback).
+   Ana sayfa eskiden SSR'da BOŞ çıkıyordu: h1 yok, img yok, dolayısıyla
+   arama motorunda içerik, tarayıcının preload scanner'ında da hero
+   görseli yoktu. Bu kabuk o boşluğu doldurur ve interaktif sahne mount
+   olunca yerini ona bırakır.
+
+   Ölçüler .entrance-lab__copy-mask / __heading / __subtitle ile BİREBİR
+   aynı tutuldu — aksi halde sahne mount olduğunda metin yer değiştirip
+   görünür bir sıçrama olurdu.
+   ────────────────────────────────────────────────────────────── */
+
+.entrance-ssr-shell {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--ambience-bg);
+}
+
+.entrance-ssr-shell__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.entrance-ssr-shell__copy {
+  position: absolute;
+  left: clamp(20px, 3.9vw, 126px);
+  top: clamp(130px, 19svh, 340px);
+  width: clamp(280px, 32.33vw, 1000px);
+  max-width: 100%;
+  z-index: 3;
+  text-align: left;
+}
+
+.entrance-ssr-shell__heading {
+  margin: 0;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(44px, 4.89vw, 160px);
+  line-height: 1.04;
+  font-weight: 500;
+  color: #071018;
+}
+
+.entrance-ssr-shell__heading > span {
+  display: block;
+  padding-bottom: 0.06em;
+}
+
+.entrance-ssr-shell__heading > span + span {
+  margin-top: -0.08em;
+}
+
+.entrance-ssr-shell__heading-accent {
+  font-size: 0.86em;
+  color: var(--accent);
+}
+
+.entrance-ssr-shell__heading em {
+  font: inherit;
+  font-style: normal;
+  color: inherit;
+}
+
+.entrance-ssr-shell__subtitle {
+  width: min(100%, clamp(232px, 18.59vw, 600px));
+  /* margin-top (shorthand DEĞİL): geniş ekran bloğu yalnız margin-top
+     yazıyor; shorthand burada onunla aynı özgüllükte olup sonradan
+     uygulandığında değeri geri alıyordu. */
+  margin: 0;
+  margin-top: calc(clamp(14px, 1.35vw, 40px) + 10px);
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(18px, 1.35vw, 42px);
+  line-height: 1.3;
+  font-weight: 400;
+  color: #071018;
+  text-wrap: balance;
+}
+
+.entrance-ssr-shell__subtitle em {
+  font-style: normal;
+  color: inherit;
+}
+
+.entrance-ssr-shell__cta {
+  margin-top: 32px;
+}
+
+/* Gece teması — app-shell sınıfı SSR'da inline script'ten geldiği için
+   kabuk ilk boyamada da doğru renkte çıkar. */
+.app-shell--night .entrance-ssr-shell__heading,
+.app-shell--night .entrance-ssr-shell__subtitle {
+  color: #f7f7f2;
+}
+
+.app-shell--night .entrance-ssr-shell__subtitle {
+  color: rgba(247, 247, 242, 0.82);
+}
+
+/* Geniş ekran: gerçek hero (.entrance-lab__heading) svh ile de sınırlanıyor.
+   Kabuk bu kuralı almazsa mount anında başlık 70.5px'ten 63.6px'e düşüp
+   görünür bir sıçrama yapıyordu — ölçülerek eşitlendi. */
+@media (min-width: 1181px) {
+  .entrance-ssr-shell__heading {
+    font-size: min(8.69svh, 4.89vw);
+  }
+
+  .entrance-ssr-shell__subtitle {
+    margin-top: calc(min(2.4svh, 1.35vw) + 10px);
+    font-size: min(2.4svh, 1.35vw);
+  }
+
+  .entrance-ssr-shell__cta {
+    margin-top: 2.96svh;
+  }
+}

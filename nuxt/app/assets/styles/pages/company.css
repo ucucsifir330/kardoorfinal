@@ -296,10 +296,12 @@ body:has(.app-shell--day .company-timeline) main {
   background: #f8f6ef;
 }
 
+/* Zemin rengi BURADA DEGIL — tek kaynak --footer-surface (base/tokens.css).
+   Dikis ortucusu rengi de oradan alir; eskiden ikisi de #080B18 sabitti ve
+   gunduz temada sayfa paletinden kopuyordu. */
 .app-shell:has(.company-timeline) .footer-wrapper {
   margin-top: -2px;
   padding-top: clamp(8rem, 13svh, 11rem);
-  background: #080B18;
 }
 
 .app-shell:has(.company-timeline) .footer-wrapper::before {
@@ -309,17 +311,13 @@ body:has(.app-shell--day .company-timeline) main {
   height: 4px;
   z-index: 1;
   pointer-events: none;
-  background: #080B18;
+  background: var(--footer-surface);
 }
 
-.app-shell:has(.company-timeline) .footer-dome {
-  transform: none;
-}
-
-.app-shell--day:has(.company-timeline) .footer-wrapper,
-.app-shell--day:has(.company-timeline) .footer-wrapper::before {
-  background: #f8f6ef !important;
-}
+/* `transform: none` KALDIRILDI: GSAP kubbeyi translate ederek animasyonu
+   suruyordu, bu kural onu company sayfasinda tamamen olduruyordu.
+   Zemin ezmesi de kaldirildi (dorduncu kirli beyaz: #f8f6ef); artik
+   --footer-surface ile sayfanin geri kalaniyla ayni. */
 
 .app-shell--day .company-timeline__track::before {
   background: var(--hairline);

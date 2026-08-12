@@ -95,8 +95,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Page transitions (out-in): jump to top and recalc after the new page settles.
   //
-  // Ana sayfanın hero'su (EntranceDoorLab) HomeContentLoader üzerinden LAZY mount
-  // edilir → bu hook çalıştığında pin trigger HENÜZ kurulmamış olabilir. Tek bir
+  // Ana sayfanın hero'su (EntranceDoorLab) `<ClientOnly>` içinde mount edilir →
+  // bu hook çalıştığında pin trigger HENÜZ kurulmamış olabilir. Tek bir
   // rAF-refresh, pin var olmadan çalışıp boşa gidiyor; pin sonradan ScrollSmoother'ın
   // güncel transform state'ine göre kuruluyor ve section ~60px kayıp altta/üstte
   // zemin şeridi bırakıyordu. Çözüm: birkaç frame boyunca refresh'i tekrarla — geç
@@ -105,25 +105,54 @@ export default defineNuxtPlugin((nuxtApp) => {
     const smoother = ScrollSmoother.get();
     smoother?.scrollTo(0, false);
 
-    // Sabit 8 frame yerine: trigger sayısı sabitlenene kadar ölç, sonra dur.
-    // refresh() tüm sayfa geometrisini okur; her sayfa geçişinde 8 kez tekrar
-    // etmek geçişlerdeki takılmanın kaynağıydı. Tavan yine 8, yani en kötü
-    // durumda eski davranış korunur.
-    let frame = 0;
-    let oncekiSayi = -1;
-    let sabitFrame = 0;
+    // Kare saymak YETMİYOR: hero `<ClientOnly>` içinde ve rota dönüşünde
+    // ~1400ms sonra mount oluyor (ölçüldü). 8 karelik döngü ~130ms'de bitip
+    // pin daha yokken duruyordu; pin sonradan ScrollSmoother'ın o anki
+    // transform'una göre kuruluyor ve hero ~57px kayıyordu — altında zemin
+    // şeridi ("çukur") kalıyordu.
+    //
+    // Onun yerine DOM'u izliyoruz: pin kurulunca (ya da geometrisi
+    // oturunca) ölçüyoruz. Zaman aşımı 3sn — gözlemci asla asılı kalmaz.
+    let sonPinYuksekligi = -1;
+    let sabitTur = 0;
+    let bitti = false;
 
-    const tick = () => {
+    const olcVeKontrolEt = () => {
+      if (bitti) return;
       ScrollTrigger.refresh();
 
-      const sayi = ScrollTrigger.getAll().length;
-      sabitFrame = sayi === oncekiSayi ? sabitFrame + 1 : 0;
-      oncekiSayi = sayi;
+      const pin = document.querySelector<HTMLElement>(".pin-spacer");
+      const yukseklik = pin ? Math.round(pin.getBoundingClientRect().height) : -1;
 
-      if (sabitFrame >= 2 || ++frame >= 8) return;
-      requestAnimationFrame(tick);
+      // Yükseklik iki tur üst üste aynıysa geometri oturmuş demektir.
+      sabitTur = yukseklik === sonPinYuksekligi && yukseklik > 0 ? sabitTur + 1 : 0;
+      sonPinYuksekligi = yukseklik;
+
+      if (sabitTur >= 2) durdur();
     };
-    requestAnimationFrame(tick);
+
+    const gozlemci = new MutationObserver(() => requestAnimationFrame(olcVeKontrolEt));
+    const zamanAsimi = window.setTimeout(() => durdur(), 3000);
+
+    function durdur() {
+      if (bitti) return;
+      bitti = true;
+      gozlemci.disconnect();
+      window.clearTimeout(zamanAsimi);
+
+      // GECİKMELİ SON ÖLÇÜM ŞART. Pin kurulup yüksekliği sabitlense bile
+      // hero'nun iç geometrisi (görsel yükleme, font, kapı yerleşimi) bir
+      // sonraki karelerde oturmaya devam ediyor. Bu ölçüm olmadan pin
+      // ~57px kaymış kalıyor ve hero'nun altında zemin şeridi görünüyor
+      // (ölçüldü: elle `refresh()` çağırınca boşluk 57 → 0).
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+      window.setTimeout(() => ScrollTrigger.refresh(), 400);
+      window.setTimeout(() => ScrollTrigger.refresh(), 1200);
+    }
+
+    gozlemci.observe(document.body, { childList: true, subtree: true });
+    requestAnimationFrame(olcVeKontrolEt);
+
     // Fontlar/görseller geç çözülürse son bir ölçüm daha.
     document.fonts?.ready.then(() => requestAnimationFrame(() => ScrollTrigger.refresh()));
   });
