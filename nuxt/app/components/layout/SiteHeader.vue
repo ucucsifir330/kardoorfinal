@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import gsap from "gsap";
-import { useNuxtApp, useRoute, useState } from "#imports";
+import { useNuxtApp, useRoute } from "#imports";
 import { useKardoorLocale } from "~/composables/useKardoorLocale";
+import { useContentReveal } from "~/composables/useContentReveal";
 
 /**
  * Site header — iki bağımsız parça:
@@ -30,17 +31,13 @@ const MENU_MODE_QUERY = "(max-width: 1120px)";
 
 const isHidden = ref(false);
 const isMenuOpen = ref(false);
-/**
- * SSR'da her zaman false. matchMedia yalnız onMounted'da okunur, böylece ilk
- * client render'ı sunucu çıktısıyla birebir eşleşir (hydration uyuşmazlığı yok).
- */
-const isMenuMode = ref(false);
 
 const navRoot = ref<HTMLElement | null>(null);
 const navBarRevealRef = ref<HTMLElement | null>(null);
 const panelWrap = ref<HTMLElement | null>(null);
 const panel = ref<HTMLElement | null>(null);
-const isPageContentVisible = useState<boolean>("kardoor-page-content-visible", () => true);
+// Navbar, perde açıldıktan sonra hero ile aynı anda belirir (bkz. useContentReveal).
+useContentReveal({ targets: () => [navBarRevealRef.value] });
 
 /**
  * Her öğe İKİ dildeki etiketini de taşır. Şablon, görünen etiketin altına
@@ -110,64 +107,20 @@ const menuToggleLabel = computed(() => {
   return isTurkish.value ? "Menüyü aç" : "Open navigation";
 });
 
-const logoLabel = computed(() =>
-  isMenuMode.value ? menuToggleLabel.value : brandLabel.value
-);
+/**
+ * K'nin etiketi HER ZAMAN marka/ana sayfa. Önceden menü modunda
+ * "Menüyü aç" diyordu — K artık menü açmıyor, yalnız ana sayfaya
+ * gidiyor; o etiket ekran okuyucuya yanlış bilgi veriyordu.
+ */
+const logoLabel = brandLabel;
 
 /* ── Menü animasyonu ───────────────────────────────────────────────────── */
 
 let animationContext: ReturnType<typeof gsap.context> | null = null;
 let menuTimeline: ReturnType<typeof gsap.timeline> | null = null;
-let pageIntroTween: ReturnType<typeof gsap.to> | null = null;
-let isPageIntroPrepared = false;
-let hasPlayedPageIntro = false;
 
 const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const getPageIntroTargets = () =>
-  navBarRevealRef.value ? [navBarRevealRef.value] : [];
-
-const preparePageIntro = () => {
-  if (isPageIntroPrepared || prefersReducedMotion()) return;
-
-  const targets = getPageIntroTargets();
-  if (targets.length === 0) return;
-
-  gsap.set(targets, {
-    filter: "blur(20px)",
-    opacity: 0,
-    scale: 0.9
-  });
-  isPageIntroPrepared = true;
-};
-
-const playPageIntro = () => {
-  const targets = getPageIntroTargets();
-  if (targets.length === 0 || hasPlayedPageIntro) return;
-
-  hasPlayedPageIntro = true;
-
-  if (prefersReducedMotion()) {
-    gsap.set(targets, { clearProps: "filter,opacity,scale" });
-    return;
-  }
-
-  preparePageIntro();
-  pageIntroTween?.kill();
-  pageIntroTween = gsap.to(targets, {
-    filter: "blur(0px)",
-    opacity: 1,
-    scale: 1,
-    duration: 1.5,
-    ease: "power2.out",
-    overwrite: "auto",
-    clearProps: "filter,opacity,scale",
-    onComplete: () => {
-      pageIntroTween = null;
-    }
-  });
-};
 
 const getLogoElement = () =>
   navRoot.value?.querySelector<HTMLElement>(".site-nav__logo") ?? null;
@@ -186,10 +139,25 @@ const killMenuAnimation = (items = getPanelItems()) => {
 };
 
 /** Panel, damlanın merkezinden büyüyüp yine oraya kapanır. */
-const setPanelOrigin = () => {
-  const logo = getLogoElement();
+/**
+ * ≤880px'te menü, K'den büyüyen bir kabarcık DEĞİL — çubuktan aşağı inen
+ * bir PERDE. Referanstan ölçüldü (supaste.com 430x932): nav ekranın
+ * tepesine yapışık, açılınca yüksekliği 50px → 506px büyüyor.
+ */
+const isPerdeModu = () =>
+  import.meta.client && window.matchMedia("(max-width: 880px)").matches;
 
-  if (!panel.value || !panelWrap.value || !logo) return;
+const setPanelOrigin = () => {
+  if (!panel.value || !panelWrap.value) return;
+
+  // Perde üst kenardan açılır; origin çubuğun üstü.
+  if (isPerdeModu()) {
+    gsap.set(panel.value, { transformOrigin: "50% 0%" });
+    return;
+  }
+
+  const logo = getLogoElement();
+  if (!logo) return;
 
   const logoRect = logo.getBoundingClientRect();
   const wrapRect = panelWrap.value.getBoundingClientRect();
@@ -232,8 +200,23 @@ const openMenu = () => {
 
   runInAnimationContext(() => {
     if (prefersReducedMotion()) {
-      gsap.set(panel.value, { scale: 1, opacity: 1 });
+      gsap.set(panel.value, { scale: 1, scaleY: 1, opacity: 1 });
       gsap.set(items, { y: 0, opacity: 1 });
+      return;
+    }
+
+    // PERDE (mobil): yalnız DİKEY açılım. Yatayda panel zaten çubukla aynı
+    // genişlikte; ölçeklenirse kenarlar oynar ve tek parça hissi bozulur.
+    if (isPerdeModu()) {
+      menuTimeline = gsap
+        .timeline({ defaults: { ease: "power4.out" } })
+        .fromTo(panel.value, { scaleY: 0 }, { scaleY: 1, duration: 0.52 }, 0)
+        .fromTo(
+          items,
+          { y: 12, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.3, stagger: 0.045, ease: "power3.out" },
+          0.16
+        );
       return;
     }
 
@@ -270,9 +253,21 @@ const closeMenu = () => {
 
   runInAnimationContext(() => {
     if (prefersReducedMotion()) {
-      gsap.set(panel.value, { scale: 0.08, opacity: 0 });
+      gsap.set(panel.value, isPerdeModu() ? { scaleY: 0 } : { scale: 0.08, opacity: 0 });
       gsap.set(items, { y: 14, opacity: 0 });
       finishClose();
+      return;
+    }
+
+    if (isPerdeModu()) {
+      menuTimeline = gsap
+        .timeline({ onComplete: finishClose })
+        .to(
+          items,
+          { y: -8, opacity: 0, duration: 0.16, stagger: { each: 0.02, from: "end" }, ease: "power2.in" },
+          0
+        )
+        .to(panel.value, { scaleY: 0, duration: 0.34, ease: "power3.in" }, 0.06);
       return;
     }
 
@@ -301,12 +296,9 @@ const toggleMenu = () => {
  *    yerine sayfanın en başına döner.
  */
 const onLogoClick = (event: MouseEvent) => {
-  if (isMenuMode.value) {
-    event.preventDefault();
-    toggleMenu();
-    return;
-  }
-
+  // K yalnız ANA SAYFAYA döner. Eskiden menü modunda paneli açıyordu:
+  // menünün iki ayrı tetikleyicisi olması (K + hamburger) kafa karıştırıyordu.
+  // Tek giriş noktası sağdaki hamburger.
   if (route.path !== "/") return; // başka sayfa → NuxtLink normal çalışsın
 
   event.preventDefault();
@@ -361,8 +353,6 @@ const onKeydown = (event: KeyboardEvent) => {
 let menuModeQuery: MediaQueryList | null = null;
 
 const onMenuModeChange = (event: MediaQueryListEvent | MediaQueryList) => {
-  isMenuMode.value = event.matches;
-
   if (event.matches || !isMenuOpen.value) return;
 
   // Masaüstüne genişlerken panel display:none olur. Açılış tween'i yarıda
@@ -376,9 +366,6 @@ const onMenuModeChange = (event: MediaQueryListEvent | MediaQueryList) => {
 onMounted(() => {
   if (navRoot.value) animationContext = gsap.context(() => {}, navRoot.value);
 
-  preparePageIntro();
-  if (isPageContentVisible.value) playPageIntro();
-
   menuModeQuery = window.matchMedia(MENU_MODE_QUERY);
   onMenuModeChange(menuModeQuery);
   menuModeQuery.addEventListener("change", onMenuModeChange);
@@ -390,11 +377,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  pageIntroTween?.kill();
-  const pageIntroTargets = getPageIntroTargets();
-  if (pageIntroTargets.length) {
-    gsap.set(pageIntroTargets, { clearProps: "filter,opacity,scale" });
-  }
   menuTimeline?.kill();
   animationContext?.revert();
   menuModeQuery?.removeEventListener("change", onMenuModeChange);
@@ -411,9 +393,6 @@ watch(
   }
 );
 
-watch(isPageContentVisible, (isVisible) => {
-  if (isVisible) playPageIntro();
-});
 </script>
 
 <template>
@@ -473,9 +452,7 @@ watch(isPageContentVisible, (isVisible) => {
                 class="site-nav__logo"
                 to="/"
                 :aria-label="logoLabel"
-                :aria-expanded="isMenuMode ? isMenuOpen : undefined"
-                :aria-controls="isMenuMode ? 'site-nav-panel' : undefined"
-                :aria-current="!isMenuMode && isActive('/') ? 'page' : undefined"
+                :aria-current="isActive('/') ? 'page' : undefined"
                 @click="onLogoClick"
               >
                 <span class="site-nav__logo-mark">

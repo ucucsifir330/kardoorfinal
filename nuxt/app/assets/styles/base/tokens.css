@@ -33,11 +33,9 @@
      Bu blok temadan bagimsiz tanimlanir; hangi temanin hangisini kullandigi
      asagidaki .app-shell--day / --night eslemelerinde belirlenir. */
   --brand-100: #EEF0FF;
-  --brand-200: #B9C3FC;
   --brand-300: #8B9BFA;
   --brand-500: #2B4BF2;
   --brand-700: #22318C;
-  --brand-800: #1A2560;
   --brand-900: #0E1338;
 
   /* acik zemin */
@@ -55,6 +53,74 @@
   --slab-fg:   #EDEAF5;
   --slab-soft: #9990B8;
   --slab-line: #2E2750;
+
+  /* --- FOOTER RENK SOZLESMESI --------------------------------------------
+     Footer'in TEK renk kaynagi. Oncesinde 6 dosyaya dagilmis 13 kural vardi
+     (main.css !important blogu, public/themes/*.css, references.vue,
+     contact.css, company.css); olculdu: gunduz wrapper 4 farkli beyaz
+     (#F2EEE6 / #F6F2E9 / #F1EDE5 / #F8F6EF), gece kubbe zeminle BIREBIR ayni
+     (#080B18 = gorunmez kubbe) ve mobilde masaustunden farkli ton.
+
+     Kural: footer'a renk basan baska hicbir yer OLMAMALI. Bir rotanin farkli
+     durmasi gerekiyorsa bu uc degiskeni yeniden atar — deger ezmez.
+       --footer-surface  : kubbenin ARKASI (sayfa zeminiyle surekli olmali)
+       --footer-dome     : kubbenin kendisi (surface'ten bir irtifa ayrisir)
+       --footer-dome-fg  : kubbe uzerindeki metin/ikon
+     Alt serit (.footer-bottom) --footer-surface uzerinde durur; eskiden
+     hardcoded #FFFFFF idi ve tema tanimiyordu. */
+  --footer-surface: var(--paper);
+  --footer-dome:    var(--slab);
+  --footer-dome-fg: var(--slab-fg);
+
+  /* --- YUZEY SOZLESMESI ---------------------------------------------------
+     Bilesenlerin okumasi gereken, ANLAM tasiyan katman. Renk adi degil
+     irtifa tarif eder:
+       --surface        sayfa zemini
+       --surface-raised zeminden YUKSELEN yuzey (kart, panel, modal)
+       --surface-hover  yukselen yuzeyin hover hali
+       --surface-line   bu yuzeylerin kenarligi
+
+     Neden gerekli: `--card-bg` YALNIZCA :root'ta (koyu #171D3D) tanimliydi,
+     `.app-shell--day` icinde karsiligi YOKTU — yani gunduz temada da koyu
+     kalirdi. Bu yuzden hicbir bilesen onu kullanamiyor, herkes main.css'te
+     `.app-shell--night .review-card { background:#171D3D !important }` gibi
+     bilesen-basina gece kurali yaziyordu (olculdu: 25+ !important; bunlar
+     HomeReviews.vue'daki Tailwind class'larini eziyordu).
+
+     Artik bilesen `bg-surface-raised` yazar; degeri asagidaki tema bloklari
+     verir. Degerler MEVCUT olculerden birebir alindi, renk kaymasi yok. */
+  /* DIKKAT: `--surface` BURADA YENIDEN TANIMLANMAZ. O, 43. satirdaki
+     acik-tema kart yuzeyi (#FBF9F5) ve katalog kartlari ondan besleniyor
+     (.home-page .catalog-card). Bir ara `var(--bg)` yapilmisti; kart zemini
+     sayfa zeminine (#F2EEE6) esitlenip kapilarin arkasi duzlesmisti. */
+  --surface-raised: var(--card-bg);
+  --surface-line:   var(--line);
+  /* --surface-hover 6. satirda zaten tanimli (#1D244A) — tema bloklari eziyor. */
+
+  /* Modal yuzeyi — taban deger. Gercek degeri asagidaki
+     `html[data-theme="..."]` kurallari verir; `.app-shell--day/--night`
+     DEGIL. Sebep: modal `<Teleport to="body">` ile govdeye tasiniyor ve
+     `.app-shell` agacinin DISINDA kaliyor (olculdu: modal ebeveyni BODY,
+     `closest('.app-shell')` = false), yani kabuga yazilan tema
+     degiskenlerini miras alamiyor. `html` ise body'nin atasi. */
+  --modal-surface:  var(--card-bg);
+  --modal-raised:   #1D244A;
+  --modal-fg:       var(--text-main);
+  --modal-fg-muted: var(--text-soft);
+  --modal-line:     var(--line);
+
+  /* --- VURGU SOZLESMESI ---------------------------------------------------
+     Marka mavisi ZEMINE gore secilir (PALETTE-light.md, uygulama kurali 2):
+       acik zemin -> 700 (koyu mavi), kontrast yeterli
+       koyu zemin -> 300 (acik mavi), 700 koyuda okunmuyor
+     `--brand-500/700` dogrudan kullanilirsa deger her iki temada AYNI kalir
+     ve gece modunda vurgu zayif duser. Bilesenler bunlari okumali:
+       --accent-fg    metin/ikon vurgusu (seri secici, kod, link)
+       --accent-fill  dolu yuzey (CTA dolgusu) — sayfa basina TEK
+       --accent-on    dolu yuzeyin UZERINDEKI metin */
+  --accent-fg:   var(--brand-700);
+  --accent-fill: var(--brand-700);
+  --accent-on:   var(--brand-100);
 
   /* Sayfa ust bosluklari icin (contact/company). Navbar olculeri
      components/site-header.css'te — tek kaynak orasi. */
@@ -142,22 +208,49 @@
      Tema dosyalari yalnizca DEGISKEN atamali; duzen kurali yazmamali. --- */
   --bg-color: var(--paper);
   --text-primary: var(--ink);
-  --text-secondary: var(--ink-soft);
+  /* `--ink-soft` DEGIL: o ton kart zemininde (#F2EEE6) 3.69:1 veriyor,
+     WCAG AA kucuk metin icin 4.5 istiyor (olculdu: urun adi 13px, urun
+     kodu 10px). Ayni sicak hue'nun daha koyu tonu -> 5.11:1.
+     Deger EN KOYU zemine gore secildi: modal paneli (#FBF9F5) daha acik,
+     orada oran daha da yuksek cikiyor. `--ink-soft` kendisi dokunulmadan
+     duruyor; cizgi/kenarlik gibi metin-disi yerlerde hala dogru deger o. */
+  --text-secondary: #6B6359;
   --entrance-handoff-bg: var(--paper);
   --catalog-stage-bg: var(--paper);
   --catalog-stage-surface-bg: var(--paper);
   --catalog-stage-main-bg: var(--paper);
   --catalog-stage-sticky-bg: var(--paper);
   --catalog-stage-line-track: var(--hairline);
-  /* Ilerleme cizgisi acik zeminde duruyor -> 700. Onceki amber (#B88A44)
-     tek-hue sisteme yabanci tek renkti. */
-  --catalog-stage-line-fill: var(--brand-700);
+  /* Ilerleme cizgisi vurgu sozlesmesinden: acik zeminde 700, gecede 300.
+     Onceki amber (#B88A44) tek-hue sisteme yabanci tek renkti. */
+  --catalog-stage-line-fill: var(--accent-fg);
   --catalog-stage-line-filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
   --catalog-product-scrollbar: rgba(36, 41, 41, 0.45) rgba(36, 41, 41, 0.08);
   --catalog-product-scrollbar-track: var(--hairline);
   --catalog-product-scrollbar-thumb: rgba(62, 111, 115, 0.42);
   --catalog-product-scrollbar-thumb-hover: rgba(62, 111, 115, 0.68);
   --catalog-product-modal-backdrop: rgba(20, 21, 29, 0.48);
+
+  /* Footer: zemin sayfayla SUREKLI (--paper), kubbe koyu editoryal blok. */
+  --footer-surface: var(--paper);
+  --footer-dome:    var(--slab);
+  --footer-dome-fg: var(--slab-fg);
+
+  /* Yuzeyler: kart zeminden bir tik ACIK. `--surface` (#FBF9F5) EZILMEZ —
+     katalog kartlari onu okuyor; `var(--paper)` yapilinca kart sayfa
+     zeminiyle ayni tona dusup kapilarin arkasi duzlesiyordu. */
+  --surface-raised: var(--surface-2);
+  --surface-hover:  #FBF9F5;
+  --surface-line:   var(--hairline);
+
+  /* Modal token'lari BURADA DEGIL — Teleport modali `.app-shell` agacinin
+     disina tasidigi icin buraya yazilanlar ona ulasmaz.
+     Tek dogru yer: dosyanin sonundaki `html[data-theme="light"]` blogu. */
+
+  /* Vurgu: acik zemin -> 700 (koyu mavi). 300 burada yasak, kontrast ~2:1. */
+  --accent-fg:   var(--brand-700);
+  --accent-fill: var(--brand-700);
+  --accent-on:   var(--brand-100);
 
 }
 
@@ -196,6 +289,83 @@
   --catalog-product-scrollbar: rgba(244, 246, 255, 0.45) rgba(244, 246, 255, 0.08);
   --catalog-product-modal-backdrop: rgba(0, 0, 0, 0.62);
 
+  /* Yapi cizgisi gece: bu iki degisken eskiden YALNIZCA .app-shell--day
+     icinde tanimliydi. Gecede cozulemeyince SVG gradyaninin stop-color'i
+     bosa dusuyor ve cizgi hic gorunmuyordu (olculdu: path d="M 35 263 V 5236"
+     ciziliyor, opacity 1, ama boya yok).
+     Vurgu sozlesmesinden besleniyor -> gecede acik mavi (300). */
+  --catalog-stage-line-fill: var(--accent-fg);
+  --catalog-stage-line-track: rgba(244, 246, 255, 0.12);
+
+  /* Bolum zemini gece — TEK KAYNAK burasi.
+     Eskiden yalnizca main.css'teki `.app-shell--night .catalog-section,
+     .ada-team-section, ...` secici LISTESINDE tanimliydi. O listede olmayan
+     bolumler (yorumlar) degiskeni cozemiyor, fallback `--bg-color`a
+     dusuyordu: ekip bolumu #080B18 iken yorumlar #050714 cikiyor ve iki
+     bolum arasinda ince bir ton kirilmasi seridi gorunuyordu (olculdu).
+     Token'da tanimlaninca butun bolumler ayni zemini aliyor. */
+  --catalog-stage-bg:         #080B18;
+  --catalog-stage-surface-bg: #080B18;
+  --catalog-stage-main-bg:    #080B18;
+
+  /* Footer gece: kubbe zeminden BIR IRTIFA acik.
+     Onceden kubbe de #080B18 idi — zeminle birebir ayni, yani kubbe
+     gorunmuyordu ve GSAP'in yay animasyonu calissa bile fark edilmiyordu
+     ("dark temada footer patlamis" sikayetinin kok nedeni, olculdu). */
+  --footer-surface: #080B18;
+  --footer-dome:    #131937;
+  --footer-dome-fg: var(--text-main);
+
+  /* Yuzeyler: kart zeminden bir irtifa YUKARIDA. Degerler main.css'teki
+     !important bloklarindan birebir alindi (kart #171D3D, hover #1D244A). */
+  /* `--surface` gecede de EZILMEZ: katalog kartinin acik-tema degeri.
+     Gece kart rengini home-catalog.css'teki
+     `html[data-theme="dark"] ... .catalog-card { background:#171D3D }`
+     kurali veriyor — token degil. */
+  --surface-raised: var(--card-bg);
+  --surface-hover:  #1D244A;
+  --surface-line:   rgba(244, 246, 255, 0.12);
+
+  /* Modal token'lari BURADA DEGIL — Teleport modali `.app-shell` agacinin
+     disina tasidigi icin buraya yazilanlar ona ulasmaz.
+     Tek dogru yer: dosyanin sonundaki `html[data-theme="dark"]` blogu. */
+
+  /* Vurgu: koyu zeminde 300 (#8B9BFA) — ACIK mavi. 700 (#22318C) koyu
+     lacivert zeminde neredeyse zeminle ayni okunuyor, vurgu olmuyor.
+     Dolu yuzey de bir tik acilir (500) ki CTA gecede de one ciksin. */
+  --accent-fg:   var(--brand-300);
+  --accent-fill: var(--brand-500);
+  --accent-on:   #050714;
+
+}
+
+/* --- MODAL TEMA DEGERLERI ------------------------------------------------
+   `html` uzerinde, `.app-shell--day/--night` uzerinde DEGIL.
+
+   Sebep: katalog modali `<Teleport to="body">` ile govdeye tasiniyor ve
+   `.app-shell` agacinin disinda kaliyor (olculdu: modal ebeveyni BODY,
+   `closest('.app-shell')` = false). Kabuga yazilan tema degiskenleri ona
+   miras akmiyordu; modal her iki temada da ayni renkte kaliyor, gecede
+   beyaz panel uzerinde beyaz metin veriyordu (kontrast 1.72:1 olculdu).
+   `html` body'nin atasi oldugu icin degerler oradan iniyor.
+
+   Degerler sayfanin MEVCUT paletinden alindi, yeni renk uretilmedi:
+     gunduz -> kart yuzeyi #FBF9F5 + #F1EDE5, koyu murekkep
+     gece   -> katalog kartiyla ayni ikili #171D3D + #1D244A, beyaz murekkep */
+html[data-theme="light"] {
+  --modal-surface:  var(--surface);
+  --modal-raised:   var(--surface-2);
+  --modal-fg:       var(--ink);
+  --modal-fg-muted: var(--ink-body);
+  --modal-line:     var(--hairline);
+}
+
+html[data-theme="dark"] {
+  --modal-surface:  var(--card-bg);
+  --modal-raised:   #1D244A;
+  --modal-fg:       var(--text-main);
+  --modal-fg-muted: var(--text-soft);
+  --modal-line:     rgba(244, 246, 255, 0.12);
 }
 
 @media (max-width: 820px) {

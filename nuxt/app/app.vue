@@ -23,6 +23,67 @@ const normalizeTransitionPath = (path: string) => {
 
 const isTransitionRoute = (path: string) => transitionRoutes.has(normalizeTransitionPath(path));
 
+// Koleksiyon kataloğu kendi alt şeridini ve "Model detayı" aksiyonunu taşıyor;
+// yüzen iletişim hub'ı onların üstüne biniyordu. Gizlemek yerine unmount:
+// hub kendi RAF/observer kurulumunu yapıyor, boşuna çalışmasın.
+const isCatalogRoute = computed(() => normalizeTransitionPath(route.path) === "/catalog");
+
+/**
+ * Ana sayfaya dönerken kapı sprite'ını ÖNDEN hazırla.
+ *
+ * Hero `<ClientOnly>` içinde; rota dönüşünde ~1.5sn sonra mount oluyor ve
+ * ancak o zaman `useDoorSprite` modülü + sprite JSON + WebP zinciri
+ * başlıyor. Ölçüldü: modül 500ms, JSON +361ms, çizim +330ms — kapı deliği
+ * ~1.2sn boş (siyah) kalıyordu.
+ *
+ * Geçiş BAŞLARKEN üçünü de tetikliyoruz; hero mount olduğunda hepsi
+ * tarayıcı önbelleğinde hazır oluyor. Hatalar sessizce yutuluyor: bu bir
+ * hızlandırma, davranış şartı değil.
+ */
+const spriteHazirlandi = new Set<string>();
+
+const spriteOnHazirla = () => {
+  if (!import.meta.client) return;
+
+  let gece = false;
+  try {
+    gece = window.localStorage.getItem("kardoor-showroom-ambience") === "night";
+  } catch {
+    // localStorage kapalıysa gündüz varsayılanıyla devam.
+  }
+
+  const metaUrl = gece ? "/kardoor-door-night.json" : "/kardoor-door-light.json";
+  if (spriteHazirlandi.has(metaUrl)) return;
+  spriteHazirlandi.add(metaUrl);
+
+  // Sonucu `useDoorSprite`in paylaşılan haritasına koyuyoruz; hero mount
+  // olduğunda `load()` aynı URL'i yeniden istemek yerine bu sözü bekliyor.
+  // Fetch + decode böylece geçiş sırasında, ana iş parçacığı boşken bitiyor.
+  import("~/composables/useDoorSprite")
+    .then(({ spriteOnBellek }) => {
+      if (spriteOnBellek.has(metaUrl)) return;
+
+      const hazirlik = fetch(metaUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error(`sprite metadata failed: ${res.status}`);
+          return res.json();
+        })
+        .then(async (meta) => {
+          // Alan adı `sprite` — bkz. public/kardoor-door-*.json
+          const img = new Image();
+          img.decoding = "async";
+          img.src = meta.sprite;
+          await (img.decode?.() ?? Promise.resolve());
+          return { meta, image: img };
+        });
+
+      // Hata olursa haritadan düşür: hero kendi yolundan tekrar denesin.
+      hazirlik.catch(() => spriteOnBellek.delete(metaUrl));
+      spriteOnBellek.set(metaUrl, hazirlik);
+    })
+    .catch(() => {});
+};
+
 const removeRouteGuard = import.meta.client
   ? router.beforeEach(async (to, from) => {
       const fromPath = normalizeTransitionPath(from.path);
@@ -35,6 +96,9 @@ const removeRouteGuard = import.meta.client
         isTransitionRoute(toPath);
 
       if (shouldRunPageTransition) {
+        // Ana sayfaya dönülüyorsa sprite'ı şimdiden çek.
+        if (toPath === "/") spriteOnHazirla();
+
         isPageContentVisible.value = false;
         shouldMountStartupScreens.value = false;
         await nextTick();
@@ -45,13 +109,52 @@ const removeRouteGuard = import.meta.client
     })
   : undefined;
 
+/**
+ * Perdenin açılabilmesi için yeni sayfanın gerçekten yerinde olmasını bekler.
+ *
+ * Neden gerekli: ana sayfanın hero'su `<ClientOnly>` içinde. Sunucu
+ * render'ında yerini SSR kabuğu tutuyor, ama ROTA GEÇİŞİNDE o kabuk
+ * basılmıyor — geçiş tamamen istemcide oluyor. Perde `afterEach`'te hemen
+ * açılınca hero henüz mount olmamış oluyordu ve altında boş bir şerit
+ * görünüyordu (ölçüldü: perde opacity 0 olduğunda heroH null, bir kare
+ * sonra hero 725px/818 bottom ile geliyordu).
+ *
+ * İki kare bekliyoruz: birincisi Vue'nun DOM'u yazması, ikincisi tarayıcının
+ * düzeni hesaplaması için. Sayfa hâlâ gelmediyse zaman aşımı devreye girer —
+ * perde asla asılı kalmaz.
+ */
+const PAGE_SETTLE_TIMEOUT_MS = 600;
+
+const waitForPageContent = () =>
+  new Promise<void>((resolve) => {
+    const started = performance.now();
+
+    const check = () => {
+      const main = document.querySelector("main");
+      const hasContent = (main?.getBoundingClientRect().height ?? 0) > 0;
+
+      if (hasContent || performance.now() - started > PAGE_SETTLE_TIMEOUT_MS) {
+        // Bir kare daha: içerik DOM'da ama düzeni henüz oturmamış olabilir.
+        requestAnimationFrame(() => resolve());
+        return;
+      }
+
+      requestAnimationFrame(check);
+    };
+
+    requestAnimationFrame(check);
+  });
+
 const removeRouteAfterHook = import.meta.client
   ? router.afterEach(async () => {
       if (!shouldRunPageTransition) return;
 
       await nextTick();
-      await transitionOverlay.value?.reveal();
+      // İçerik perde ALTINDA görünür olsun: perde zaten üstünü örtüyor,
+      // sızıntı üretmez ama açıldığında altı dolu olur.
       isPageContentVisible.value = true;
+      await waitForPageContent();
+      await transitionOverlay.value?.reveal();
       shouldRunPageTransition = false;
     })
   : undefined;
@@ -61,15 +164,32 @@ const handleStartupComplete = async () => {
 
   await transitionOverlay.value?.primeCovered();
   shouldMountStartupScreens.value = false;
+
+  // İçerik perde AÇILMADAN ÖNCE görünür olmalı. Sırayı ters kurmak (önce
+  // reveal, sonra visible) perdenin açıldığı ~1.4s boyunca sayfayı boş
+  // bırakıyordu: loader gitmiş, panel kalkıyor, altında hiçbir şey yok.
+  // Perde zaten üstünü örttüğü için burada görünür yapmak sızıntı üretmez.
+  isPageContentVisible.value = true;
   await nextTick();
   await transitionOverlay.value?.reveal();
-  isPageContentVisible.value = true;
 };
 
 const shellClasses = computed(() => [
   `app-shell--${mode.value}`,
   {
-    "app-shell--references": isReferencesRoute.value
+    "app-shell--references": isReferencesRoute.value,
+    // Gizleme YALNIZ AÇILIŞ PERDESİ (WelcomeScreen) için.
+    //
+    // Neden gerekli: SSR sayfayı opak basıyor ama WelcomeScreen'i basmıyor —
+    // o `v-if` ile yalnız istemcide mount oluyor. JS yüklenene kadar sayfa
+    // ham haliyle görünüyordu (ölçüldü: loader gelmeden 30 kare boyunca
+    // navbar+hero+katalog ekranda).
+    //
+    // Neden ROTA GEÇİŞİNDE YOK: orada mavi perde zaten üstü örtüyor, ayrıca
+    // gizlemeye gerek yok. `shouldMountStartupScreens` tam bu ayrımı taşıyor:
+    // yalnız ilk açılışta true, geçişte false.
+    "app-shell--content-hidden":
+      shouldMountStartupScreens.value && !isPageContentVisible.value
   }
 ]);
 
@@ -93,11 +213,8 @@ onBeforeUnmount(() => {
       @complete="handleStartupComplete"
     />
     <SiteHeader />
-    <FloatingContactHub v-if="!isReferencesRoute" />
+    <ContactHub v-if="!isReferencesRoute && !isCatalogRoute" />
     <SmoothCursor v-if="!isReferencesRoute" />
-    <!-- Katalog filtre dock'u da fixed: smooth-content dışında durmalı.
-         v-if ile route değişince unmount olur, panel DOM'da asılı kalmaz. -->
-    <CatalogFilterDock v-if="normalizeTransitionPath(route.path) === '/catalog'" />
 
     <!-- ScrollSmoother containers. Fixed overlays above stay OUTSIDE so the
          #smooth-content transform doesn't break their positioning. -->
