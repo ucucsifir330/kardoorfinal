@@ -265,15 +265,6 @@
   letter-spacing: -0.01em;
 }
 
-.home-references-flip__intro h2 span {
-  display: block;
-  white-space: nowrap;
-}
-
-.home-references-flip__intro h2 span:last-child {
-  color: var(--brand-300);
-}
-
 .home-references-flip__intro p {
   position: relative;
   z-index: 1;

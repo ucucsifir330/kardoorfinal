@@ -27,7 +27,26 @@
       </div>
 
       <h2 id="home-references-title">
-        <span v-for="line in referencesCopy.titleLines" :key="line">{{ line }}</span>
+        <StrokeText
+          :text="referencesCopy.titleLines.join('\n')"
+          :accent-line-indexes="[referencesCopy.titleLines.length - 1]"
+          stroke-color="var(--references-accent)"
+          fill-color="var(--references-ink)"
+          accent-color="var(--references-accent)"
+          :stroke-width="1.4"
+          :draw-duration="1.05"
+          :fill-delay="0.06"
+          :stagger="0.022"
+          ease="power2.out"
+          trigger="scroll"
+          fill-mode="wipe"
+          :font-size="128"
+          font-weight="600"
+          :letter-spacing="-1.28"
+          :line-height="0.98"
+          align="center"
+          start="top 78%"
+        />
       </h2>
       <p>{{ referencesCopy.intro }}</p>
     </section>
@@ -35,10 +54,25 @@
     <section ref="initialRef" class="home-references-flip__panel home-references-flip__initial">
       <div class="home-references-flip__copy">
         <h3>
-          <template v-for="(line, index) in referencesCopy.panelTitleLines" :key="line">
-            <br v-if="index">
-            {{ line }}
-          </template>
+          <StrokeText
+            :text="referencesCopy.panelTitleLines.join('\n')"
+            stroke-color="var(--references-accent)"
+            fill-color="var(--references-ink)"
+            accent-color="var(--references-accent)"
+            :stroke-width="1.4"
+            :draw-duration="0.65"
+            :fill-delay="0"
+            :stagger="0.012"
+            ease="power2.out"
+            trigger="scroll"
+            fill-mode="wipe"
+            :font-size="128"
+            font-weight="500"
+            :letter-spacing="0"
+            :line-height="1"
+            align="left"
+            start="top 94%"
+          />
         </h3>
         <p>{{ referencesCopy.panelBody }}</p>
       </div>
@@ -161,19 +195,21 @@ let rebuildFlip: (() => void) | null = null;
 let documentaryStartScrollY = 0;
 // Catalog rows reserve their final height before product batches reveal, so this
 // trigger should not drift during normal scroll. If an upstream responsive/layout
-// change still moves this section, refresh ONLY this trigger instance. A global
+// change still moves this section, rebuild ONLY this section. A global
 // ScrollTrigger.refresh() would re-pin the hero/turntable and yank the scroll
 // position.
-let flipScrollTrigger: { refresh: () => void } | null = null;
+//
+// A refresh only updates the trigger's start/end positions. Flip.fit values are
+// captured inside the tween, so geometry changes require a local rebuild too.
 let catalogResizeObserver: ResizeObserver | null = null;
 let catalogResizeTimer = 0;
 
-const scheduleFlipTriggerRefresh = () => {
+const scheduleFlipRebuild = () => {
   window.clearTimeout(catalogResizeTimer);
   catalogResizeTimer = window.setTimeout(() => {
     catalogResizeTimer = 0;
     window.requestAnimationFrame(() => {
-      flipScrollTrigger?.refresh();
+      rebuildFlip?.();
     });
   }, 180);
 };
@@ -233,9 +269,25 @@ const setupFlip = async () => {
 
   gsap.registerPlugin(ScrollTrigger, Flip);
 
+  // The catalog/reference stack finishes its curtain transition translated
+  // upward by --catalog-curtain-extra. ScrollTrigger measures layout before
+  // that transform, so the Flip range must receive the same visual offset.
+  // On mobile the curtain is disabled and the compensation stays at zero.
+  const curtainOffset = () => {
+    if (window.innerWidth <= 760) return 0;
+
+    const stack = section.closest(".home-catalog-reference-stack");
+    if (!stack) return 0;
+
+    return (
+      Number.parseFloat(
+        window.getComputedStyle(stack).getPropertyValue("--catalog-curtain-extra")
+      ) || 0
+    );
+  };
+
   const create = () => {
     flipContext?.revert();
-    flipScrollTrigger = null;
 
     flipContext = gsap.context(() => {
       const media = mediaRef.value;
@@ -261,9 +313,9 @@ const setupFlip = async () => {
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: initial,
-          start: "top 24%",
+          start: () => `top-=${curtainOffset()} 24%`,
           endTrigger: final,
-          end: "bottom bottom",
+          end: () => `bottom-=${curtainOffset()} bottom`,
           // ScrollSmoother already eases the page; keep this card locked to
           // that smoothed playhead instead of adding a second one-second lag.
           scrub: true
@@ -303,14 +355,21 @@ const setupFlip = async () => {
           0
         );
       }
-
-      flipScrollTrigger = timeline.scrollTrigger ?? null;
     }, section);
   };
 
   create();
   rebuildFlip = create;
   window.addEventListener("resize", create);
+
+  const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+
+  if (fonts?.ready) {
+    fonts.ready.then(() => {
+      if (!rebuildFlip) return;
+      window.requestAnimationFrame(() => rebuildFlip?.());
+    });
+  }
 
   if ("ResizeObserver" in window) {
     catalogResizeObserver?.disconnect();
@@ -328,7 +387,7 @@ const setupFlip = async () => {
         if (Math.abs(nextHeight - lastHeight) < 1) return;
 
         lastHeight = nextHeight;
-        scheduleFlipTriggerRefresh();
+        scheduleFlipRebuild();
       });
 
       upstreamTargets.forEach((target) => catalogResizeObserver?.observe(target));
@@ -361,7 +420,6 @@ onBeforeUnmount(() => {
   catalogResizeTimer = 0;
   catalogResizeObserver?.disconnect();
   catalogResizeObserver = null;
-  flipScrollTrigger = null;
 
   flipContext?.revert();
   flipContext = null;

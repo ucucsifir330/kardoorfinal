@@ -20,28 +20,40 @@
             {{ staticLabel }}
           </span>
 
-          <div
-            class="rotating-text-wrapper relative block h-[clamp(4.5rem,6.05vw,6.75rem)] overflow-hidden rounded-[clamp(28px,3.2vw,44px)] bg-[var(--brand-700)] bg-[length:300%_300%] [box-shadow:0_18px_44px_rgba(34,49,140,0.18)] [animation:gradientBG_6s_ease_infinite] [transition:width_var(--title-pill-transition-smooth),box-shadow_var(--title-pill-transition-smooth)] max-[1024px]:h-[clamp(3.65rem,9.1vw,5.7rem)] max-[640px]:h-[clamp(3rem,12vw,3.7rem)] max-[640px]:rounded-[18px]"
+          <motion.div
+            class="rotating-text-wrapper relative block h-[clamp(4.65rem,6.2vw,6.9rem)] overflow-hidden rounded-[clamp(28px,3.2vw,44px)] bg-[var(--brand-700)] bg-[length:300%_300%] [box-shadow:0_18px_44px_rgba(34,49,140,0.18)] [animation:gradientBG_6s_ease_infinite] [transition:box-shadow_var(--title-pill-transition-smooth)] max-[1024px]:h-[clamp(3.75rem,9.25vw,5.85rem)] max-[640px]:h-[clamp(3.1rem,12.25vw,3.8rem)] max-[640px]:rounded-[18px]"
             :style="{ width: titleWidth + 'px' }"
+            layout
+            :transition="pillTransition"
           >
             <span
               :ref="setHiddenSpanRef"
-              class="hidden-measure text-rotating pointer-events-none absolute top-0 left-0 flex h-full items-center whitespace-nowrap px-[2vw] font-telegraf font-[540] tracking-normal invisible max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
+              class="hidden-measure text-rotating pointer-events-none absolute top-0 left-0 flex h-full items-center whitespace-nowrap px-[clamp(0.75rem,2vw,2rem)] font-telegraf font-[540] tracking-normal invisible max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
             ></span>
 
-            <div
-              class="typewriter-line pointer-events-none absolute inset-0 flex items-center justify-center px-[2vw]"
-            >
-              <span
-                :ref="setTypewriterRef"
-                class="typewriter-text text-rotating translate-y-[-0.03em] whitespace-nowrap font-telegraf font-[540] leading-none tracking-normal text-[var(--brand-100)] max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
-              ></span><span
-                class="typewriter-cursor text-rotating ml-[0.04em] translate-y-[-0.03em] whitespace-nowrap font-telegraf font-normal leading-none tracking-normal text-[var(--brand-100)] will-change-[opacity] max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
+            <span class="sr-only">{{ activeTitleWord }}</span>
+
+            <AnimatePresence mode="sync" :initial="false">
+              <motion.span
+                :key="`${locale}-${activeTitleWord}`"
+                class="rotating-text-line pointer-events-none absolute inset-0 flex items-center justify-center px-[clamp(0.75rem,2vw,2rem)]"
+                layout
                 aria-hidden="true"
-                >|</span
               >
-            </div>
-          </div>
+                <span class="rotating-text-word inline-flex overflow-hidden pb-[0.06em]">
+                  <motion.span
+                    v-for="(character, index) in titleCharacters"
+                    :key="`${character}-${index}`"
+                    class="rotating-text-element text-rotating inline-block translate-y-[-0.03em] whitespace-pre font-telegraf font-[540] leading-none tracking-normal text-[var(--brand-100)] will-change-transform max-[1024px]:text-rotating-lg max-[640px]:text-rotating-sm"
+                    :initial="letterInitial"
+                    :animate="letterAnimate"
+                    :exit="letterExit"
+                    :transition="getLetterTransition(index)"
+                  >{{ character }}</motion.span>
+                </span>
+              </motion.span>
+            </AnimatePresence>
+          </motion.div>
         </div>
 
         <div class="bottom-row block whitespace-nowrap">{{ bottomLabel }}</div>
@@ -164,7 +176,7 @@
  * burada; parent yalnızca <HomeReviews /> yazıyor.
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { gsap } from 'gsap';
+import { AnimatePresence, motion, useReducedMotion } from 'motion-v';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useKardoorLocale } from '~/composables/useKardoorLocale';
 
@@ -292,16 +304,60 @@ const titleWords = computed(() => reviewCopy.value.titleWords);
 const googleReviews = computed<Review[]>(() => reviewCopy.value.reviews);
 const row1 = computed(() => googleReviews.value.slice(0, 4));
 const row2 = computed(() => googleReviews.value.slice(4, 8));
+const shouldReduceMotion = useReducedMotion();
+
+const currentTitleWordIndex = ref(0);
+const activeTitleWord = computed(
+  () => titleWords.value[currentTitleWordIndex.value] ?? titleWords.value[0] ?? ''
+);
+
+const splitIntoCharacters = (text: string) => {
+  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+    const segmenter = new Intl.Segmenter(locale.value, { granularity: 'grapheme' });
+    return Array.from(segmenter.segment(text), (segment) => segment.segment);
+  }
+
+  return Array.from(text);
+};
+
+const titleCharacters = computed(() => splitIntoCharacters(activeTitleWord.value));
+const letterInitial = computed(() =>
+  shouldReduceMotion.value ? { opacity: 0 } : { y: '100%' }
+);
+const letterAnimate = computed(() =>
+  shouldReduceMotion.value ? { opacity: 1 } : { y: 0 }
+);
+const letterExit = computed(() =>
+  shouldReduceMotion.value ? { opacity: 0 } : { y: '-120%' }
+);
+const pillTransition = computed(() =>
+  shouldReduceMotion.value
+    ? { duration: 0.14, ease: 'easeOut' as const }
+    : { type: 'spring' as const, visualDuration: 0.48, bounce: 0.08 }
+);
+
+const getLetterTransition = (index: number) => {
+  if (shouldReduceMotion.value) {
+    return { duration: 0.14, ease: 'easeOut' as const };
+  }
+
+  return {
+    type: 'spring' as const,
+    visualDuration: 0.48,
+    bounce: 0.08,
+    delay: (titleCharacters.value.length - 1 - index) * 0.025
+  };
+};
 
 // SSR/hydration sözleşmesi: ilk render'da sunucu ve istemci AYNI değeri
 // üretmeli. Gerçek ölçüm onMounted'daki updateTitleWidth() ile yapılır.
 const initialTitleWidth = 220;
+const pillExtraWidth = 10;
 const titleWidth = ref(initialTitleWidth);
 const baseTitleWidth = ref(0);
 
 const hiddenSpan = ref<HTMLElement | null>(null);
 const staticText = ref<HTMLElement | null>(null);
-const typewriter = ref<HTMLElement | null>(null);
 const inner1 = ref<HTMLElement | null>(null);
 const inner2 = ref<HTMLElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
@@ -311,9 +367,6 @@ const setHiddenSpanRef = (el: unknown) => {
 };
 const setStaticTextRef = (el: unknown) => {
   staticText.value = el as HTMLElement | null;
-};
-const setTypewriterRef = (el: unknown) => {
-  typewriter.value = el as HTMLElement | null;
 };
 const setInner1Ref = (el: unknown) => {
   inner1.value = el as HTMLElement | null;
@@ -344,13 +397,8 @@ let activeTrack: number | null = null;
 let animationFrameId = 0;
 let reviewsTrigger: ScrollTrigger | null = null;
 let reviewsAnimationActive = false;
-let typewriterTl: gsap.core.Timeline | null = null;
-let cursorTween: gsap.core.Tween | null = null;
-// Typewriter döngüsü her kelimede DOM'a yazıp genişlik OKUYOR (forced reflow).
-// Bölüm ekran dışındayken sonsuza dek dönmesin: ScrollTrigger ile pause/play.
-let typewriterVisible = false;
-let typewriterTrigger: ScrollTrigger | null = null;
-let activeTitleWord = titleWords.value[0] ?? '';
+let titleRotationTimer: ReturnType<typeof setInterval> | null = null;
+let titleRotationTrigger: ScrollTrigger | null = null;
 
 // Aynı kelime + aynı viewport genişliği için ölçüm sonucunu sakla. Sebep:
 // textContent YAZIP hemen getBoundingClientRect() OKUMAK senkron reflow'a
@@ -363,103 +411,55 @@ const updateTitleWidth = () => {
 
   if (!hiddenSpanEl) return;
 
-  const cacheKey = `${activeTitleWord}@${window.innerWidth}`;
+  const cacheKey = `${activeTitleWord.value}@${window.innerWidth}`;
   let measuredWidth = titleWidthCache.get(cacheKey) ?? 0;
 
   if (!measuredWidth) {
-    hiddenSpanEl.textContent = activeTitleWord;
+    hiddenSpanEl.textContent = activeTitleWord.value;
     measuredWidth = hiddenSpanEl.getBoundingClientRect().width;
     // 0 gelirse (font henüz yüklenmemiş) önbelleğe alma — sonraki çağrı ölçsün.
     if (measuredWidth) titleWidthCache.set(cacheKey, measuredWidth);
   }
 
-  titleWidth.value = measuredWidth;
+  const measuredPillWidth = measuredWidth + pillExtraWidth;
+  titleWidth.value = measuredPillWidth;
 
-  if (!baseTitleWidth.value) baseTitleWidth.value = measuredWidth;
+  if (!baseTitleWidth.value) baseTitleWidth.value = measuredPillWidth;
 
   if (staticTextEl) {
-    const offset = (measuredWidth - baseTitleWidth.value) * 0.18;
+    const offset = (measuredPillWidth - baseTitleWidth.value) * 0.18;
     staticTextEl.style.transform = `translateX(${offset}px)`;
   }
 };
 
-// Feel knobs (seconds). Tuned live with the user — keep these readable.
-const TYPE_PER_CHAR = 0.14;
-const ERASE_PER_CHAR = 0.07;
-const WORD_HOLD = 1.5;
-
-// Tek GSAP timeline tüm "sözü → kararı → yorumu" döngüsünü sürer: kelimeyi
-// yaz (TextPlugin), beklet, sil, sonrakine geç. Pill genişliği her kelimeden
-// ÖNCE yeniden ölçülür ki ortalanmış kelime + imleç doğru boyutta dursun.
-const buildTypewriter = () => {
-  const el = typewriter.value;
-  if (!el) return;
-
-  typewriterTl?.kill();
-  el.textContent = '';
-
-  const cursorEl = el.parentElement?.querySelector(
-    '.typewriter-cursor'
-  ) as HTMLElement | null;
-  if (cursorEl) {
-    cursorTween?.kill();
-    cursorTween = gsap.to(cursorEl, {
-      opacity: 0,
-      duration: 0.5,
-      ease: 'steps(1)',
-      repeat: -1,
-      yoyo: true
-    });
-  }
-
-  const words = titleWords.value;
-  typewriterTl = gsap.timeline({ repeat: -1, paused: !typewriterVisible });
-  if (!typewriterVisible) cursorTween?.pause();
-
-  words.forEach((word) => {
-    typewriterTl!
-      .call(() => {
-        activeTitleWord = word;
-        updateTitleWidth();
-      })
-      .to(el, {
-        duration: Math.max(0.4, word.length * TYPE_PER_CHAR),
-        text: { value: word, delimiter: '' },
-        ease: 'none'
-      })
-      .to(
-        el,
-        {
-          duration: Math.max(0.3, word.length * ERASE_PER_CHAR),
-          text: { value: '', delimiter: '' },
-          ease: 'none'
-        },
-        `+=${WORD_HOLD}`
-      );
-  });
+const stopTitleRotation = () => {
+  if (!titleRotationTimer) return;
+  clearInterval(titleRotationTimer);
+  titleRotationTimer = null;
 };
 
-watch(
-  locale,
-  async () => {
-    activeTitleWord = titleWords.value[0] ?? '';
-    typewriterTl?.kill();
-    typewriterTl = null;
-    cursorTween?.kill();
-    cursorTween = null;
+const startTitleRotation = () => {
+  if (titleRotationTimer || titleWords.value.length < 2) return;
 
-    if (typewriter.value) typewriter.value.textContent = '';
+  titleRotationTimer = setInterval(() => {
+    currentTitleWordIndex.value =
+      (currentTitleWordIndex.value + 1) % titleWords.value.length;
+  }, 2600);
+};
 
-    await nextTick();
-    updateTitleWidth();
-    buildTypewriter();
-  },
-  { flush: 'post' }
-);
+watch(activeTitleWord, () => {
+  updateTitleWidth();
+}, { flush: 'sync' });
+
+watch(locale, async () => {
+  currentTitleWordIndex.value = 0;
+  await nextTick();
+  updateTitleWidth();
+}, { flush: 'post' });
 
 const dynamicGap = computed(() => {
-  const gapValue = 34 + titleWidth.value * 0.04;
-  return `${Math.max(38, Math.min(58, gapValue))}px`;
+  const gapValue = 26 + titleWidth.value * 0.04;
+  return `${Math.max(30, Math.min(50, gapValue))}px`;
 });
 
 const getX = (event: MouseEvent | TouchEvent): number => {
@@ -592,30 +592,20 @@ onMounted(() => {
     });
   }
 
-  buildTypewriter();
   window.addEventListener('resize', updateTitleWidth);
 
-  if (typewriter.value) {
-    const twSection = typewriter.value.closest('section') ?? typewriter.value;
-    const applyVisibility = (visible: boolean) => {
-      typewriterVisible = visible;
-      if (visible) {
-        typewriterTl?.play();
-        cursorTween?.play();
-      } else {
-        typewriterTl?.pause();
-        cursorTween?.pause();
-      }
-    };
-
-    typewriterTrigger = ScrollTrigger.create({
-      trigger: twSection,
+  if (stageRef.value) {
+    titleRotationTrigger = ScrollTrigger.create({
+      trigger: stageRef.value,
       start: 'top bottom',
       end: 'bottom top',
-      onToggle: (self) => applyVisibility(self.isActive)
+      onToggle: (self) => {
+        if (self.isActive) startTitleRotation();
+        else stopTitleRotation();
+      }
     });
 
-    applyVisibility(typewriterTrigger.isActive);
+    if (titleRotationTrigger.isActive) startTitleRotation();
   }
 
   track2State.x = -400;
@@ -645,16 +635,13 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  typewriterTl?.kill();
-  typewriterTl = null;
-  cursorTween?.kill();
-  cursorTween = null;
+  stopTitleRotation();
 
   stopReviewsAnimation();
   reviewsTrigger?.kill();
   reviewsTrigger = null;
-  typewriterTrigger?.kill();
-  typewriterTrigger = null;
+  titleRotationTrigger?.kill();
+  titleRotationTrigger = null;
 
   window.removeEventListener('resize', updateTitleWidth);
   window.removeEventListener('mousemove', onDrag as EventListener);
@@ -720,5 +707,17 @@ const ratingClass =
 
 .review-card:hover::before {
   opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotating-text-element {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .rotating-text-wrapper {
+    height: clamp(39px, 10.8vw, 49px) !important;
+  }
 }
 </style>

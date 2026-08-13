@@ -136,212 +136,368 @@ useSeoMeta({
 
 const sectionRef = ref<HTMLElement | null>(null);
 const activeIndex = ref(0);
-const timelineFloat = ref(0);
-const cardStyles = ref<Record<string, string | number>[]>([]);
 const timelineData = computed(() => copy.value.timeline);
 
 let cleanupGsap: (() => void) | null = null;
 let goToTimelineIndex: ((index: number) => void) | null = null;
 
-const resetCardStyles = () => {
-  cardStyles.value = timelineData.value.map((_, index) => ({
-    transform: index === 0 ? "translateY(0)" : "translateY(100vh)",
-    opacity: index === 0 ? 1 : 0,
-    zIndex: index + 1
-  }));
-};
-
 const initScrollTimeline = async () => {
-  if (!sectionRef.value || window.matchMedia("(max-width: 1100px)").matches) {
-    return;
-  }
+  if (!sectionRef.value) return;
 
-  const [{ default: gsap }, { ScrollTrigger }, { ScrollToPlugin }] = await Promise.all([
+  const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
     import("gsap"),
-    import("gsap/ScrollTrigger"),
-    import("gsap/ScrollToPlugin")
+    import("gsap/ScrollTrigger")
   ]);
-  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+  gsap.registerPlugin(ScrollTrigger);
 
   const context = gsap.context(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isDesktop = window.matchMedia("(min-width: 1101px)").matches;
+
+    if (reduceMotion) {
+      cleanupGsap = () => {
+        context.revert();
+        cleanupGsap = null;
+        goToTimelineIndex = null;
+      };
+      return;
+    }
+
+    if (!isDesktop) {
+      cleanupGsap = () => {
+        context.revert();
+        cleanupGsap = null;
+        goToTimelineIndex = null;
+      };
+      return;
+    }
+
+    const section = sectionRef.value!;
+    const cards = gsap.utils.toArray<HTMLElement>(".company-timeline__card", section);
+    const textItems = gsap.utils.toArray<HTMLElement>(".company-timeline__text-item", section);
+    const yearItems = gsap.utils.toArray<HTMLElement>(".company-timeline__years li", section);
+    const track = section.querySelector<HTMLElement>(".company-timeline__track");
+    const marker = section.querySelector<HTMLElement>(".company-timeline__marker");
     const maxIndex = timelineData.value.length - 1;
-    const stepDistance = Math.max(window.innerHeight * 1.05, 940);
+    const stepDistance = Math.max(window.innerHeight * 0.82, 760);
     const scrollDistance = maxIndex * stepDistance;
-    const clampProgress = gsap.utils.clamp(0, 1);
     const getSmoother = () => ($smoother?.() as Smoother) ?? null;
-    let isStepping = false;
-    let isTimelineActive = false;
-    let scrollTween: ReturnType<typeof gsap.to> | null = null;
-    let wheelLocked = false;
+    const WHEEL_THRESHOLD = 24;
+    // Trackpad momentum event'leri 8–16 ms aralıklarla akar. 72 ms'lik gerçek
+    // sessizlik yeni bir fiziksel hareketi ayırır; hızlı wheel tekrarlarını da
+    // 160 ms boyunca kilitleyip 2008 / 2018'de bekletmez.
+    const GESTURE_GAP_MS = 72;
+    let currentIndex = 0;
+    let intentDirection: 1 | -1 | 0 = 0;
+    let intentStrength = 0;
+    let gestureConsumed = false;
+    const queuedDirections: Array<1 | -1> = [];
+    let isTransitioning = false;
+    let isInternalScroll = false;
+    let pendingExit: 1 | -1 | 0 = 0;
+    let lastWheelAt = 0;
     let wheelQuietTimer = 0;
+    let stepTween: ReturnType<typeof gsap.timeline> | null = null;
     let timelineInput: ReturnType<typeof useEntranceInput> | null = null;
 
-    const applyTimelineProgress = (progress: number) => {
-      const currentFloat = clampProgress(progress) * maxIndex;
+    gsap.set(cards, { yPercent: 100, autoAlpha: 0, scale: 1, willChange: "auto" });
+    gsap.set(cards[0], { yPercent: 0, autoAlpha: 1 });
+    gsap.set(textItems, { y: 28, autoAlpha: 0 });
+    gsap.set(textItems[0], { y: 0, autoAlpha: 1 });
+    gsap.set(yearItems, { autoAlpha: 0.34, scale: 1, transformOrigin: "left center" });
+    gsap.set(yearItems[0], { autoAlpha: 1, scale: 1.08 });
+    if (track) gsap.set(track, { y: 16 });
+    if (marker) gsap.set(marker, { y: 0 });
 
-      timelineFloat.value = currentFloat;
-      activeIndex.value = Math.round(currentFloat);
-      cardStyles.value = timelineData.value.map((_, index) => {
-        const delta = currentFloat - index;
+    const syncVisualIndex = (targetIndex: number) => {
+      const settled = Math.min(maxIndex, Math.max(0, targetIndex));
 
-        if (delta >= 0) {
-          return {
-            transform: "translateY(0)",
-            opacity: Math.max(0, 1 - delta),
-            zIndex: index + 1
-          };
-        }
-
-        return {
-          transform: `translateY(${Math.abs(delta) * 100}dvh)`,
-          opacity: 1,
-          zIndex: index + 1
-        };
-      });
-    };
-
-    // Pure scrub: ScrollTrigger maps native scroll position (which ScrollSmoother
-    // drives via #smooth-content transform) straight onto the card progress. No
-    // manual wheel hijacking, no competing scrollTo tweens — the smoother owns
-    // momentum, this only reads progress.
-    const trigger = ScrollTrigger.create({
-      trigger: sectionRef.value,
-      start: "top top",
-      end: `+=${scrollDistance}`,
-      pin: true,
-      scrub: 0.5,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => applyTimelineProgress(self.progress),
-      onToggle: (self) => {
-        isTimelineActive = self.isActive;
-        // Girdi otoritesi bandı buradan öğrenir: bant biterse listener DOM'dan
-        // sökülür, tarayıcı compositor hızlı yoluna geri döner.
-        timelineInput?.setActive(self.isActive);
-        if (!self.isActive) {
-          isStepping = false;
-          wheelLocked = false;
-        }
-      },
-      onRefresh: (self) => applyTimelineProgress(self.progress)
-    });
-
-    const unlockWheelAfterQuiet = () => {
-      window.clearTimeout(wheelQuietTimer);
-      wheelQuietTimer = window.setTimeout(() => {
-        wheelLocked = false;
-      }, 260);
-    };
-
-    const scrollToY = (targetY: number, duration: number, ease: string, onComplete?: () => void) => {
-      const smoother = getSmoother();
-      scrollTween?.kill();
-
-      if (smoother?.scrollTo && smoother.scrollTop) {
-        const proxy = { y: smoother.scrollTop() };
-        smoother.scrollTo(proxy.y, false);
-        scrollTween = gsap.to(proxy, {
-          y: targetY,
-          duration,
-          ease,
-          overwrite: true,
-          onUpdate: () => smoother.scrollTo?.(proxy.y, false),
-          onComplete: () => {
-            scrollTween = null;
-            onComplete?.();
-          }
+      cards.forEach((card, index) => {
+        gsap.set(card, {
+          yPercent: index <= settled ? 0 : 100,
+          scale: 1,
+          autoAlpha: index === settled ? 1 : 0,
+          willChange: "auto"
         });
-        return;
+      });
+      textItems.forEach((item, index) => {
+        gsap.set(item, { y: 0, autoAlpha: index === settled ? 1 : 0 });
+      });
+      yearItems.forEach((item, index) => {
+        gsap.set(item, {
+          autoAlpha: index === settled ? 1 : 0.34,
+          scale: index === settled ? 1.08 : 1
+        });
+      });
+      if (track) gsap.set(track, { y: 16 - (32 * settled) / maxIndex });
+      if (marker) gsap.set(marker, { y: settled * 60 });
+
+      currentIndex = settled;
+      activeIndex.value = settled;
+    };
+
+    let trigger: ReturnType<typeof ScrollTrigger.create>;
+
+    const setBandScroll = (targetY: number) => {
+      isInternalScroll = true;
+      const smoother = getSmoother();
+
+      if (smoother?.scrollTo) {
+        smoother.scrollTo(targetY, false);
+      } else {
+        window.scrollTo(0, targetY);
       }
 
-      scrollTween = gsap.to(window, {
-        duration,
-        ease,
-        overwrite: true,
-        scrollTo: {
-          y: targetY,
-          autoKill: false
-        },
-        onComplete: () => {
-          scrollTween = null;
-          onComplete?.();
-        }
+      window.requestAnimationFrame(() => {
+        isInternalScroll = false;
       });
     };
 
     const goToIndex = (targetIndex: number) => {
       const settled = Math.min(maxIndex, Math.max(0, targetIndex));
-      const targetY = trigger.start + stepDistance * settled;
+      if (settled === currentIndex) return;
 
-      isStepping = true;
-      scrollToY(targetY, 1.08, "power3.out", () => {
-        isStepping = false;
+      const previousIndex = currentIndex;
+      const direction: 1 | -1 = settled > previousIndex ? 1 : -1;
+      const targetY = trigger.start + stepDistance * settled;
+      const guardedTargetY = settled === maxIndex ? targetY - 2 : targetY;
+
+      if (isTransitioning) {
+        stepTween?.kill();
+        syncVisualIndex(previousIndex);
+      }
+
+      if (direction > 0) {
+        gsap.set(cards[settled], {
+          yPercent: 100,
+          scale: 1,
+          autoAlpha: 1,
+          willChange: "transform"
+        });
+      } else {
+        gsap.set(cards[settled], {
+          yPercent: 0,
+          scale: 1,
+          autoAlpha: 1,
+          willChange: "transform"
+        });
+      }
+      gsap.set(cards[previousIndex], { autoAlpha: 1, willChange: "transform" });
+
+      currentIndex = settled;
+      isTransitioning = true;
+      setBandScroll(guardedTargetY);
+
+      stepTween = gsap.timeline({
+        onComplete: () => {
+          syncVisualIndex(settled);
+          isTransitioning = false;
+          stepTween = null;
+
+          const nextDirection = queuedDirections.shift() ?? 0;
+
+          if (nextDirection) {
+            window.requestAnimationFrame(() => {
+              const nextIndex = currentIndex + nextDirection;
+              if (nextIndex >= 0 && nextIndex <= maxIndex) {
+                goToIndex(nextIndex);
+              }
+            });
+          }
+        }
       });
+
+      if (direction > 0) {
+        stepTween.to(cards[settled], {
+          yPercent: 0,
+          duration: 1.02,
+          ease: "power2.inOut"
+        }, 0);
+      } else {
+        stepTween.to(cards[previousIndex], {
+          yPercent: 100,
+          duration: 1.02,
+          ease: "power2.inOut"
+        }, 0);
+      }
+
+      stepTween
+        .call(() => {
+          activeIndex.value = settled;
+        }, [], 0.28)
+        .to(textItems[previousIndex], {
+          y: direction > 0 ? -12 : 12,
+          autoAlpha: 0,
+          duration: 0.28,
+          ease: "power2.out"
+        }, 0.12)
+        .fromTo(
+          textItems[settled],
+          { y: direction > 0 ? 12 : -12, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.48, ease: "power3.out", immediateRender: false },
+          0.34
+        )
+        .to(yearItems[previousIndex], {
+          autoAlpha: 0.34,
+          scale: 1,
+          duration: 0.3,
+          ease: "power2.out"
+        }, 0.24)
+        .to(yearItems[settled], {
+          autoAlpha: 1,
+          scale: 1.08,
+          duration: 0.42,
+          ease: "power3.out"
+        }, 0.3);
+
+      if (track) {
+        stepTween.to(track, {
+          y: 16 - (32 * settled) / maxIndex,
+          duration: 0.88,
+          ease: "power2.inOut"
+        }, 0.06);
+      }
+
+      if (marker) {
+        stepTween.to(marker, {
+          y: settled * 60,
+          duration: 0.72,
+          ease: "power2.inOut"
+        }, 0.14);
+      }
     };
 
-    const stepTimeline = (direction: 1 | -1) => {
-      const targetIndex = activeIndex.value + direction;
+    const releaseTimeline = (direction: 1 | -1) => {
+      const exitOffset = Math.max(4, window.innerHeight * 0.01);
+      const exitY = direction > 0
+        ? trigger.end + exitOffset
+        : Math.max(0, trigger.start - exitOffset);
+
+      pendingExit = 0;
+      intentStrength = 0;
+      setBandScroll(exitY);
+    };
+
+    const releaseExitAfterQuiet = () => {
+      window.clearTimeout(wheelQuietTimer);
+      wheelQuietTimer = window.setTimeout(() => {
+        if (pendingExit) releaseTimeline(pendingExit);
+      }, GESTURE_GAP_MS);
+    };
+
+    const driveTimeline = (
+      direction: 1 | -1,
+      strength: number,
+      cancel: () => void
+    ) => {
+      cancel();
+
+      const now = performance.now();
+      if (now - lastWheelAt > GESTURE_GAP_MS) {
+        gestureConsumed = false;
+        intentDirection = 0;
+        intentStrength = 0;
+      }
+      lastWheelAt = now;
+
+      if (pendingExit) {
+        if (pendingExit === direction) {
+          releaseExitAfterQuiet();
+          return;
+        }
+
+        pendingExit = 0;
+        window.clearTimeout(wheelQuietTimer);
+      }
+
+      // Bir fiziksel wheel/trackpad gesture yalnız bir yıl tüketebilir.
+      // Aynı gesture'ın momentum event'leri animasyon sırasında kuyruğa alınmaz.
+      if (gestureConsumed) return;
+
+      if (isTransitioning) {
+        if (intentDirection !== direction) {
+          intentDirection = direction;
+          intentStrength = 0;
+        }
+
+        intentStrength += Math.min(strength, WHEEL_THRESHOLD);
+        if (intentStrength >= WHEEL_THRESHOLD) {
+          gestureConsumed = true;
+          const projectedIndex = currentIndex
+            + queuedDirections.reduce((total, queued) => total + queued, 0)
+            + direction;
+
+          if (projectedIndex >= 0 && projectedIndex <= maxIndex) {
+            queuedDirections.push(direction);
+          }
+        }
+        return;
+      }
+
+      if (intentDirection !== direction) {
+        intentDirection = direction;
+        intentStrength = 0;
+      }
+
+      intentStrength += Math.min(strength, WHEEL_THRESHOLD);
+      if (intentStrength < WHEEL_THRESHOLD) return;
+
+      const targetIndex = currentIndex + direction;
+      intentStrength = 0;
+      gestureConsumed = true;
 
       if (targetIndex < 0 || targetIndex > maxIndex) {
-        const exitOffset = Math.max(80, window.innerHeight * 0.08);
-        const exitY = targetIndex < 0
-          ? Math.max(0, trigger.start - exitOffset)
-          : trigger.end + exitOffset;
-
-        isStepping = true;
-        scrollToY(exitY, 0.95, "power3.out", () => {
-          isStepping = false;
-          isTimelineActive = false;
-        });
+        pendingExit = direction;
+        releaseExitAfterQuiet();
         return;
       }
 
       goToIndex(targetIndex);
     };
 
-    /**
-     * Zaman çizelgesinin karar fonksiyonu — girdi türünden bağımsız.
-     * Ana sayfadaki `driveEntrance` ile aynı sözleşme: yön + şiddet + iptal.
-     */
-    const driveTimeline = (
-      direction: 1 | -1,
-      _strength: number,
-      cancel: () => void
-    ) => {
-      cancel();
-      unlockWheelAfterQuiet();
-
-      if (isStepping || wheelLocked) return;
-
-      wheelLocked = true;
-      stepTimeline(direction);
-    };
-
-    // Listener SADECE pin bandı aktifken bağlı. Eskiden `window`'a
-    // {passive:false, capture:true} ile bağlanıp sayfa boyunca duruyordu;
-    // handler `isTimelineActive` ile erken çıksa da listener'ın VARLIĞI
-    // tarayıcının compositor scroll hızlı yolunu tüm sayfa için kapatıyordu.
-    // Bandı zaten yukarıdaki `trigger` biliyor — ikinci bir ScrollTrigger
-    // kurmak yerine onun onToggle'ından besliyoruz.
-    timelineInput = useEntranceInput({
-      band: {
-        initialActive: window.scrollY >= trigger.start && window.scrollY <= trigger.end
+    trigger = ScrollTrigger.create({
+      trigger: section,
+      start: "top top",
+      end: `+=${scrollDistance}`,
+      pin: true,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+      onToggle: (self) => {
+        timelineInput?.setActive(self.isActive);
+        if (!self.isActive) {
+          pendingExit = 0;
+          intentDirection = 0;
+          intentStrength = 0;
+          gestureConsumed = false;
+          queuedDirections.length = 0;
+          lastWheelAt = 0;
+        }
       },
-      drive: driveTimeline,
-      capture: true,
-      minStrength: 8,
-      // Klavye burada KAPALI: bu sayfada yıl butonları gerçek focusable
-      // kontroller ve kendi klavye davranışları var; ikinci bir otorite
-      // onların üstüne binmesin.
-      keyboard: false
+      onUpdate: (self) => {
+        if (isInternalScroll || isTransitioning) return;
+
+        const nearestIndex = Math.round(self.progress * maxIndex);
+        if (nearestIndex !== currentIndex) syncVisualIndex(nearestIndex);
+      },
+      onRefresh: (self) => {
+        if (isTransitioning) return;
+        syncVisualIndex(Math.round(self.progress * maxIndex));
+      }
     });
 
-    isTimelineActive = window.scrollY >= trigger.start && window.scrollY <= trigger.end;
+    timelineInput = useEntranceInput({
+      band: { initialActive: trigger.isActive },
+      drive: driveTimeline,
+      capture: true,
+      minStrength: 1,
+      keyboard: false
+    });
     timelineInput.start();
+
     goToTimelineIndex = goToIndex;
 
     cleanupGsap = () => {
-      scrollTween?.kill();
+      stepTween?.kill();
       window.clearTimeout(wheelQuietTimer);
       timelineInput?.destroy();
       timelineInput = null;
@@ -355,7 +511,6 @@ const initScrollTimeline = async () => {
 };
 
 onMounted(async () => {
-  resetCardStyles();
   await nextTick();
   await initScrollTimeline();
 });
@@ -363,8 +518,6 @@ onMounted(async () => {
 watch(timelineData, async () => {
   cleanupGsap?.();
   activeIndex.value = 0;
-  timelineFloat.value = 0;
-  resetCardStyles();
   await nextTick();
   await initScrollTimeline();
 });
@@ -409,7 +562,7 @@ const handleYearClick = (index: number) => {
           v-for="(item, index) in timelineData"
           :key="`card-${item.year}`"
           class="company-timeline__card"
-          :style="cardStyles[index]"
+          :style="{ zIndex: index + 1 }"
         >
           <img :src="item.image" :alt="`${item.year} ${item.subtitle}`" loading="lazy" />
         </div>
@@ -418,10 +571,8 @@ const handleYearClick = (index: number) => {
 
     <div class="company-timeline__center" :aria-label="copy.yearsAriaLabel">
       <div class="company-timeline__track">
-        <ul
-          class="company-timeline__years"
-          :style="{ transform: `translateY(${-timelineFloat * 60}px)` }"
-        >
+        <span class="company-timeline__marker" aria-hidden="true"></span>
+        <ul class="company-timeline__years">
           <li
             v-for="(item, index) in timelineData"
             :key="`year-${item.year}`"
