@@ -772,6 +772,11 @@ const inViewOptions = {
   letter-spacing: -0.035em;
   line-height: 1;
   opacity: 0.16;
+  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.catalog-section :deep(.catalog-row.is-line-current .catalog-product-family) {
+  opacity: 0.62;
 }
 
 .catalog-section :deep(.catalog-sidebar-heading .catalog-designer) {
@@ -1005,6 +1010,12 @@ const inViewOptions = {
     margin-top: calc(var(--spacing) * 5);
     margin-left: 0;
     padding: 10px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-section :deep(.catalog-sidebar-heading .catalog-product-family) {
+    transition: none;
   }
 }
 

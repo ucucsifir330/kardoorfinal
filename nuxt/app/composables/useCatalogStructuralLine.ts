@@ -50,6 +50,9 @@ const RESIZE_DEBOUNCE_MS = 160;
  */
 const REVEAL_SETTLE_MS = 220;
 
+/** Çizgi ucunun viewport'ta ilerlediği yatay bant. */
+const NODE_VIEWPORT_PROGRESS = 0.78;
+
 const clampProgress = (value: number) => Math.min(Math.max(value, 0), 1);
 
 export interface CatalogLineTargets {
@@ -67,7 +70,14 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
   let trigger: ScrollTrigger | null = null;
   let pathLength = 0;
   let pathStartY = 0;
-  let nodeThresholds: Array<{ element: SVGGElement; progress: number }> = [];
+  let nodeThresholds: Array<{
+    element: SVGGElement;
+    row: HTMLElement;
+    progress: number;
+    y: number;
+    activeUntilY: number;
+  }> = [];
+  let timelineEndY = 0;
   let headingLineConnected = false;
   let refreshTimer = 0;
   let revealAllowed = false;
@@ -127,12 +137,16 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
       if (!node) return [];
 
       const heading = row.querySelector<HTMLElement>(".catalog-product-family");
+      const allModels = row.querySelector<HTMLElement>(".catalog-all-models");
       const y = heading
         ? elementCenterY(heading, section)
         : row.offsetTop + topPaddingFor(window.innerHeight);
+      const activeUntilY = allModels
+        ? elementCenterY(allModels, section)
+        : row.offsetTop + row.offsetHeight;
 
       node.setAttribute("transform", `translate(${lineX} ${y})`);
-      return [{ element: node, y }];
+      return [{ element: node, row, y, activeUntilY: Math.max(y + 1, activeUntilY) }];
     });
     const startY = measuredNodes[0]?.y ?? fallbackStartFor(window.innerHeight);
     const endY = Math.max(startY, measuredNodes[measuredNodes.length - 1]?.y ?? height);
@@ -143,22 +157,34 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
 
     pathLength = path.getTotalLength();
     pathStartY = startY;
-    nodeThresholds = measuredNodes.map(({ element, y }) => ({
+    timelineEndY = measuredNodes[measuredNodes.length - 1]?.activeUntilY ?? endY;
+    nodeThresholds = measuredNodes.map(({ element, row, y, activeUntilY }) => ({
       element,
-      progress: pathLength ? clampProgress((y - pathStartY) / pathLength) : 0
+      row,
+      progress: pathLength ? clampProgress((y - pathStartY) / pathLength) : 0,
+      y,
+      activeUntilY
     }));
     clipRect.setAttribute("height", `${pathStartY}`);
   };
 
-  const draw = (progress: number) => {
+  const draw = (progress: number, showCurrentNode = true) => {
     const clipRect = clipRectRef.value;
     if (!clipRect || !pathLength) return;
 
     const value = clampProgress(progress);
-    clipRect.setAttribute("height", `${pathStartY + pathLength * value}`);
-    nodeThresholds.forEach(({ element, progress: threshold }) => {
-      element.classList.toggle("is-reached", value + 0.001 >= threshold);
-    });
+    const tipY = pathStartY + pathLength * value;
+    const timelineY = pathStartY + pathLength * progress;
+    clipRect.setAttribute("height", `${tipY}`);
+    nodeThresholds.forEach(
+      ({ element, row, progress: threshold, y, activeUntilY }) => {
+        element.classList.toggle("is-reached", value + 0.001 >= threshold);
+        row.classList.toggle(
+          "is-line-current",
+          showCurrentNode && timelineY >= y && timelineY < activeUntilY
+        );
+      }
+    );
 
     // Histerezis (0.965 bağlan / 0.82 kop): tek eşik olsaydı sınırda gidip
     // gelen scroll olayı bağlan/kop olaylarını sürekli tetiklerdi.
@@ -171,12 +197,29 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
     }
   };
 
+  const isInsideTriggerRange = (currentTrigger: ScrollTrigger) => {
+    const scrollPosition = currentTrigger.scroll();
+    return scrollPosition >= currentTrigger.start && scrollPosition <= currentTrigger.end;
+  };
+
+  const drawFromTrigger = (currentTrigger: ScrollTrigger) => {
+    const progress = pathLength
+      ? (currentTrigger.scroll() - currentTrigger.start) / pathLength
+      : 0;
+    draw(progress, isInsideTriggerRange(currentTrigger));
+  };
+
   // Çizgiyi bölümün eski toplam yüksekliğine göre değil, mevcut ilk ve son
   // katalog satırına göre sür. Böylece katalog 01–07'den 01–05'e indiğinde
   // progress aralığı geride kalan iki satırı hesaba katmaz; çizginin ucu da
   // viewport'un okuma bandında kalır.
-  //   progress 0: 01 satırının üstü viewport'un %85'inde
-  //   progress 1: 05 satırının altı viewport'un %55'inde
+  // Start/end, hareketli heading DOM'undan değil bölümün görsel belge
+  // koordinatı ile SVG path koordinatından üretilir. ScrollSmoother heading
+  // ölçümüne transform payı eklediği için element-bazlı `center 78%` 04–05'te
+  // çizgiyi yaklaşık 225px geride bırakıyordu.
+  //
+  // Bu matematikte çizgi ucu scroll boyunca viewport'un %78 çizgisinde kalır.
+  // Böylece SVG ucu önce görünür, ürün kartı ardından ekranın altından gelir.
   const buildTrigger = () => {
     const section = targets.section.value;
     if (!section) return;
@@ -188,14 +231,21 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
 
     trigger?.kill();
     trigger = ScrollTrigger.create({
-      trigger: firstRow,
-      endTrigger: finalRow,
-      start: "top 85%",
-      end: "bottom 55%",
-      onUpdate: (self) => draw(self.progress),
-      onRefresh: (self) => draw(self.progress),
-      onLeave: () => draw(1),
-      onLeaveBack: () => draw(0)
+      trigger: section,
+      start: () =>
+        section.getBoundingClientRect().top +
+        window.scrollY +
+        pathStartY -
+        window.innerHeight * NODE_VIEWPORT_PROGRESS,
+      end: () =>
+        section.getBoundingClientRect().top +
+        window.scrollY +
+        timelineEndY -
+        window.innerHeight * NODE_VIEWPORT_PROGRESS,
+      onUpdate: drawFromTrigger,
+      onRefresh: drawFromTrigger,
+      onLeave: () => draw(1, false),
+      onLeaveBack: () => draw(0, false)
     });
   };
 
@@ -203,7 +253,7 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
     updateGeometry();
     buildTrigger();
 
-    if (trigger) draw(trigger.progress);
+    if (trigger) drawFromTrigger(trigger);
 
     // Görünürlük yalnız fontlar hazır olduktan sonra. Path o ana kadar gizli
     // kaldığı için, erken satır-açılışlarının yol açtığı geometri değişimleri
@@ -267,6 +317,12 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
     refreshTimer = 0;
 
     window.removeEventListener("resize", onResize);
+    nodeThresholds.forEach(({ element, row }) => {
+      element.classList.remove("is-reached");
+      row.classList.remove("is-line-current");
+    });
+    nodeThresholds = [];
+    timelineEndY = 0;
     // Başlık çizgisi bağlı kalmasın: bu bölüm gidiyor.
     window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
   });
