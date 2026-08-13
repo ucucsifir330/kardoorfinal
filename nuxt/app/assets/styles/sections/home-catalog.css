@@ -413,7 +413,7 @@
 
 .catalog-structural-line-path {
   fill: none;
-  stroke: url("#catalog-structural-line-gradient");
+  stroke: var(--catalog-stage-line-fill);
   stroke-width: 2.4px;
   stroke-linecap: butt;
   stroke-linejoin: round;
@@ -426,6 +426,34 @@
 
 .catalog-structural-lines.is-line-ready .catalog-structural-line-path {
   opacity: 1;
+}
+
+.catalog-structural-line-node__dot {
+  fill: var(--catalog-stage-line-fill);
+  opacity: 0;
+  transform: scale(0.82);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.catalog-structural-lines.is-line-ready .catalog-structural-line-node__dot {
+  opacity: 0.18;
+}
+
+.catalog-structural-lines.is-line-ready
+  .catalog-structural-line-node.is-reached
+  .catalog-structural-line-node__dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-structural-line-node__dot {
+    transition: none;
+  }
 }
 
 .catalog-shell > .catalog-main {

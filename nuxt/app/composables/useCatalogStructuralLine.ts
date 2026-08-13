@@ -4,12 +4,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 /**
  * Katalog bölümünün sol kenarındaki YAPI ÇİZGİSİ.
  *
- * İlk satırın üstünden son satırın altına inen dikey SVG çizgisi; scroll
- * ilerledikçe stroke-dashoffset ile "çiziliyormuş" gibi uzuyor. Uç noktaya
- * varınca sayfa başlığındaki çizgiyle birleştiğini bildiren global bir olay
- * yayıyor (`kardoor:heading-line-connected`).
+ * 01 düğümünden 05 düğümüne inen dikey SVG çizgisi; scroll ilerledikçe SVG
+ * kırpma alanıyla "çiziliyormuş" gibi uzuyor. Çizginin ucu bir düğüme
+ * vardığında o düğüm belirginleşiyor. Uç noktaya varınca sayfa başlığındaki
+ * çizgiyle birleştiğini bildiren global bir olay yayıyor
+ * (`kardoor:heading-line-connected`).
  *
- * Neden ayrı dosya: geometri (viewBox, gradient uçları, path uzunluğu),
+ * Neden ayrı dosya: geometri (viewBox, düğüm merkezleri, path uzunluğu),
  * ScrollTrigger yaşam döngüsü, font-hazır gecikmesi ve iki ayrı debounce
  * HomeCatalog.vue'nun içine dağılmıştı — üç fonksiyonu onMounted'dan,
  * biri resize'dan, ikisi satır açılışından çağrılıyordu. Çizginin katalog
@@ -61,58 +62,103 @@ export interface CatalogLineTargets {
 export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
   const svgRef = ref<SVGSVGElement | null>(null);
   const pathRef = ref<SVGPathElement | null>(null);
-  const gradientRef = ref<SVGLinearGradientElement | null>(null);
+  const clipRectRef = ref<SVGRectElement | null>(null);
 
   let trigger: ScrollTrigger | null = null;
   let pathLength = 0;
+  let pathStartY = 0;
+  let nodeThresholds: Array<{ element: SVGGElement; progress: number }> = [];
   let headingLineConnected = false;
   let refreshTimer = 0;
   let revealAllowed = false;
   let lastWidth = import.meta.client ? window.innerWidth : 0;
 
+  const connectedRows = (section: HTMLElement) =>
+    targets.rows.value
+      .filter((row) => row.isConnected && row.closest(".catalog-section") === section)
+      .sort(
+        (left, right) =>
+          Number(left.dataset.rowIndex ?? 0) - Number(right.dataset.rowIndex ?? 0)
+      );
+
+  /** Transform animasyonlarını hesaba katmadan bir elemanın bölüm içindeki merkezi. */
+  const elementCenterY = (element: HTMLElement, section: HTMLElement) => {
+    let y = element.offsetHeight / 2;
+    let current: HTMLElement | null = element;
+
+    while (current && current !== section) {
+      y += current.offsetTop;
+      current = current.offsetParent as HTMLElement | null;
+    }
+
+    if (current === section) return y;
+
+    const elementRect = element.getBoundingClientRect();
+    const sectionRect = section.getBoundingClientRect();
+    return elementRect.top - sectionRect.top + elementRect.height / 2;
+  };
+
   const updateGeometry = () => {
     const section = targets.section.value;
     const svg = svgRef.value;
     const path = pathRef.value;
-    const gradient = gradientRef.value;
+    const clipRect = clipRectRef.value;
 
-    if (!section || !svg || !path) return;
+    if (!section || !svg || !path || !clipRect) return;
 
     const sectionRect = section.getBoundingClientRect();
-    const rows = targets.rows.value;
-    const firstRowRect = rows[0]?.getBoundingClientRect();
-    const finalRowRect = rows[rows.length - 1]?.getBoundingClientRect();
+    const rows = connectedRows(section);
+    const nodes = Array.from(
+      svg.querySelectorAll<SVGGElement>(".catalog-structural-line-node")
+    ).sort(
+      (left, right) =>
+        Number(left.dataset.rowIndex ?? 0) - Number(right.dataset.rowIndex ?? 0)
+    );
+    const nodeByIndex = new Map(
+      nodes.map((node) => [Number(node.dataset.rowIndex ?? 0), node] as const)
+    );
 
     const width = sectionRect.width;
     const height = sectionRect.height;
     const lineX = lineXFor(window.innerWidth);
-    const startY = firstRowRect
-      ? firstRowRect.top - sectionRect.top + topPaddingFor(window.innerHeight)
-      : fallbackStartFor(window.innerHeight);
-    const endY = finalRowRect
-      ? Math.max(startY, finalRowRect.bottom - sectionRect.top)
-      : height;
+    const measuredNodes = rows.flatMap((row) => {
+      const index = Number(row.dataset.rowIndex ?? 0);
+      const node = nodeByIndex.get(index);
+      if (!node) return [];
+
+      const heading = row.querySelector<HTMLElement>(".catalog-product-family");
+      const y = heading
+        ? elementCenterY(heading, section)
+        : row.offsetTop + topPaddingFor(window.innerHeight);
+
+      node.setAttribute("transform", `translate(${lineX} ${y})`);
+      return [{ element: node, y }];
+    });
+    const startY = measuredNodes[0]?.y ?? fallbackStartFor(window.innerHeight);
+    const endY = Math.max(startY, measuredNodes[measuredNodes.length - 1]?.y ?? height);
 
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    if (gradient) {
-      gradient.setAttribute("x1", `${lineX}`);
-      gradient.setAttribute("x2", `${lineX}`);
-      gradient.setAttribute("y1", `${startY}`);
-      gradient.setAttribute("y2", `${endY}`);
-    }
     path.setAttribute("d", `M ${lineX} ${startY} V ${endY}`);
+    clipRect.setAttribute("width", `${width}`);
 
     pathLength = path.getTotalLength();
-    path.style.strokeDasharray = `${pathLength}`;
-    path.style.strokeDashoffset = `${pathLength}`;
+    pathStartY = startY;
+    nodeThresholds = measuredNodes.map(({ element, y }) => ({
+      element,
+      progress: pathLength ? clampProgress((y - pathStartY) / pathLength) : 0
+    }));
+    clipRect.setAttribute("height", `${pathStartY}`);
   };
 
   const draw = (progress: number) => {
-    const path = pathRef.value;
-    if (!path || !pathLength) return;
+    const clipRect = clipRectRef.value;
+    if (!clipRect || !pathLength) return;
 
     const value = clampProgress(progress);
-    path.style.strokeDashoffset = `${pathLength * (1 - value)}`;
+    clipRect.setAttribute("height", `${pathStartY + pathLength * value}`);
+    nodeThresholds.forEach(({ element, progress: threshold }) => {
+      element.classList.toggle("is-reached", value + 0.001 >= threshold);
+    });
 
     // Histerezis (0.965 bağlan / 0.82 kop): tek eşik olsaydı sınırda gidip
     // gelen scroll olayı bağlan/kop olaylarını sürekli tetiklerdi.
@@ -125,34 +171,26 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
     }
   };
 
-  // Çizgiyi GSAP ScrollTrigger'dan sür: ScrollSmoother'ın yumuşatılmış
-  // playhead'iyle AYNI kaynağı örneklemesi için. Eski motor ham (yumuşatılmamış)
-  // window.scrollY'yi manuel bir rAF döngüsünde okuyordu; çizgi gecikmeli
-  // içerikle yarışıyor ve takılıyormuş gibi görünüyordu.
-  //   progress 0: bölümün üstü viewport'un %46'sında
-  //   progress 1: bölümün altı viewport'un %55'inde
-  //
-  // Bu iki değer TÜRETİLDİ, seçilmedi. Eski aralık (top 20% / bottom 28%)
-  // matematiksel olarak kusursuzdu — 1440x900'de scrollY 11370'te tam %50
-  // çiziyordu — ama revise dalı aynı noktada %54.5, 12694'te %79.5
-  // gösteriyordu; yani çizgi bizde geç kalıyordu. revise'in eğrisi de doğrusal
-  // olduğu için iki örnekten gerçek aralığı çözdük: başlangıç 8484px,
-  // bitiş 13780px. Bölüm geometrisine çevirince (secTop 8900, secBottom 14271,
-  // vh 900) top %46.2 ve bottom %54.6 çıkıyor.
-  //
-  // Doğrulandı: beş örnekleme noktasının BEŞİNDE de fark 0
-  // (0 / 0 / 54.5 / 79.5 / 100 — iki portta birebir).
-  //
-  // Bu sayılar viewport yüksekliğine göre yüzde olduğu için 900px dışındaki
-  // ekranlarda oran korunur; değiştirilecekse yeniden ölçülmeli.
+  // Çizgiyi bölümün eski toplam yüksekliğine göre değil, mevcut ilk ve son
+  // katalog satırına göre sür. Böylece katalog 01–07'den 01–05'e indiğinde
+  // progress aralığı geride kalan iki satırı hesaba katmaz; çizginin ucu da
+  // viewport'un okuma bandında kalır.
+  //   progress 0: 01 satırının üstü viewport'un %85'inde
+  //   progress 1: 05 satırının altı viewport'un %55'inde
   const buildTrigger = () => {
     const section = targets.section.value;
     if (!section) return;
 
+    const rows = connectedRows(section);
+    const firstRow = rows[0];
+    const finalRow = rows[rows.length - 1];
+    if (!firstRow || !finalRow) return;
+
     trigger?.kill();
     trigger = ScrollTrigger.create({
-      trigger: section,
-      start: "top 46%",
+      trigger: firstRow,
+      endTrigger: finalRow,
+      start: "top 85%",
       end: "bottom 55%",
       onUpdate: (self) => draw(self.progress),
       onRefresh: (self) => draw(self.progress),
@@ -163,9 +201,7 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
 
   const refresh = () => {
     updateGeometry();
-
-    if (trigger) trigger.refresh();
-    else buildTrigger();
+    buildTrigger();
 
     if (trigger) draw(trigger.progress);
 
@@ -235,5 +271,5 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
     window.dispatchEvent(new CustomEvent("kardoor:heading-line-reset"));
   });
 
-  return { svgRef, pathRef, gradientRef, scheduleRefresh, refresh };
+  return { svgRef, pathRef, clipRectRef, scheduleRefresh, refresh };
 };

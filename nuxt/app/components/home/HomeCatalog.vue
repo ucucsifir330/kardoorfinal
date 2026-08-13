@@ -54,7 +54,7 @@ const setRowRef = (el: any) => {
 const {
   svgRef: lineSvgRef,
   pathRef: linePathRef,
-  gradientRef: lineGradientRef
+  clipRectRef: lineClipRectRef
 } = useCatalogStructuralLine({ section: sectionRef, rows: rowRefs });
 
 // "Tümü" bağlantısının mıknatıs etkisi.
@@ -373,24 +373,23 @@ const inViewOptions = {
       preserveAspectRatio="none"
     >
       <defs>
-        <linearGradient
-          id="catalog-structural-line-gradient"
-          ref="lineGradientRef"
-          gradientUnits="userSpaceOnUse"
-          x1="0"
-          x2="0"
-          y1="0"
-          y2="80"
-        >
-          <stop offset="0" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
-          <stop offset="0.06" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.34" />
-          <stop offset="0.16" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
-          <stop offset="0.84" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="1" />
-          <stop offset="0.94" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0.34" />
-          <stop offset="1" stop-color="var(--catalog-stage-line-fill, #111417)" stop-opacity="0" />
-        </linearGradient>
+        <clipPath id="catalog-structural-line-clip" clipPathUnits="userSpaceOnUse">
+          <rect ref="lineClipRectRef" x="0" y="0" width="0" height="0" />
+        </clipPath>
       </defs>
-      <path ref="linePathRef" class="catalog-structural-line-path" />
+      <path
+        ref="linePathRef"
+        class="catalog-structural-line-path"
+        clip-path="url(#catalog-structural-line-clip)"
+      />
+      <g
+        v-for="block in localizedBlocks"
+        :key="`catalog-line-node-${block.index}`"
+        :data-row-index="block.index"
+        class="catalog-structural-line-node"
+      >
+        <circle class="catalog-structural-line-node__dot" r="3.5" />
+      </g>
     </svg>
 
     <div class="catalog-shell">
