@@ -10,6 +10,8 @@ const [
   collections,
   showroom,
   homeCatalog,
+  homeCatalogStyles,
+  homeCatalogTransition,
   catalogStructuralLine,
   homeCatalogData,
   homeReferences,
@@ -24,6 +26,8 @@ const [
   read("../app/components/catalog/CollectionsIndex.vue"),
   read("../app/assets/styles/sections/showroom.css"),
   read("../app/components/home/HomeCatalog.vue"),
+  read("../app/assets/styles/sections/home-catalog.css"),
+  read("../app/components/home/HomeCatalogTransition.vue"),
   read("../app/composables/useCatalogStructuralLine.ts"),
   read("../app/composables/useHomeCatalog.ts"),
   read("../app/assets/styles/sections/home-references.css"),
@@ -74,6 +78,16 @@ assert.match(homeCatalog, /\.catalog-designer\)[\s\S]*?color:\s*var\(--ink\)/);
 assert.doesNotMatch(homeCatalog, /\.catalog-designer\)[\s\S]*?mix-blend-mode:\s*difference/);
 assert.match(homeCatalog, /\.catalog-source-filter__option\.is-active \.catalog-source-filter__label[\s\S]*?color:\s*var\(--brand-action-on\)/);
 assert.match(homeCatalogData, /const combinedPreviewLimit = visibleSources\.length > 1 \? 10 : catalogPreviewLimit/);
+assert.match(
+  homeCatalogStyles,
+  /\.home-page \.catalog-shell > \.catalog-main\s*\{[^}]*padding-bottom:\s*clamp\(56px,\s*6vh,\s*84px\);/,
+  "desktop catalog handoff must keep the next rounded panel below the final row"
+);
+assert.match(
+  homeCatalogTransition,
+  /if \(nextFrameHeight !== measuredFrameHeight\)[\s\S]*?pinTrigger\?\.refresh\(\)/,
+  "the catalog pin must refresh when its measured frame height changes"
+);
 
 assert.match(homeReferences, /specimen--marble\s*\{[\s\S]*?width:\s*clamp\(320px,\s*33vw,\s*640px\)/);
 assert.match(homeReferences, /specimen--torus\s*\{[\s\S]*?width:\s*clamp\(360px,\s*34vw,\s*680px\)[\s\S]*?right:\s*0/);
@@ -92,6 +106,16 @@ assert.match(entranceLab, /\.app-shell--day \.entrance-lab__configure-actions \.
 
 assert.match(homeReviews, /title-area[^"]*pt-\[clamp\(80px,7vw,128px\)\][^"]*pb-\[clamp\(150px,15vw,240px\)\]/);
 assert.match(homeReviews, /rotating-text-word inline-flex overflow-hidden pt-\[0\.06em\]/);
+assert.doesNotMatch(
+  homeReviews,
+  /gradient-mask/,
+  "review cards must not be dimmed by a gradient overlay in the dark palette"
+);
+assert.match(
+  homeReviews,
+  /title-backdrop[^\"]*bg-\[var\(--catalog-stage-surface-bg,var\(--bg-color\)\)\]/,
+  "the review title must retain an opaque token-backed backdrop"
+);
 assert.match(homeFooter, /\.footer-bottom\s*\{[\s\S]*?padding:\s*10px 56px/);
 
 console.log("Browser comment contract passed.");

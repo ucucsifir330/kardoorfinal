@@ -43,6 +43,7 @@ const frameRef = ref<HTMLElement | null>(null);
 
 let resizeObserver: ResizeObserver | null = null;
 let heightFrame = 0;
+let measuredFrameHeight = 0;
 let pinTrigger: ScrollTrigger | null = null;
 let curtainTween: gsap.core.Tween | null = null;
 
@@ -54,7 +55,12 @@ const updateHeight = () => {
   const frame = frameRef.value;
   if (!hold || !frame) return;
 
-  hold.style.setProperty("--catalog-handoff-height", `${frame.scrollHeight}px`);
+  const nextFrameHeight = frame.scrollHeight;
+  if (nextFrameHeight !== measuredFrameHeight) {
+    measuredFrameHeight = nextFrameHeight;
+    hold.style.setProperty("--catalog-handoff-height", `${nextFrameHeight}px`);
+    pinTrigger?.refresh();
+  }
 };
 
 const requestHeight = () => {

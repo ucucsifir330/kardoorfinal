@@ -60,7 +60,7 @@
       </h2>
 
       <div
-        class="gradient-mask absolute top-0 right-[-40%] z-[1] h-full w-[140%] bg-[linear-gradient(to_right,var(--catalog-stage-surface-bg,var(--bg-color))_60%,transparent_100%)] max-[1024px]:hidden"
+        class="title-backdrop absolute inset-0 z-[1] bg-[var(--catalog-stage-surface-bg,var(--bg-color))] max-[1024px]:hidden"
       ></div>
     </div>
 
