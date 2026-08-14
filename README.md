@@ -1,21 +1,22 @@
 # Kardoor Digital Showroom
 
-Ege Kardoor icin gelistirilen premium Nuxt 4 web deneyimi. Proje; 3D giris sahnesi, scroll odakli katalog akisi, kurumsal belgesel handoff'u, urun katalog sayfalari ve kurumsal icerik sayfalarini tek bir uygulamada toplar.
+Ege Kardoor icin gelistirilen premium Nuxt 4 web deneyimi: sinematik giris
+sahnesi, showroom kapi gezinmesi, koleksiyon katalogu ve kurumsal icerik
+sayfalari tek uygulamada.
+
+> Bu dosya 2026-08-14'te agac uzerinde dogrulanarak yeniden yazildi. Onceki
+> surum Three.js'i stack'te sayiyordu (bagimlilik degil), var olmayan bes rota
+> listeliyordu ve `app/` oncesi klasor yapisini anlatiyordu. Buradaki her yol ve
+> komut o tarihte kontrol edildi. **Tasidiginiz bir dosya varsa README'yi ayni
+> degisiklikte guncelleyin.**
 
 ## Stack
 
-- Nuxt 4
-- Vue 3
-- TypeScript
-- GSAP + ScrollTrigger + ScrollSmoother (Lenis kaldirildi)
-- Tailwind v4 (kismi migrasyon, bkz. DESIGN.md §11)
-- Three.js
+- Nuxt 4 · Vue 3 · TypeScript
+- GSAP + ScrollTrigger + ScrollSmoother — Lenis kaldirildi
+- motion-v — bolum bazli reveal/motion
+- Tailwind v4 — kismi migrasyon, bkz. `docs/design/DESIGN.md` §11
 - @nuxt/image
-
-## Gereksinimler
-
-- Node.js 20 veya uzeri
-- npm 10 veya uzeri
 
 ## Kurulum
 
@@ -24,127 +25,144 @@ npm install
 npm run dev
 ```
 
-Dev sunucusu varsayilan olarak `http://localhost:3000` adresinde calisir. Bu repo npm workspace kullanir; root script'leri `nuxt/` uygulamasina delege eder.
+Repo npm workspace kullanir; root script'leri `nuxt/` uygulamasina delege eder.
+Node 20+, npm 10+.
 
 ## Komutlar
 
 ```bash
-npm run dev         # Nuxt dev server
-npm run build       # Production build
-npm run generate    # Static output
-npm run preview     # Build onizleme
-npm run typecheck   # Nuxt typecheck
-npm run check       # typecheck alias
+npm run dev           # dev server
+npm run build         # production build
+npm run generate      # static output
+npm run preview       # build onizleme
+npm run typecheck     # Nuxt typecheck
+npm run lint:css      # stylelint (app/assets + public/themes)
+npm run audit:runtime # Playwright + CDP, 390x844 ve 1440x1000, iki tema
+npm run audit:repo    # statik depo denetimi
+```
+
+`audit:runtime` varsayilan olarak `:3000` ve 14 rota tarar; daraltmak icin
+`AUDIT_BASE_URL` ve `AUDIT_ROUTES` kullanin:
+
+```bash
+AUDIT_BASE_URL=http://localhost:3001 AUDIT_ROUTES=/,/catalog npm run audit:runtime
 ```
 
 ## Proje Yapisi
 
 ```text
 .
-├── package.json                  # workspace script'leri
-├── nuxt/                         # asil Nuxt uygulamasi
-│   ├── app.vue                   # global shell, header, cursor, footer
-│   ├── pages/                    # route dosyalari
-│   ├── components/
-│   │   ├── home/                 # ana sayfa deneyimi
-│   │   ├── catalog/              # katalog alt gorunumleri
-│   │   ├── doors/                # kapi secici ve detay UI
-│   │   ├── layout/               # header/brand yapilari
-│   │   └── ui/                   # paylasilan UI parcalari
-│   ├── composables/              # tema, locale, asset ve katalog state'i
-│   ├── data/                     # urun, seri ve koleksiyon verileri
-│   ├── assets/styles/            # global CSS mimarisi
-│   ├── public/                   # statik modeller, temalar, sprite ve gorseller
-│   └── plugins/                  # client plugin'leri
-├── scripts/                      # yardimci script'ler
-└── handoff/                      # tasarim/dev handoff notlari
+├── package.json                    # workspace script'leri
+├── AGENTS.md                       # ajan calisma sozlesmesi
+├── docs/design/DESIGN.md           # tasarim sozlesmesi
+├── .claude/skills/                 # mobil is akisi (SKILL/VERIFY/LEDGER)
+└── nuxt/
+    ├── app/
+    │   ├── app.vue                 # global startup + transition + NuxtLayout
+    │   ├── layouts/default.vue     # chrome, smoother agaci, sayfa, footer
+    │   ├── pages/                  # rota dosyalari
+    │   ├── components/
+    │   │   ├── home/               # ana sayfa deneyimi
+    │   │   ├── catalog/            # koleksiyon gorunumleri
+    │   │   ├── layout/             # header, footer, nav
+    │   │   └── ui/                 # paylasilan UI parcalari
+    │   ├── composables/            # 16 composable: tema, locale, katalog, giris
+    │   ├── data/                   # urun, seri, koleksiyon, taksonomi
+    │   └── assets/styles/          # global CSS mimarisi
+    ├── public/                     # hero gorselleri, kapi sprite'lari, temalar
+    ├── server/api/                 # iletisim formu ucu
+    └── tests/audit/                # Playwright/CDP denetim script'leri
 ```
 
-## Ana Deneyim
+## Render Agaci
 
-Ana sayfa `nuxt/app/components/home/HomeExperience.vue` ile orkestre edilir:
+```text
+app.vue (.app-shell)
+├── PageTransitionOverlay
+├── WelcomeScreen (yalniz ilk acilis)
+└── NuxtLayout → layouts/default.vue (.site-layout)
+    ├── SiteHeader          ⎫ smoother DISINDA:
+    ├── ContactHub          ⎬ #smooth-content transform'u
+    ├── SmoothCursor        ⎭ position: fixed'i bozar
+    └── #smooth-wrapper › #smooth-content
+        ├── main › NuxtPage
+        └── SiteFooter      (her rotada)
+```
 
-- `EntranceDoorLab.vue`: masaustu giris ve ilk izlenim sahnesi.
-- `EntranceDoorMobile.vue`: dokunmatik (coarse pointer, <=1024px) giris sahnesi.
-- `HomeCatalog.vue`: scroll ritmine bagli koleksiyon/kapi katalog akisi.
-- `HomeReferences.vue`: kurumsal belgesel bolumu ve video flip animasyonu.
-- `HomeManifesto.vue`: marka manifestosu ve metin animasyonlari.
-- `HomeReviews.vue`: yorumlar bolumu.
+Ana sayfa `app/components/home/HomeExperience.vue` ile kurulur — 101 satirlik
+ince bir kompozisyon dugumu, runtime davranis alt bilesenlerde ve
+composable'larda:
 
-Katalog-belgesel gecisinde katalog arka planda sabitlenir, belgesel karti alttan yukari akar. Bu handoff davranisi `HomeExperience.vue` ve `assets/styles/sections/home-references.css` icinde izole tutulur.
+- `EntranceDoorLab.vue` — masaustu giris sahnesi
+- `EntranceDoorMobile.vue` — dokunmatik giris (coarse pointer, <=1024px)
+- `ShowroomLabMobile.vue` — mobil showroom
+- `HomeCatalogTransition.vue` — katalog ↔ belgesel handoff sahibi
+- `HomeCatalog.vue` · `HomeReferences.vue` · `HomeManifesto.vue` · `HomeReviews.vue`
 
-## Route'lar
+## Rota'lar
 
 | Route | Aciklama |
 | --- | --- |
 | `/` | Ana showroom deneyimi |
-| `/catalog` | Genel katalog |
-| `/catalog/steel` | Celik kapi katalog gorunumu |
-| `/catalog/technical` | Giris ve teknik seri katalog gorunumu |
-| `/catalog/architectural` | Mimari ozel seri katalog gorunumu |
-| `/catalog/aluminium` | Aluminyum seri katalog gorunumu |
-| `/catalog/glass` | Cam seri katalog gorunumu |
-| `/catalog/pvc` | PVC seri katalog gorunumu |
-| `/catalog/wood` | Ahsap seri katalog gorunumu |
-| `/doors` ve `/doors/[slug]` | Kapi secici ve detay sayfalari |
-| `/series` ve `/series/[slug]` | Seri listesi ve seri detayi |
-| `/company` | Kurumsal sayfa |
+| `/catalog` | Koleksiyonlar |
+| `/catalog/{steel,aluminium,glass,pvc,wood,architectural,technical}` | Seri sayfalari — **su an kirik**, hepsi `/catalog`'u basiyor |
+| `/doors/[code]` | Kapi detay sayfasi |
+| `/company` | Kurumsal |
 | `/references` | Referanslar |
-| `/production` | Uretim sayfasi |
-| `/export` | Ihracat sayfasi |
 | `/contact` | Iletisim |
-| `/request-quote` | Teklif talebi |
+
+Katalog alt rotalari `pages/catalog.vue` parent olup icinde `<NuxtPage>`
+bulunmadigi icin cocuk sayfalarini render edemiyor. Dosyalar (veri, SEO, CSS)
+saglam; ya `pages/catalog/index.vue` yapisina gecilmeli ya da silinmeli.
 
 ## Stil Mimarisi
 
-Tum global stiller `nuxt/app/assets/styles/main.css` uzerinden import edilir.
+Tum global stiller `app/assets/styles/main.css` uzerinden import edilir.
 
-- `base/`: token, reset ve transition kurallari.
-- `components/`: header, button gibi paylasilan parcalar.
-- `sections/`: ana sayfa ve bolum bazli stiller.
-- `pages/`: route bazli stiller.
-- `public/themes/`: `light.css` ve `dark.css` tema degiskenleri.
+- `base/` — token, reset, transition
+- `components/` — header, footer, buton gibi paylasilan parcalar
+- `sections/` — ana sayfa bolum stilleri
+- `pages/` — rota bazli stiller
+- `public/themes/` — `light.css` / `dark.css` runtime tema katmani
 
-CSS scoped kullanimi minimumda tutulur. Yeni stillerde bolum prefix'i kullan:
-
-```css
-.home-references-flip__...
-.catalog-...
-.company-...
-```
+Scoped CSS minimumda tutulur; yeni stillerde bolum prefix'i kullanin
+(`.home-references-flip__…`, `.catalog-…`, `.company-…`).
 
 ## Tema ve Dil
 
-- Tema modu `useShowroomAmbience()` ile yonetilir.
-- TR/EN dil state'i `useKardoorLocale()` icindedir.
-- `app.vue`, aktif locale degerine gore `html lang` attribute'unu gunceller.
-- Tema renkleri runtime'da `/themes/light.css` ve `/themes/dark.css` dosyalariyla degisir.
+- Tema `useShowroomAmbience()` ile yonetilir. **`prefers-color-scheme` degil**:
+  `localStorage` anahtari `kardoor-showroom-ambience`, degerler `day` / `night`,
+  DOM'da `data-ambience`.
+- TR/EN `useKardoorLocale()` icinde; `app.vue` `html lang`'i gunceller.
 
-## Asset Notlari
+## Mobil
 
-- 3D model: `nuxt/public/models/kardoor.glb`
-- Kapi sprite verisi: `nuxt/public/kardoor-door-sprite.webp` ve `.json`
-- Tema dosyalari: `nuxt/public/themes/`
-- Katalog preview: `nuxt/public/katalog-preview.html`
-- Gorsel cozumleme: `useKardoorAsset()`
+Mobil **ayri bir bilesen agaci** olarak gelistirilir — masaustunun dar hali
+degil. Karar ve kurallar `docs/design/DESIGN.md` §12'de, is akisi
+`.claude/skills/kardoor-mobile-workflow/` altinda.
+
+Dokunmatik cihazlarda ScrollSmoother kapalidir (`app/plugins/scroll.client.ts`),
+native scroll calisir.
 
 ## Gelistirme Notlari
 
-- Scroll animasyonlarinda GSAP/ScrollTrigger refresh akisini bozma; layout yuksekligi degisen bolumlerde refresh cagir.
-- Katalog ve belgesel handoff'u yalnizca ilgili wrapper katmanlarinda tutulmali; urun karti veya katalog veri akisi bu davranisa baglanmamali.
-- Reverse scroll davranisini test etmeden scroll-driven degisiklikleri merge etme.
-- Header, footer ve global shell `app.vue` icinde oldugu icin sayfa component'lerinde tekrar render etme.
-- Yeni route eklendiginde stil dosyasini `main.css` icine import et.
+- Scroll/GSAP: ScrollTrigger refresh akisini bozmayin; layout yuksekligi degisen
+  bolumlerde refresh cagirin. Reverse scroll'u test etmeden scroll-driven
+  degisiklik merge etmeyin.
+- Header, footer ve chrome `layouts/default.vue` icinde — sayfa bileseninde
+  tekrar render etmeyin.
+- Yeni rota eklerken stil dosyasini `main.css` icine import edin.
+- Mobil davranis iddiasi kaynak okuyarak dogrulanmaz; `VERIFY.md`'deki
+  CDP tabanli yontem kullanilir.
 
 ## Dogrulama
-
-Commit oncesi en az su komutu calistir:
 
 ```bash
 npm run typecheck
 ```
 
-Gorsel/scroll degisikliklerinde `localhost:3000` uzerinden desktop ve mobil kirilimlari manuel kontrol et.
+Gorsel/scroll degisikliklerinde masaustu ve mobil kirilimlarini gercek cihaz
+emulasyonuyla kontrol edin.
 
 ## Lisans
 

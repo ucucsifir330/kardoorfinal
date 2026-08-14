@@ -65,10 +65,11 @@ permission to extend that structure — see Step 0.5.
 - **Ownership**: a `*Mobile.vue` owns presentation and gesture only. Data,
   copy, modal, theme, i18n and business logic stay in the shared composable or
   parent. Duplicating logic into a mobile file is a defect, not a shortcut.
-- **Styles**: a mobile stylesheet stays scoped to its own component and never
-  leaks. Do not add mobile rules to a desktop stylesheet. Where new mobile CSS
-  should live is part of the open architecture decision — for an existing
-  component, follow the pattern that component already uses.
+- **Styles**: every mobile component gets exactly one stylesheet, named for the
+  component and sitting next to its peers in `app/assets/styles/`. It stays
+  scoped to that component and never leaks. Never add mobile rules to a desktop
+  stylesheet, and when a section is migrated, delete its old `@media` rules in
+  the same change.
 - **Viewport units**: `100dvh` for full-height mobile surfaces. Not `vh`, and
   deliberately **not `svh`** — `svh` is the viewport *with* the address bar
   showing, so it under-measures once the bar retracts. `dvh` tracks the live

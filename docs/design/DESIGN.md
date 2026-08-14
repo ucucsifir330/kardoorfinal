@@ -319,7 +319,7 @@ responsive behavior, simple state variants.
 gradients and material treatments, GSAP-driven properties, keyframes, and
 anything the theme override layers reach.
 
-## 12. Mobile — current state and open architecture decision
+## 12. Mobile — full split
 
 Process for mobile work lives in `.claude/skills/kardoor-mobile-workflow/`
 (`SKILL.md` for the pipeline, `VERIFY.md` for what counts as evidence,
