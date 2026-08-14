@@ -1,56 +1,58 @@
 <template>
-  <div class="ada-manifesto-container">
-    <div class="ada-scroll-line-wrapper" aria-hidden="true"></div>
-    <div class="ada-manifesto-content">
-      <h3
-        ref="manifestoQuoteRef"
-        class="ada-manifesto-text ada-split-quote scroll-reveal"
-        id="manifesto-text"
-        data-gsap-quote="true"
-      >
-        {{ manifestoCopy.quote }}
-      </h3>
-      <a href="/company" class="ada-manifesto-cta" :aria-label="manifestoCopy.ctaAria">
-        <span class="ada-manifesto-cta-text" :data-text="manifestoCopy.cta">{{ manifestoCopy.cta }}</span>
-        <span class="ada-manifesto-cta-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-          </svg>
-        </span>
-      </a>
-    </div>
-  </div>
-
-  <slot name="before-references-title" />
-
-  <div ref="titleContainerRef" class="ada-title-container">
-    <h4 ref="titleRef" class="ada-giant-title">
-      {{ manifestoCopy.brandsTitle }}
-    </h4>
-  </div>
-
-  <div ref="loopContainerRef" class="ada-subtitle-container">
-    <div ref="loopTrackRef" class="ada-loop-track">
-      <div v-for="group in 2" :key="'brand-row-a-' + group" class="ada-loop-group" :aria-hidden="group === 2 ? 'true' : undefined">
-        <span v-for="brand in primaryBrands" :key="group + brand.name" class="ada-loop-item">
-          <img class="ada-brand-logo" :src="brand.src" :alt="brand.name">
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <div ref="loopContainerReverseRef" class="ada-subtitle-container-reverse">
-    <div ref="loopTrackReverseRef" class="ada-loop-track-reverse">
-      <div v-for="group in 2" :key="'brand-row-b-' + group" class="ada-loop-group" :aria-hidden="group === 2 ? 'true' : undefined">
-        <span v-for="brand in secondaryBrands" :key="group + brand.name" class="ada-loop-item">
-          <span v-if="brand.name === 'Microsoft'" class="ada-brand-logo ada-brand-logo-microsoft" aria-label="Microsoft" role="img">
-            <svg class="ada-brand-logo-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 4h26v26H4V4Zm30 0h26v26H34V4ZM4 34h26v26H4V34Zm30 0h26v26H34V34Z" fill="currentColor"/>
+  <div class="home-manifesto-stage">
+    <div class="ada-manifesto-container">
+      <div class="ada-scroll-line-wrapper" aria-hidden="true"></div>
+      <div class="ada-manifesto-content">
+        <h3
+          ref="manifestoQuoteRef"
+          class="ada-manifesto-text ada-split-quote scroll-reveal"
+          id="manifesto-text"
+          data-gsap-quote="true"
+        >
+          {{ manifestoCopy.quote }}
+        </h3>
+        <a href="/company" class="ada-manifesto-cta" :aria-label="manifestoCopy.ctaAria">
+          <span class="ada-manifesto-cta-text" :data-text="manifestoCopy.cta">{{ manifestoCopy.cta }}</span>
+          <span class="ada-manifesto-cta-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 4V8.5C12 10.433 13.567 12 15.5 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M4 12H8.5C10.433 12 12 13.567 12 15.5V20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
             </svg>
           </span>
-          <img v-else class="ada-brand-logo" :src="brand.src" :alt="brand.name">
-        </span>
+        </a>
+      </div>
+    </div>
+
+    <slot name="before-references-title" />
+
+    <div ref="titleContainerRef" class="ada-title-container">
+      <h4 ref="titleRef" class="ada-giant-title">
+        {{ manifestoCopy.brandsTitle }}
+      </h4>
+    </div>
+
+    <div ref="loopContainerRef" class="ada-subtitle-container">
+      <div ref="loopTrackRef" class="ada-loop-track">
+        <div v-for="group in 2" :key="'brand-row-a-' + group" class="ada-loop-group" :aria-hidden="group === 2 ? 'true' : undefined">
+          <span v-for="brand in primaryBrands" :key="group + brand.name" class="ada-loop-item">
+            <img class="ada-brand-logo" :src="brand.src" :alt="brand.name">
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div ref="loopContainerReverseRef" class="ada-subtitle-container-reverse">
+      <div ref="loopTrackReverseRef" class="ada-loop-track-reverse">
+        <div v-for="group in 2" :key="'brand-row-b-' + group" class="ada-loop-group" :aria-hidden="group === 2 ? 'true' : undefined">
+          <span v-for="brand in secondaryBrands" :key="group + brand.name" class="ada-loop-item">
+            <span v-if="brand.name === 'Microsoft'" class="ada-brand-logo ada-brand-logo-microsoft" aria-label="Microsoft" role="img">
+              <svg class="ada-brand-logo-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4h26v26H4V4Zm30 0h26v26H34V4ZM4 34h26v26H4V34Zm30 0h26v26H34V34Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <img v-else class="ada-brand-logo" :src="brand.src" :alt="brand.name">
+          </span>
+        </div>
       </div>
     </div>
   </div>

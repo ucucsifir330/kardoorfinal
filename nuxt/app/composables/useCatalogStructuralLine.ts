@@ -144,12 +144,22 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
       const activeUntilY = allModels
         ? elementCenterY(allModels, section)
         : row.offsetTop + row.offsetHeight;
+      const nodeCircleY = Number(node.querySelector("circle")?.getAttribute("cy") ?? 0);
 
       node.setAttribute("transform", `translate(${lineX} ${y})`);
-      return [{ element: node, row, y, activeUntilY: Math.max(y + 1, activeUntilY) }];
+      return [
+        {
+          element: node,
+          row,
+          y,
+          nodeY: y + nodeCircleY,
+          activeUntilY: Math.max(y + 1, activeUntilY)
+        }
+      ];
     });
-    const startY = measuredNodes[0]?.y ?? fallbackStartFor(window.innerHeight);
-    const endY = Math.max(startY, measuredNodes[measuredNodes.length - 1]?.y ?? height);
+    const startY = measuredNodes[0]?.nodeY ?? fallbackStartFor(window.innerHeight);
+    const finalNode = measuredNodes[measuredNodes.length - 1];
+    const endY = Math.max(startY, finalNode?.nodeY ?? height);
 
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
     path.setAttribute("d", `M ${lineX} ${startY} V ${endY}`);
@@ -158,11 +168,11 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
     pathLength = path.getTotalLength();
     pathStartY = startY;
     timelineEndY = measuredNodes[measuredNodes.length - 1]?.activeUntilY ?? endY;
-    nodeThresholds = measuredNodes.map(({ element, row, y, activeUntilY }) => ({
+    nodeThresholds = measuredNodes.map(({ element, row, nodeY, activeUntilY }) => ({
       element,
       row,
-      progress: pathLength ? clampProgress((y - pathStartY) / pathLength) : 0,
-      y,
+      progress: pathLength ? clampProgress((nodeY - pathStartY) / pathLength) : 0,
+      y: nodeY,
       activeUntilY
     }));
     clipRect.setAttribute("height", `${pathStartY}`);
@@ -213,10 +223,10 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
   // katalog satırına göre sür. Böylece katalog 01–07'den 01–05'e indiğinde
   // progress aralığı geride kalan iki satırı hesaba katmaz; çizginin ucu da
   // viewport'un okuma bandında kalır.
-  // Start/end, hareketli heading DOM'undan değil bölümün görsel belge
-  // koordinatı ile SVG path koordinatından üretilir. ScrollSmoother heading
-  // ölçümüne transform payı eklediği için element-bazlı `center 78%` 04–05'te
-  // çizgiyi yaklaşık 225px geride bırakıyordu.
+  // Start/end, hareketli heading DOM'undan değil bölümün sabit SVG koordinatından
+  // üretilir. Trigger-relative ifade, katalog pin katmanının belge koordinatını
+  // ScrollTrigger'ın bir kez daha başlangıca ekleyip çizgiyi bir viewport geride
+  // bırakmasını önler.
   //
   // Bu matematikte çizgi ucu scroll boyunca viewport'un %78 çizgisinde kalır.
   // Böylece SVG ucu önce görünür, ürün kartı ardından ekranın altından gelir.
@@ -232,16 +242,8 @@ export const useCatalogStructuralLine = (targets: CatalogLineTargets) => {
     trigger?.kill();
     trigger = ScrollTrigger.create({
       trigger: section,
-      start: () =>
-        section.getBoundingClientRect().top +
-        window.scrollY +
-        pathStartY -
-        window.innerHeight * NODE_VIEWPORT_PROGRESS,
-      end: () =>
-        section.getBoundingClientRect().top +
-        window.scrollY +
-        timelineEndY -
-        window.innerHeight * NODE_VIEWPORT_PROGRESS,
+      start: () => `top+=${pathStartY}px ${NODE_VIEWPORT_PROGRESS * 100}%`,
+      end: () => `top+=${timelineEndY}px ${NODE_VIEWPORT_PROGRESS * 100}%`,
       onUpdate: drawFromTrigger,
       onRefresh: drawFromTrigger,
       onLeave: () => draw(1, false),

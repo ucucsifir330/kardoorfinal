@@ -1,19 +1,19 @@
 :root {
-  --bg-deepest: #050714;
-  --bg-main: #080B18;
-  --bg-navy: #131937;
-  --card-bg: #171D3D;
-  --surface-hover: #1D244A;
-  --text-main: #F4F6FF;
-  --text-soft: #B9C0D8;
-  --text-muted: #9FA7BD;
-  --text-faint: #8A93AD;
-  --accent: #8EA2FF;
-  --accent-soft: #C3CCFF;
+  --bg-deepest: #071018;
+  --bg-main: #0B1822;
+  --bg-navy: #10293F;
+  --card-bg: #19354D;
+  --surface-hover: #21425E;
+  --text-main: #EEF3F6;
+  --text-soft: #B9C8D4;
+  --text-muted: #9CACBA;
+  --text-faint: #8093A3;
+  --accent: var(--brand-300);
+  --accent-soft: var(--brand-100);
 
   --bg: var(--bg-main);
   --panel: var(--bg-navy);
-  --panel-soft: rgba(23, 29, 61, 0.76);
+  --panel-soft: rgba(25, 53, 77, 0.76);
 
   --line: rgba(255, 255, 255, 0.14);
   --line-strong: rgba(255, 255, 255, 0.28);
@@ -32,27 +32,32 @@
        700 -> acik zemin uzerinde vurgu / hover / aktif
      Bu blok temadan bagimsiz tanimlanir; hangi temanin hangisini kullandigi
      asagidaki .app-shell--day / --night eslemelerinde belirlenir. */
-  --brand-100: #EEF0FF;
-  --brand-300: #8B9BFA;
-  --brand-500: #2B4BF2;
-  --brand-700: #22318C;
-  --brand-900: #0E1338;
+  --brand-signature: #10293F;
+  --brand-action: #0C63B4;
+  --brand-action-on: #F0F5F9;
+  --brand-100: var(--brand-action-on);
+  --brand-300: #95BADA;
+  --brand-500: var(--brand-action);
+  --brand-700: var(--brand-signature);
+  --brand-900: #091825;
 
   /* acik zemin */
-  --paper:     #EBE6DB;
-  --surface:   #FDFCFA;
-  --surface-2: #F1F0EC;
-  --hairline:  #DDD6C9;
-  --ink:       #16130F;
-  --ink-soft:  #8A8073;
-  --ink-body:  #3A352D;
+  --paper:         #EDEAE0;
+  --surface:       #FAF8F2;
+  --surface-2:     #F4F1E8;
+  --hairline:      #DDD8C9;
+  --ink:           #14120D;
+  --ink-body:      #3B362D;
+  --ink-secondary: #5E574B;
+  --ink-soft:      #6E6659;
 
   /* koyu blok — acik temanin ICINDE yasayan editoryal blok.
      Gercek dark mode ile ilgisi yok, .app-shell--night'a karisMAZ. */
-  --slab:      #1A1533;
-  --slab-fg:   #EDEAF5;
-  --slab-soft: #9990B8;
-  --slab-line: #2E2750;
+  --slab:        #10293F;
+  --slab-fg:     #EEF3F6;
+  --slab-soft:   #99AFC2;
+  --slab-line:   #223F59;
+  --slab-accent: #90BADF;
 
   /* --- FOOTER RENK SOZLESMESI --------------------------------------------
      Footer'in TEK renk kaynagi. Oncesinde 6 dosyaya dagilmis 13 kural vardi
@@ -104,7 +109,7 @@
      `closest('.app-shell')` = false), yani kabuga yazilan tema
      degiskenlerini miras alamiyor. `html` ise body'nin atasi. */
   --modal-surface:  var(--card-bg);
-  --modal-raised:   #1D244A;
+  --modal-raised:   var(--surface-hover);
   --modal-fg:       var(--text-main);
   --modal-fg-muted: var(--text-soft);
   --modal-line:     var(--line);
@@ -118,9 +123,13 @@
        --accent-fg    metin/ikon vurgusu (seri secici, kod, link)
        --accent-fill  dolu yuzey (CTA dolgusu) — sayfa basina TEK
        --accent-on    dolu yuzeyin UZERINDEKI metin */
-  --accent-fg:   var(--brand-700);
-  --accent-fill: var(--brand-700);
-  --accent-on:   var(--brand-100);
+  --signature-fg: var(--accent);
+  --action-fill:  var(--brand-action);
+  --action-on:    var(--brand-action-on);
+  --focus-ring:   var(--accent);
+  --accent-fg:    var(--signature-fg);
+  --accent-fill:  var(--action-fill);
+  --accent-on:    var(--action-on);
 
   /* Sayfa ust bosluklari icin (contact/company). Navbar olculeri
      components/site-header.css'te — tek kaynak orasi. */
@@ -183,12 +192,16 @@
   --text: var(--ink);
   --muted: var(--ink-body);
   --soft: var(--ink-soft);
-  /* KRITIK: --accent taban degeri #8EA2FF (300 irtifasi) ve gece paleti icin.
+  /* KRITIK: --accent taban degeri brand-300 irtifasi ve gece paleti icin.
      Acik zeminde 300 kullanmak yasak — kontrast ~2:1'e dusuyor, vurgu degil
      soluk metin olarak okunuyor (PALETTE-light.md, uygulama kurali 2).
      Ikili basligin 2. satiri bu degiskenden besleniyor. */
-  --accent: var(--brand-700);
-  --accent-soft: var(--brand-700);
+  --signature-fg: var(--brand-signature);
+  --action-fill: var(--brand-action);
+  --action-on: var(--brand-action-on);
+  --focus-ring: var(--brand-action);
+  --accent: var(--brand-signature);
+  --accent-soft: var(--brand-signature);
   --ambience-bg: var(--paper);
   --ambience-text: var(--ink);
   --ambience-muted: var(--ink-body);
@@ -214,7 +227,7 @@
      Deger EN KOYU zemine gore secildi: modal paneli (#FBF9F5) daha acik,
      orada oran daha da yuksek cikiyor. `--ink-soft` kendisi dokunulmadan
      duruyor; cizgi/kenarlik gibi metin-disi yerlerde hala dogru deger o. */
-  --text-secondary: #6B6359;
+  --text-secondary: var(--ink-secondary);
   --entrance-handoff-bg: var(--paper);
   --catalog-stage-bg: var(--paper);
   --catalog-stage-surface-bg: var(--paper);
@@ -240,7 +253,7 @@
      katalog kartlari onu okuyor; `var(--paper)` yapilinca kart sayfa
      zeminiyle ayni tona dusup kapilarin arkasi duzlesiyordu. */
   --surface-raised: var(--surface-2);
-  --surface-hover:  #FBF9F5;
+  --surface-hover:  #F7F4EC;
   --surface-line:   var(--hairline);
 
   /* Modal token'lari BURADA DEGIL — Teleport modali `.app-shell` agacinin
@@ -248,31 +261,37 @@
      Tek dogru yer: dosyanin sonundaki `html[data-theme="light"]` blogu. */
 
   /* Vurgu: acik zemin -> 700 (koyu mavi). 300 burada yasak, kontrast ~2:1. */
-  --accent-fg:   var(--brand-700);
-  --accent-fill: var(--brand-700);
-  --accent-on:   var(--brand-100);
+  --accent-fg:   var(--signature-fg);
+  --accent-fill: var(--action-fill);
+  --accent-on:   var(--action-on);
 
 }
 
 .app-shell--night {
+  /* Gece kabugu, marka mavisinin 208 derece eksenindeki koyu irtifalaridir. */
+  --slab: var(--bg-navy);
+  --slab-fg: var(--text-main);
+  --slab-soft: var(--text-muted);
+  --slab-line: color-mix(in srgb, var(--text-main) 14%, transparent);
+  --slab-accent: var(--brand-300);
   --bg: var(--bg-main);
   --panel: var(--bg-navy);
-  --panel-soft: rgba(23, 29, 61, 0.76);
-  --line: rgba(244, 246, 255, 0.14);
-  --line-strong: rgba(244, 246, 255, 0.28);
+  --panel-soft: rgba(25, 53, 77, 0.76);
+  --line: rgba(238, 243, 246, 0.14);
+  --line-strong: rgba(238, 243, 246, 0.28);
   --text: var(--text-main);
   --muted: var(--text-soft);
   --soft: var(--text-faint);
   --ambience-bg: var(--bg-deepest);
   --ambience-text: var(--text-main);
-  --ambience-muted: rgba(185, 192, 216, 0.82);
-  --ambience-soft: rgba(159, 167, 189, 0.72);
-  --ambience-line: rgba(244, 246, 255, 0.14);
-  --ambience-glass: rgba(19, 25, 55, 0.62);
-  --ambience-overlay: rgba(5, 7, 20, 0.62);
+  --ambience-muted: rgba(185, 200, 212, 0.82);
+  --ambience-soft: rgba(156, 172, 186, 0.72);
+  --ambience-line: rgba(238, 243, 246, 0.14);
+  --ambience-glass: rgba(16, 41, 63, 0.62);
+  --ambience-overlay: rgba(7, 16, 24, 0.62);
   --ambience-shadow: rgba(0, 0, 0, 0.44);
-  --ambience-light: rgba(195, 204, 255, 0.96);
-  --ambience-glow: rgba(142, 162, 255, 0.52);
+  --ambience-light: rgba(149, 186, 218, 0.96);
+  --ambience-glow: rgba(149, 186, 218, 0.48);
   --ambience-hero-filter: brightness(0.46) saturate(0.72) contrast(1.16);
   --ambience-copy-shadow: 0 18px 52px rgba(0, 0, 0, 0.5);
   --header-brand-text: var(--text-main);
@@ -282,11 +301,11 @@
      NOT: --bg-color kaybolunca .gradient-mask'in gradyani cozulemez hale
      gelip yorumlar bolumu kirilmisti (bkz. 4ef0de0). Bu degiskenler
      baska hicbir yerde tanimli DEGIL — fallback yok. --- */
-  --bg-color: #050714;
-  --text-primary: #F4F6FF;
-  --text-secondary: rgba(244, 246, 255, 0.68);
+  --bg-color: var(--bg-deepest);
+  --text-primary: var(--text-main);
+  --text-secondary: rgba(238, 243, 246, 0.68);
   --catalog-stage-line-filter: none;
-  --catalog-product-scrollbar: rgba(244, 246, 255, 0.45) rgba(244, 246, 255, 0.08);
+  --catalog-product-scrollbar: rgba(238, 243, 246, 0.45) rgba(238, 243, 246, 0.08);
   --catalog-product-modal-backdrop: rgba(0, 0, 0, 0.62);
 
   /* Yapi cizgisi gece: bu iki degisken eskiden YALNIZCA .app-shell--day
@@ -295,7 +314,7 @@
      ciziliyor, opacity 1, ama boya yok).
      Vurgu sozlesmesinden besleniyor -> gecede acik mavi (300). */
   --catalog-stage-line-fill: var(--accent-fg);
-  --catalog-stage-line-track: rgba(244, 246, 255, 0.12);
+  --catalog-stage-line-track: rgba(238, 243, 246, 0.12);
 
   /* Bolum zemini gece — TEK KAYNAK burasi.
      Eskiden yalnizca main.css'teki `.app-shell--night .catalog-section,
@@ -304,16 +323,16 @@
      dusuyordu: ekip bolumu #080B18 iken yorumlar #050714 cikiyor ve iki
      bolum arasinda ince bir ton kirilmasi seridi gorunuyordu (olculdu).
      Token'da tanimlaninca butun bolumler ayni zemini aliyor. */
-  --catalog-stage-bg:         #080B18;
-  --catalog-stage-surface-bg: #080B18;
-  --catalog-stage-main-bg:    #080B18;
+  --catalog-stage-bg:         var(--bg-navy);
+  --catalog-stage-surface-bg: var(--bg-navy);
+  --catalog-stage-main-bg:    var(--bg-navy);
 
   /* Footer gece: kubbe zeminden BIR IRTIFA acik.
      Onceden kubbe de #080B18 idi — zeminle birebir ayni, yani kubbe
      gorunmuyordu ve GSAP'in yay animasyonu calissa bile fark edilmiyordu
      ("dark temada footer patlamis" sikayetinin kok nedeni, olculdu). */
-  --footer-surface: #080B18;
-  --footer-dome:    #131937;
+  --footer-surface: var(--bg-main);
+  --footer-dome:    var(--bg-navy);
   --footer-dome-fg: var(--text-main);
 
   /* Yuzeyler: kart zeminden bir irtifa YUKARIDA. Degerler main.css'teki
@@ -323,19 +342,22 @@
      `html[data-theme="dark"] ... .catalog-card { background:#171D3D }`
      kurali veriyor — token degil. */
   --surface-raised: var(--card-bg);
-  --surface-hover:  #1D244A;
-  --surface-line:   rgba(244, 246, 255, 0.12);
+  --surface-line:   rgba(238, 243, 246, 0.12);
 
   /* Modal token'lari BURADA DEGIL — Teleport modali `.app-shell` agacinin
      disina tasidigi icin buraya yazilanlar ona ulasmaz.
      Tek dogru yer: dosyanin sonundaki `html[data-theme="dark"]` blogu. */
 
-  /* Vurgu: koyu zeminde 300 (#8B9BFA) — ACIK mavi. 700 (#22318C) koyu
+  /* Vurgu: koyu zeminde 300 (#95BADA) — ACIK mavi. Light tema imza tonu koyu
      lacivert zeminde neredeyse zeminle ayni okunuyor, vurgu olmuyor.
      Dolu yuzey de bir tik acilir (500) ki CTA gecede de one ciksin. */
   --accent-fg:   var(--brand-300);
   --accent-fill: var(--brand-500);
-  --accent-on:   #050714;
+  --accent-on:   var(--bg-deepest);
+  --signature-fg: var(--accent-fg);
+  --action-fill: var(--brand-500);
+  --action-on: var(--accent-on);
+  --focus-ring: var(--accent-fg);
 
 }
 
@@ -353,6 +375,7 @@
      gunduz -> kart yuzeyi #FBF9F5 + #F1EDE5, koyu murekkep
      gece   -> katalog kartiyla ayni ikili #171D3D + #1D244A, beyaz murekkep */
 html[data-theme="light"] {
+  --focus-ring:     var(--brand-action);
   --modal-surface:  var(--surface);
   --modal-raised:   var(--surface-2);
   --modal-fg:       var(--ink);
@@ -361,11 +384,12 @@ html[data-theme="light"] {
 }
 
 html[data-theme="dark"] {
+  --focus-ring:     var(--accent);
   --modal-surface:  var(--card-bg);
-  --modal-raised:   #1D244A;
+  --modal-raised:   var(--surface-hover);
   --modal-fg:       var(--text-main);
   --modal-fg-muted: var(--text-soft);
-  --modal-line:     rgba(244, 246, 255, 0.12);
+  --modal-line:     rgba(238, 243, 246, 0.12);
 }
 
 @media (max-width: 820px) {

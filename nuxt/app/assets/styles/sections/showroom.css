@@ -20,15 +20,15 @@
   overflow: hidden;
 
   /* Tema değişkenleri — varsayılan NIGHT (koyu). [data-ambience="day"] override. */
-  --sl-bg-1: #131937;
-  --sl-bg-2: #080B18;
-  --sl-vignette-a: rgba(142, 162, 255, 0.16);
-  --sl-vignette-b: rgba(5, 7, 20, 0.34);
-  --sl-text: #F4F6FF;
-  --sl-text-soft: #B9C0D8;
-  --sl-text-faint: #9FA7BD;
-  --sl-line: rgba(244, 246, 255, 0.22);
-  --sl-backdrop: rgba(195, 204, 255, 0.07);
+  --sl-bg-1: var(--bg-navy);
+  --sl-bg-2: var(--bg-main);
+  --sl-vignette-a: rgba(149, 186, 218, 0.16);
+  --sl-vignette-b: rgba(7, 16, 24, 0.34);
+  --sl-text: var(--text-main);
+  --sl-text-soft: var(--text-soft);
+  --sl-text-faint: var(--text-muted);
+  --sl-line: rgba(238, 243, 246, 0.22);
+  --sl-backdrop: rgba(149, 186, 218, 0.07);
 
   color: var(--sl-text);
 }
@@ -147,9 +147,11 @@ html.is-safari .showroom-lab__backdrop-text {
 .showroom-lab__stage::after {
   content: "";
   position: absolute;
-  inset-block: 0;
+  top: 50%;
   z-index: 60;
   width: clamp(32px, 3.8vw, 72px);
+  height: clamp(330px, 35vw, 560px);
+  transform: translateY(-50%);
   pointer-events: none;
 }
 
@@ -297,6 +299,8 @@ html.is-safari .showroom-lab__slot {
 
 .showroom-lab__info-block {
   display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
   flex-direction: column;
   align-items: flex-start;
   width: min(100%, 410px);
@@ -334,7 +338,7 @@ html.is-safari .showroom-lab__slot {
   display: inline-block;
   font-size: clamp(16px, 1.22vw, 22px);
   font-weight: 600;
-  color: var(--sl-text);
+  color: var(--accent);
 }
 
 /* Dolan çizgi — 01..05 arasında --counter-progress ile altın dolum. */
@@ -436,6 +440,7 @@ html.is-safari .showroom-lab__slot {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
   width: min(100%, 344px);
+  margin-top: auto;
   gap: clamp(10px, 0.8vw, 12px);
 }
 
@@ -449,19 +454,19 @@ html.is-safari .showroom-lab__slot {
 
 .entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {
   /* Detaylar, Teklif Al hover'ındaki koyu yüzeyi devralır. */
-  --ada-cta-bg: var(--brand-700);
+  --ada-cta-bg: var(--brand-action);
   --ada-cta-fg: var(--brand-100);
-  --ada-cta-border: var(--brand-700);
-  --ada-cta-hover-bg: var(--brand-700);
+  --ada-cta-border: var(--brand-action);
+  --ada-cta-hover-bg: var(--brand-action);
   --ada-cta-hover-fg: var(--brand-100);
-  --ada-cta-hover-border: var(--brand-700);
-  --ada-cta-fill-surface: var(--brand-700);
+  --ada-cta-hover-border: var(--brand-action);
+  --ada-cta-fill-surface: var(--brand-action);
 }
 
 .entrance-lab[data-ambience="day"] .showroom-lab__actions .ada-cta-button--outline {
   /* Secondary — kenar hairline, metin/ok 700. Dolgu YOK. */
   --ada-cta-bg: transparent;
-  --ada-cta-fg: var(--brand-700);
+  --ada-cta-fg: var(--brand-action);
   --ada-cta-border: var(--hairline);
   --ada-cta-hover-fg: var(--brand-100);
   --ada-cta-hover-bg: transparent;
@@ -470,13 +475,13 @@ html.is-safari .showroom-lab__slot {
 }
 
 .entrance-lab[data-ambience="night"] .showroom-lab__actions .ada-cta-button:not(.ada-cta-button--outline) {
-  --ada-cta-bg: #F4F6FF;
-  --ada-cta-fg: #050714;
-  --ada-cta-border: #F4F6FF;
-  --ada-cta-hover-bg: #C3CCFF;
-  --ada-cta-hover-fg: #050714;
-  --ada-cta-hover-border: #C3CCFF;
-  --ada-cta-fill-surface: #C3CCFF;
+  --ada-cta-bg: var(--text-main);
+  --ada-cta-fg: var(--bg-deepest);
+  --ada-cta-border: var(--text-main);
+  --ada-cta-hover-bg: var(--accent);
+  --ada-cta-hover-fg: var(--bg-deepest);
+  --ada-cta-hover-border: var(--accent);
+  --ada-cta-fill-surface: var(--accent);
 }
 
 .showroom-lab__door-rail {
@@ -526,7 +531,7 @@ html.is-safari .showroom-lab__slot {
 }
 
 .showroom-lab__door-rail-segment:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 8px;
 }
 
@@ -534,9 +539,9 @@ html.is-safari .showroom-lab__slot {
    varsayılan koyu metin koyu zeminde kaybolur. Custom property'ler scoped
    bileşene miras yoluyla geçer. */
 .entrance-lab[data-ambience="night"] .showroom-lab__actions .ada-cta-button--outline {
-  --ada-cta-fg: #F4F6FF;
-  --ada-cta-border: rgba(244, 246, 255, 0.4);
-  --ada-cta-hover-fg: #050714;
+  --ada-cta-fg: var(--text-main);
+  --ada-cta-border: rgba(238, 243, 246, 0.4);
+  --ada-cta-hover-fg: var(--bg-deepest);
   --ada-cta-hover-bg: var(--accent);
   --ada-cta-hover-border: var(--accent);
   --ada-cta-fill-surface: var(--accent);
@@ -594,8 +599,10 @@ html.is-safari .showroom-lab__slot {
     inset: 0;
   }
   .showroom-lab__info-block {
+    flex: none;
     gap: clamp(18px, 4vw, 28px);
   }
+
   .showroom-lab__identity {
     gap: clamp(10px, 2.5vw, 16px);
   }
@@ -631,6 +638,7 @@ html.is-safari .showroom-lab__slot {
     letter-spacing: 0.01em;
   }
   .showroom-lab__actions {
+    margin-top: 0;
     gap: 12px;
   }
   .showroom-lab__door-rail {

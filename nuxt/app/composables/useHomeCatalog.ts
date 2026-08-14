@@ -124,7 +124,7 @@ export const useHomeCatalog = () => {
     const visibleSources = selectedSourceSlug === "all"
       ? block.sources
       : block.sources.filter((source) => source.seriesSlug === selectedSourceSlug);
-    const combinedPreviewLimit = visibleSources.length > 1 ? 8 : catalogPreviewLimit;
+    const combinedPreviewLimit = visibleSources.length > 1 ? 10 : catalogPreviewLimit;
     const previewLimit = Math.max(1, Math.floor(combinedPreviewLimit / visibleSources.length));
 
     return visibleSources.map((source) => {

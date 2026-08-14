@@ -644,7 +644,7 @@ watch(isOpen, (nowOpen) => {
 }
 
 .chub__trigger:focus-visible {
-  outline: 2px solid var(--chub-ink);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -662,7 +662,7 @@ watch(isOpen, (nowOpen) => {
   width: calc(var(--chub-size) - 16px);
   height: calc(var(--chub-size) - 16px);
   border-radius: 999px;
-  background: var(--brand-700);
+  background: var(--action-fill);
   color: #fff;
 }
 

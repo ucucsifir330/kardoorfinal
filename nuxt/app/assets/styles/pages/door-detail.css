@@ -33,7 +33,7 @@
 /* Odak gorunurlugu: Tailwind'de `outline` renk degiskeniyle yazmak yerine
    burada tek kural — klavye kullanicisi her iki temada net gorsun. */
 .kdoor a:focus-visible {
-  outline: 2px solid currentColor;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 

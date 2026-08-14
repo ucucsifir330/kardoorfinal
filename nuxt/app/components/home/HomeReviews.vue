@@ -4,7 +4,7 @@
     class="testimonial-wrapper relative m-0 flex min-h-[100svh] w-full items-center overflow-hidden bg-[var(--catalog-stage-surface-bg,var(--bg-color))] pt-[clamp(80px,7vw,128px)] pb-[clamp(150px,15vw,240px)] max-[1024px]:min-h-0 max-[1024px]:items-start max-[1024px]:pt-[156px] max-[1024px]:pb-[180px] max-[640px]:flex-col max-[640px]:pt-[124px] max-[640px]:pb-[150px]"
   >
     <div
-      class="title-area pointer-events-none absolute top-0 left-0 z-10 flex h-full w-[45%] items-center pl-[3vw] max-[1024px]:relative max-[1024px]:h-auto max-[1024px]:w-full max-[1024px]:items-start max-[1024px]:px-[clamp(18px,4vw,40px)] max-[640px]:px-5"
+      class="title-area pointer-events-none absolute top-0 left-0 z-10 flex h-full w-[45%] items-center pt-[clamp(80px,7vw,128px)] pb-[clamp(150px,15vw,240px)] pl-[3vw] max-[1024px]:relative max-[1024px]:h-auto max-[1024px]:w-full max-[1024px]:items-start max-[1024px]:px-[clamp(18px,4vw,40px)] max-[1024px]:pt-0 max-[1024px]:pb-0 max-[640px]:px-5"
     >
       <h2
         class="title rotating-title text-rotating relative z-[2] m-0 flex flex-col font-telegraf font-[540] leading-[1.05] tracking-normal text-text max-[1024px]:text-rotating-lg max-[640px]:w-[min(100%,360px)] max-[640px]:text-rotating-sm max-[640px]:leading-[1.04]"
@@ -40,7 +40,7 @@
                 layout
                 aria-hidden="true"
               >
-                <span class="rotating-text-word inline-flex overflow-hidden pb-[0.06em]">
+                <span class="rotating-text-word inline-flex overflow-hidden pt-[0.06em]">
                   <motion.span
                     v-for="(character, index) in titleCharacters"
                     :key="`${character}-${index}`"

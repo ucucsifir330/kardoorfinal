@@ -37,6 +37,10 @@
   --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-signature: var(--signature-fg);
+  --color-action: var(--action-fill);
+  --color-action-on: var(--action-on);
+  --color-focus-ring: var(--focus-ring);
   --color-warm: var(--warm);
 
   --color-bg-deepest: var(--bg-deepest);

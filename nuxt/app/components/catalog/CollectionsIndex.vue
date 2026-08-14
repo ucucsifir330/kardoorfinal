@@ -70,6 +70,37 @@ const englishSeriesTitles: Record<string, string> = {
   "giris-teknik": "Entrance & Technical"
 };
 
+const collectionFamilies = [
+  {
+    familySlug: "celik-kapi",
+    title: { tr: "Çelik Kapı", en: "Steel Door" },
+    seriesSlugs: ["camli-modeller", "pvc-laminoks"]
+  },
+  {
+    familySlug: "dis-iklim",
+    title: { tr: "Dış İklim", en: "Exterior Climate" },
+    seriesSlugs: ["aluminyum-sistemler", "dogal-yuzeyler"]
+  },
+  {
+    familySlug: "ekonomik",
+    title: { tr: "Ekonomik", en: "Economical" },
+    seriesSlugs: ["metal-kompozit"]
+  },
+  {
+    familySlug: "bina-giris",
+    title: { tr: "Bina Giriş", en: "Building Entrance" },
+    seriesSlugs: ["giris-teknik"]
+  },
+  {
+    familySlug: "ozel-proje",
+    title: { tr: "Özel Proje", en: "Special Project" },
+    seriesSlugs: ["mimari-ozel"]
+  }
+] as const;
+
+const familyIncludesSeries = (seriesSlugs: readonly string[], seriesSlug: string) =>
+  seriesSlugs.includes(seriesSlug);
+
 const englishTechnicalCopy: Record<string, string> = {
   "Alüminyum kasa / Alüminyum kanat / Dış iklim sistemleri": "Aluminium frame / Aluminium leaf / Exterior climate systems",
   "Termo Wood / Doğal taş / Ahşap ve taş dokulu yüzeyler": "Thermo wood / Natural stone / Wood and stone-textured surfaces",
@@ -314,6 +345,20 @@ const seriesGroups = computed(() => {
   return [...groups.values()];
 });
 
+const collectionFamilyGroups = computed(() =>
+  collectionFamilies.map((family) => {
+    const series = seriesGroups.value.filter((group) =>
+      familyIncludesSeries(family.seriesSlugs, group.slug)
+    );
+
+    return {
+      ...family,
+      series,
+      productCount: series.reduce((count, group) => count + group.products.length, 0)
+    };
+  })
+);
+
 const normalizedQuery = computed(() => searchQuery.value.trim().toLocaleLowerCase("tr-TR"));
 
 const filteredGroups = computed(() => {
@@ -343,8 +388,13 @@ const filteredCount = computed(() =>
   filteredGroups.value.reduce((count, group) => count + group.products.length, 0)
 );
 
-const currentSeriesIndex = computed(() =>
-  Math.max(0, seriesGroups.value.findIndex((group) => group.slug === activeProduct.value.seriesSlug))
+const currentCollectionFamilyIndex = computed(() =>
+  Math.max(
+    0,
+    collectionFamilyGroups.value.findIndex((family) =>
+      familyIncludesSeries(family.seriesSlugs, activeProduct.value.seriesSlug)
+    )
+  )
 );
 
 const activeProductIndex = computed(() =>
@@ -1337,21 +1387,24 @@ onBeforeUnmount(() => {
             <div class="collections-series__sticky">
           <p class="collections-label">{{ copy.seriesIndex }}</p>
           <ol class="collections-series__list">
-            <li v-for="(group, index) in seriesGroups" :key="group.slug">
+            <li v-for="(family, index) in collectionFamilyGroups" :key="family.familySlug">
               <button
                 type="button"
-                :class="{ 'is-active': activeProduct.seriesSlug === group.slug }"
-                @click="scrollToSeries(group.slug)"
+                :class="{ 'is-active': familyIncludesSeries(family.seriesSlugs, activeProduct.seriesSlug) }"
+                @click="family.series[0] && scrollToSeries(family.series[0].slug)"
               >
                 <span>{{ String(index + 1).padStart(2, "0") }}</span>
-                <strong>{{ localizedSeriesTitle(group.slug, group.title) }}</strong>
-                <small>{{ group.products.length }}</small>
+                <strong>{{ family.title[locale] }}</strong>
+                <small>{{ family.productCount }}</small>
+                <em>
+                  {{ family.series.map((group) => localizedSeriesTitle(group.slug, group.title)).join(" · ") }}
+                </em>
               </button>
             </li>
           </ol>
 
           <div class="collections-series__position" aria-hidden="true">
-            <span :style="{ transform: `scaleX(${(currentSeriesIndex + 1) / seriesGroups.length})` }"></span>
+            <span :style="{ transform: `scaleX(${(currentCollectionFamilyIndex + 1) / collectionFamilyGroups.length})` }"></span>
           </div>
             </div>
           </aside>
@@ -1432,7 +1485,7 @@ onBeforeUnmount(() => {
       </p>
       <div class="collections-closing__stats">
         <span><strong>{{ products.length }}</strong> {{ copy.model }}</span>
-        <span><strong>{{ seriesGroups.length }}</strong> {{ copy.materialSeries }}</span>
+        <span><strong>{{ collectionFamilyGroups.length }}</strong> {{ copy.materialSeries }}</span>
         <NuxtLink to="/contact">{{ copy.projectCta }} ↗</NuxtLink>
       </div>
     </footer>
@@ -1468,6 +1521,7 @@ onBeforeUnmount(() => {
 
 .collections-page {
   --collections-gutter: clamp(24px, 3.4vw, 64px);
+  --collections-display-font: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   /*
    * Palette is bound to the project's navy contract, not to a separate mineral
    * scheme. Measured from base/tokens.css: --bg-navy, --card-bg, --accent and
@@ -1542,7 +1596,7 @@ onBeforeUnmount(() => {
   overflow: clip;
   background: var(--collections-bg);
   color: var(--collections-text);
-  font-family: var(--font-body);
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
 }
 
 :global(html[data-theme="dark"] .collections-page) {
@@ -1627,7 +1681,7 @@ onBeforeUnmount(() => {
   display: flex;
   margin: 0;
   flex-direction: column;
-  font-family: var(--font-display);
+  font-family: var(--collections-display-font);
   font-size: clamp(112px, 18vw, 330px);
   font-weight: 500;
   letter-spacing: -0.065em;
@@ -1705,7 +1759,7 @@ onBeforeUnmount(() => {
   height: 100%;
   grid-template-columns: 2fr 7fr;
   color: var(--collections-text);
-  font-family: var(--font-body);
+  font-family: inherit;
   pointer-events: none;
 }
 
@@ -1768,6 +1822,14 @@ onBeforeUnmount(() => {
 .collections-series__list button strong {
   font-size: 12px;
   font-weight: 500;
+}
+
+.collections-series__list button em {
+  grid-column: 2 / -1;
+  color: var(--collections-soft);
+  font-size: 9px;
+  font-style: normal;
+  line-height: 1.35;
 }
 
 .collections-series__position {
@@ -1858,7 +1920,7 @@ onBeforeUnmount(() => {
 
 .collections-specimen__meta h2 {
   margin: 4px 0 0;
-  font-family: var(--font-display);
+  font-family: var(--collections-display-font);
   font-size: clamp(34px, 3vw, 56px);
   font-weight: 500;
   letter-spacing: -0.035em;
@@ -1901,7 +1963,7 @@ onBeforeUnmount(() => {
 .collections-hero__jump:focus-visible,
 .collections-specimen__meta a:focus-visible,
 .collections-closing__stats a:focus-visible {
-  outline: 2px solid var(--collections-accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -1918,7 +1980,7 @@ onBeforeUnmount(() => {
 
 .collections-closing__statement {
   margin: clamp(90px, 11vw, 190px) 0;
-  font-family: var(--font-display);
+  font-family: var(--collections-display-font);
   font-size: clamp(64px, 9vw, 172px);
   font-weight: 500;
   letter-spacing: -0.055em;
@@ -1983,7 +2045,7 @@ onBeforeUnmount(() => {
     box-sizing: border-box;
     padding: 160px 24px 48px;
     color: var(--collections-text);
-    font-family: var(--font-display);
+    font-family: var(--collections-display-font);
     font-size: 56px;
     line-height: 0.92;
     text-transform: uppercase;

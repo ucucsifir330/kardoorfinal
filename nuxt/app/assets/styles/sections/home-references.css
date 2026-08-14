@@ -46,6 +46,19 @@
 .home-catalog-reference-stack__references {
   position: relative;
   z-index: 2;
+  background: var(--catalog-stage-surface-bg);
+}
+
+@media (min-width: 761px) {
+  .app-shell--night .home-catalog-reference-stack__references::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    inset-inline: 0;
+    height: var(--catalog-curtain-extra);
+    background: var(--bg-main);
+    pointer-events: none;
+  }
 }
 
 .home-references-flip {
@@ -56,7 +69,8 @@
   --references-line: var(--slab-line);
   /* koyu blok uzerinde vurgu 300'e gider — 700 zeminle birlesiyor
      (PALETTE-light.md, uygulama kurali 3). */
-  --references-accent: var(--brand-300);
+  --references-accent: var(--slab-accent);
+  --references-title-font: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
   --references-top-radius: clamp(2.75rem, 5.8vw, 6.75rem);
   position: relative;
   z-index: 20;
@@ -71,16 +85,16 @@
 }
 
 .app-shell--night .home-references-flip {
-  --references-bg: #131937;
-  --references-ink: #F4F6FF;
-  --references-muted: #B9C0D8;
-  --references-soft: rgba(244, 246, 255, 0.12);
-  --references-line: rgba(244, 246, 255, 0.22);
-  --references-accent: #8EA2FF;
+  --references-bg: var(--bg-deepest);
+  --references-ink: var(--text-main);
+  --references-muted: var(--text-soft);
+  --references-soft: rgba(238, 243, 246, 0.12);
+  --references-line: rgba(238, 243, 246, 0.22);
+  --references-accent: var(--accent);
 }
 
 .app-shell--night .home-references-flip__video {
-  background: #050714;
+  background: var(--bg-deepest);
 }
 
 .home-references-flip__intro,
@@ -127,7 +141,7 @@
 }
 
 .home-references-flip__specimen--marble {
-  width: clamp(270px, 28vw, 540px);
+  width: clamp(320px, 33vw, 640px);
   top: clamp(126px, 18vh, 206px);
   left: min(
     40px,
@@ -145,11 +159,8 @@
 }
 
 .home-references-flip__specimen--torus {
-  width: clamp(220px, 22vw, 430px);
-  right: min(
-    80px,
-    calc((100% - clamp(760px, 58vw, 1040px)) / 2 - clamp(220px, 22vw, 430px) - 64px)
-  );
+  width: clamp(360px, 34vw, 680px);
+  right: 0;
   bottom: clamp(112px, 12vh, 152px);
   opacity: 0.76;
   animation: home-references-specimen-drift-torus 20s var(--ease-soft) -5s infinite;
@@ -167,6 +178,12 @@
   width: 100%;
   height: auto;
   user-select: none;
+}
+
+@media (min-width: 761px) {
+  .home-references-flip__specimen--torus .home-references-flip__specimen-image {
+    transform: translateX(40%);
+  }
 }
 
 .home-references-flip__specimen--marble:hover {
@@ -258,7 +275,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  font-family: var(--references-title-font);
   font-size: clamp(2.6rem, 6.6vw, 6.8rem);
   line-height: 0.98;
   font-weight: 600;
@@ -269,7 +286,7 @@
   position: relative;
   z-index: 1;
   max-width: clamp(760px, 58vw, 1040px);
-  color: var(--references-muted);
+  color: var(--references-ink);
   font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
   font-size: clamp(1.08rem, 1.76vw, 1.5rem);
   font-weight: 400;
@@ -361,7 +378,7 @@
     linear-gradient(rgba(5, 6, 7, 0.14), rgba(5, 6, 7, 0.14)),
     var(--references-video-poster) center / cover no-repeat,
     var(--slab);
-  color: var(--brand-700);
+  color: var(--action-fill);
   cursor: pointer;
   text-transform: uppercase;
 }
@@ -383,13 +400,14 @@
 }
 
 .home-references-flip__play-text {
-  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  font-family: var(--references-title-font);
   color: var(--brand-100);
   font-size: clamp(0.78rem, 3.05vw, 2.44rem);
   font-weight: 600;
   letter-spacing: 0;
   line-height: 1;
   text-shadow: 0 12px 34px rgba(0, 0, 0, 0.34);
+  text-transform: none;
 }
 
 .home-references-flip__play:hover .home-references-flip__play-icon {

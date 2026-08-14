@@ -51,10 +51,10 @@ body {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-.reveal-char { display: inline; color: #F4F6FF; opacity: 0.18; will-change: opacity; }
+.reveal-char { display: inline; color: var(--text-main); opacity: 0.18; will-change: opacity; }
 
 .reveal-word.brand-gradient-word .reveal-char {
-  background: linear-gradient(115deg, #C3CCFF 0%, #8EA2FF 18%, #7D91ED 36%, #697DDA 54%, #5669BF 72%, #8EA2FF 88%, #C3CCFF 100%);
+  background: linear-gradient(115deg, #F0F5F9 0%, #C8DDEA 18%, #95BADA 36%, #6598BD 54%, #2F78AB 72%, #95BADA 88%, #F0F5F9 100%);
   background-size: 260% 100%;
   background-position: 0% 50%;
   -webkit-background-clip: text;
@@ -68,10 +68,10 @@ body {
   100% { background-position: 100% 50%; }
 }
 .close-icon {
-  width: clamp(58px, 4.2vw, 68px); height: clamp(58px, 4.2vw, 68px); background: #F4F6FF; border-radius: 50%;
+  width: clamp(58px, 4.2vw, 68px); height: clamp(58px, 4.2vw, 68px); background: var(--text-main); border-radius: 50%;
   display: flex; align-items: center; justify-content: center; transition: transform 0.55s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
-.close-icon svg { width: 18px; height: 18px; stroke: #050714; }
+.close-icon svg { width: 18px; height: 18px; stroke: var(--bg-deepest); }
 
 @media (max-width: 1024px) {
   .close-icon { width: 54px; height: 54px; }
@@ -79,8 +79,8 @@ body {
 
 html,
 body {
-  background-color: #080B18 !important;
-  color: #F4F6FF !important;
+  background-color: var(--bg-main) !important;
+  color: var(--text-main) !important;
 }
 
 
@@ -88,7 +88,7 @@ body {
 
 
 .review-card::before {
-  background: radial-gradient(800px circle at var(--x, 50%) var(--y, 50%), rgba(244, 246, 255, 0.09), transparent 42%) !important;
+  background: radial-gradient(800px circle at var(--x, 50%) var(--y, 50%), rgba(238, 243, 246, 0.09), transparent 42%) !important;
 }
 
 .author {
@@ -201,8 +201,8 @@ body {
 }
 
   .submit-btn {
-  background: #F4F6FF !important;
-  color: #171D3D !important;
+  background: var(--text-main) !important;
+  color: var(--card-bg) !important;
   box-shadow: none !important;
 }
 
@@ -211,7 +211,7 @@ body {
 }
 
   .footer-info-left .footer-column:nth-child(2) .footer-kicker {
-  color: #F4F6FF !important;
+  color: var(--text-main) !important;
 }
 
   .footer-kicker {
@@ -284,11 +284,11 @@ body {
   .close-icon {
     width: 42px !important;
     height: 42px !important;
-    background: #F4F6FF !important;
+    background: var(--text-main) !important;
   }
 
   .close-icon svg {
-    stroke: #050714 !important;
+    stroke: var(--bg-deepest) !important;
   }
 }
 
@@ -297,7 +297,7 @@ body {
 .catalog-tag,
 .catalog-tag span,
 .catalog-row-info .catalog-tag {
-  color: #F4F6FF !important;
+  color: var(--text-main) !important;
 }
 
 .footer-dome {
@@ -353,7 +353,7 @@ body {
    linear-gradient'i cozulemez hale gelip seffaf kaldi ve yorumlar bolumunde
    kartlar basligin altindan gecti. */
 :root {
-  --bg-color: #050714;
-  --text-primary: #F4F6FF;
-  --text-secondary: rgba(244, 246, 255, 0.68);
+  --bg-color: var(--bg-deepest);
+  --text-primary: var(--text-main);
+  --text-secondary: rgba(238, 243, 246, 0.68);
 }
