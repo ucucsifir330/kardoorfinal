@@ -31,6 +31,7 @@ const MENU_MODE_QUERY = "(max-width: 1120px)";
 
 const isHidden = ref(false);
 const isMenuOpen = ref(false);
+const isHoveringNav = ref(false);
 
 const navRoot = ref<HTMLElement | null>(null);
 const navBarRevealRef = ref<HTMLElement | null>(null);
@@ -79,7 +80,7 @@ const isActive = (to: string) => {
 };
 
 const headerClass = computed(() => ({
-  "site-header--hidden": isHidden.value,
+  "site-header--hidden": isHidden.value && !isHoveringNav.value,
   "site-header--menu-open": isMenuOpen.value
 }));
 
@@ -408,7 +409,14 @@ watch(
       </NuxtLink>
     </div>
 
-    <div ref="navRoot" class="site-nav">
+    <div
+      ref="navRoot"
+      class="site-nav"
+      @mouseenter="isHoveringNav = true"
+      @mouseleave="isHoveringNav = false"
+    >
+      <div class="site-nav__hover-reveal" aria-hidden="true" />
+
       <div class="site-nav__shell">
         <nav ref="navBarRevealRef" class="site-nav__bar" :aria-label="primaryNavLabel">
           <div class="site-nav__group site-nav__group--left">

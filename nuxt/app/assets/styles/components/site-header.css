@@ -260,6 +260,24 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
   --nav-font: clamp(13px, 0.95vw, 15px);
 }
 
+/* Çubuk scroll ile ekran dışındayken fareyi üst kenara götürmek, mevcut
+   geçişi ters yönde çalıştırıp navbar'ı geri çağırır. Görsel yüzey üretmez. */
+.site-nav__hover-reveal {
+  display: none;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  .site-nav__hover-reveal {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 3;
+    display: block;
+    width: 100%;
+    height: var(--header-offset-y);
+    pointer-events: auto;
+  }
+}
+
 .site-nav__shell {
   position: fixed;
   inset: 0 0 auto;

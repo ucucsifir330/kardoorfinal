@@ -538,6 +538,7 @@ html[data-theme="dark"] .home-page .catalog-section {
   display: block;
   overflow: visible;
   padding: calc(clamp(96px, 11vh, 138px) + clamp(24px, 2.8vh, 38px)) var(--catalog-content-right) calc(clamp(96px, 12vh, 150px) + clamp(36px, 4vh, 52px)) var(--catalog-content-left);
+  padding-bottom: clamp(56px, 6vh, 84px);
   background: var(--catalog-stage-main-bg, var(--paper));
 }
 

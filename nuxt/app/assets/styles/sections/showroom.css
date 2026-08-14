@@ -141,22 +141,25 @@ html.is-safari .showroom-lab__backdrop-text {
   place-items: center;
 }
 
-/* Kenarda kalan komşu kapıları sahne zeminine yedir; orbit geometrisine veya
-   ürün opaklığına dokunmadan sert viewport kesimini yumuşatır. */
-.showroom-lab__stage::before,
-.showroom-lab__stage::after {
+/* Kenarda kalan komşu kapıları kendi alfa siluetlerinin içinde sahne zeminine
+   yedir. Katman slotla birlikte ölçeklenir ve kapının boyutundan taşmaz. */
+.showroom-lab__slot::after {
   content: "";
   position: absolute;
-  top: 50%;
-  z-index: 60;
-  width: clamp(32px, 3.8vw, 72px);
-  height: clamp(330px, 35vw, 560px);
-  transform: translateY(-50%);
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  transform:
+    translateY(var(--door-baseline-shift, 0%))
+    scale(var(--door-normalize, 1));
+  transform-origin: center bottom;
+  -webkit-mask: var(--door-image-mask) center bottom / auto 100% no-repeat;
+  mask: var(--door-image-mask) center bottom / auto 100% no-repeat;
   pointer-events: none;
 }
 
-.showroom-lab__stage::before {
-  left: 0;
+.showroom-lab__slot:has(~ .showroom-lab__slot.is-active)::after {
+  opacity: var(--slot-edge-fade, 1);
   background: linear-gradient(
     to right,
     color-mix(in srgb, var(--sl-bg-1) 72%, transparent) 0%,
@@ -165,8 +168,8 @@ html.is-safari .showroom-lab__backdrop-text {
   );
 }
 
-.showroom-lab__stage::after {
-  right: 0;
+.showroom-lab__slot.is-active ~ .showroom-lab__slot::after {
+  opacity: var(--slot-edge-fade, 1);
   background: linear-gradient(
     to left,
     color-mix(in srgb, var(--sl-bg-1) 72%, transparent) 0%,
@@ -572,10 +575,6 @@ html.is-safari .showroom-lab__slot {
     grid-column: 1;
     grid-row: 1;
     align-self: stretch;
-  }
-  .showroom-lab__stage::before,
-  .showroom-lab__stage::after {
-    width: 24px;
   }
   .showroom-lab__slot {
     width: clamp(150px, 42vw, 220px);

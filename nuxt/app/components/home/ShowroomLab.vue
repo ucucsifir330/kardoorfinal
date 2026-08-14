@@ -38,6 +38,7 @@ const getOrbitRadiusX = () => {
 const NEIGHBOR_SCALE = 0.72;
 const NEIGHBOR_VISIBLE_RATIO = 0.75;
 const AVERAGE_VISIBLE_DOOR_WIDTH_RATIO = 0.52;
+const EDGE_FADE_CLEAR_DISTANCE = 0.7;
 
 // Yan kapının %75'ini sahnede bırakıp %25'ini dış kenara gömer. Hesap, CSS'teki
 // responsive stage / slot ölçülerini izler; böylece sabit piksel ofsetin farklı
@@ -111,6 +112,10 @@ const applyOrbit = (p: number) => {
     s.setProperty("--slot-y", `${slotY}px`);
     s.setProperty("--slot-scale", `${opacity <= 0.001 ? 0.001 : scale}`);
     s.setProperty("--slot-opacity", `${opacity}`);
+    s.setProperty(
+      "--slot-edge-fade",
+      `${clamp((distance - EDGE_FADE_CLEAR_DISTANCE) / (1 - EDGE_FADE_CLEAR_DISTANCE), 0, 1)}`
+    );
     s.zIndex = `${Math.round(40 - distance * 12)}`;
   }
 
@@ -189,6 +194,7 @@ const backdropText = computed(() => {
           :key="door.id"
           :ref="(el) => setSlotRef(el as Element | null, i)"
           class="showroom-lab__slot"
+          :class="{ 'is-active': i === activeIndex }"
           :style="{
             '--door-normalize': door.fitScale,
             '--door-baseline-shift': `${door.baselineShift}%`,

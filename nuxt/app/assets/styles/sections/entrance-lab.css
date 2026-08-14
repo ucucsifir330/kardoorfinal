@@ -473,13 +473,13 @@
 }
 
 .entrance-lab[data-ambience="day"] .entrance-lab__cta-row .ada-cta-button {
-  --ada-cta-bg: var(--brand-action);
-  --ada-cta-fg: var(--brand-100);
-  --ada-cta-border: var(--brand-action);
-  --ada-cta-hover-bg: var(--brand-action);
-  --ada-cta-hover-fg: var(--brand-100);
-  --ada-cta-hover-border: var(--brand-action);
-  --ada-cta-fill-surface: var(--brand-action);
+  --ada-cta-bg: var(--slab);
+  --ada-cta-fg: var(--slab-fg);
+  --ada-cta-border: var(--slab);
+  --ada-cta-hover-bg: var(--slab);
+  --ada-cta-hover-fg: var(--slab-fg);
+  --ada-cta-hover-border: var(--slab);
+  --ada-cta-fill-surface: var(--slab);
 }
 
 .entrance-lab__cta-arrow {

@@ -157,6 +157,16 @@ body.entrance-mobile-locked {
   margin-top: 32px;
 }
 
+.entrance-mobile[data-ambience="day"] .entrance-mobile__actions .ada-cta-button {
+  --ada-cta-bg: var(--slab);
+  --ada-cta-fg: var(--slab-fg);
+  --ada-cta-border: var(--slab);
+  --ada-cta-hover-bg: var(--slab);
+  --ada-cta-hover-fg: var(--slab-fg);
+  --ada-cta-hover-border: var(--slab);
+  --ada-cta-fill-surface: var(--slab);
+}
+
 .entrance-mobile__arrow {
   display: grid;
   width: 46px;
