@@ -1,5 +1,8 @@
 .ada-team-section {
-  --team-section-bg: var(--catalog-stage-surface-bg, var(--slab));
+  /* Single source: --catalog-stage-surface-bg is defined per theme in
+     tokens.css, so a fallback here would only ever be a second answer to a
+     question that already has one. */
+  --team-section-bg: var(--catalog-stage-surface-bg);
   --team-section-text: var(--slab-fg);
   --cta-stage-width: min(100vw, 1920px);
   --cta-line-stroke: 2.4px;
@@ -408,7 +411,7 @@ span.ada-brand-logo {
 }
 
 .app-shell--day .ada-team-section {
-  --team-section-bg: var(--catalog-stage-surface-bg, var(--paper));
+  --team-section-bg: var(--catalog-stage-surface-bg);
   --team-section-text: var(--ink);
 }
 
@@ -432,7 +435,7 @@ span.ada-brand-logo {
 
 
 .app-shell--day .ada-manifesto-container {
-  background: var(--team-section-bg, var(--catalog-stage-surface-bg, var(--paper)));
+  background: var(--team-section-bg);
 }
 
 .app-shell--day .ada-manifesto-cta {

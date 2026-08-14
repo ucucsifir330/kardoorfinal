@@ -80,11 +80,11 @@ html.is-scrolling .product-modal-content {
 }
 
 .ada-team-section {
-  box-shadow: 0 0 0 1px var(--team-section-bg, #14151d);
+  box-shadow: 0 0 0 1px var(--team-section-bg);
 }
 
 .testimonial-wrapper {
-  box-shadow: 0 0 0 1px var(--catalog-stage-surface-bg, var(--bg-color));
+  box-shadow: 0 0 0 1px var(--catalog-stage-surface-bg);
 }
 
 /* Unified navy dark palette. Color-only overrides; light theme remains intact. */

@@ -77,7 +77,7 @@ html.is-safari .showroom-lab__backdrop {
 
 .showroom-lab__backdrop-text {
   display: block;
-  font-family: var(--font-display, var(--font-serif));
+  font-family: var(--font-display);
   font-size: clamp(120px, 19vw, 460px);
   font-weight: 800;
   letter-spacing: -0.05em;

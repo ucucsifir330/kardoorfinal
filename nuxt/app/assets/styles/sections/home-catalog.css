@@ -110,7 +110,7 @@
   margin-right: 0;
   position: relative;
   z-index: 2;
-  background: var(--catalog-stage-surface-bg, var(--bg-color));
+  background: var(--catalog-stage-surface-bg);
   overflow: hidden;
   height: 100%;
   min-height: 100%;
@@ -524,7 +524,7 @@ html[data-theme="dark"] .home-page .catalog-section {
   min-height: 0;
   display: block;
   overflow: hidden;
-  background: var(--catalog-stage-surface-bg, var(--paper));
+  background: var(--catalog-stage-surface-bg);
   border-top-left-radius: var(--catalog-stage-top-radius);
   border-top-right-radius: var(--catalog-stage-top-radius);
   box-shadow: 0 -28px 72px rgba(7, 16, 24, 0.08);
@@ -539,7 +539,7 @@ html[data-theme="dark"] .home-page .catalog-section {
   overflow: visible;
   padding: calc(clamp(96px, 11vh, 138px) + clamp(24px, 2.8vh, 38px)) var(--catalog-content-right) calc(clamp(96px, 12vh, 150px) + clamp(36px, 4vh, 52px)) var(--catalog-content-left);
   padding-bottom: clamp(56px, 6vh, 84px);
-  background: var(--catalog-stage-main-bg, var(--paper));
+  background: var(--catalog-stage-main-bg);
 }
 
 .home-page .catalog-sticky-title,
@@ -556,7 +556,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 .home-page .catalog-title {
   margin: 0 0 0 var(--catalog-info-column-width, 188px);
   font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
-  color: var(--text-primary, var(--ink));
+  color: var(--text-primary);
   font-size: clamp(76px, 6.35vw, 112px) !important;
   font-weight: 500;
   line-height: 0.85;
@@ -597,8 +597,8 @@ html[data-theme="dark"] .home-page .catalog-section {
   width: 188px;
   min-width: 0;
   padding: 14px 20px 20px 24px;
-  color: var(--text-primary, var(--ink));
-  background: var(--catalog-stage-main-bg, var(--paper));
+  color: var(--text-primary);
+  background: var(--catalog-stage-main-bg);
   border-radius: 0;
   box-shadow: none;
   position: relative;
@@ -777,7 +777,7 @@ html[data-theme="dark"] .home-page .catalog-section {
 
 .home-page .catalog-card-title {
   margin: 0;
-  color: var(--text-primary, var(--ink));
+  color: var(--text-primary);
   font-size: 24px !important;
   font-weight: 500;
   line-height: 1;
@@ -900,14 +900,14 @@ html[data-theme="dark"] .home-page .catalog-section {
 .home-page .catalog-finish {
   margin: 0 0 4px;
   font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
-  color: var(--text-secondary, #6b7280);
+  color: var(--text-secondary);
   font-size: 15.5px;
   line-height: 1.22;
   transition: color 0.75s ease;
 }
 
 .home-page .catalog-product:hover .catalog-finish {
-  color: var(--text-primary, var(--ink));
+  color: var(--text-primary);
 }
 
 .home-page .catalog-code-wrap {
@@ -1016,7 +1016,7 @@ html[data-theme="dark"] .home-page .catalog-code {
     width: 100%;
     padding: 0 0 8px;
     align-self: auto;
-    color: var(--text-primary, var(--ink));
+    color: var(--text-primary);
     background: transparent;
     border-radius: 0;
     box-shadow: none;
