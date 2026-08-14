@@ -7,8 +7,8 @@ Ege Kardoor icin gelistirilen premium Nuxt 4 web deneyimi. Proje; 3D giris sahne
 - Nuxt 4
 - Vue 3
 - TypeScript
-- GSAP + ScrollTrigger
-- Lenis smooth scroll
+- GSAP + ScrollTrigger + ScrollSmoother (Lenis kaldirildi)
+- Tailwind v4 (kismi migrasyon, bkz. DESIGN.md §11)
 - Three.js
 - @nuxt/image
 
@@ -62,9 +62,10 @@ npm run check       # typecheck alias
 
 ## Ana Deneyim
 
-Ana sayfa `nuxt/components/home/HomeExperience.vue` ile orkestre edilir:
+Ana sayfa `nuxt/app/components/home/HomeExperience.vue` ile orkestre edilir:
 
-- `EntranceDoor.vue`: 3D giris ve ilk izlenim sahnesi.
+- `EntranceDoorLab.vue`: masaustu giris ve ilk izlenim sahnesi.
+- `EntranceDoorMobile.vue`: dokunmatik (coarse pointer, <=1024px) giris sahnesi.
 - `HomeCatalog.vue`: scroll ritmine bagli koleksiyon/kapi katalog akisi.
 - `HomeReferences.vue`: kurumsal belgesel bolumu ve video flip animasyonu.
 - `HomeManifesto.vue`: marka manifestosu ve metin animasyonlari.
@@ -96,7 +97,7 @@ Katalog-belgesel gecisinde katalog arka planda sabitlenir, belgesel karti alttan
 
 ## Stil Mimarisi
 
-Tum global stiller `nuxt/assets/styles/main.css` uzerinden import edilir.
+Tum global stiller `nuxt/app/assets/styles/main.css` uzerinden import edilir.
 
 - `base/`: token, reset ve transition kurallari.
 - `components/`: header, button gibi paylasilan parcalar.

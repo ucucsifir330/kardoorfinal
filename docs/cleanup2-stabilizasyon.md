@@ -1,5 +1,8 @@
 # cleanup2 Stabilizasyon Haritasi
 
+> **Kapsam: yalnizca `cleanup2` branch'i.** Guncel mimari icin `AGENTS.md` ve
+> `docs/design/DESIGN.md` gecerlidir; bu dosya o branch'in temizlik planidir.
+
 Bu dosya `cleanup2` branch'indeki karisik degisiklikleri amacina gore ayirir. Hedef, temizlik isini tek bir devasa CSS tartismasi olmaktan cikarip kontrol edilebilir paketlere bolmektir.
 
 ## Su Anki Gercek Durum
@@ -104,7 +107,7 @@ Karar:
 
 - `light.css` / `dark.css` icinden toplu silme.
 - `home-footer.css` icinde buyuk override merge.
-- Scroll/GSAP/Lenis tarafina temizlik bahanesiyle dokunma.
+- Scroll/GSAP/ScrollTrigger/ScrollSmoother tarafina temizlik bahanesiyle dokunma.
 - Tum branch'i tek commit olarak kapatma.
 
 ## Kisa Cevap

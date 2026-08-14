@@ -1,5 +1,25 @@
 # Kardoor Token Audit
 
+> ## ⚠️ HISTORICAL SNAPSHOT — DO NOT FOLLOW AS CURRENT TRUTH
+>
+> This is a point-in-time audit report, not a live contract. Its findings are
+> kept as a record; its **file references are obsolete** and were deliberately
+> not rewritten, because editing a dated report falsifies it.
+>
+> Superseded as of 2026-08-14:
+>
+> - Every `nuxt/assets/…`, `nuxt/pages/…`, `nuxt/components/…` path is missing
+>   the `app/` segment. The tree moved to the Nuxt 4 `app/` layout.
+> - `HomeContentLoader.vue` was deleted; `index.vue` renders `HomeExperience`
+>   directly.
+> - `EntranceDoor.vue` no longer exists — it is `EntranceDoorLab.vue` (desktop)
+>   and `EntranceDoorMobile.vue` (touch).
+> - Lenis was removed; `app/plugins/scroll.client.ts` owns smoothing via
+>   ScrollSmoother, and it is disabled on touch.
+> - Tailwind v4 is now installed and partially migrated.
+>
+> For current token authority, read `docs/design/DESIGN.md` §3 and §8.
+
 Documentation-only audit. No CSS, Vue, TS, Nuxt config, package, token, theme, GSAP, Lenis, ScrollTrigger, or component files were changed.
 
 ## 1. Audit Scope

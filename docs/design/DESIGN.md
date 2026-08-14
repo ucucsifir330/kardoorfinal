@@ -1,326 +1,242 @@
 # Ege Kardoor DESIGN.md
 
 > Premium architectural steel door systems. Cinematic, industrial, tactile, controlled.
-> Not SaaS. Not generic AI landing page. Not decoration-first.
+> Not SaaS. Not a generic AI landing page. Not decoration-first.
 
-This document is the design contract for agents working in this repository. It describes the current Kardoor design language and the limits that must be respected before any UI, CSS, Vue, animation, or theme work is proposed.
+The design contract for anyone working in this repository. Read it before UI,
+CSS, Vue, animation, or theme work.
 
-## 1. Kardoor Brand Feeling
+Rewritten 2026-08-14. The previous version contradicted itself on Tailwind in
+three places, described Lenis and `HomeContentLoader` as live when both are
+gone, and pointed at paths missing the `app/` segment. Every path below was
+verified on that date. **If a rule points at a file that has moved, fix the rule
+in the same change — a stale contract protects nothing.**
 
-Kardoor should feel like:
+---
 
-- Architectural precision.
-- Heavy material quality.
-- Cinematic entrance and reveal.
-- Industrial luxury.
-- Calm confidence.
-- Manufactured craft, not generic tech.
-- Premium showroom, not e-commerce template.
+## 1. Brand feeling
 
-Avoid:
+Kardoor should feel like: architectural precision · heavy material quality ·
+cinematic entrance and reveal · industrial luxury · calm confidence ·
+manufactured craft · premium showroom.
 
-- Generic SaaS gradients.
-- Random glassmorphism.
-- Decorative glow without purpose.
-- Over-rounded marketing cards.
-- Dashboard aesthetics.
-- Stock AI visual language.
-- Playful motion where the subject needs weight.
-- Redesigning sections just because they can be made "nicer".
+Never: generic SaaS gradients · random glassmorphism · decorative glow without
+purpose · over-rounded marketing cards · dashboard aesthetics · stock AI visual
+language · playful motion where the subject needs weight · redesigning a section
+because it could be "nicer".
 
-## 2. Visual Principles
+## 2. Visual principles
 
 - Door imagery and material presence carry the experience.
-- Typography should feel deliberate, architectural, and editorial.
-- Layouts should use fewer elements with stronger hierarchy.
+- Typography is deliberate, architectural, editorial.
+- Fewer elements, stronger hierarchy.
 - Negative space is part of the premium feeling.
-- Each section should have one clear visual idea.
-- UI chrome must support the product, not compete with it.
-- Catalog surfaces should feel like architectural presentation, not a cheap product grid.
-- Decorative effects must be rare and tied to an existing system or component purpose.
-- Visual density can increase in catalog and operational sections, but the composition should stay controlled.
+- One clear visual idea per section.
+- UI chrome supports the product; it never competes with it.
+- Catalog surfaces read as architectural presentation, not a cheap product grid.
+- Decorative effects are rare and tied to an existing system purpose.
 
-### Composition Recipes
+### Composition recipes
 
-Use these composition recipes as approved directions when a new section needs a visual structure. They are not templates to copy blindly; they are starting points that keep Kardoor from drifting into generic AI layouts.
+Approved starting points, not templates to copy.
 
-#### Cinematic Split
+**Cinematic Split** — hero, entrance, showroom. One dominant image or render
+carries the emotional weight; copy stays compact and anchored to one alignment
+line. Avoid equal halves. Motion reads as camera movement, door mechanics, or
+material reveal.
 
-- Best for hero, entrance, showroom, and high-impact product sections.
-- One dominant image or product/render surface carries the emotional weight.
-- Copy stays compact and controlled, usually anchored to one side or one strong alignment line.
-- Avoid equal halves that feel like a SaaS landing page.
-- Motion, if present, should feel like camera movement, door mechanics, or material reveal.
+**Editorial Broadsheet** — manifesto, company story, reference narrative. Large
+type behaves like an image. Strict hierarchy, narrow body text, generous space.
+Translate the discipline, never newspaper aesthetics literally.
+
+**Material Showcase** — finishes, construction detail, closeups. Surface,
+texture, shadow, and physical scale are the story. Fewer cards, larger
+inspection moments. Real imagery over illustration. No glow that hides material.
+
+**Technical Archive** — specifications, dimensions, certifications, export data.
+Dense information organized with calm hierarchy. Tables, rows, metadata labels,
+restrained dividers before decorative cards. No fake dashboards, no meaningless
+metrics.
+
+**Catalog Architecture** — families, series, browsing. An architectural archive
+or showroom wall, not a store grid. Hierarchy: family → model → finish →
+technical code → action. Repeated items may be card-like but stay restrained.
+
+### AI slop signatures — prohibited
+
+Unless an existing component already depends on one and the task is to maintain
+that component: generic SaaS gradients · floating blurred blobs · random
+glassmorphism · fake dashboard panels · meaningless icon grids · generic 3-card
+marketing blocks · over-rounded pill CTAs · decorative glow without system
+purpose · stock abstract backgrounds that reveal no door, material, production
+or real product state · symmetric feature blocks that could belong to any
+startup.
+
+## 3. Color language
+
+Token layer:
+
+- `nuxt/app/assets/styles/base/tokens.css` — primary token source
+- `nuxt/public/themes/light.css`, `nuxt/public/themes/dark.css` — active runtime
+  override layers, not a clean system yet
+- `nuxt/app/assets/styles/sections/`, `nuxt/app/assets/styles/pages/`
+
+Current token families:
+
+- Night foundations: `#050714`, `#080B18`, `#131937`, `#171D3D`, `#1D244A`
+- Day mineral surfaces: `#EBE6DB`, `#FDFCFA`, `#F1F0EC`
+- Day ink: `#16130F`, `#3A352D`, `#8A8073`
+- Brand blue scale: `#EEF0FF`, `#8B9BFA`, `#2B4BF2`, `#22318C`, `#0E1338`
+- Warm metal remains a restrained legacy accent through `--warm: #a77a55`
+- Soft text, lines, overlays, and elevation use the semantic variables already
+  defined in `tokens.css`, not new component literals
+
+Rules: do not remove or rewrite theme overrides during feature work; do not add
+color literals without an approved token proposal first.
+
+### Accent usage
+
+Blue is the active brand/technical accent, but its altitude depends on the
+surface: use the darker `--accent-fg` on day surfaces and the lighter value on
+night surfaces. Components consume `--accent-fg`, `--accent-fill`, and
+`--accent-on`; they do not select a raw brand step casually. The homepage stays
+mineral, material-led, and restrained rather than becoming blue decoration.
+Warm metal remains secondary. No new accent family without an approved token
+proposal.
+
+### Runtime theme
+
+Theme is **app state**, not `prefers-color-scheme`. It lives in `localStorage`
+under `kardoor-showroom-ambience` with values `day` / `night`, and surfaces as
+`data-ambience` in the DOM. Seed that key directly when testing a theme.
+
+## 4. Typography
 
-#### Editorial Broadsheet
+Base tokens in `tokens.css`:
+
+- `--font-display` — Barlow Condensed / Arial Narrow
+- `--font-body` — Inter / system-ui
+- `--font-serif` — Instrument Serif / Georgia
+
+Established cinematic/editorial families loaded locally in `fonts.css`:
+
+- PP Telegraf — established display face for entrance, catalog, references,
+  reviews, company, and contact surfaces
+- PP Mori — established text/control face for those same product-led surfaces
 
-- Best for manifesto, company story, production principles, and reference narrative sections.
-- Large typography behaves like an image.
-- Use strict hierarchy, narrow body text, and generous negative space.
-- Photography or product details should be sparse and deliberate.
-- Do not copy newspaper aesthetics literally; translate the discipline, density, and typographic confidence.
-
-#### Material Showcase
+Tailwind exposes these established families as `font-telegraf` and `font-mori`.
+Use them only where the existing component language already establishes that
+pair. Other imported families, including Montserrat, General Sans, Plus Jakarta
+Sans, and Science Gothic, are not blanket approval for new UI; availability in
+configuration or a legacy component is not design authority.
 
-- Best for finishes, construction details, closeups, and premium product proof.
-- Surface, texture, shadow, and physical scale are the main story.
-- Use fewer cards and larger inspection moments.
-- Prefer real product imagery, renders, material crops, or structured technical visuals over decorative illustration.
-- Avoid glow-heavy presentation that hides the material.
-
-#### Technical Archive
-
-- Best for specifications, production details, dimensions, certifications, export information, and documentation-like pages.
-- Dense information is allowed, but it must be organized with calm hierarchy.
-- Use tables, rows, metadata labels, and restrained dividers before decorative cards.
-- Technical areas may use cooler accents only when they support reading, focus, or state.
-- Avoid fake dashboard panels and meaningless metrics.
-
-#### Catalog Architecture
-
-- Best for product families, series, filters, and browsing experiences.
-- Catalog should feel like an architectural archive or showroom wall, not a generic store grid.
-- Product hierarchy should be clear: family, model, finish, technical code, action.
-- Repeated items can be card-like, but they must remain restrained and scannable.
-- Do not introduce unrelated card styles inside the catalog flow.
-
-### AI Slop Signatures To Avoid
-
-These patterns are prohibited unless an existing component already depends on them and the task is specifically to maintain that component:
-
-- Generic SaaS gradients.
-- Floating blurred blobs.
-- Random glassmorphism.
-- Fake dashboard panels.
-- Meaningless icon grids.
-- Generic 3-card marketing blocks.
-- Over-rounded pill CTAs.
-- Decorative glow without system purpose.
-- Stock-like abstract backgrounds that do not reveal doors, material, production, architecture, or real product state.
-- Symmetric "feature block" layouts that could belong to any startup website.
-
-## 3. Current Color Language
-
-The current repo already has a color/token layer in:
-
-- `nuxt/assets/styles/base/tokens.css`
-- `nuxt/public/themes/light.css`
-- `nuxt/public/themes/dark.css`
-- Section-level CSS files under `nuxt/assets/styles/sections/`
-- Page-level CSS files under `nuxt/assets/styles/pages/`
-
-Current recurring color families:
-
-- Deep black / graphite: `#050505`, `#0D1012`, `#111417`, `#14151D`, `#171B1F`
-- Warm light mineral surfaces: `#EAE8E8`, `#F4F1EA`, `#f8f6ef`
-- Soft text and borders through low-opacity rgba values.
-- Cool blue accent: `#006cff`, `#2ce3ff`, `#3a83ff`
-- Warm mineral / metal accent: `#B88A44`, `#a77a55`
-
-Current source of truth:
-
-- Treat `nuxt/assets/styles/base/tokens.css` as the current primary token source.
-- Treat `light.css` and `dark.css` as active runtime theme override layers, not as a clean design system yet.
-- Do not remove or rewrite theme overrides during normal feature work.
-- Do not add new color literals unless the task explicitly approves a token proposal first.
-
-### Accent Usage Rules
-
-- Cool blue and cyan accents are legacy or technical accents.
-- They must not become the primary Kardoor brand emotion.
-- Use cool blue/cyan only for links, focus states, technical UI, or components that already depend on those accents.
-- Homepage visual language should remain graphite, mineral, metal, and material-led.
-- Warm metal accents should stay restrained and should support material authority, not become decoration.
-- Do not introduce a new accent family without an approved token proposal.
-
-## 4. Current Typography Language
-
-Current font tokens in `tokens.css`:
-
-- `--font-display`: Barlow Condensed / Arial Narrow fallback
-- `--font-body`: Inter / system-ui fallback
-- `--font-serif`: Instrument Serif / Georgia fallback
-
-Current imported families include:
-
-- Barlow Condensed
-- Inter
-- Instrument Serif
-- Montserrat
-- General Sans
-- Plus Jakarta Sans
-
-Typography direction:
-
-- Display type should feel architectural and confident.
-- Body copy should stay clear, quiet, and specific.
-- Short lines are preferred for premium editorial rhythm.
-- Large headings are allowed when they function as a primary visual element.
-- Serif moments should be rare and intentional.
-- Avoid generic marketing copy such as "modern solutions for your business".
-- Avoid random uppercase except for labels, compact metadata, or established component language.
-- Do not introduce a new font family without explicit approval.
-
-### Typography Authority
-
-- Imported font does not mean approved design usage.
-- Use current display/body/serif tokens only.
-- `--font-display`, `--font-body`, and `--font-serif` are the approved typography entry points.
-- Serif is a rare editorial accent, not the default voice.
-- Montserrat, General Sans, and Plus Jakarta Sans should not be used in new UI unless already used by the target component.
-- Do not choose a font because it is available in `nuxt.config.ts` or `main.css`.
-- Do not mix type systems inside one section unless the existing component already establishes that mix.
-
-## 5. Layout Principles
-
-Current layout structure:
-
-- Nuxt loads global CSS from `nuxt/assets/styles/main.css`.
-- `main.css` imports base, shared component, section, and page styles.
-- Homepage route is `nuxt/pages/index.vue`.
-- Homepage renders `HomeContentLoader`.
-- `HomeContentLoader` lazily renders `HomeExperience`.
-- `HomeExperience` composes `EntranceDoor`, `HomeCatalog`, `HomeReferences`, `HomeManifesto`, and `HomeReviews`.
-
-Layout rules:
-
-- Respect existing section ownership.
-- Keep edits scoped to the requested component or section.
-- Do not move layout responsibility between files unless the task explicitly asks for refactor work.
-- Avoid equal-height card grids unless the section is a catalog or repeated item list.
-- Use controlled asymmetry, wide cinematic compositions, and narrow text blocks where appropriate.
-- Preserve responsive constraints already encoded in section CSS.
-- Do not introduce a new spacing system.
-- Do not introduce Tailwind.
-
-### Section Quality Checklist
-
-Before changing or creating a section, the agent must check:
-
-- Does it have one clear visual idea?
-- Does it use existing tokens?
-- Does it avoid AI slop signatures?
-- Does it preserve scroll/motion ownership?
-- Does it avoid unrelated redesign?
-- Does it feel architectural, material, cinematic, and controlled?
-- Does it use an appropriate composition recipe instead of inventing a generic layout?
-- Does it keep product, material, or architecture as the first visual signal?
-
-## 6. Motion / Scroll Principles
-
-The project uses GSAP, ScrollTrigger, Lenis, RAF loops, resize observers, and scroll listeners in active flows.
-
-Sensitive areas include:
-
-- `nuxt/plugins/lenis.client.ts`
-- `nuxt/components/home/EntranceDoor.vue`
-- `nuxt/components/home/HomeExperience.vue`
-- `nuxt/components/home/HomeContentLoader.vue`
-- `nuxt/components/home/HomeCatalog.vue`
-- `nuxt/components/home/HomeFooter.vue`
-- `nuxt/pages/company.vue`
-- `nuxt/pages/references.vue`
-
-Motion should feel:
-
-- Heavy.
-- Smooth.
-- Mechanical.
-- Cinematic.
-- Purposeful.
-
-Motion rules:
-
-- Do not touch GSAP, Lenis, ScrollTrigger, pin, RAF, resize observer, or scroll listener logic unless the task is explicitly about those systems.
-- Do not add new pinning behavior without explicit approval.
-- Do not add scroll refresh calls casually.
-- Do not create DOM read/write loops in scroll handlers.
-- Prefer transform and opacity when motion is required.
-- One section should have one clear animation owner.
-- Preserve current scroll behavior unless the task specifically asks to change it.
-
-## 7. Component Principles
-
-Buttons:
-
-- Minimal and confident.
-- Hover states should be strong but not playful.
-- Do not invent new radii, shadows, fills, or transition styles.
-- Use existing button/component patterns first.
-
-Cards:
-
-- Cards should feel editorial, material-based, or functional.
-- Avoid default white card plus shadow patterns.
-- Borders should be subtle.
-- Do not nest card-like containers unless the component already establishes that pattern.
-
-Catalog:
-
-- Catalog should remain functional, scannable, and premium.
-- Product rows/cards should feel like architectural series presentation.
-- Avoid turning catalog areas into generic e-commerce tiles.
-
-Header:
-
-- Header uses its own glass/token language.
-- Do not rewrite header variables casually.
-- Preserve current responsive behavior and theme interaction.
-
-Homepage:
-
-- Entrance and scroll handoff behavior are high-risk.
-- Catalog, references/manifesto, reviews, and footer are already split into feature components, but some runtime logic still lives in `HomeExperience`.
-- Do not redesign unrelated homepage sections from inside a local task.
-
-## 8. Agent Prohibitions
-
-When editing this repository, agents must not:
-
-- Create new colors.
-- Create new shadows.
-- Create new radii.
-- Create a new spacing system.
-- Add Tailwind outside the approved migration (see section 12).
-- Add a new font family.
-- Add decorative gradients, glow, or glass effects without approval.
-- Redesign unrelated areas.
-- Touch GSAP unless the task is specifically about GSAP.
-- Touch Lenis unless the task is specifically about Lenis.
-- Touch ScrollTrigger unless the task is specifically about ScrollTrigger.
-- Touch pin behavior unless the task is specifically about pin behavior.
-- Touch RAF loops unless the task is specifically about RAF behavior.
-- Touch resize logic unless the task is specifically about resize behavior.
-- Delete or clean `public/themes/light.css` or `public/themes/dark.css` overrides during normal feature work.
-- Perform speculative cleanup.
-- Replace the current CSS architecture with a styling system other than the
-  approved Tailwind migration (see section 12).
-
-## 9. Token Usage Rules
-
-Current rule:
-
-- `nuxt/assets/styles/base/tokens.css` is the current token source.
-
-When styling:
-
-- Use existing CSS variables first.
-- Use section-level variables only when that section already owns that local token namespace.
-- Prefer existing text, line, panel, ambience, header, catalog, and theme variables over hardcoded literals.
-- If a needed token does not exist, propose it first.
-- Do not directly use a proposed token in the same change unless the user approves it.
-- Do not introduce one-off hex, rgba, shadow, radius, spacing, transition, or font values for convenience.
-- Do not rename existing tokens unless the task is explicitly a token refactor.
-
-Token authority order:
-
-1. Existing component-level variable.
-2. Existing global token from `tokens.css`.
-3. Existing theme variable.
-4. Proposed new token documented but not applied.
-5. Hardcoded value only with explicit approval.
-
-Suggested token proposal format:
+Direction: display type architectural and confident; body copy clear, quiet,
+specific; short lines for editorial rhythm; large headings allowed when they act
+as a primary visual element; serif rare and intentional. Avoid marketing filler
+("modern solutions for your business") and random uppercase outside labels and
+compact metadata. No new font family without explicit approval. Do not mix type
+systems inside a section unless the component already does.
+
+## 5. Layout and structure
+
+Current structure (verified 2026-08-14):
+
+- Global CSS loads from `nuxt/app/assets/styles/main.css`, which imports base,
+  component, section, and page styles.
+- `nuxt/app/app.vue` owns global startup, theme, and page-transition state, then
+  renders the active page through `NuxtLayout`.
+- `nuxt/app/layouts/default.vue` owns the site chrome, ScrollSmoother frame,
+  page slot, and site-wide `SiteFooter`.
+- Homepage route: `nuxt/app/pages/index.vue` → renders `HomeExperience`
+  directly.
+- `HomeExperience.vue` composes the entrance (`EntranceDoorLab` on desktop,
+  `EntranceDoorMobile` on coarse pointers ≤1024px, chosen inside `ClientOnly`
+  with an SSR shell), then `HomeCatalogTransition` (catalog + references +
+  manifesto) and `HomeReviews`.
+
+`HomeContentLoader.vue` was deleted. Do not reintroduce it.
+
+Rules: respect section ownership · keep edits scoped · do not move layout
+responsibility between files outside an explicit refactor · avoid equal-height
+card grids outside catalogs and repeated lists · prefer controlled asymmetry,
+wide cinematic composition, narrow text blocks · preserve responsive constraints
+already encoded · introduce no new spacing system.
+
+### Section quality checklist
+
+Before changing or creating a section: one clear visual idea? existing tokens?
+no slop signatures? scroll/motion ownership preserved? no unrelated redesign?
+architectural, material, cinematic, controlled? an appropriate composition
+recipe rather than an invented generic layout? product/material/architecture as
+the first visual signal?
+
+## 6. Motion and scroll
+
+The project uses **GSAP, ScrollTrigger, and ScrollSmoother**, plus RAF loops,
+resize observers, and scroll listeners in active flows. **Lenis was removed** —
+`lenis.client.ts` no longer exists; `nuxt/app/plugins/scroll.client.ts` owns
+smoothing now, and it **disables ScrollSmoother on touch** (coarse pointer and
+width ≤ 1024), so touch devices run on native scroll.
+
+Sensitive files (verified 2026-08-14):
+
+- `nuxt/app/plugins/scroll.client.ts`
+- `nuxt/app/components/home/EntranceDoorLab.vue`
+- `nuxt/app/components/home/EntranceDoorMobile.vue`
+- `nuxt/app/components/home/HomeExperience.vue`
+- `nuxt/app/components/home/HomeCatalogTransition.vue`
+- `nuxt/app/components/home/HomeCatalog.vue`
+- `nuxt/app/components/layout/SiteFooter.vue`
+- `nuxt/app/pages/company.vue`, `nuxt/app/pages/references.vue`
+
+Motion should feel heavy, smooth, mechanical, cinematic, purposeful.
+
+Rules: touch these systems only when the task is explicitly about them · no new
+pinning without approval · no casual `ScrollTrigger.refresh()` · no DOM
+read/write loops in scroll handlers · prefer transform and opacity · one clear
+animation owner per section · preserve current scroll behavior.
+
+Input authority: `useEntranceInput` reduces wheel, keyboard, and touch to a
+single `drive(direction, strength, cancel)` contract, so scene logic never knows
+the input type. Extend that contract rather than adding a parallel input path.
+
+## 7. Components
+
+**Buttons** — minimal and confident; strong but not playful hover; no invented
+radii, shadows, fills, or transitions; reuse existing patterns first.
+
+**Cards** — editorial, material-based, or functional. Avoid white-card-plus-
+shadow. Subtle borders. Do not nest card-like containers unless established.
+
+**Catalog** — functional, scannable, premium; rows read as architectural series
+presentation, never e-commerce tiles; no unrelated card styles in the flow.
+
+**Header** — owns its glass/token language. Do not rewrite its variables
+casually. Preserve responsive behavior and theme interaction.
+
+**Homepage** — entrance and scroll handoff are high risk. `HomeExperience.vue`
+is now a thin composition node (101 lines; its script holds only the entrance
+device check, entrance copy, and locale). Runtime behavior moved out to
+`HomeCatalogTransition`, the section components, and composables. Look for a
+section's state in its own component or composable, not in the parent.
+
+## 8. Tokens
+
+`nuxt/app/assets/styles/base/tokens.css` is the token source.
+
+Authority order:
+
+1. Existing component-level variable
+2. Existing global token in `tokens.css`
+3. Existing theme variable
+4. A new token — proposed and documented, **not applied in the same change**
+5. A hardcoded value only with explicit approval
+
+Use section-level variables only where that section already owns the namespace.
+No one-off hex, rgba, shadow, radius, spacing, transition, or font values for
+convenience. No token renames outside an explicit token refactor.
+
+Proposal format:
 
 ```md
 Proposed token:
@@ -330,220 +246,137 @@ Proposed token:
 - Files expected to use it: ...
 ```
 
-## 10. Current Risky Areas
-
-Theme override risk:
-
-- `nuxt/public/themes/light.css` and `nuxt/public/themes/dark.css` contain many active overrides, repeated declarations, hardcoded colors, and `!important` rules.
-- These files are active and must not be deleted or cleaned casually.
-- They should be treated as risk documentation until a dedicated theme cleanup task is approved.
-
-Token drift risk:
-
-- The repo has `tokens.css`, runtime theme variables, section-local variables, and many hardcoded color values.
-- New work can easily drift unless agents use existing tokens and avoid new literals.
-
-Scroll and animation risk:
-
-- Homepage behavior depends on GSAP, ScrollTrigger, Lenis, RAF scheduling, resize observers, lazy rendering, and scroll handoff logic.
-- Small unrelated changes can break scroll timing, pinning, reveal progress, catalog handoff, or review marquee behavior.
-
-Homepage orchestration risk:
-
-- `HomeExperience.vue` still owns important runtime behavior for multiple child sections.
-- Component boundaries are partially split visually, but not fully split logically.
-- Do not assume a visual component owns all of its state or animation logic.
-
-CSS ownership risk:
-
-- `main.css` imports many section and page styles globally.
-- Class names can collide or be affected by theme overrides.
-- Scoped Vue styles exist in some components, but most visual rules are global CSS.
-
-Tailwind risk:
-
-- Tailwind is not part of the current project.
-- Adding it would create a second styling system and increase drift.
-- Do not add Tailwind unless a dedicated migration or new-component strategy is approved.
-
-Reference usage rule:
-
-- External reference `DESIGN.md` files may be studied for structure and discipline.
-- Do not copy another site's design system directly.
-- Capture references as interpretation notes, not as borrowed skin.
-
-Reference translation protocol:
-
-External design references may be studied only through:
-
-- What we like.
-- How it translates to Kardoor.
-- What must not be copied.
-
-For every reference note, explicitly separate the reference's useful principle from its surface skin. Kardoor may borrow discipline, hierarchy, rhythm, and restraint; it must not borrow brand colors, fonts, layout identity, product language, or decorative tricks directly.
-
-## 12. Tailwind Migration (Approved)
-
-Status: **approved and in progress.** This section overrides the blanket
-Tailwind prohibition in section 8. Nothing else in section 8 is relaxed.
-
-### 12.1 Why
-
-The current CSS is ~11k lines across 21+ files, with `home-catalog.css` alone
-at 2728 lines and 24 media queries. Desktop and mobile rules for one component
-are spread across several files and breakpoints, which is the direct cause of
-the scroll/touch regressions on mobile. Tailwind is adopted to put a
-component's layout rules next to its markup.
-
-Tailwind is **not** expected to reduce complexity by itself. If a migrated
-component only produces long `class=""` blocks without reducing total rules,
-the migration stops.
-
-### 12.2 Scope rule — no split architecture
-
-Migration is **per component, desktop and mobile together**. A component is
-never half Tailwind and half legacy CSS, and there is never a
-"mobile Tailwind + desktop legacy" pair. Splitting the architecture by
-viewport is explicitly forbidden — it produces two systems to maintain and
-guarantees drift.
-
-### 12.3 What migrates and what stays
-
-Moves to Tailwind:
-
-- Layout, flex/grid, spacing, sizing.
-- Typography scale and responsive behavior.
-- Simple state variants (hover, focus, active).
-
-Stays in CSS (by design, not as debt):
-
-- `@keyframes` and animation definitions.
-- Pseudo-elements with complex backgrounds.
-- GSAP/ScrollTrigger state classes and pin structure.
-- Theme override layers (`public/themes/*.css`).
-- Browser-specific fixes.
-
-### 12.4 Token discipline
-
-- Color, font, radius, shadow: **only** via Kardoor tokens exposed through
-  `@theme inline` in `tailwind.css`. Arbitrary values for these are forbidden
-  in new work.
-- Pre-existing hardcoded values (e.g. `#1b39bf` in reviews) are carried over
-  **unchanged** during migration. Migration must not alter appearance; token
-  cleanup is a separate task.
-- `@theme inline` is mandatory — it references `tokens.css` instead of copying
-  it, so `.app-shell--day/--night` theme switching keeps working.
-- Preflight stays disabled; the project has its own `reset.css`.
-
-### 12.5 Evidence requirement
-
-Before a legacy CSS file is deleted, the migrated component must be verified
-against the original at every breakpoint, in both light and dark themes, using
-real rendered output (CDP computed styles), not static file reading. Static
-analysis alone is not acceptable evidence — see the earlier cleanup failure
-recorded in the repo's handoff notes.
-
-Dead rules found only in the old file are **not** migrated. Migration copies
-what actually renders.
-
-### 12.6 Order
-
-Low-risk leaf components first. `EntranceDoorLab`, the scroll handoff chain,
-and anything touching GSAP pinning go last.
-
-## 13. CSS Ownership & Naming (Plan)
-
-Status: **approved, not yet executed.** Section 12 (Tailwind migration) stays in
-force; this section adds the ownership rules that migration must follow.
-
-### 13.1 The problem, measured
-
-`scripts/class-ownership.mjs` output (2026-07-28):
-
-- **36 classes are written from 3+ separate files.** Worst: `.footer-wrapper`
-  (7 files, 27 rules), `.app-shell--day` (9 files), `.catalog-section` (4 files).
-- `scripts/classify-rules.mjs`: **56% of `themes/dark.css` is LAYOUT**, not theme.
-  `.catalog-main` gets `width`, `height`, `overflow`, `scrollbar-*` from a theme file.
-
-This is the root cause of the `!important` wars. Two files write the same property
-to the same element, neither owns it, so whoever loads last (or shouts `!important`)
-wins. Fixing `!important` without fixing ownership just moves the fight.
-
-### 13.2 Rule 1 — one owner per class
-
-| Layer | Writes | Lives in |
-|---|---|---|
-| Token | raw values (`--accent`, `--bg-navy`) | `base/tokens.css` |
-| Theme | **only** variable assignments (`--x: <color>`) | `public/themes/*.css` |
-| Component | layout, typography, motion | the component's own file |
-
-A theme file must never write `width`, `padding`, `display`, `grid-*`, `position`.
-If a theme needs a different size, the component reads a variable the theme sets.
-
-Proven: applying this to the footer took `!important` from 241 → 14 and deleted
-1045 lines from the theme files, with **zero** measured pixel change.
-
-### 13.3 Rule 2 — names declare ownership
-
-Target convention (not yet applied):
-
-```
-.c-catalog__card            component: catalog, part: card
-.c-catalog__card--liquid    variant
-.is-liquid-expanded         state (added by JS)
-.u-visually-hidden          utility (rare)
-```
-
-The `c-` prefix means "this class has an owner." Nothing outside the component
-writes to it. Current names (`.catalog-card`, `.social-btn`, `.hours`) carry no
-ownership signal, which is why anyone felt free to write to them.
-
-### 13.4 Rule 3 — the Tailwind/CSS boundary
-
-Goes to Tailwind: layout, spacing, sizing, typography scale, simple hover/focus.
-
-Stays in CSS: `::before`/`::after` content, `@keyframes`, parent-state selectors
-(`.is-expanded .hamburger-line`), anything GSAP touches, theme variables.
-
-This is not preference. A utility class styles the element itself; it cannot
-express "when my ancestor has state X." In `home-catalog`, 45 of 61 rules are
-parent-state — which is why Tailwind alone did not help there.
-
-### 13.5 Execution order
-
-Per component, never in bulk:
-
-1. Collect every rule for the component into one place, wherever it currently lives
-2. Delete layout rules from the theme files; leave only colour variables
-3. Strip `!important` — with no rival left, they are inert
-4. Rename to `c-<component>__<part>`
-5. Verify at 1440 + 390 with CDP computed styles; commit only at zero deviation
-
-Steps 1–3 are done for `HomeReviews`, `FloatingContactHub`, and the footer.
-Step 4 has not been attempted anywhere yet.
-
-### 13.6 Remaining work, measured
-
-| File | Lines | !important | Theme rules |
-|---|---|---|---|
-| home-catalog.css | 1773 | 686 | 89 |
-| home-footer.css | 1141 | 17 | 0 |
-| home-references.css | 499 | 9 | 0 |
-| home-team.css | 509 | 0 | 0 |
-| showroom.css | 583 | 0 | 0 |
-| entrance-lab.css | 659 | 0 | 0 |
-| entrance-mobile.css | 318 | 0 | 0 |
-
-**All ownership debt is now concentrated in `home-catalog`.** Every other section
-already has a single owner. Rule 1 work = `home-catalog` only.
-
-### 13.7 Renaming risk (read before step 4)
-
-Class names appear in JS selectors, GSAP targets, theme files, and `main.css`
-performance rules (`html.is-scrolling .site-header__bar`). A missed reference
-fails **silently** — see the `.flip-text-link` regression on 2026-07-28, where
-dropping one `!important` made text render twice with no error.
-
-Therefore renaming requires: grep every occurrence across `.vue`, `.ts`, `.css`
-before touching anything; rename one component per commit; verify hover, theme
-switch, and scroll state — not just static layout.
+## 9. Prohibitions
+
+Do not: create new colors, shadows, radii, or a new spacing system · add a new
+font family · add decorative gradients, glow, or glass without approval ·
+redesign unrelated areas · perform speculative cleanup · delete or clean the
+theme override files during feature work · touch GSAP, ScrollTrigger,
+ScrollSmoother, pin, RAF, or resize logic unless the task is about them ·
+introduce a styling system other than the approved Tailwind migration (§11).
+
+## 10. Known risk areas
+
+**Theme overrides** — `light.css` / `dark.css` hold many active overrides,
+repeated declarations, hardcoded colors, and `!important` rules. Treat as risk
+documentation until a dedicated cleanup is approved.
+
+**Token drift** — `tokens.css`, runtime theme variables, section-local
+variables, and many hardcoded values coexist. New work drifts easily.
+
+**Scroll and animation** — homepage behavior depends on GSAP, ScrollTrigger,
+ScrollSmoother, RAF scheduling, resize observers, and catalog handoff. Small
+unrelated changes break scroll timing, pinning, reveal progress, or the reviews
+marquee.
+
+**Layout ownership is split intentionally** — `app.vue` owns global startup,
+theme, and transition state. `layouts/default.vue` owns route chrome,
+`#smooth-wrapper`, the page slot, and the site-wide `SiteFooter`. Route chrome
+exceptions belong in a layout or a route-specific layout, not in `app.vue`.
+
+**`SiteFooter` is default-layout chrome**, not a homepage section. It renders on
+every route that uses the default layout; route-specific footer behavior must be
+expressed by layout choice or an explicit layout contract.
+
+**Two stacking/transform contexts** — the fixed chrome sits outside
+`#smooth-wrapper` on purpose, because the `#smooth-content` transform would
+break `position: fixed`. Correct, but it means chrome and page content live in
+different contexts: the startup curtain can cover the page and absorb input
+while `app-shell--content-hidden` is set.
+
+**CSS ownership** — `main.css` imports most styles globally; class names can
+collide or be reshaped by theme overrides. Scoped styles exist in some
+components, but most rules are global.
+
+**Mobile** — see §12.
+
+## 11. Tailwind migration (approved, in progress)
+
+Tailwind v4 **is installed and in use**: `tailwindcss`, `@tailwindcss/vite`, and
+`nuxt/app/assets/styles/tailwind.css`. Any older statement that Tailwind is "not
+part of the project" is void.
+
+**Why.** The active CSS is spread across global imports, scoped component
+styles, section sheets, page sheets, and runtime theme overrides. Some component
+rules still span several files and breakpoints, which makes ownership and mobile
+behavior drift. Tailwind puts ordinary layout rules next to their markup while
+the existing token layer remains authoritative.
+
+Tailwind is not expected to reduce complexity by itself. If a migrated component
+only produces long `class=""` blocks without reducing total rules, the migration
+stops.
+
+**Scope rule — no split architecture.** Migration is per component, desktop and
+mobile together. A component is never half Tailwind and half legacy CSS, and
+there is never a "mobile Tailwind + desktop legacy" pair. Splitting the
+*styling* architecture by viewport is forbidden: it produces two systems to
+maintain and guarantees drift.
+
+**Moves to Tailwind:** layout, flex/grid, spacing, sizing, typography scale and
+responsive behavior, simple state variants.
+
+**Stays in CSS by design:** theme tokens and ambience variables, complex
+gradients and material treatments, GSAP-driven properties, keyframes, and
+anything the theme override layers reach.
+
+## 12. Mobile — current state and open architecture decision
+
+Process for mobile work lives in `.claude/skills/kardoor-mobile-workflow/`
+(`SKILL.md` for the pipeline, `VERIFY.md` for what counts as evidence,
+`LEDGER.md` for per-section state).
+
+Current rendered structure remains a shared homepage tree. `HomeExperience.vue`
+branches only the entrance inside `ClientOnly`; catalog, references, manifesto,
+and reviews stay in the shared tree. Dedicated mobile entrance/showroom files,
+component-scoped responsive rules, and stylesheet media queries coexist. That
+mixed ownership is the known defect.
+
+The current working tree is also the behavioral source of truth: at the time of
+this rewrite `EntranceDoorMobile.vue` contains a `ScrollTrigger` pin with scrub,
+even though some planning/ledger text describes a gesture-only version. Do not
+report either model as accepted without real-device verification and explicit
+phone acceptance.
+
+**The architecture is not decided yet.** Two candidates are on the table:
+
+1. **Full split** — every surface gets its own mobile component and stylesheet,
+   chosen by one SSR-seeded device flag. Costs: a device guess the server cannot
+   verify, `Vary: User-Agent` cache fragmentation, duplicated primitives, and
+   tension with §11's scope rule.
+2. **Shared page tree with local capability branches** — keep one semantic page
+   and branch only the surfaces whose interaction genuinely differs, such as
+   entrance/showroom. Shared sections adapt through responsive or capability
+   queries. Costs: shared orchestration and CSS ownership must remain strict;
+   local branching must not spread through every section.
+
+Do not perform a root architecture rewrite until the user chooses. Section-local
+bug fixes and already-approved work may continue within their explicit scope.
+§11 forbids splitting one component owner's *styling* between permanent mobile
+Tailwind and desktop legacy CSS; it does not silently decide the component-tree
+question.
+
+## 13. Accessibility, content, and responsive proof
+
+- WCAG 2.1 AA is the minimum target.
+- All controls remain keyboard reachable with visible focus; modal focus and
+  cleanup must survive theme and route changes.
+- Touch targets use a 44px working floor unless the established control is
+  larger.
+- `prefers-reduced-motion` receives a complete, usable state rather than simply
+  hiding content.
+- Turkish and English copy comes from the locale/copy composables; do not fork
+  prose inside presentation components.
+- Mobile or responsive claims require rendered browser evidence. Test 390x844
+  and 360x800 with touch enabled, every changed breakpoint boundary, both day
+  and night when theme is involved, and desktop when a shared owner changed.
+- Synthetic DOM `TouchEvent` or `PointerEvent` dispatch is not proof of browser
+  gesture arbitration. Use Playwright/CDP real input.
+
+## 14. External references
+
+Study references only through: what we like · how it translates to Kardoor ·
+what must not be copied.
+
+Separate the reference's useful principle from its surface skin. Kardoor may
+borrow discipline, hierarchy, rhythm, and restraint. It must never borrow brand
+colors, fonts, layout identity, product language, or decorative tricks.
