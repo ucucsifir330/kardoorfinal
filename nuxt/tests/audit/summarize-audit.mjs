@@ -101,7 +101,7 @@ async function main() {
     "## First Cleanup Batches",
     "",
     "1. Fix low-risk mechanical CSS issues first: empty rules, redundant shorthand values, duplicate selector blocks that are adjacent or clearly same-scope.",
-    "2. Treat `home-catalog.css`, `home-footer.css`, `light.css`, and `dark.css` as priority zones because they carry most declarations and `!important` load.",
+    "2. Treat `home-catalog.css`, `site-footer.css`, `light.css`, and `dark.css` as priority zones because they carry most declarations and `!important` load.",
     "3. Review dependency-cruiser and madge orphan reports manually; Nuxt auto-imports, pages, server routes and plugins can look orphaned while still being live.",
     "4. Use `runtime-always-losing-declarations.json` only as a ranked review list. Verify each batch with screenshots/typecheck/build before deleting.",
     "5. Never delete theme overrides from `light.css` or `dark.css` without checking both themes and mobile/desktop.",

@@ -1,4 +1,5 @@
 <template>
+  <!-- Site-wide footer. Layout owns placement; pages only provide content. -->
   <div class="footer-wrapper" ref="footerWrapper">
     <footer class="footer-dome" ref="footerDome">
       <div class="footer-main">

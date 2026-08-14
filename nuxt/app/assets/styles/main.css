@@ -18,7 +18,7 @@
 @import "./sections/home-catalog.css";
 @import "./sections/home-team.css";
 @import "./sections/home-references.css";
-@import "./sections/home-footer.css";
+@import "./components/site-footer.css";
 @import "./pages/catalog/subpage.css";
 @import "./pages/door-detail.css";
 @import "./pages/company.css";

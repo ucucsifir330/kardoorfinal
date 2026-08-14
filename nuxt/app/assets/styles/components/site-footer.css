@@ -1,4 +1,4 @@
-/* Homepage animated footer section. Extracted from public theme files because these rules are not theme-specific. */
+/* Site-wide animated footer. The default layout owns its placement. */
 
 .footer-wrapper {
   background-color: var(--footer-surface);
