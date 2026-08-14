@@ -337,23 +337,57 @@ even though some planning/ledger text describes a gesture-only version. Do not
 report either model as accepted without real-device verification and explicit
 phone acceptance.
 
-**The architecture is not decided yet.** Two candidates are on the table:
+## Decision (2026-08-14): full split
 
-1. **Full split** — every surface gets its own mobile component and stylesheet,
-   chosen by one SSR-seeded device flag. Costs: a device guess the server cannot
-   verify, `Vary: User-Agent` cache fragmentation, duplicated primitives, and
-   tension with §11's scope rule.
-2. **Shared page tree with local capability branches** — keep one semantic page
-   and branch only the surfaces whose interaction genuinely differs, such as
-   entrance/showroom. Shared sections adapt through responsive or capability
-   queries. Costs: shared orchestration and CSS ownership must remain strict;
-   local branching must not spread through every section.
+**Mobile is its own component tree.** Every home surface gets a mobile
+component and its own stylesheet. Mobile is treated as a different product for a
+different input, not as the desktop layout made narrower. The user chose this
+twice, explicitly; it is settled.
 
-Do not perform a root architecture rewrite until the user chooses. Section-local
-bug fixes and already-approved work may continue within their explicit scope.
-§11 forbids splitting one component owner's *styling* between permanent mobile
-Tailwind and desktop legacy CSS; it does not silently decide the component-tree
-question.
+The cost is real and named here so nobody is surprised by it: **every change is
+made twice.** A copy change, a token change, a data change — if it lives in the
+markup of both files, it must be edited in both. The rules in "Anti-drift"
+below exist to shrink that surface, not to remove it.
+
+### What gets a mobile file
+
+| Surface | Mobile component | Status |
+|---|---|---|
+| Entrance | `EntranceDoorMobile.vue` | exists |
+| Showroom | `ShowroomLabMobile.vue` | exists |
+| Catalog | `HomeCatalogMobile.vue` | to build |
+| References | `HomeReferencesMobile.vue` | to build |
+| Manifesto | `HomeManifestoMobile.vue` | to build |
+| Reviews | `HomeReviewsMobile.vue` | to build |
+| Footer | `SiteFooterMobile.vue` | to build |
+
+Each gets exactly one stylesheet next to its peers, named for the component.
+
+### Anti-drift rules — these are what make a split survivable
+
+1. **Text never lives in a mobile component.** All copy comes from a composable
+   (`useEntranceCopy`, `useCatalogCopy`, …). If a string is typed into a mobile
+   template, it will drift from desktop the first time marketing changes a word.
+2. **Data never lives in a mobile component.** Products, doors, collections,
+   locale, theme, favourites — composables and `data/` only.
+3. **A mobile component owns layout, motion, and gesture. Nothing else.**
+4. **No mobile component imports a desktop component**, and no desktop component
+   imports a mobile one. They meet only at composables and `ui/` primitives.
+5. **Shared primitives stay shared.** Buttons, modals, form controls, and
+   focus/accessibility helpers are used by both trees, never duplicated.
+6. When a section is migrated, its old responsive rules — the scoped `@media`
+   block in the shared component and its mobile rules in the desktop stylesheet
+   — are removed **in the same change**, so there is never a period where two
+   mechanisms both claim the same viewport.
+
+### Still to be settled before the root split is wired
+
+The device decision is currently client-only, inside `ClientOnly`, per section.
+A full tree split needs one decision point, and the server must reach the same
+answer as the client or hydration tears and the SSR work is lost. Until that is
+solved, **build the mobile components and mount them section by section the way
+the entrance already does** — do not introduce a root-level `HomeMobile` split
+or a device flag.
 
 ## 13. Accessibility, content, and responsive proof
 

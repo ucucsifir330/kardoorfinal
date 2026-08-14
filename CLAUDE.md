@@ -32,13 +32,13 @@ before inspecting or editing application files.
   the row `done` and continue to the next `todo` row. On rejection, stay put.
 - Delete legacy code only after the section it belongs to is accepted.
 
-## What is not decided
+## Mobile architecture — full split (decided 2026-08-14)
 
-The mobile architecture — full split versus a single tree with capability
-queries — is an **open decision**, recorded in `DESIGN.md` §12. The interaction
-model (swipe-driven versus the pinned scrub currently in
-`EntranceDoorMobile.vue`) is open with it.
+Every home surface gets its own mobile component and stylesheet. Mobile is a
+different product for a different input, not a narrower desktop. `DESIGN.md` §12
+holds the surface table and the anti-drift rules — copy, data, and shared
+primitives never get duplicated into a mobile file.
 
-Until the user chooses: do not add or remove a `*Mobile.vue`, do not write a
-device flag or a root-level split, and do not "clean up" the inconsistency
-between the two. Work inside the structure each section already has.
+Still not decided, do not invent: the root-level device decision (mount section
+by section inside `ClientOnly`, as the entrance does) and the entrance
+interaction model (swipe versus the pinned scrub currently shipping).

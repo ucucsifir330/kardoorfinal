@@ -26,16 +26,24 @@ exactly one human gate, at the end. Everything before it you decide yourself.
 
 Never work two rows at once. Never edit a row you are not on.
 
-## Step 0.5 — What is NOT decided (read before planning anything)
+## Step 0.5 — The architecture (decided 2026-08-14)
 
-The mobile **architecture is an open decision**, held in `DESIGN.md` §12. Two
-candidates: a full split (a mobile component per surface behind one device flag)
-or a single tree driven by capability queries. Until the user picks one:
+**Full split.** Every home surface gets its own mobile component and stylesheet.
+Mobile is a different product for a different input, not a narrower desktop.
+See `DESIGN.md` §12 for the table of surfaces and the anti-drift rules — read
+them before writing a mobile component, because a split only stays healthy if
+copy, data, and primitives stay shared.
 
-- Do not create a new `*Mobile.vue` for a surface that does not have one.
-- Do not delete an existing one either.
-- Do not write a device flag, a `useIsMobile()`, or a root-level split.
-- Work inside the structure a section already has.
+Two things are still **not** decided, and you must not invent them:
+
+- **No root-level split and no device flag yet.** Mount each mobile component
+  section by section, the way `HomeExperience.vue` already mounts
+  `EntranceDoorMobile` inside `ClientOnly`. A single SSR-safe decision point is
+  a separate task.
+- **The entrance interaction model.** The user has said mobile should be
+  swipe-driven with `ScrollTrigger` off; the current `EntranceDoorMobile.vue`
+  uses a pinned scrub and the user perfected it in that form. Both are true.
+  Do not resolve that by rewriting code.
 
 The **interaction model is also open.** The user has stated that mobile should
 be swipe-driven and that `ScrollTrigger` should be off on mobile. The current
