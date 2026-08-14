@@ -585,6 +585,11 @@ onMounted(() => {
   const section = sectionRef.value;
   if (!section || !canvasRef.value) return;
 
+  // Dev A/B only — see the switch comment further down. `?snap=off` disables
+  // both scroll-takeover paths so the pin scrubs 1:1 with native scroll.
+  const takeoverDisabled =
+    new URLSearchParams(window.location.search).get("snap") === "off";
+
   // Sprite yüklemesi İLK İŞ. Aşağıdaki kurulum bloğu (settle mantığı,
   // ScrollTrigger, input katmanı) senkron çalışıyor ve yüklemeyi
   // geciktiriyordu: rota dönüşünde hero mount olduktan ~1.3sn sonra kapı
@@ -743,6 +748,7 @@ onMounted(() => {
   };
 
   const maybePullThroughPortal = (progress: number, delta: number) => {
+    if (takeoverDisabled) return;
     // Native scroll fallback'ında da çalışır — smoother şartı yok.
     if (isAutoSettling || performance.now() < settleCooldownUntil) return;
     if (Math.abs(delta) < 0.0006) return;
@@ -856,7 +862,21 @@ onMounted(() => {
   trackStartup("door-sprite", doorLoad);
   trackStartup("fonts", whenFontsReady());
 
-  entranceInput.start();
+  // A/B switch: `?snap=off` turns off BOTH scroll-takeover paths so the pin's
+  // scrub runs 1:1 with native scroll. Default behaviour is unchanged.
+  //
+  // There are two, and gating only the first proved it is not the main one:
+  //
+  //   1. useEntranceInput — intercepts the wheel and tweens scroll to the next
+  //      stop ("one push = one door").
+  //   2. maybePullThroughPortal — fires from the pin's own onUpdate, so it runs
+  //      even when the input layer is off. Enter the portal band and it drags
+  //      you all the way to the showroom over 2.35s; scroll back and it drags
+  //      you back. You cannot come to rest inside that band.
+  //
+  // Measured A/B with only (1) disabled: mean scroll drift 1773px vs 1781px —
+  // no difference, which is what identified (2) as the real takeover.
+  if (!takeoverDisabled) entranceInput.start();
 
   // Tek pinli scrub: progress 0→1 boyunca PORTAL → HOLD → ZOOM → SHOWROOM.
   trigger = ScrollTrigger.create({
