@@ -66,19 +66,17 @@ html.is-scrolling .product-modal-content {
    Çözüm — .home-references-flip için zaten kullanılan kanıtlanmış yöntem
    (bkz. home-references.css): her bölümün arka plan rengini box-shadow ile
    kenarın 1px dışına taşırıp dikişi kendi rengiyle mühürlemek. backface-
-   visibility tek başına yetmedi; bu, seam'i fiziksel pikselle kapatır. */
-.entrance-lab {
-  box-shadow: 0 0 0 1px #0b0b0d;
-}
+   visibility tek başına yetmedi; bu, seam'i fiziksel pikselle kapatır.
 
-.entrance-lab__next {
-  box-shadow: 0 0 0 1px #0b0b0d;
-}
+   .entrance-lab ve .entrance-lab__next BU LİSTEDEN ÇIKARILDI (2026-08-15).
+   Ölçüldü: her ikisine de satır içi `!important` ile 3-4px KIRMIZI gölge
+   basıldı, `getComputedStyle` uyguladığını doğruladı, kenarları ekranda
+   olacak şekilde konumlandırıldı (?snap=off ile, çünkü portal devralması
+   scroll'u geri çekiyor) ve ekran görüntüsünde kırmızı ÇIKMADI — gölge
+   komşu bölümün altında kalıyor, hiç görünmüyor. Yani o kurallar dikişi
+   kapatmıyordu; sadece üç hardcoded hex (#0b0b0d, #d9d6cd) taşıyorlardı.
 
-.entrance-lab__next[data-ambience="day"] {
-  box-shadow: 0 0 0 1px #d9d6cd;
-}
-
+   Aşağıdaki ikisi farklı elemanlar, ölü oldukları GÖSTERİLMEDİ — duruyorlar. */
 .ada-team-section {
   box-shadow: 0 0 0 1px var(--team-section-bg);
 }
