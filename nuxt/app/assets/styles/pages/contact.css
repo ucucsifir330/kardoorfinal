@@ -25,6 +25,9 @@
   --contact-pin-shadow:
     drop-shadow(0 10px 18px rgba(0, 0, 0, 0.42))
     drop-shadow(0 0 14px rgba(215, 25, 32, 0.22));
+  --contact-pin-color: #d71920;
+  --contact-pin-shadow-color: rgba(215, 25, 32, 0.34);
+  --contact-pin-core: #fff7f4;
   --contact-pin-halo: rgba(5, 7, 20, 0.86);
   min-height: 100svh;
   padding: calc(var(--header) + 4.8rem + 35px) clamp(2rem, 2.7vw, 3.2rem) 3rem;
@@ -41,9 +44,9 @@
   --contact-soft: var(--ink-soft);
   --contact-line: var(--hairline);
   --contact-line-strong: var(--ink-soft);
-  --contact-focus: var(--brand-700);
-  --contact-check: var(--brand-700);
-  --contact-submit-hover-bg: var(--brand-700);
+  --contact-focus: var(--brand-action);
+  --contact-check: var(--brand-action);
+  --contact-submit-hover-bg: var(--brand-action);
   --contact-submit-hover-color: var(--brand-100);
   --contact-page-bg:
     radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.76), transparent 26rem),
@@ -58,8 +61,15 @@
     radial-gradient(circle at 47% 46%, transparent 0 15%, rgba(255, 255, 255, 0.12) 30%, rgba(126, 111, 89, 0.16) 100%);
   --contact-pin-shadow:
     drop-shadow(0 10px 18px rgba(81, 69, 53, 0.22))
-    drop-shadow(0 0 14px rgba(215, 25, 32, 0.16));
+    drop-shadow(0 0 14px rgba(43, 75, 242, 0.16));
+  --contact-pin-color: var(--brand-action);
+  --contact-pin-shadow-color: rgba(43, 75, 242, 0.24);
+  --contact-pin-core: var(--brand-action-on);
   --contact-pin-halo: rgba(255, 250, 241, 0.84);
+}
+
+.app-shell--day:has(.contact-page) {
+  --footer-surface: var(--surface-2);
 }
 
 .contact-page__title {
@@ -455,7 +465,7 @@
   height: clamp(51px, 4.35vw, 72px);
   display: grid;
   place-items: center;
-  color: #d71920;
+  color: var(--contact-pin-color);
   filter: var(--contact-pin-shadow);
   pointer-events: none;
   transform: translate(-50%, -100%);
@@ -483,7 +493,7 @@
   width: 26px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(215, 25, 32, 0.34);
+  background: var(--contact-pin-shadow-color);
   filter: blur(4px);
   transform: translateX(-50%);
 }
@@ -500,7 +510,7 @@
 }
 
 .contact-map__pin circle {
-  fill: #fff7f4;
+  fill: var(--contact-pin-core);
 }
 
 .contact-map__link {

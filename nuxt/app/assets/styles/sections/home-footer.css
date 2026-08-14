@@ -6,6 +6,10 @@
   overflow: hidden;
 }
 
+.app-shell--night .footer-wrapper {
+  --footer-surface: var(--bg-main);
+}
+
 .footer-dome {
   background-color: var(--footer-dome);
   color: var(--footer-dome-fg);
@@ -241,7 +245,7 @@
 .footer-heading__emphasis {
   display: block;
   margin: 0.09em 0 0.14em;
-  color: var(--brand-300);
+  color: var(--slab-accent);
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
@@ -320,8 +324,8 @@
 }
 
 .location-option input:focus-visible + .radio-ui {
-  border-color: var(--slab-fg);
-  outline: 2px solid rgba(237, 234, 245, 0.28);
+  border-color: var(--focus-ring);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -355,7 +359,7 @@
 
 .footer-form .form-row input:focus,
 .footer-form .form-row input:focus-visible {
-  border-bottom-color: #ffffff;
+  border-bottom-color: var(--focus-ring);
   border-bottom-width: 2px;
 }
 
@@ -609,7 +613,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 14px 56px;
+  padding: 10px 56px;
   box-sizing: border-box;
   /* Serit kubbenin DISINDA, sayfa zemini uzerinde durur. Eskiden #FFFFFF
      sabitti: gece temasinda koyu sayfanin dibinde beyaz bir bant olarak

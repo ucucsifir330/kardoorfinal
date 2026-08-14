@@ -91,14 +91,14 @@ html.is-scrolling .product-modal-content {
 html[data-theme="dark"] body,
 .app-shell--night,
 .app-shell--night main {
-  background-color: #080B18 !important;
-  color: #F4F6FF;
+  background-color: var(--bg-main) !important;
+  color: var(--text-main);
 }
 
 .app-shell--night .entrance-lab,
 .app-shell--night .entrance-lab__next {
-  background-color: #050714 !important;
-  color: #F4F6FF !important;
+  background-color: var(--bg-deepest) !important;
+  color: var(--text-main) !important;
 }
 
 /* NOT — yorumlar bolumu (.testimonial-wrapper / .review-card / .quote /
@@ -111,32 +111,40 @@ html[data-theme="dark"] body,
 .app-shell--night .catalog-section,
 .app-shell--night .catalog-shell,
 .app-shell--night .catalog-main,
-.app-shell--night .catalog-sticky-title,
+.app-shell--night .catalog-sticky-title {
+  --catalog-stage-bg: var(--bg-navy);
+  --catalog-stage-surface-bg: var(--bg-navy);
+  --catalog-stage-main-bg: var(--bg-navy);
+  background-color: var(--bg-navy) !important;
+  color: var(--text-main) !important;
+}
+
 .app-shell--night .ada-team-section {
-  --catalog-stage-bg: #080B18;
-  --catalog-stage-surface-bg: #080B18;
-  --catalog-stage-main-bg: #080B18;
-  --team-section-bg: #080B18;
-  --team-section-text: #F4F6FF;
-  background-color: #080B18 !important;
-  color: #F4F6FF !important;
+  --team-section-bg: var(--catalog-stage-surface-bg);
+  --team-section-text: var(--text-main);
+  background-color: var(--catalog-stage-surface-bg) !important;
+  color: var(--text-main) !important;
+}
+
+.app-shell--night .testimonial-wrapper {
+  --catalog-stage-surface-bg: var(--bg-main);
 }
 
 .app-shell--night .catalog-card,
 .app-shell--night .catalog-product-image-wrap {
-  background: #171D3D !important;
-  border-color: rgba(244, 246, 255, 0.12) !important;
+  background: var(--card-bg) !important;
+  border-color: rgba(238, 243, 246, 0.12) !important;
 }
 
 .app-shell--night .catalog-card:hover {
-  background: #1D244A !important;
-  border-color: rgba(142, 162, 255, 0.28) !important;
+  background: var(--surface-hover) !important;
+  border-color: rgba(149, 186, 218, 0.28) !important;
 }
 
 .app-shell--night .catalog-title,
 .app-shell--night .catalog-product-family,
 .app-shell--night .catalog-card-title {
-  color: #F4F6FF !important;
+  color: var(--text-main) !important;
 }
 
 .app-shell--night .catalog-designer,
@@ -156,7 +164,7 @@ html[data-theme="dark"] body,
 .app-shell--night textarea,
 .app-shell--night select {
   border-color: rgba(244, 246, 255, 0.22);
-  color: #F4F6FF;
+  color: var(--text-main);
 }
 
 .app-shell--night input:focus,
@@ -165,6 +173,6 @@ html[data-theme="dark"] body,
 .app-shell--night textarea:focus-visible,
 .app-shell--night select:focus,
 .app-shell--night select:focus-visible {
-  border-color: #8EA2FF;
-  outline-color: #8EA2FF;
+  border-color: var(--focus-ring);
+  outline-color: var(--focus-ring);
 }

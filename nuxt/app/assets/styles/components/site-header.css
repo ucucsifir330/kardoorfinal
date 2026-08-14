@@ -99,7 +99,7 @@
 }
 
 .site-header__brand--ghost:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 6px;
 }
 
@@ -410,7 +410,7 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
 }
 
 .site-nav__link:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 6px;
   border-radius: 2px;
 }
@@ -439,7 +439,7 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
 }
 
 .site-nav__menu-toggle:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 6px;
   border-radius: 2px;
 }
@@ -543,7 +543,7 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
 }
 
 .site-nav__logo:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -615,7 +615,7 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
 }
 
 .site-nav__seg-btn:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -755,7 +755,7 @@ body:has(.footer-dome.is-brand-overlap) .brand-blend-layer {
   }
 
   .site-nav__panel-link:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus-ring);
     outline-offset: -2px;
   }
 

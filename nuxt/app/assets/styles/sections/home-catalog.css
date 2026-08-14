@@ -933,7 +933,7 @@ html[data-theme="dark"] .home-page .catalog-designer {
 
 html[data-theme="dark"] .home-page .catalog-card-title,
 html[data-theme="dark"] .home-page .catalog-product:hover .catalog-finish {
-  color: #080B18;
+  color: var(--bg-main);
 }
 
 html[data-theme="dark"] .home-page .catalog-finish {
@@ -1575,15 +1575,15 @@ html.smooth-cursor-active .home-page .catalog-product-info {
    unified navy palette. The base catalog remains unchanged for light mode. */
 html[data-theme="dark"] .app-shell--night .home-page .catalog-card,
 html[data-theme="dark"] .app-shell--night .home-page .catalog-row:last-of-type .catalog-card {
-  background: #171D3D !important;
-  border-color: rgba(244, 246, 255, 0.12);
-  color: #F4F6FF;
+  background: var(--card-bg) !important;
+  border-color: rgba(238, 243, 246, 0.12);
+  color: var(--text-main);
 }
 
 html[data-theme="dark"] .app-shell--night .home-page .catalog-card-title,
 html[data-theme="dark"] .app-shell--night .home-page .catalog-product-family,
 html[data-theme="dark"] .app-shell--night .home-page .catalog-product:hover .catalog-finish {
-  color: #F4F6FF;
+  color: var(--text-main);
 }
 
 html[data-theme="dark"] .app-shell--night .home-page .catalog-card-title span,
@@ -1596,8 +1596,8 @@ html[data-theme="dark"] .app-shell--night .home-page .catalog-all-models {
 }
 
 html[data-theme="dark"] .app-shell--night .home-page .catalog-product-image-wrap {
-  background: #1D244A !important;
-  border-color: rgba(244, 246, 255, 0.12);
+  background: var(--surface-hover) !important;
+  border-color: rgba(238, 243, 246, 0.12);
 }
 
 /* Safari keeps large card shadows and pre-promoted layers alive longer than
@@ -1639,20 +1639,20 @@ html.is-safari.is-scrolling .home-page .catalog-code-line {
 
 @media (min-width: 1024px) {
   html[data-theme="dark"] .app-shell--night .home-page .liquid-menu-inner {
-    background-color: #171D3D;
-    color: #F4F6FF;
+    background-color: var(--card-bg);
+    color: var(--text-main);
   }
 
   html[data-theme="dark"] .app-shell--night .home-page .catalog-row.is-liquid-expanded .liquid-menu-inner {
-    box-shadow: -2px 0 0 #171D3D;
+    box-shadow: -2px 0 0 var(--card-bg);
   }
 
   html[data-theme="dark"] .app-shell--night .home-page .liquid-blob-path {
-    fill: #171D3D;
+    fill: var(--card-bg);
   }
 
   html[data-theme="dark"] .app-shell--night .home-page .hamburger-line {
-    background-color: #F4F6FF;
+    background-color: var(--text-main);
   }
 
   html[data-theme="dark"] .app-shell--night .home-page .liquid-actions li {
@@ -1666,7 +1666,7 @@ html.is-safari.is-scrolling .home-page .catalog-code-line {
 
   html[data-theme="dark"] .app-shell--night .home-page .liquid-actions li:hover,
   html[data-theme="dark"] .app-shell--night .home-page .liquid-actions li a:hover {
-    color: #F4F6FF !important;
+    color: var(--text-main) !important;
   }
 }
 
@@ -1697,7 +1697,7 @@ html.is-safari.is-scrolling .home-page .catalog-code-line {
    üstünde olduğunu göremiyordu.
    `:focus-visible` seçili — fareyle tıklayanda halka çıkmıyor. */
 .catalog-product:focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 4px;
   border-radius: 2px;
 }

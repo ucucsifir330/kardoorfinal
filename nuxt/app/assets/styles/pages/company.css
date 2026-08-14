@@ -1,7 +1,7 @@
 .company-timeline {
   --company-left-width: clamp(38rem, 48vw, 57.5rem);
   --company-center-width: clamp(6.5rem, 8vw, 10rem);
-  --company-right-offset: clamp(1.25rem, 2.6vw, 3rem);
+  --company-right-offset: clamp(2.5rem, 4vw, 5rem);
   --company-page-bg: #080B18;
 
   width: 100vw;
@@ -154,7 +154,7 @@
 }
 
 .company-timeline__years button:focus-visible {
-  outline: 1px solid currentColor;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 4px;
 }
 
@@ -365,7 +365,7 @@ body:has(.app-shell--day .company-timeline) main {
   .company-timeline {
     --company-left-width: clamp(30rem, 46vw, 36rem);
     --company-center-width: clamp(5.5rem, 9vw, 7.5rem);
-    --company-right-offset: clamp(1rem, 2vw, 1.625rem);
+    --company-right-offset: clamp(1.75rem, 2.8vw, 2.5rem);
   }
 
   .company-timeline__center {

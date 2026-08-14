@@ -822,7 +822,7 @@ onBeforeUnmount(() => {
 .kmodal__cta:focus-visible,
 .kmodal__link:focus-visible,
 .kmodal__files button:focus-visible {
-  outline: 2px solid var(--modal-fg);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 

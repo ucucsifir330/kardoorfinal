@@ -388,7 +388,7 @@ const inViewOptions = {
         :data-row-index="block.index"
         class="catalog-structural-line-node"
       >
-        <circle class="catalog-structural-line-node__dot" r="3.5" />
+        <circle class="catalog-structural-line-node__dot" cy="-8" r="4.5" />
       </g>
     </svg>
 
@@ -847,7 +847,7 @@ const inViewOptions = {
 }
 
 .catalog-source-filter__option.is-active {
-  color: var(--surface);
+  color: var(--brand-action-on);
   font-weight: 600;
 }
 
@@ -877,6 +877,7 @@ const inViewOptions = {
 }
 
 .catalog-source-filter__option.is-active .catalog-source-filter__label {
+  color: var(--brand-action-on);
   padding-left: 13px;
 }
 
@@ -887,7 +888,7 @@ const inViewOptions = {
 }
 
 .catalog-source-filter__option:focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 

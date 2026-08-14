@@ -111,7 +111,7 @@
   will-change: transform;
   /* TEK PARÇA ZEMİN: gradyan track'in tamamına (200vw) uygulanır ve track'le
      birlikte kayar. Slide'lar ve ShowroomLab şeffaf bırakılır. */
-  background: radial-gradient(40% 90% at 20% 38%, #131937 0%, #080B18 72%);
+  background: radial-gradient(40% 90% at 20% 38%, var(--bg-navy) 0%, var(--bg-main) 72%);
 }
 
 .entrance-lab[data-ambience="day"] .entrance-lab__slider {
@@ -153,8 +153,8 @@
   place-items: center;
   padding: clamp(24px, 6vw, 120px);
   /* Sol Mimari Özel info panelinin zeminiyle aynı karışım. */
-  background: color-mix(in srgb, #131937 58%, #080B18);
-  color: #F4F6FF;
+  background: color-mix(in srgb, var(--bg-navy) 58%, var(--bg-main));
+  color: var(--text-main);
   text-align: center;
 }
 
@@ -264,18 +264,25 @@
   font-size: clamp(0.82rem, 0.82vw, 0.94rem);
 }
 
+.app-shell--day .entrance-lab__configure-actions .ada-manifesto-cta:hover {
+  --ada-cta-text-color: var(--slab-fg);
+
+  background: var(--slab);
+  color: var(--slab-fg);
+}
+
 .entrance-lab[data-ambience="night"] .entrance-lab__configure-actions .ada-manifesto-cta {
   border: 1px solid rgba(244, 246, 255, 0.12);
-  background: #171D3D;
-  color: #F4F6FF;
+  background: var(--card-bg);
+  color: var(--text-main);
 }
 
 .entrance-lab[data-ambience="night"] .entrance-lab__configure-actions .ada-manifesto-cta:hover {
   --ada-cta-text-color: #F4F6FF;
 
-  border-color: rgba(142, 162, 255, 0.28);
-  background: #1D244A;
-  color: #F4F6FF;
+  border-color: rgba(149, 186, 218, 0.28);
+  background: var(--surface-hover);
+  color: var(--text-main);
 }
 
 /* İkon solda varyant — sağ padding'i de aç (simetri). */
@@ -301,14 +308,14 @@
    hafif altın tona kaysın. */
 .entrance-lab__soon-cta:hover {
   background: var(--accent);
-  color: #050714;
+  color: var(--bg-deepest);
 }
 
 .entrance-lab[data-ambience="night"] .entrance-lab__soon-cta:hover {
-  --ada-cta-text-color: #F4F6FF;
+  --ada-cta-text-color: var(--text-main);
 
-  background: #1D244A;
-  color: #F4F6FF;
+  background: var(--surface-hover);
+  color: var(--text-main);
 }
 
 .entrance-lab__soon-cta:hover .ada-manifesto-cta-icon {
@@ -466,13 +473,13 @@
 }
 
 .entrance-lab[data-ambience="day"] .entrance-lab__cta-row .ada-cta-button {
-  --ada-cta-bg: var(--brand-700);
+  --ada-cta-bg: var(--brand-action);
   --ada-cta-fg: var(--brand-100);
-  --ada-cta-border: var(--brand-700);
-  --ada-cta-hover-bg: var(--brand-700);
+  --ada-cta-border: var(--brand-action);
+  --ada-cta-hover-bg: var(--brand-action);
   --ada-cta-hover-fg: var(--brand-100);
-  --ada-cta-hover-border: var(--brand-700);
-  --ada-cta-fill-surface: var(--brand-700);
+  --ada-cta-hover-border: var(--brand-action);
+  --ada-cta-fill-surface: var(--brand-action);
 }
 
 .entrance-lab__cta-arrow {
@@ -679,7 +686,7 @@
      Configure paneliyle aynı zemin (tema-bazlı). svh: katalog overlap'i
      (home-references.css --catalog-entrance-overlap) bununla eşleşmeli. */
   min-height: 50svh;
-  background: radial-gradient(80% 90% at 40% 38%, #131937 0%, #080B18 72%);
+  background: radial-gradient(80% 90% at 40% 38%, var(--bg-navy) 0%, var(--bg-main) 72%);
 }
 
 .entrance-lab__next[data-ambience="day"] {

@@ -110,7 +110,7 @@
     </section>
     </div>
 
-    <Teleport to="body">
+    <Teleport to=".cards-section">
       <transition :css="false" @enter="onEnter" @leave="onLeave">
         <div v-if="selectedProject" class="project-expansion-panel">
           <div class="panel-inner">
@@ -365,7 +365,7 @@ const prevProject = () => {
 const onEnter = (el, done) => {
   const inner = el.querySelector(".panel-inner");
   const tl = gsap.timeline({ onComplete: done });
-  tl.fromTo(el, { height: 0, opacity: 1 }, { height: "760px", duration: 1, ease: "power4.inOut" });
+  tl.fromTo(el, { height: 0, opacity: 1 }, { height: "860px", duration: 1, ease: "power4.inOut" });
   tl.fromTo(inner, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, "-=0.4");
 };
 
@@ -749,23 +749,51 @@ onBeforeUnmount(() => {
 
 .project-expansion-panel {
   position: absolute;
-  top: var(--ref-hero-h, 92svh);
+  top: 0;
   left: 50%;
   width: 1550px;
   max-width: 95vw;
   transform: translateX(-50%);
-  background: var(--ref-modal-bg);
+  background: var(--ref-modal-bg, var(--surface));
   z-index: 1200;
-  border-radius: 28px;
+  border-radius: 0 0 28px 28px;
   box-shadow: var(--ref-modal-shadow);
   will-change: height;
+}
+
+.project-expansion-panel::before,
+.project-expansion-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+}
+
+.project-expansion-panel::before {
+  right: 100%;
+  background: radial-gradient(
+    circle at bottom left,
+    transparent 28px,
+    var(--ref-modal-bg, var(--surface)) 28.5px
+  );
+}
+
+.project-expansion-panel::after {
+  left: 100%;
+  background: radial-gradient(
+    circle at bottom right,
+    transparent 28px,
+    var(--ref-modal-bg, var(--surface)) 28.5px
+  );
 }
 
 .panel-inner {
   max-width: 1550px;
   margin: 0 auto;
   padding: 64px 80px 80px;
-  height: 760px;
+  height: 860px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -827,7 +855,7 @@ onBeforeUnmount(() => {
 .image-viewport {
   flex: 1;
   position: relative;
-  height: 520px;
+  height: 660px;
   overflow: hidden;
   border-radius: 20px;
 }
@@ -861,7 +889,7 @@ onBeforeUnmount(() => {
   font-family: "Montserrat", sans-serif;
   font-size: 34px;
   font-weight: 700;
-  color: var(--ref-modal-ink);
+  color: var(--ref-modal-ink, var(--ink));
   margin-bottom: 4px;
 }
 
@@ -869,7 +897,7 @@ onBeforeUnmount(() => {
   font-family: "Inter", sans-serif;
   font-weight: 300;
   font-size: 18px;
-  color: var(--ref-modal-sub);
+  color: var(--ref-modal-sub, var(--ink-secondary));
   margin: 0;
   line-height: 1.6;
   padding-bottom: 15px;
@@ -878,17 +906,17 @@ onBeforeUnmount(() => {
 .nav-btn {
   background: none;
   border: none;
-  color: var(--ref-modal-ink);
+  color: var(--ref-modal-ink, var(--ink));
   font-size: 80px;
   cursor: pointer;
-  opacity: 0.2;
+  opacity: 1;
   transition: 0.3s;
   padding: 10px;
 }
 
 .nav-btn:hover {
   opacity: 1;
-  color: var(--ref-accent);
+  color: var(--ref-accent, var(--brand-action));
 }
 
 .cards-section {

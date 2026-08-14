@@ -14,6 +14,24 @@
   color: var(--team-section-text);
 }
 
+.home-manifesto-stage {
+  display: flex;
+  flex-direction: column;
+  background: var(--team-section-bg);
+}
+
+.app-shell--night .home-manifesto-stage {
+  background: var(--bg-main);
+}
+
+.app-shell--night :is(.ada-subtitle-container, .ada-subtitle-container-reverse) {
+  background: var(--bg-main);
+}
+
+.app-shell--night .ada-team-section:has(> .home-manifesto-stage) {
+  box-shadow: none;
+}
+
 .ada-manifesto-container {
   width: 100%;
   max-width: var(--cta-stage-width);
@@ -230,12 +248,12 @@
 
 .ada-subtitle-container {
   margin-top: clamp(126px, 15vh, 190px);
-  margin-bottom: clamp(68px, 6vw, 112px);
+  margin-bottom: clamp(20px, 2vw, 40px);
   padding-block: clamp(14px, 1.6vw, 28px);
 }
 
 .ada-subtitle-container-reverse {
-  margin-top: clamp(72px, 7vw, 132px);
+  margin-top: clamp(20px, 2vw, 40px);
   margin-bottom: clamp(150px, 16vh, 240px);
   padding-block: clamp(14px, 1.6vw, 28px);
 }
@@ -343,7 +361,7 @@ span.ada-brand-logo {
   justify-content: center;
   width: 100%;
   overflow: visible;
-  margin-top: clamp(168px, 13vw, 248px);
+  margin-top: clamp(300px, 22vw, 420px);
   margin-bottom: clamp(34px, 4vw, 72px);
   padding: 0 clamp(18px, 4vw, 76px);
 }
