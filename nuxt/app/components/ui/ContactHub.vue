@@ -457,9 +457,18 @@ watch(isOpen, (nowOpen) => {
   gap: var(--chub-gap);
   font-family: var(--header-font, var(--font-body));
   opacity: var(--chub-opacity);
-  pointer-events: var(--chub-pointer);
+  /* The wrapper is pure layout. It kept `pointer-events: auto`, and because the
+     CLOSED panel still takes up its grid cell the box measured 286x220 in the
+     bottom-right corner at z-index 82 — above everything — so it swallowed any
+     swipe that started there (measured on a 390x844 phone: it sat right on the
+     hero CTA). Only the real controls take pointers. */
+  pointer-events: none;
   transform: translate3d(0, var(--chub-y), 0);
   will-change: opacity, transform;
+}
+
+.chub__trigger {
+  pointer-events: var(--chub-pointer);
 }
 
 /* ── PANEL ───────────────────────────────────────────────────────────── */
@@ -482,7 +491,7 @@ watch(isOpen, (nowOpen) => {
 
 .chub.is-open .chub__panel {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: var(--chub-pointer);
 }
 
 /* ── BİRİNCİL EYLEM ──────────────────────────────────────────────────── */

@@ -1,0 +1,570 @@
+/* ShowroomLabMobile — the showroom as it exists on a phone.
+   No media queries: this file IS the mobile case. Values are the resolved
+   phone values from showroom.css's @media (max-width: 900px / 520px) blocks,
+   with the card compressed so the door gets the room (measured: the card used
+   to take 422px of an 844px screen while its content only just fitted). */
+
+.showroom-mobile {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  /* Door band first, card takes what is left. */
+  grid-template-rows: clamp(400px, 57dvh, 480px) minmax(0, 1fr);
+  align-items: stretch;
+  overflow: hidden;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+
+  /* Palette. Bound to THIS element's data-ambience, never to an ancestor —
+     showroom.css keys every theme rule off `.entrance-lab[data-ambience]`, and
+     that is exactly why the phone stayed in the night palette under a cream
+     hero. Default is night; the day block below overrides. */
+  --sm-bg-1: #131937;
+  --sm-bg-2: #080B18;
+  --sm-vignette-a: rgba(142, 162, 255, 0.16);
+  --sm-vignette-b: rgba(5, 7, 20, 0.34);
+  --sm-text: #F4F6FF;
+  --sm-text-soft: #B9C0D8;
+  --sm-text-faint: #9FA7BD;
+  --sm-line: rgba(244, 246, 255, 0.22);
+  --sm-backdrop: rgba(195, 204, 255, 0.07);
+
+  color: var(--sm-text);
+}
+
+.showroom-mobile[data-ambience="day"] {
+  --sm-bg-1: var(--paper);
+  --sm-bg-2: var(--hairline);
+  --sm-vignette-a: rgba(251, 249, 245, 0.4);
+  --sm-vignette-b: rgba(138, 128, 115, 0.22);
+  --sm-text: var(--ink);
+  --sm-text-soft: var(--ink-body);
+  --sm-text-faint: var(--ink-soft);
+  --sm-line: var(--hairline);
+  --sm-backdrop: rgba(22, 19, 15, 0.06);
+}
+
+.showroom-mobile__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(80% 60% at 38% 42%, var(--sm-vignette-a) 0%, transparent 60%),
+    radial-gradient(120% 120% at 50% 120%, var(--sm-vignette-b) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── BACKDROP BAND ───────────────────────────────────────────── */
+.showroom-mobile__backdrop {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: clamp(400px, 57dvh, 480px);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+html.is-safari .showroom-mobile__backdrop {
+  contain: layout paint style;
+  transform: translateZ(0);
+}
+
+.showroom-mobile__backdrop-text {
+  display: block;
+  width: 100%;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(96px, 30vw, 160px);
+  font-weight: 500;
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+  color: var(--sm-backdrop);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.showroom-mobile__backdrop-marquee {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: sm-backdrop-marquee 60s linear infinite;
+  will-change: transform;
+}
+
+.showroom-mobile__backdrop-group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.showroom-mobile__backdrop-group span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.showroom-mobile__backdrop-group span::after {
+  content: "·";
+  margin: 0 0.18em;
+}
+
+@keyframes sm-backdrop-marquee {
+  from {
+    transform: translate3d(8vw, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.sm-backdrop-enter-active,
+.sm-backdrop-leave-active {
+  transition: opacity 500ms ease;
+}
+
+.sm-backdrop-enter-from,
+.sm-backdrop-leave-to {
+  opacity: 0;
+}
+
+/* ── STAGE ───────────────────────────────────────────────────── */
+.showroom-mobile__stage {
+  position: relative;
+  z-index: 1;
+  grid-row: 1;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+/* Soften the hard viewport cut on the peeking neighbours. */
+.showroom-mobile__stage::before,
+.showroom-mobile__stage::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  z-index: 60;
+  width: 24px;
+  pointer-events: none;
+}
+
+.showroom-mobile__stage::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--sm-bg-1) 72%, transparent) 0%,
+    color-mix(in srgb, var(--sm-bg-1) 36%, transparent) 38%,
+    transparent 100%
+  );
+}
+
+.showroom-mobile__stage::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--sm-bg-1) 72%, transparent) 0%,
+    color-mix(in srgb, var(--sm-bg-1) 36%, transparent) 38%,
+    transparent 100%
+  );
+}
+
+.showroom-mobile__carousel {
+  position: relative;
+  width: 1px;
+  height: 1px;
+  transform: translateY(3%);
+}
+
+/* Fixed slot box — the orbit centres it with translate(-50%). Without an
+   explicit size the slot collapses to its content and the transform maths
+   breaks (doors render 1px wide). Height must match SLOT_HEIGHT_* in the
+   component: the neighbour offset is derived from it. */
+.showroom-mobile__slot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: clamp(168px, 46vw, 240px);
+  height: clamp(266px, 71vw, 340px);
+  transform:
+    translate3d(-50%, -50%, 0)
+    translate3d(var(--slot-x, 0), var(--slot-y, 0), 0)
+    scale(var(--slot-scale, 1));
+  transform-origin: center bottom;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.showroom-mobile__door-shell {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  width: 100%;
+  height: 100%;
+  transform-origin: center bottom;
+}
+
+/* Cut the marquee behind the door silhouette without touching the door's own
+   transparency — the alpha mask keeps the source WebP's clear areas clear, so
+   no rectangular patch appears around the door. */
+.showroom-mobile__door-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--sm-bg-1);
+  opacity: clamp(0, calc(var(--slot-opacity, 1) * 5), 1);
+  transform:
+    translateY(var(--door-baseline-shift, 0%))
+    scale(var(--door-normalize, 1));
+  transform-origin: center bottom;
+  mask: var(--door-image-mask) center bottom / auto 100% no-repeat;
+  -webkit-mask: var(--door-image-mask) center bottom / auto 100% no-repeat;
+  pointer-events: none;
+}
+
+.showroom-mobile__door-shell::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 0;
+  width: 72%;
+  height: 18%;
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0.32) 0%, transparent 72%);
+  opacity: calc(var(--slot-opacity, 1) * 0.8);
+  transform: translate3d(-50%, 18%, 0);
+  pointer-events: none;
+}
+
+.showroom-mobile__door-image {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 1;
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: none;
+  opacity: var(--slot-opacity, 1);
+  transform:
+    translateX(-50%)
+    translateY(var(--door-baseline-shift, 0%))
+    scale(var(--door-normalize, 1));
+  transform-origin: center bottom;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── INFO CARD ───────────────────────────────────────────────── */
+.showroom-mobile__info {
+  position: relative;
+  z-index: 2;
+  grid-row: 2;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: clamp(12px, 3vw, 18px);
+  width: 100%;
+  min-height: 0;
+  padding:
+    clamp(16px, 4vw, 24px)
+    clamp(24px, 8vw, 52px)
+    max(22px, env(safe-area-inset-bottom, 0px));
+  isolation: isolate;
+  overflow: visible;
+}
+
+.showroom-mobile__info::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: color-mix(in srgb, var(--sm-bg-1) 58%, var(--sm-bg-2));
+  pointer-events: none;
+}
+
+.showroom-mobile__counter,
+.showroom-mobile__info-block {
+  position: relative;
+  z-index: 2;
+}
+
+.showroom-mobile__info-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: clamp(12px, 3vw, 18px);
+}
+
+.showroom-mobile__identity,
+.showroom-mobile__details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.showroom-mobile__identity {
+  gap: 8px;
+}
+
+.showroom-mobile__details {
+  gap: clamp(8px, 2.5vw, 12px);
+}
+
+.showroom-mobile__counter {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(10px, 1vw, 16px);
+  color: var(--sm-text-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+}
+
+.showroom-mobile__counter-current {
+  display: inline-block;
+  color: var(--sm-text);
+  font-size: clamp(16px, 4.6vw, 22px);
+  font-weight: 600;
+}
+
+.showroom-mobile__counter-line {
+  position: relative;
+  width: clamp(46px, 15vw, 72px);
+  height: 1px;
+  overflow: hidden;
+  background: var(--sm-line);
+}
+
+.showroom-mobile__counter-line::after {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(var(--counter-progress, 0));
+  transform-origin: left center;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  content: "";
+}
+
+.sm-counter-enter-active,
+.sm-counter-leave-active {
+  transition:
+    opacity 460ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sm-counter-enter-from {
+  opacity: 0;
+  transform: translateY(9px);
+}
+
+.sm-counter-leave-to {
+  opacity: 0;
+  transform: translateY(-9px);
+}
+
+.showroom-mobile__name {
+  max-width: 100%;
+  margin: 0;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(26px, 7.2vw, 34px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: var(--sm-text);
+  text-wrap: balance;
+}
+
+.showroom-mobile__name-lead {
+  display: block;
+  white-space: nowrap;
+}
+
+.showroom-mobile__name-tail {
+  display: block;
+  margin-top: 0.12em;
+  font-style: normal;
+  color: var(--accent);
+}
+
+.showroom-mobile__series {
+  margin: 0;
+  font-size: clamp(13px, 3.4vw, 15px);
+  line-height: 1.35;
+  letter-spacing: 0.06em;
+  color: var(--sm-text-soft);
+}
+
+.showroom-mobile__divider {
+  width: 56px;
+  height: 1px;
+  margin: 0 0 clamp(4px, 1.5vw, 8px);
+  background: var(--sm-line);
+}
+
+.showroom-mobile__spec {
+  max-width: 34ch;
+  margin: 0;
+  font-size: clamp(12px, 3.3vw, 14px);
+  line-height: 1.4;
+  color: var(--sm-text-soft);
+}
+
+.showroom-mobile__meta {
+  max-width: 36ch;
+  margin: 0;
+  font-size: clamp(10px, 2.75vw, 12px);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--sm-text-faint);
+  white-space: normal;
+}
+
+/* ── ACTIONS ─────────────────────────────────────────────────── */
+.showroom-mobile__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+}
+
+.showroom-mobile__actions .ada-cta-button {
+  width: 100%;
+  min-width: 0;
+  /* 44px is the tap-target floor — this is the primary control on the card. */
+  min-height: 44px;
+  font-weight: 600;
+}
+
+.showroom-mobile[data-ambience="day"] .ada-cta-button:not(.ada-cta-button--outline) {
+  --ada-cta-bg: var(--brand-700);
+  --ada-cta-fg: var(--brand-100);
+  --ada-cta-border: var(--brand-700);
+  --ada-cta-hover-bg: var(--brand-700);
+  --ada-cta-hover-fg: var(--brand-100);
+  --ada-cta-hover-border: var(--brand-700);
+  --ada-cta-fill-surface: var(--brand-700);
+}
+
+.showroom-mobile[data-ambience="day"] .ada-cta-button--outline {
+  --ada-cta-bg: transparent;
+  --ada-cta-fg: var(--brand-700);
+  --ada-cta-border: var(--hairline);
+  --ada-cta-hover-bg: transparent;
+  --ada-cta-hover-fg: var(--brand-100);
+  --ada-cta-hover-border: var(--brand-500);
+  --ada-cta-fill-surface: var(--brand-500);
+}
+
+.showroom-mobile[data-ambience="night"] .ada-cta-button:not(.ada-cta-button--outline) {
+  --ada-cta-bg: #F4F6FF;
+  --ada-cta-fg: #050714;
+  --ada-cta-border: #F4F6FF;
+  --ada-cta-hover-bg: #C3CCFF;
+  --ada-cta-hover-fg: #050714;
+  --ada-cta-hover-border: #C3CCFF;
+  --ada-cta-fill-surface: #C3CCFF;
+}
+
+.showroom-mobile[data-ambience="night"] .ada-cta-button--outline {
+  --ada-cta-fg: #F4F6FF;
+  --ada-cta-border: rgba(244, 246, 255, 0.4);
+  --ada-cta-hover-bg: var(--accent);
+  --ada-cta-hover-fg: #050714;
+  --ada-cta-hover-border: var(--accent);
+  --ada-cta-fill-surface: var(--accent);
+}
+
+/* ── DOOR RAIL ───────────────────────────────────────────────── */
+.showroom-mobile__door-rail {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--door-rail-count, 5), minmax(24px, 1fr));
+  gap: 10px;
+  width: min(100%, 280px);
+  margin-top: auto;
+}
+
+/* 44px is the tap-target floor; the hairline itself stays 1px and centred.
+   Measured at 28px before this — a real miss, since these are the only way to
+   jump between doors without swiping through them. */
+.showroom-mobile__door-rail-segment {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  appearance: none;
+  cursor: pointer;
+}
+
+.showroom-mobile__door-rail-segment::before,
+.showroom-mobile__door-rail-segment::after {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 1px;
+  transform: translateY(-50%);
+  content: "";
+}
+
+.showroom-mobile__door-rail-segment::before {
+  background: var(--sm-line);
+}
+
+.showroom-mobile__door-rail-segment::after {
+  background: var(--accent);
+  transform: translateY(-50%) scaleX(var(--door-rail-fill, 0));
+  transform-origin: left center;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.showroom-mobile__door-rail-segment:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 8px;
+}
+
+/* ── INFO SWAP ───────────────────────────────────────────────── */
+.sm-info-enter-active,
+.sm-info-leave-active {
+  transition: opacity 360ms ease, transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sm-info-enter-from {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.sm-info-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showroom-mobile__slot {
+    will-change: auto;
+  }
+
+  .showroom-mobile__backdrop-marquee {
+    animation: none;
+  }
+
+  .sm-info-enter-active,
+  .sm-info-leave-active,
+  .sm-counter-enter-active,
+  .sm-counter-leave-active {
+    transition-duration: 0.01ms;
+  }
+}

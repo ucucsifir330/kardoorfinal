@@ -67,6 +67,10 @@ export interface EntranceInputOptions {
   keyboard?: boolean;
   /** Bu şiddetin altındaki tekerlek hareketlerini yok say. */
   minStrength?: number;
+  /** Dokunma desteği (varsayılan kapalı — masaüstü sahnesi kullanmıyor). */
+  touch?: boolean;
+  /** Bir jestin `drive` sayılması için gereken dikey mesafe (px). */
+  touchThreshold?: number;
 }
 
 /** Klavye tuşu → yön eşlemesi. */
@@ -91,11 +95,20 @@ export const useEntranceInput = (options: EntranceInputOptions) => {
     end,
     capture = false,
     keyboard = true,
-    minStrength = 0
+    minStrength = 0,
+    touch = false,
+    touchThreshold = 26
   } = options;
 
   let attached = false;
   let bandTrigger: ScrollTrigger | null = null;
+
+  // TEK JEST = TEK KARAR. Parmak sürüklendiği sürece onlarca touchmove gelir;
+  // hepsini `drive`a geçirmek "tek hamlede bir kapı" sözleşmesini bozar. Jest
+  // başına yalnız BİR kez sürülür, parmak kalkınca kilit açılır.
+  let touchStartY = 0;
+  let touchDriven = false;
+  let touchActive = false;
 
   const onWheel = (event: WheelEvent) => {
     const strength = Math.abs(event.deltaY);
@@ -121,13 +134,47 @@ export const useEntranceInput = (options: EntranceInputOptions) => {
     drive(direction, KEY_STRENGTH, () => event.preventDefault());
   };
 
+  const onTouchStart = (event: TouchEvent) => {
+    if (event.touches.length !== 1) return;
+    touchStartY = event.touches[0]!.clientY;
+    touchDriven = false;
+    touchActive = true;
+  };
+
+  const onTouchMove = (event: TouchEvent) => {
+    if (!touchActive || touchDriven || event.touches.length !== 1) return;
+
+    // Parmak YUKARI gidince içerik yukarı akar = ileri (+1), tekerlekteki
+    // deltaY > 0 ile aynı anlam.
+    const delta = touchStartY - event.touches[0]!.clientY;
+    const strength = Math.abs(delta);
+    if (strength < touchThreshold) return;
+
+    touchDriven = true;
+    drive(delta > 0 ? 1 : -1, strength, () => {
+      if (event.cancelable) event.preventDefault();
+      if (capture) event.stopImmediatePropagation();
+    });
+  };
+
+  const onTouchEnd = () => {
+    touchActive = false;
+    touchDriven = false;
+  };
+
   const attach = () => {
     if (attached) return;
     attached = true;
-    // passive:false ŞART: sahne bandında tekerleği iptal edebilmemiz gerekiyor.
+    // passive:false ŞART: sahne bandında girdiyi iptal edebilmemiz gerekiyor.
     // Bandın dışında hiç bağlı olmadığı için maliyeti sayfaya yayılmaz.
     window.addEventListener("wheel", onWheel, { passive: false, capture });
     if (keyboard) window.addEventListener("keydown", onKeydown);
+    if (touch) {
+      window.addEventListener("touchstart", onTouchStart, { passive: true, capture });
+      window.addEventListener("touchmove", onTouchMove, { passive: false, capture });
+      window.addEventListener("touchend", onTouchEnd, { passive: true, capture });
+      window.addEventListener("touchcancel", onTouchEnd, { passive: true, capture });
+    }
   };
 
   const detach = () => {
@@ -135,6 +182,14 @@ export const useEntranceInput = (options: EntranceInputOptions) => {
     attached = false;
     window.removeEventListener("wheel", onWheel, { capture });
     if (keyboard) window.removeEventListener("keydown", onKeydown);
+    if (touch) {
+      window.removeEventListener("touchstart", onTouchStart, { capture });
+      window.removeEventListener("touchmove", onTouchMove, { capture });
+      window.removeEventListener("touchend", onTouchEnd, { capture });
+      window.removeEventListener("touchcancel", onTouchEnd, { capture });
+    }
+    touchActive = false;
+    touchDriven = false;
   };
 
   /** Sahne kendi trigger'ını yönetiyorsa onun onToggle'ından çağrılır. */

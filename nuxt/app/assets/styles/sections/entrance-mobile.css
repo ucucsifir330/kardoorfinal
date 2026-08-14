@@ -1,36 +1,34 @@
-/* Header z-index 80, mobil menü 81-82. Giriş overlay'i bunların ALTINDA kalır
-   ki showroom sırasında header ve dil/tema anahtarları erişilebilir olsun. */
+/* NORMAL FLOW, not a fixed overlay. ScrollTrigger pins this section, so the
+   page scrolls INTO it and back OUT of it — that is what makes every phase
+   reversible without a line of reverse code. The old fixed overlay sat in
+   front of the site like a pane of glass: the catalog could never be scrolled
+   back up into the entrance.
+
+   No touch-action / user-select locks either: scrolling is the interaction. */
 .entrance-mobile {
-  position: fixed;
-  z-index: 70;
-  inset: 0;
+  position: relative;
+  z-index: 1;
   width: 100%;
-  height: 100vh;
-  height: 100svh;
+  /* dvh, NOT svh. svh is the viewport WITH the address bar showing; the moment
+     the bar collapses the real viewport grows and a strip of page shows under
+     the hero. Reported from a real phone — emulation has no address bar, so it
+     is invisible here. dvh tracks the live viewport, and the ScrollTrigger
+     re-measure it would normally cause is suppressed by ignoreMobileResize. */
   height: 100dvh;
   overflow: hidden;
   isolation: isolate;
   background: var(--ambience-bg);
   color: var(--ambience-text);
-  font-family: var(--font-body);
-  touch-action: none;
-  overscroll-behavior: contain;
-  user-select: none;
-  -webkit-user-select: none;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
 }
 
-/* Giriş kilitliyken sayfanın geri kalanı kaymasın. Kilit mount'ta kurulur,
-   jest sırasında hiç değişmez — jest ortasında body'yi fixed yapmak
-   ekranı sıçratıyor. */
-body.entrance-mobile-locked {
+/* The pinned box. ScrollTrigger transforms .entrance-mobile itself, so every
+   absolutely positioned layer hangs off this inner frame instead — measuring
+   the door against a element the pin is moving gave drifting geometry. */
+.entrance-mobile__frame {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  overscroll-behavior: none;
-  touch-action: none;
-}
-
-/* Kapıdan geçildikten sonra bölüm akıştan çıkar, sayfa normale döner. */
-.entrance-mobile.is-dismissed {
-  display: none;
 }
 
 .entrance-mobile__scene {
@@ -62,25 +60,27 @@ body.entrance-mobile-locked {
   pointer-events: none;
 }
 
-/* SHOWROOM = kapının ardındaki SAYFA. Hero sahnesi (z:2) üstünde durur; bu
-   katman ekranda yalnızca hero'nun ŞEFFAF kapı deliğinden görünür (girişten
-   sonra .is-active ile z:3'e çıkıp öne geçer ve etkileşime açılır).
+/* SHOWROOM = the page BEHIND the door. It sits under the hero scene (z:2) and
+   is only visible through the hero's TRANSPARENT door hole (after entering it
+   moves to z:3, comes to the front and becomes interactive).
 
-   Buradaki visibility/opacity yalnızca JS DEVREYE GİRENE KADAR geçerli olan
-   başlangıç durumudur: kapı sprite'ı henüz yüklenmemişken delik açıkta kalır,
-   o yüzden gizli başlar. renderEntrance() bunları her karede inline yazar
-   (visibility isDoorPainted'e bağlı). transform/transform-origin da JS'e ait
-   (renderEntrance / placeDoor) — burada tekrar tanımlanmıyor ki CSS ile inline
-   değerler birbiriyle çelişiyormuş gibi okunmasın. */
+   The visibility/opacity here is only the state BEFORE JS takes over: with the
+   door sprite or the hero photo still unpainted the hole would be wide open, so
+   it starts hidden. renderEntrance() writes these inline every frame
+   (visibility follows isSceneReady). transform/transform-origin belong to JS
+   too (renderEntrance / placeDoor) and are deliberately not redefined here. */
+/* Visibility (not opacity) is the gate — updateMaster flips it once both the
+   hero photo and the door sprite have painted. It used to be opacity:0 here
+   with JS writing opacity:1 every frame; the scrub no longer touches opacity,
+   so the layer must be opaque by default. */
 .entrance-mobile__showroom {
   position: absolute;
   inset: 0;
   z-index: 1;
   overflow: hidden;
   visibility: hidden;
-  opacity: 0;
   background: var(--ambience-bg);
-  will-change: transform, opacity;
+  will-change: transform;
   pointer-events: none;
 }
 
@@ -90,130 +90,281 @@ body.entrance-mobile-locked {
   pointer-events: auto;
 }
 
-.entrance-mobile__showroom .showroom-lab {
-  --sl-fit: min(1, calc(100vh / 860px));
-  inset: 0 auto auto 0;
-  width: calc(100% / var(--sl-fit));
-  height: calc(100% / var(--sl-fit));
+/* ShowroomLabMobile fills this layer directly — no --sl-fit scale hack. The
+   old wrapper scaled a desktop-sized ShowroomLab down to fit; the mobile
+   component is authored at phone size, so it just sits at inset 0. */
+.entrance-mobile__showroom .showroom-mobile {
   background: transparent;
-  transform: scale(var(--sl-fit));
-  transform-origin: top left;
 }
 
+/* ──────────────────────────────────────────────────────────────
+   HERO COPY — on the MARBLE, under the door threshold. --door-threshold-y is
+   written by placeDoor() in px, so the block follows the measured door box.
+   Type is stepped down from the desktop 44/18 so heading + subtitle + CTA row
+   fit in the marble band without touching the bottom edge.
+   ────────────────────────────────────────────────────────────── */
 .entrance-mobile__copy {
   position: absolute;
   z-index: 4;
-  top: 50%;
-  left: clamp(20px, 6vw, 72px);
-  width: min(82vw, 620px);
-  transform: translate3d(0, -50%, 0);
+  left: clamp(20px, 5.4vw, 126px);
+  top: calc(var(--door-threshold-y, 62%) + clamp(14px, 2.4vh, 26px));
+  width: min(calc(100% - 2 * clamp(20px, 5.4vw, 126px)), 320px);
   will-change: transform, opacity;
 }
 
 .entrance-mobile__heading {
-  display: flex;
-  flex-direction: column;
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(58px, 17vw, 96px);
-  font-weight: 600;
-  line-height: 0.84;
-  letter-spacing: -0.045em;
-  color: var(--ambience-text);
-  text-transform: uppercase;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(28px, 8.6vw, 36px);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: 0;
+  color: var(--ink);
 }
 
-.entrance-mobile__heading > span + span {
-  margin-top: 0.08em;
+.entrance-mobile[data-ambience="night"] .entrance-mobile__heading {
+  color: #f7f7f2;
 }
 
-.entrance-mobile__heading-accent {
-  color: var(--ambience-text);
+.entrance-mobile__heading-line {
+  display: block;
+  padding-bottom: 0.06em;
+}
+
+.entrance-mobile__heading-line + .entrance-mobile__heading-line {
+  margin-top: -0.08em;
+}
+
+.entrance-mobile__heading-line--accent {
+  font-size: 0.86em;
+  color: var(--accent);
 }
 
 .entrance-mobile__heading em {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  text-transform: none;
+  font-family: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  letter-spacing: inherit;
+  color: inherit;
 }
 
 .entrance-mobile__subtitle {
-  max-width: 34ch;
-  margin: 24px 0 0;
-  font-size: clamp(14px, 4vw, 18px);
-  line-height: 1.55;
-  color: var(--ambience-muted);
+  width: min(100%, 260px);
+  margin: clamp(10px, 1.6vh, 16px) 0 0;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(14px, 4vw, 16px);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.entrance-mobile[data-ambience="night"] .entrance-mobile__subtitle {
+  color: rgba(247, 247, 242, 0.82);
 }
 
 .entrance-mobile__subtitle em {
-  font-family: var(--font-serif);
-  color: var(--ambience-text);
+  font-style: normal;
+  color: inherit;
 }
 
 .entrance-mobile__actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 32px;
+  gap: 10px;
+  margin-top: clamp(14px, 2.4vh, 22px);
 }
 
+.entrance-mobile[data-ambience="day"] .entrance-mobile__actions .ada-cta-button {
+  --ada-cta-bg: var(--brand-700);
+  --ada-cta-fg: var(--brand-100);
+  --ada-cta-border: var(--brand-700);
+  --ada-cta-hover-bg: var(--brand-700);
+  --ada-cta-hover-fg: var(--brand-100);
+  --ada-cta-hover-border: var(--brand-700);
+  --ada-cta-fill-surface: var(--brand-700);
+}
+
+/* Same glass pill as the desktop .entrance-lab__cta-arrow. */
 .entrance-mobile__arrow {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  place-items: center;
-  border: 1px solid var(--ambience-line);
+  display: inline-flex;
+  width: 62px;
+  height: 48px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0.75px solid var(--hairline);
   border-radius: var(--radius-full);
-  color: var(--ambience-text);
+  background: rgba(255, 255, 255, 0.24);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 14px 34px rgba(22, 19, 15, 0.1);
+  backdrop-filter: blur(18px) saturate(1.16);
+  -webkit-backdrop-filter: blur(18px) saturate(1.16);
+  text-decoration: none;
+}
+
+.entrance-mobile[data-ambience="night"] .entrance-mobile__arrow {
+  border-color: rgba(247, 247, 242, 0.26);
+  background: rgba(247, 247, 242, 0.16);
+  color: #f7f7f2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 14px 34px rgba(0, 0, 0, 0.2);
 }
 
 .entrance-mobile__arrow svg {
-  width: 20px;
-  height: 20px;
+  display: block;
+  width: 21px;
+  height: 18px;
 }
 
 .entrance-mobile__arrow path {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 1.75;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
+/* ──────────────────────────────────────────────────────────────
+   ENTER CUE — RIGHT margin, beside the door. The label is set vertically so
+   the whole cue stays in a ~40px gutter and never crosses the door or the
+   copy that now lives on the marble.
+   ────────────────────────────────────────────────────────────── */
 .entrance-mobile__cue {
   position: absolute;
   z-index: 4;
-  left: 50%;
-  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  right: clamp(14px, 4vw, 26px);
+  top: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  color: var(--ambience-muted);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  transform: translateX(-50%);
+  gap: 12px;
+  color: rgba(7, 16, 24, 0.72);
+  transform: translateY(-50%);
   will-change: opacity;
   pointer-events: none;
 }
 
-.entrance-mobile__gesture-line {
-  position: relative;
-  width: 1px;
-  height: 38px;
-  overflow: hidden;
-  background: var(--ambience-line);
+.entrance-mobile[data-ambience="night"] .entrance-mobile__cue {
+  color: rgba(247, 247, 242, 0.74);
 }
 
-.entrance-mobile__gesture-line::after {
+.entrance-mobile__cue-mark {
+  display: block;
+  width: 16px;
+  height: clamp(48px, 8.4vh, 72px);
+  overflow: visible;
+}
+
+.entrance-mobile__cue-ball {
+  animation: entrance-mobile-cue-rise 2200ms var(--ease-soft) infinite;
+}
+
+/* Bottom-to-top: the label reads in the same direction the ball travels. */
+.entrance-mobile__cue-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* Ball climbs the hairline and dissolves into the doorway. */
+@keyframes entrance-mobile-cue-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  16% {
+    opacity: 1;
+  }
+
+  68% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-56px);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SHOWROOM SWIPE AFFORDANCE — right edge, appears after the room settles.
+   ────────────────────────────────────────────────────────────── */
+/* 20% keeps it on the bare wall to the right of the active door: lower down it
+   lands on the peeking neighbour door and the hairline disappears into it. */
+.entrance-mobile__swipe {
   position: absolute;
-  inset: auto 0 0;
-  height: 55%;
-  background: currentColor;
-  content: "";
-  animation: entrance-mobile-gesture 1.8s var(--ease-soft) infinite;
+  z-index: 5;
+  top: 20%;
+  right: clamp(12px, 3.6vw, 22px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  /* NOT --sl-*: those live on .showroom-lab and this node is its sibling, so
+     the var would silently fall back to the night tone on a cream wall. */
+  color: rgba(247, 247, 242, 0.82);
+  opacity: 0;
+  transform: translate3d(10px, 0, 0);
+  transition:
+    opacity 620ms var(--ease-soft),
+    transform 620ms var(--ease-soft);
+  pointer-events: none;
+}
+
+.entrance-mobile[data-ambience="day"] .entrance-mobile__swipe {
+  color: var(--ink-body);
+}
+
+.entrance-mobile__swipe.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.entrance-mobile__swipe-mark {
+  display: block;
+  width: 80px;
+  height: 16px;
+  overflow: visible;
+}
+
+.entrance-mobile__swipe-ball {
+  animation: entrance-mobile-swipe-slide 2200ms var(--ease-soft) infinite;
+}
+
+.entrance-mobile__swipe-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Ball travels from the right edge toward the left — the direction the finger
+   has to drag to reach the next door. */
+@keyframes entrance-mobile-swipe-slide {
+  0% {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+
+  16% {
+    opacity: 1;
+  }
+
+  68% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
 }
 
 .entrance-mobile__showroom-nav {
@@ -230,79 +381,6 @@ body.entrance-mobile-locked {
   pointer-events: none;
 }
 
-/* KURGULAYIN slaytı — son kapıdan sonra sağdan kayarak gelir. Metin mobilde
-   taşmasın diye sabit genişlik yok; her şey viewport'a göre sığar ve gerekirse
-   panel kendi içinde dikey kayar. */
-.entrance-mobile__configure {
-  position: absolute;
-  z-index: 6;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  background: color-mix(in srgb, #131937 58%, #080B18);
-  visibility: hidden;
-  will-change: transform;
-}
-
-.entrance-mobile[data-ambience="day"] .entrance-mobile__configure {
-  background: color-mix(in srgb, var(--paper) 58%, var(--hairline));
-}
-
-.entrance-mobile__configure-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-  max-height: 100%;
-  padding: clamp(24px, 7vw, 48px) clamp(20px, 6vw, 44px);
-  padding-bottom: max(clamp(24px, 7vw, 48px), env(safe-area-inset-bottom, 0px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-.entrance-mobile__configure-heading {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(30px, 8.4vw, 46px);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: var(--ambience-text);
-  overflow-wrap: break-word;
-  hyphens: auto;
-}
-
-.entrance-mobile__configure-heading span + span {
-  color: var(--accent);
-}
-
-.entrance-mobile__configure-copy {
-  margin: 0;
-  font-size: clamp(14px, 3.9vw, 17px);
-  line-height: 1.6;
-  color: var(--ambience-muted);
-  overflow-wrap: break-word;
-}
-
-.entrance-mobile__configure-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 4px;
-}
-
-.entrance-mobile__configure-cue {
-  margin-top: 4px;
-  color: var(--ambience-muted);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
 .entrance-mobile__showroom-cue {
   color: var(--ambience-muted);
   font-size: 11px;
@@ -312,20 +390,154 @@ body.entrance-mobile-locked {
   text-transform: uppercase;
 }
 
-@keyframes entrance-mobile-gesture {
-  0% {
-    transform: translateY(120%);
-  }
+/* ──────────────────────────────────────────────────────────────
+   CONFIGURE SLIDE — the desktop .entrance-lab__configure composition, fitted
+   to a phone: same centred column, same palette, same CTA pair. The only
+   deliberate difference is that the heading lines WRAP here (desktop pins them
+   with white-space: nowrap, which overflows a 390px viewport).
+   ────────────────────────────────────────────────────────────── */
+.entrance-mobile__configure {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 6vw, 120px);
+  background: color-mix(in srgb, #131937 58%, #080B18);
+  color: #F4F6FF;
+  text-align: center;
+  visibility: hidden;
+  transform: translate3d(100%, 0, 0);
+  will-change: transform;
+}
 
-  55%,
-  100% {
-    transform: translateY(-190%);
-  }
+.entrance-mobile[data-ambience="day"] .entrance-mobile__configure {
+  background: color-mix(in srgb, var(--paper) 58%, var(--hairline));
+  color: var(--ink);
+}
+
+.entrance-mobile__configure-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 3.2vh, 30px);
+  width: 100%;
+  max-width: min(1320px, 92%);
+  /* No inner scroller. An overflow:auto box here competed with the swipe-up
+     hand-off; the content is measured to fit the panel instead. */
+}
+
+.entrance-mobile__configure-heading {
+  margin: 0;
+  font-family: "PP Telegraf", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(30px, 8.2vw, 44px);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+/* Per-line mask: words rise out of it with yPercent, so no clip-path or blur is
+   needed (both are per-frame paint work on a phone). The mask needs vertical
+   slack or the tilted glyph tops clip against its own edge. */
+.entrance-mobile__configure-line-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  perspective: 620px;
+}
+
+.entrance-mobile__configure-word {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  backface-visibility: hidden;
+  white-space: pre;
+}
+
+.entrance-mobile__configure-line-mask + .entrance-mobile__configure-line-mask {
+  font-size: 0.914em;
+  color: var(--accent);
+}
+
+.entrance-mobile__configure-body-word {
+  display: inline-block;
+  white-space: pre;
+}
+
+.entrance-mobile__configure-copy {
+  margin: 0;
+  max-width: 46ch;
+  font-family: "PP Mori", "General Sans", Inter, system-ui, sans-serif;
+  font-size: clamp(15px, 4.1vw, 19px);
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: inherit;
+  text-wrap: pretty;
+}
+
+.entrance-mobile[data-ambience="night"] .entrance-mobile__configure-copy {
+  color: #B9C0D8;
+}
+
+.entrance-mobile__configure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* The global .ada-manifesto-cta carries a large margin-top (it was authored for
+   the manifesto section). Neutralise it so the pills sit in this flex flow. */
+.entrance-mobile__configure-actions .ada-manifesto-cta {
+  position: relative;
+  height: 46px;
+  margin-top: 0;
+  gap: 12px;
+  padding-right: 18px;
+  padding-left: 20px;
+  font-size: 13px;
+}
+
+.entrance-mobile[data-ambience="night"] .entrance-mobile__configure-actions .ada-manifesto-cta {
+  border: 1px solid rgba(244, 246, 255, 0.12);
+  background: #171D3D;
+  color: #F4F6FF;
+}
+
+/* Icon-left variant — open the right padding too (symmetry). */
+.entrance-mobile__configure-link {
+  padding-right: 20px;
+  padding-left: 18px;
+}
+
+.entrance-mobile__soon-cta {
+  appearance: none;
+  border: 0;
+  cursor: default;
+}
+
+.entrance-mobile__soon-cta .ada-manifesto-cta-text::after {
+  content: attr(data-hover);
+}
+
+.entrance-mobile__configure-cue {
+  color: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  opacity: 0.62;
+  text-transform: uppercase;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .entrance-mobile__gesture-line::after {
+  .entrance-mobile__cue-ball,
+  .entrance-mobile__swipe-ball {
     animation: none;
+  }
+
+  .entrance-mobile__swipe {
+    transition: none;
   }
 
   .entrance-mobile__configure {
