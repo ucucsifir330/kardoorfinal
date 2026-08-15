@@ -27,11 +27,6 @@ import { useKardoorLocale } from "~/composables/useKardoorLocale";
 import { useEntranceCopy } from "~/composables/useEntranceCopy";
 import { useEntranceInput } from "~/composables/useEntranceInput";
 import { useContentReveal } from "~/composables/useContentReveal";
-import {
-  useStartupProgress,
-  whenFontsReady,
-  whenImageReady
-} from "~/composables/useStartupProgress";
 import AdaCtaButton from "~/components/home/AdaCtaButton.vue";
 import ShowroomLab from "~/components/home/ShowroomLab.vue";
 
@@ -301,7 +296,6 @@ useContentReveal({
   ]
 });
 
-const { track: trackStartup } = useStartupProgress();
 
 const door = useDoorSprite(canvasRef);
 let trigger: ScrollTrigger | undefined;
@@ -855,12 +849,15 @@ onMounted(() => {
     end: () => `+=${Math.round(window.innerHeight * 9)}`
   });
 
-  // Açılış perdesi bu üç işi bekler — sabit süre yerine gerçek yükleme.
-  // Hero görseli LCP adayı, sprite kapı deliğini dolduran katman, fontlar
-  // ise perde açılınca metnin yeniden akmasını önler.
-  trackStartup("hero-image", whenImageReady(heroSrc.value));
-  trackStartup("door-sprite", doorLoad);
-  trackStartup("fonts", whenFontsReady());
+  // Startup loading is NOT registered here any more. It moved to
+  // `useAppBoot`, which starts the hero image, the door sprite and the fonts
+  // from the curtain itself. Registering from this component meant the
+  // downloads only began once the hero mounted — inside `<ClientOnly>`, so
+  // 1-2s after the curtain was already on screen — and the curtain had to
+  // guess (a 2.5s grace) whether more work was still coming.
+  //
+  // `doorLoad` above still runs: it fills this component's canvas. It now
+  // resolves from the cache the boot layer already warmed.
 
   // A/B switch: `?snap=off` turns off BOTH scroll-takeover paths so the pin's
   // scrub runs 1:1 with native scroll. Default behaviour is unchanged.

@@ -1,13 +1,27 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRoute } from "#imports";
 import { useGSAP } from "~/composables/useGSAP";
-import { useStartupProgress } from "~/composables/useStartupProgress";
+import { routeHasBootWork, useAppBoot } from "~/composables/useAppBoot";
 
 const emit = defineEmits<{
   complete: [];
 }>();
 
-const visible = ref(false);
+/**
+ * Rendered on the SERVER when the entry route has boot work, so the curtain is
+ * in the first HTML the browser paints. It used to start `false` and flip in
+ * `onMounted`, which meant the element only existed after hydration while
+ * `app-shell--content-hidden` had already hidden the page from the very first
+ * frame — a blank screen in between (measured in dev on `/`: 782ms hidden,
+ * curtain at 3159ms).
+ *
+ * The mark's entrance is a CSS keyframe, not GSAP, precisely so it plays
+ * during that pre-hydration window. GSAP only takes over for the parts that
+ * depend on live data: the fill level and the exit.
+ */
+const route = useRoute();
+const visible = ref(routeHasBootWork(route.path));
 const isExiting = ref(false);
 const markRef = ref<HTMLElement | null>(null);
 const wordmarkRef = ref<HTMLElement | null>(null);
@@ -26,37 +40,39 @@ let completed = false;
 let hasMinimumHoldPassed = false;
 
 /**
- * Perde artık sabit süreyle değil, hero'nun gerçek yükleme işleriyle
- * sürülüyor (bkz. useStartupProgress). İki koruma bandı var:
+ * Two guards, and only two.
  *
- *  • MINIMUM_HOLD — sıcak cache'te işler ~50ms'de biterse perde tek karede
- *    açılıp kapanır; o göz kırpması animasyondan rahatsız edici.
- *  • MAX_WAIT — bir iş hiç çözülmezse perde asılı kalmasın. Eski 9800ms
- *    fallback'in yerini alır ama artık istisna yolu, normal akış değil.
+ *  • MINIMUM_HOLD — on a warm cache the work finishes in ~50ms and the curtain
+ *    would blink in and out within a frame, which reads as a glitch.
+ *  • MAX_WAIT — safety net if a download never settles. Exception path, not
+ *    part of the normal flow.
+ *
+ * The old component carried a third timer, NO_TASK_GRACE = 2500ms, because it
+ * could not know whether work was still coming. `useAppBoot` decides that
+ * synchronously now, so the guess is gone — and with it the 2.5s that every
+ * subpage used to pay for nothing (measured on /contact: interactive at 0.9s,
+ * curtain held until 5.6-6.3s).
  */
 const MINIMUM_HOLD_MS = 900;
 const MAX_WAIT_MS = 8000;
 
-const { progress, isComplete, hasTasks } = useStartupProgress();
-
-/**
- * Hero'suz sayfalarda (alt sayfalar, lab) hiç görev kaydolmaz; isComplete
- * sonsuza dek false kalır ve perde 8 saniyelik MAX_WAIT'e asılırdı. Görev
- * listesi bu süre dolduğunda hâlâ boşsa "bekleyecek şey yok" say.
- *
- * Süre MINIMUM_HOLD'dan uzun ve BİLEREK 2500ms: ana sayfada görevler hero
- * mount olunca kaydolur (~1.5-2s, dev'de daha geç). Daha kısa bir değer,
- * görevler kaydolmadan perdeyi açıp yüklemeyi bekleme amacını boşa çıkarır.
- */
-const NO_TASK_GRACE_MS = 2500;
-let hasNoTaskGracePassed = false;
-let noTaskGraceTimer = 0;
+const { plan, progress, isReady } = useAppBoot();
 
 const prefersReducedMotion = () =>
   import.meta.client && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 onMounted(async () => {
   if (document.visibilityState === "hidden") return;
+
+  // `plugins/boot.client.ts` already declared and started this route's work at
+  // app init. Calling plan() again is a no-op that just returns the count, so
+  // the curtain still knows whether there is anything to cover. If the route
+  // needs nothing, it never becomes visible at all.
+  const taskCount = plan(route.path);
+  if (taskCount === 0) {
+    complete();
+    return;
+  }
 
   visible.value = true;
 
@@ -71,37 +87,25 @@ onMounted(async () => {
     document.removeEventListener("visibilitychange", handleVisibilityChange);
   };
 
-  // Ağ takılırsa perde asılı kalmasın (istisna yolu).
-  fallbackTimer = window.setTimeout(() => {
-    startExit();
-  }, MAX_WAIT_MS);
+  fallbackTimer = window.setTimeout(startExit, MAX_WAIT_MS);
 
   minimumHoldTimer = window.setTimeout(() => {
     hasMinimumHoldPassed = true;
     maybeFinish();
   }, MINIMUM_HOLD_MS);
 
-  noTaskGraceTimer = window.setTimeout(() => {
-    hasNoTaskGracePassed = true;
-    maybeFinish();
-  }, NO_TASK_GRACE_MS);
-
   await nextTick();
   playLoader();
   maybeFinish();
 });
 
-/** Hem gerçek işler bitmiş hem de en kısa gösterim süresi dolmuşsa çık. */
+/** Exit once the real work is done AND the minimum on-screen time has passed. */
 const maybeFinish = () => {
-  if (!hasMinimumHoldPassed) return;
-
-  const nothingToWaitFor = !hasTasks.value && hasNoTaskGracePassed;
-  if (!isComplete.value && !nothingToWaitFor) return;
-
+  if (!hasMinimumHoldPassed || !isReady.value) return;
   startExit();
 };
 
-watch([isComplete, progress], () => {
+watch([isReady, progress], () => {
   syncFillToProgress();
   maybeFinish();
 });
@@ -110,7 +114,6 @@ const clearTimers = () => {
   window.clearTimeout(fallbackTimer);
   window.clearTimeout(exitTimer);
   window.clearTimeout(minimumHoldTimer);
-  window.clearTimeout(noTaskGraceTimer);
 };
 
 const stopLoaderTimeline = () => {
